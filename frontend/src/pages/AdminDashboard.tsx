@@ -587,13 +587,6 @@ const AdminDashboard = () => {
         meatType: inspection.meat_type,
         classification: inspection.classification,
         confidenceScore: inspection.confidence_score,
-        labL: inspection.lab_l,
-        labA: inspection.lab_a,
-        labB: inspection.lab_b,
-        glcmContrast: inspection.glcm_contrast,
-        glcmCorrelation: inspection.glcm_correlation,
-        glcmEnergy: inspection.glcm_energy,
-        glcmHomogeneity: inspection.glcm_homogeneity,
       };
     });
   }, [reportFilteredInspections, profileById]);
@@ -754,13 +747,6 @@ const AdminDashboard = () => {
       "Meat Type",
       "Classification",
       "Confidence",
-      "L*",
-      "a*",
-      "b*",
-      "Contrast",
-      "Correlation",
-      "Energy",
-      "Homogeneity",
     ];
     const rows = reportRows.map((row) => [
       row.id,
@@ -770,13 +756,6 @@ const AdminDashboard = () => {
       row.meatType,
       row.classification,
       row.confidenceScore,
-      row.labL,
-      row.labA,
-      row.labB,
-      row.glcmContrast,
-      row.glcmCorrelation,
-      row.glcmEnergy,
-      row.glcmHomogeneity,
     ]);
     const csv = [headers, ...rows]
       .map((record) => record.map((value) => toCsvValue(value)).join(","))

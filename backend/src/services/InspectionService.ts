@@ -20,13 +20,6 @@ type InspectionInsertPayload = {
   classification: InspectionInsert["classification"];
   confidence_score: number;
   captured_at?: string;
-  lab_l?: number;
-  lab_a?: number;
-  lab_b?: number;
-  glcm_contrast?: number;
-  glcm_correlation?: number;
-  glcm_energy?: number;
-  glcm_homogeneity?: number;
   flagged_deviations?: string[];
   explanation?: string | null;
   image_url?: string | null;
@@ -186,14 +179,7 @@ export class InspectionService {
       confidence_score: inspection.confidence_score,
     };
 
-    if (inspection.lab_l !== undefined) payload.lab_l = inspection.lab_l;
-    if (inspection.lab_a !== undefined) payload.lab_a = inspection.lab_a;
-    if (inspection.lab_b !== undefined) payload.lab_b = inspection.lab_b;
     if (inspection.captured_at !== undefined) payload.captured_at = inspection.captured_at;
-    if (inspection.glcm_contrast !== undefined) payload.glcm_contrast = inspection.glcm_contrast;
-    if (inspection.glcm_correlation !== undefined) payload.glcm_correlation = inspection.glcm_correlation;
-    if (inspection.glcm_energy !== undefined) payload.glcm_energy = inspection.glcm_energy;
-    if (inspection.glcm_homogeneity !== undefined) payload.glcm_homogeneity = inspection.glcm_homogeneity;
     if (inspection.flagged_deviations !== undefined) payload.flagged_deviations = inspection.flagged_deviations;
     if (inspection.explanation !== undefined) payload.explanation = inspection.explanation;
     if (inspection.image_url !== undefined) payload.image_url = inspection.image_url;

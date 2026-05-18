@@ -186,8 +186,6 @@ const HistoryPage = () => {
               <p><strong>Confidence:</strong> ${inspection.confidence_score}%</p>
               <p><strong>Location:</strong> ${escapeHtml(inspection.location ?? "-")}</p>
               <p><strong>Notes:</strong> ${escapeHtml(inspection.inspector_notes ?? "-")}</p>
-              <p><strong>L*a*b*:</strong> ${inspection.lab_l ?? "-"}, ${inspection.lab_a ?? "-"}, ${inspection.lab_b ?? "-"}</p>
-              <p><strong>GLCM:</strong> C:${inspection.glcm_contrast ?? "-"} / Corr:${inspection.glcm_correlation ?? "-"} / E:${inspection.glcm_energy ?? "-"} / H:${inspection.glcm_homogeneity ?? "-"}</p>
               <p class="full"><strong>Flagged Deviations:</strong> ${escapeHtml(inspection.flagged_deviations.join(", ") || "-")}</p>
               <p class="full"><strong>Explanation:</strong> ${escapeHtml(inspection.explanation ?? "-")}</p>
             </div>

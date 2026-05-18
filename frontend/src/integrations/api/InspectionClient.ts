@@ -108,13 +108,6 @@ export class InspectionClient {
       const newItem: Inspection = {
         id: `demo-insp-${Date.now()}`,
         user_id: "demo-user-001",
-        lab_l: inspection.lab_l ?? null,
-        lab_a: inspection.lab_a ?? null,
-        lab_b: inspection.lab_b ?? null,
-        glcm_contrast: inspection.glcm_contrast ?? null,
-        glcm_correlation: inspection.glcm_correlation ?? null,
-        glcm_energy: inspection.glcm_energy ?? null,
-        glcm_homogeneity: inspection.glcm_homogeneity ?? null,
         flagged_deviations: inspection.flagged_deviations ?? [],
         explanation: inspection.explanation ?? null,
         image_url: inspection.image_url ?? null,

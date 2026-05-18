@@ -7,13 +7,6 @@ export interface Inspection {
   meat_type: MeatType;
   classification: FreshnessClassification;
   confidence_score: number;
-  lab_l: number | null;
-  lab_a: number | null;
-  lab_b: number | null;
-  glcm_contrast: number | null;
-  glcm_correlation: number | null;
-  glcm_energy: number | null;
-  glcm_homogeneity: number | null;
   flagged_deviations: string[];
   explanation: string | null;
   image_url: string | null;
@@ -30,13 +23,6 @@ export interface InspectionInsert {
   confidence_score: number;
   client_submission_id: string;
   captured_at?: string;
-  lab_l?: number | null;
-  lab_a?: number | null;
-  lab_b?: number | null;
-  glcm_contrast?: number | null;
-  glcm_correlation?: number | null;
-  glcm_energy?: number | null;
-  glcm_homogeneity?: number | null;
   flagged_deviations?: string[];
   explanation?: string | null;
   image_url?: string | null;
@@ -54,16 +40,9 @@ export interface AnalysisResult {
   recommendation?: "Good for Consumption" | "Consume Immediately" | "Not Suitable" | null;
   probabilities?: Partial<Record<FreshnessClassification, number>>;
   label_order?: FreshnessClassification[];
-  lab_values: { l: number; a: number; b: number };
-  glcm_features: {
-    contrast: number;
-    correlation: number;
-    energy: number;
-    homogeneity: number;
-  };
   flagged_deviations: string[];
   explanation: string;
-  analysis_source?: "mobilenetv3+rules" | "resnet50+rules" | "rules-only" | "backend";
+  analysis_source?: "mobilenetv3" | "backend";
   model_path?: string | null;
 }
 

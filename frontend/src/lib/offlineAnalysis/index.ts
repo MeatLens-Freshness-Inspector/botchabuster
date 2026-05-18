@@ -1,23 +1,13 @@
 /**
  * Offline analysis orchestrator.
  *
- * Runs the full freshness analysis pipeline inside the browser:
- *   1. Extract CIE L*a*b* color features   (Canvas API, pure JS)
- *   2. Compute GLCM texture features        (Canvas API, pure JS)
- *   3. Rule-based NMIS classification       (ported from backend)
- *   4. ONNX classifier                      (metadata-driven preprocessing)
+ * Runs freshness analysis inside the browser using the ONNX classifier.
+ * The model is the primary and only classification source.
  *
- * Steps 1-3 are always available offline.
- * Step 4 augments the result when the model is loaded.
- *
- * Returns an AnalysisResult with the same shape as the backend endpoint so
- * callers (Index.tsx, OfflineSyncManager) need no breaking changes.
+ * Returns an AnalysisResult aligned with backend fields used by the app.
  */
 
 import type { AnalysisResult, FreshnessClassification } from "@/types/inspection";
-import { extractLabValues } from "./colorAnalysis";
-import { computeGLCMFeatures } from "./textureAnalysis";
-import { classify } from "./classificationEngine";
 import { classifyWithMobileNetV3, loadMobileNetV3, isModelReady, getLoadedModelPath } from "./mobileNetV3";
 import {
   classifyRecommendation,
@@ -26,13 +16,10 @@ import {
   DEFAULT_MEATLENS_INPUT_SIZE,
   type SquareGuideBox,
 } from "./meatLensPipeline";
-import { loadCalibration } from "./calibrationStore";
-import { buildModelAlignedExplanation } from "./modelExplanation";
 
 export { prewarmModel } from "./mobileNetV3";
 export { calibrateFromImage } from "./calibration";
 export { loadCalibration, saveCalibration, calibrationTTLMs } from "./calibrationStore";
-export { buildModelAlignedExplanation } from "./modelExplanation";
 
 const MODEL_LOAD_WAIT_ONLINE_MS = 45_000;
 const MODEL_LOAD_WAIT_OFFLINE_MS = 2_500;
@@ -41,21 +28,6 @@ const ANALYSIS_INPUT_SIZE = DEFAULT_MEATLENS_INPUT_SIZE;
 
 interface AnalyzeOfflineOptions {
   guideBox?: SquareGuideBox | null;
-}
-
-function shouldUseRuleOverride(
-  modelClassification: FreshnessClassification,
-  modelConfidenceScore: number,
-  ruleClassification: "fresh" | "acceptable" | "warning" | "spoiled",
-  ruleConfidenceScore: number
-): boolean {
-  // For now, keep strict legacy behavior: model output remains authoritative.
-  // Rule-based result is retained for explanation/supporting context only.
-  void modelClassification;
-  void modelConfidenceScore;
-  void ruleClassification;
-  void ruleConfidenceScore;
-  return false;
 }
 
 async function waitForModelLoad(timeoutMs: number): Promise<boolean> {
@@ -84,7 +56,7 @@ async function waitForModelLoad(timeoutMs: number): Promise<boolean> {
  * Run full offline analysis on the captured image file.
  *
  * The model is given a short load window; if it is still unavailable,
- * the rule-based result is returned.
+ * analysis returns an error so callers can retry after warmup.
  */
 export async function analyzeOffline(
   imageFile: File,
@@ -100,16 +72,6 @@ export async function analyzeOffline(
     size: ANALYSIS_INPUT_SIZE,
     mimeType: "image/png",
   });
-
-  // Load calibration from IndexedDB (null if none / expired)
-  const calibration = await loadCalibration();
-  const calibMatrix = calibration?.correctionMatrix;
-
-  // Run color + texture extraction in parallel (both hit the Canvas, no conflict)
-  const [labValues, glcmFeatures] = await Promise.all([
-    extractLabValues(processedImageFile, calibMatrix),
-    computeGLCMFeatures(processedImageFile),
-  ]);
 
   // Try to use the ONNX model if it has already been loaded.
   let modelResult = null;
@@ -127,79 +89,29 @@ export async function analyzeOffline(
   if (navigator.onLine && !modelResult) {
     throw new Error("Model inference is required for online analysis.");
   }
-
-  // Rule-based classification (always available) for detailed explanation metadata.
-  const ruleResult = classify(
-    labValues,
-    glcmFeatures,
-    meatType,
-    modelResult ? "offline analysis - model + rules" : "offline analysis - rules only"
-  );
-
-  if (modelResult) {
-    const useRuleOverride = shouldUseRuleOverride(
-      modelResult.classification,
-      modelResult.confidence,
-      ruleResult.classification,
-      ruleResult.confidence_score
-    );
-    const finalClassification: FreshnessClassification = useRuleOverride
-      ? ruleResult.classification
-      : modelResult.classification;
-    const finalConfidenceScore = useRuleOverride
-      ? ruleResult.confidence_score
-      : modelResult.confidence;
-    const finalConfidenceProbability = Math.max(0, Math.min(1, finalConfidenceScore / 100));
-    const finalFreshnessScore = computeFreshnessScore(
-      finalClassification,
-      finalConfidenceProbability
-    );
-    const finalRecommendation = classifyRecommendation(finalFreshnessScore);
-
-    const explanation = buildModelAlignedExplanation({
-      modelClassification: modelResult.classification,
-      meatType,
-      ruleClassification: ruleResult.classification,
-      ruleConfidenceScore: ruleResult.confidence_score,
-      deviationCount: ruleResult.flagged_deviations.length,
-      finalClassification,
-      usedRuleOverride: useRuleOverride,
-    });
-
-    return {
-      classification: finalClassification,
-      confidence_score: finalConfidenceScore,
-      model_confidence_score: modelResult.confidence,
-      rule_confidence_score: ruleResult.confidence_score,
-      freshness_score: Math.round(finalFreshnessScore),
-      recommendation: finalRecommendation,
-      probabilities: modelResult.probabilities,
-      label_order: modelResult.labelOrder,
-      lab_values: labValues,
-      glcm_features: glcmFeatures,
-      flagged_deviations: ruleResult.flagged_deviations,
-      explanation,
-      analysis_source: "mobilenetv3+rules",
-      model_path: getLoadedModelPath(),
-    };
+  if (!modelResult) {
+    throw new Error("Model inference is unavailable. Please retry after model warmup completes.");
   }
 
-  // Rule-only fallback uses confidence as a pseudo probability to preserve output shape.
-  const ruleConfidenceAsProbability = Math.max(0, Math.min(1, ruleResult.confidence_score / 100));
-  const fallbackScore = computeFreshnessScore(ruleResult.classification, ruleConfidenceAsProbability);
+  const finalClassification: FreshnessClassification = modelResult.classification;
+  const finalConfidenceScore = modelResult.confidence;
+  const finalConfidenceProbability = Math.max(0, Math.min(1, finalConfidenceScore / 100));
+  const finalFreshnessScore = computeFreshnessScore(finalClassification, finalConfidenceProbability);
+  const finalRecommendation = classifyRecommendation(finalFreshnessScore);
+  const explanation = `${meatType} sample classified as ${finalClassification} by the MobileNetV3 model with ${finalConfidenceScore}% confidence. Freshness score is model-derived and not a direct biochemical measurement.`;
 
   return {
-    classification: ruleResult.classification,
-    confidence_score: ruleResult.confidence_score,
-    model_confidence_score: null,
-    rule_confidence_score: ruleResult.confidence_score,
-    freshness_score: Math.round(fallbackScore),
-    recommendation: classifyRecommendation(fallbackScore),
-    lab_values: labValues,
-    glcm_features: glcmFeatures,
-    flagged_deviations: ruleResult.flagged_deviations,
-    explanation: `${ruleResult.explanation} Freshness score is rule-based from confidence and is not a direct biochemical measurement.`,
-    analysis_source: "rules-only",
+    classification: finalClassification,
+    confidence_score: finalConfidenceScore,
+    model_confidence_score: modelResult.confidence,
+    rule_confidence_score: null,
+    freshness_score: Math.round(finalFreshnessScore),
+    recommendation: finalRecommendation,
+    probabilities: modelResult.probabilities,
+    label_order: modelResult.labelOrder,
+    flagged_deviations: [],
+    explanation,
+    analysis_source: "mobilenetv3",
     model_path: getLoadedModelPath(),
   };
 }

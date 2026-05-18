@@ -5,23 +5,25 @@ import { useAuth } from "@/contexts/AuthContext";
 import { uploadClient } from "@/integrations/api/UploadClient";
 import { inspectionClient } from "@/integrations/api/InspectionClient";
 import { auditLogClient } from "@/integrations/api/AuditLogClient";
-import { analysisClient } from "@/integrations/api/AnalysisClient";
 import { getPendingScans, removeScan, type PendingScan } from "@/lib/offlineQueue";
 import { getPendingAuditLogs, removeAuditLog, type PendingAuditLog } from "@/lib/offlineAuditQueue";
-import { prewarmModel } from "@/lib/offlineAnalysis";
+import { analyzeOffline, prewarmModel } from "@/lib/offlineAnalysis";
 import { getDeveloperOptionsFlags } from "@/lib/developerOptions";
+
+const FORCE_RETAKE_CONFIDENCE_THRESHOLD = 80;
 
 /**
  * Queued scans may already include analysisResult, or only a cached capture.
- * If analysis is missing we run backend analysis during sync, then upload and
- * persist the inspection record.
+ * If analysis is missing we run local model inference during sync, then upload
+ * and persist the inspection record.
  */
 async function processScan(
   scan: PendingScan,
   queryClient: ReturnType<typeof useQueryClient>,
 ): Promise<void> {
   const imageFile = new File([scan.imageData], scan.imageName, { type: scan.imageType });
-  const result = scan.analysisResult ?? await analysisClient.analyzeImage(imageFile, scan.meatType);
+  const result = scan.analysisResult ?? await analyzeOffline(imageFile, scan.meatType);
+  const shouldRecommendRetake = result.confidence_score < FORCE_RETAKE_CONFIDENCE_THRESHOLD;
 
   // Upload image to Supabase Storage (non-fatal).
   let imageUrl: string | null = null;
@@ -39,13 +41,6 @@ async function processScan(
     captured_at: scan.capturedAt ?? scan.queuedAt,
     classification: result.classification,
     confidence_score: result.confidence_score,
-    lab_l: result.lab_values.l,
-    lab_a: result.lab_values.a,
-    lab_b: result.lab_values.b,
-    glcm_contrast: result.glcm_features.contrast,
-    glcm_correlation: result.glcm_features.correlation,
-    glcm_energy: result.glcm_features.energy,
-    glcm_homogeneity: result.glcm_features.homogeneity,
     flagged_deviations: result.flagged_deviations,
     explanation: result.explanation,
     image_url: imageUrl,
@@ -58,6 +53,12 @@ async function processScan(
 
   const label = scan.meatType.charAt(0).toUpperCase() + scan.meatType.slice(1);
   const locationSuffix = scan.location ? ` @ ${scan.location}` : "";
+  if (shouldRecommendRetake) {
+    toast.warning(
+      `Synced offline scan: ${label}${locationSuffix} - ${result.classification} (${result.confidence_score}%). Retake is recommended.`
+    );
+    return;
+  }
   toast.success(`Synced offline scan: ${label}${locationSuffix} - ${result.classification}`);
 }
 

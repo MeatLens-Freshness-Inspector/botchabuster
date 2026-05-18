@@ -6,17 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAnalyzeImage } from "@/hooks/useAnalysis";
 import { useCreateInspection } from "@/hooks/useInspections";
 import type { AnalysisResult, MeatType } from "@/types/inspection";
-import { AnalysisApiError } from "@/integrations/api/AnalysisClient";
 import { marketLocationClient } from "@/integrations/api/MarketLocationClient";
 import { Loader2, Save, RotateCcw, Microscope, TestTube2, Camera, ScanLine, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { uploadClient } from "@/integrations/api";
 import { developerOptionsClient } from "@/integrations/api/DeveloperOptionsClient";
-import { queueScan } from "@/lib/offlineQueue";
+import { getConfidenceTextClass } from "@/lib/confidenceLevel";
+import { queueScan, removeScan } from "@/lib/offlineQueue";
 import { analyzeOffline } from "@/lib/offlineAnalysis";
 import { loadMobileNetV3, isModelReady as getMobileNetModelReady } from "@/lib/offlineAnalysis/mobileNetV3";
 import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";
@@ -32,8 +31,7 @@ import {
 
 const DEFAULT_MEAT_TYPE: MeatType = "pork";
 const FALLBACK_MARKET_LOCATIONS = [...DEFAULT_MARKET_LOCATIONS];
-const ENABLE_BACKEND_ANALYSIS_FALLBACK = import.meta.env.VITE_ENABLE_BACKEND_ANALYSIS_FALLBACK === "true";
-const MIN_CONFIDENCE_TO_ACCEPT = 90;
+const FORCE_RETAKE_CONFIDENCE_THRESHOLD = 80;
 
 const InspectPage = () => {
   const { user, profile, isAdmin } = useAuth();
@@ -49,7 +47,6 @@ const InspectPage = () => {
   const [isDeveloperUnlocked, setIsDeveloperUnlocked] = useState(false);
   const saveLockRef = useRef(false);
   const autoSaveAttemptedRef = useRef(false);
-  const analyzeImage = useAnalyzeImage();
   const createInspection = useCreateInspection();
 
   useEffect(() => {
@@ -92,6 +89,7 @@ const InspectPage = () => {
     isDeveloperUnlocked &&
     developerFlags.enableDebugFileUpload,
   );
+  const confidenceSummaryClass = result ? getConfidenceTextClass(result.confidence_score) : "";
 
   useEffect(() => {
     let isCancelled = false;
@@ -225,72 +223,25 @@ const InspectPage = () => {
 
     setIsAnalyzing(true);
     try {
-      let analysisResult: AnalysisResult;
-      const forceBackendAnalysis =
-        navigator.onLine &&
-        isAdmin &&
-        isDeveloperUnlocked &&
-        developerFlags.forceBackendAnalysisFallback &&
-        ENABLE_BACKEND_ANALYSIS_FALLBACK;
+      const analysisResult: AnalysisResult = await analyzeOffline(capturedInput.file, DEFAULT_MEAT_TYPE, {
+        guideBox: capturedInput.guideBox,
+      });
 
-      if (forceBackendAnalysis) {
-        const backendResult = await analyzeImage.mutateAsync({
-          file: capturedInput.file,
-          meatType: DEFAULT_MEAT_TYPE,
-        });
-        analysisResult = {
-          ...backendResult,
-          analysis_source: "backend",
-          model_path: null,
-        };
-        toast.info("Developer option forced backend analysis.");
-      } else {
-        try {
-          // Always prefer local MobileNetV3 ONNX analysis first.
-          analysisResult = await analyzeOffline(capturedInput.file, DEFAULT_MEAT_TYPE, {
-            guideBox: capturedInput.guideBox,
-          });
-
-          if (analysisResult.analysis_source === "mobilenetv3+rules") {
-            toast.success("MobileNetV3 ONNX analysis complete.");
-          } else {
-            toast.warning(
-              navigator.onLine
-                ? "MobileNetV3 model was not ready after waiting; ran rules-only fallback. Retry once more."
-                : "Model unavailable offline; ran rules-only fallback."
-            );
+      if (analysisResult.confidence_score < FORCE_RETAKE_CONFIDENCE_THRESHOLD) {
+        if (!navigator.onLine && clientSubmissionId) {
+          try {
+            await removeScan(clientSubmissionId);
+          } catch {
+            // Keep analysis flow even if local queue cleanup fails.
           }
-        } catch (offlineError) {
-          if (!navigator.onLine || !ENABLE_BACKEND_ANALYSIS_FALLBACK) {
-            throw offlineError;
-          }
-
-          const backendResult = await analyzeImage.mutateAsync({
-            file: capturedInput.file,
-            meatType: DEFAULT_MEAT_TYPE,
-          });
-          analysisResult = {
-            ...backendResult,
-            analysis_source: "backend",
-            model_path: null,
-          };
-          toast.warning("Local MobileNetV3 analysis failed; used backend fallback.");
         }
-      }
 
-      /*
-      if (analysisResult.confidence_score < MIN_CONFIDENCE_TO_ACCEPT) {
         toast.warning(
-          `Confidence ${analysisResult.confidence_score}% is below ${MIN_CONFIDENCE_TO_ACCEPT}%. Please retake the photo.`
+          `Confidence ${analysisResult.confidence_score}% is below ${FORCE_RETAKE_CONFIDENCE_THRESHOLD}%. Retake is strongly recommended, but you may save manually if needed.`
         );
-        setResult(null);
-        setCapturedInput(null);
-        setSaveStatus("idle");
-        saveLockRef.current = false;
-        setClientSubmissionId(null);
-        return;
+      } else {
+        toast.success("MobileNetV3 ONNX analysis complete.");
       }
-      */
 
       setResult(analysisResult);
       if (user && isAdmin && isDeveloperUnlocked && developerFlags.persistAnalysisSnapshots) {
@@ -304,9 +255,7 @@ const InspectPage = () => {
       }
     } catch (error) {
       setResult(null);
-      if (error instanceof AnalysisApiError) {
-        toast.error(error.message);
-      } else if (error instanceof Error) {
+      if (error instanceof Error) {
         toast.error(error.message);
       } else {
         toast.error("Analysis failed");
@@ -315,9 +264,8 @@ const InspectPage = () => {
       setIsAnalyzing(false);
     }
   }, [
-    analyzeImage,
+    clientSubmissionId,
     capturedInput,
-    developerFlags.forceBackendAnalysisFallback,
     developerFlags.persistAnalysisSnapshots,
     isAdmin,
     isDeveloperUnlocked,
@@ -336,7 +284,7 @@ const InspectPage = () => {
     const submissionId = clientSubmissionId ?? createClientSubmissionId();
     setClientSubmissionId(submissionId);
 
-    // â”€â”€ Offline path: queue with already-computed result â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Offline path: queue with already-computed result.
     if (!navigator.onLine) {
       try {
         const imageData = await capturedInput.file.arrayBuffer();
@@ -360,7 +308,7 @@ const InspectPage = () => {
       return;
     }
 
-    // â”€â”€ Online path â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Online path.
     saveLockRef.current = true;
     setSaveStatus("saving");
 
@@ -381,13 +329,6 @@ const InspectPage = () => {
         captured_at: capturedInput.capturedAt,
         classification: result.classification,
         confidence_score: result.confidence_score,
-        lab_l: result.lab_values.l,
-        lab_a: result.lab_values.a,
-        lab_b: result.lab_values.b,
-        glcm_contrast: result.glcm_features.contrast,
-        glcm_correlation: result.glcm_features.correlation,
-        glcm_energy: result.glcm_features.energy,
-        glcm_homogeneity: result.glcm_features.homogeneity,
         flagged_deviations: result.flagged_deviations,
         explanation: result.explanation,
         image_url: imageUrl,
@@ -404,6 +345,7 @@ const InspectPage = () => {
 
   useEffect(() => {
     if (!result || !capturedInput?.file || !user) return;
+    if (result.confidence_score < FORCE_RETAKE_CONFIDENCE_THRESHOLD) return;
     if (saveStatus !== "idle") return;
     if (saveLockRef.current || autoSaveAttemptedRef.current) return;
 
@@ -454,7 +396,9 @@ const InspectPage = () => {
             </div>
             <div className="rounded-2xl border border-border/70 bg-background/65 p-3">
               <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Confidence</p>
-              <p className="mt-1 font-display text-2xl font-semibold">{result ? `${result.confidence_score}%` : "--"}</p>
+              <p className={`mt-1 font-display text-2xl font-semibold ${confidenceSummaryClass}`}>
+                {result ? `${result.confidence_score}%` : "--"}
+              </p>
             </div>
           </div>
         </section>

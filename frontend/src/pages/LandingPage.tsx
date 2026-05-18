@@ -24,7 +24,7 @@ const features = [
   {
     icon: Camera,
     title: "Computer Vision Capture",
-    desc: "Capture meat samples on-site and extract Lab* and GLCM signals for objective freshness scoring.",
+    desc: "Capture meat samples on-site and run confidence-based freshness classification in real time.",
     tint: "bg-[hsl(var(--warning)/0.16)]",
   },
   {
@@ -36,7 +36,7 @@ const features = [
   {
     icon: BarChart3,
     title: "Actionable Record History",
-    desc: "Track inspections over time with confidence trends, feature metrics, and searchable evidence.",
+    desc: "Track inspections over time with confidence trends and searchable evidence.",
     tint: "bg-background/60",
   },
   {
@@ -56,7 +56,7 @@ const workflow = [
   {
     icon: ScanLine,
     title: "Analyze",
-    desc: "Run color and texture checks",
+    desc: "Run model and rules checks",
   },
   {
     icon: CheckCircle2,

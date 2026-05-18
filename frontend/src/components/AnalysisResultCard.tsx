@@ -1,7 +1,7 @@
 import type { AnalysisResult } from "@/types/inspection";
 import { FreshnessBadge } from "@/components/FreshnessBadge";
-import { MetricCard } from "@/components/MetricCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getConfidenceFillClass, getConfidenceTextClass } from "@/lib/confidenceLevel";
 import { cn } from "@/lib/utils";
 
 interface AnalysisResultCardProps {
@@ -12,13 +12,11 @@ interface AnalysisResultCardProps {
 
 export function AnalysisResultCard({ result, showDetailedResults = true, className }: AnalysisResultCardProps) {
   const sourceLabel =
-    result.analysis_source === "mobilenetv3+rules"
-      ? "MobileNetV3 ONNX + Rules"
-      : result.analysis_source === "resnet50+rules"
-      ? "Legacy ONNX + Rules"
-      : result.analysis_source === "backend"
+    result.analysis_source === "backend"
       ? "Backend"
-      : "Rules Fallback";
+      : "MobileNetV3 ONNX";
+  const confidenceFillClass = getConfidenceFillClass(result.confidence_score);
+  const confidenceTextClass = getConfidenceTextClass(result.confidence_score);
 
   return (
     <div className={cn("space-y-3", className)}>
@@ -33,9 +31,12 @@ export function AnalysisResultCard({ result, showDetailedResults = true, classNa
           <p className="text-[10px] font-display uppercase tracking-widest text-muted-foreground">Confidence</p>
           <div className="mt-1 flex items-center gap-2">
             <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
-              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${result.confidence_score}%` }} />
+              <div
+                className={cn("h-full rounded-full transition-all", confidenceFillClass)}
+                style={{ width: `${result.confidence_score}%` }}
+              />
             </div>
-            <span className="font-display text-sm font-bold">{result.confidence_score}%</span>
+            <span className={cn("font-display text-sm font-bold", confidenceTextClass)}>{result.confidence_score}%</span>
           </div>
           <p className="mt-2 text-[10px] uppercase tracking-widest text-muted-foreground">Source: {sourceLabel}</p>
           {typeof result.freshness_score === "number" && (
@@ -49,37 +50,6 @@ export function AnalysisResultCard({ result, showDetailedResults = true, classNa
           )}
         </CardContent>
       </Card>
-
-      {showDetailedResults && (
-        <>
-          <Card className="rounded-2xl border-border/70 bg-card/95">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-display uppercase tracking-wider">Lab* Color Space</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-2">
-                <MetricCard label="L*" value={result.lab_values.l.toFixed(2)} />
-                <MetricCard label="a*" value={result.lab_values.a.toFixed(2)} />
-                <MetricCard label="b*" value={result.lab_values.b.toFixed(2)} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl border-border/70 bg-card/95">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-display uppercase tracking-wider">GLCM Texture</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2">
-                <MetricCard label="Contrast" value={result.glcm_features.contrast.toFixed(4)} />
-                <MetricCard label="Correlation" value={result.glcm_features.correlation.toFixed(4)} />
-                <MetricCard label="Energy" value={result.glcm_features.energy.toFixed(4)} />
-                <MetricCard label="Homogeneity" value={result.glcm_features.homogeneity.toFixed(4)} />
-              </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
 
       <Card className="rounded-2xl border-border/70 bg-card/95">
         <CardHeader className="pb-3">

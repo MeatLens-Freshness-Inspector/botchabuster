@@ -51,7 +51,7 @@ const RESNET_MEAN_BGR = {
 const DEFAULT_LABEL_ORDER_4 = ["fresh", "acceptable", "warning", "spoiled"] as const;
 const DEFAULT_LABEL_ORDER_3 = ["fresh", "not fresh", "spoiled"] as const;
 const DEFAULT_LABEL_ORDER_2 = ["fresh", "spoiled"] as const;
-const LOW_CONFIDENCE_BRIDGE_THRESHOLD_PERCENT = 90;
+const LOW_CONFIDENCE_WARNING_THRESHOLD_PERCENT = 90;
 
 function isFinitePositive(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
@@ -471,6 +471,7 @@ export function parsePrediction(probabilities: number[], labelOrder: string[]): 
   const topClass = normalizeClassificationLabel(labelOrder[topPrediction.index]);
   const topConfidence = clamp(topPrediction.value, 0, 1);
   const topConfidencePercent = Math.round(clamp(topConfidence * 100, 0, 100));
+  const secondConfidence = ranked.length > 1 ? clamp(ranked[1].value, 0, 1) : 0;
 
   const probabilitiesByLabel: Record<string, number> = {};
   for (let index = 0; index < usableLength; index++) {
@@ -478,23 +479,21 @@ export function parsePrediction(probabilities: number[], labelOrder: string[]): 
     probabilitiesByLabel[label] = probabilities[index];
   }
 
+  let effectiveConfidence = topConfidence;
+  if (topConfidencePercent < LOW_CONFIDENCE_WARNING_THRESHOLD_PERCENT) {
+    effectiveConfidence = clamp(topConfidence + secondConfidence, 0, 1);
+  }
+  const effectiveConfidencePercent = Math.round(clamp(effectiveConfidence * 100, 0, 100));
+
   let predictedClass = topClass;
-  if (
-    predictedClass === "fresh" &&
-    topConfidencePercent < LOW_CONFIDENCE_BRIDGE_THRESHOLD_PERCENT
-  ) {
-    predictedClass = "acceptable";
-  } else if (
-    (predictedClass === "not fresh" || predictedClass === "spoiled") &&
-    topConfidencePercent < LOW_CONFIDENCE_BRIDGE_THRESHOLD_PERCENT
-  ) {
+  if (effectiveConfidencePercent < LOW_CONFIDENCE_WARNING_THRESHOLD_PERCENT) {
     predictedClass = "warning";
   }
 
   return {
     predictedClass,
-    confidence: topConfidence,
-    confidencePercent: topConfidencePercent,
+    confidence: effectiveConfidence,
+    confidencePercent: effectiveConfidencePercent,
     probabilitiesByLabel,
   };
 }

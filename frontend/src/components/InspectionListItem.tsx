@@ -3,6 +3,7 @@ import type { Inspection } from "@/types/inspection";
 import { FreshnessBadge } from "@/components/FreshnessBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { getConfidenceTextClass } from "@/lib/confidenceLevel";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { MapPin, Hash } from "lucide-react";
@@ -15,6 +16,7 @@ interface InspectionListItemProps {
 
 export function InspectionListItem({ inspection, onClick, className }: InspectionListItemProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const confidenceTextClass = getConfidenceTextClass(inspection.confidence_score);
 
   const surfaceByClass = {
     fresh: "bg-[hsl(var(--fresh)/0.14)]",
@@ -81,7 +83,7 @@ export function InspectionListItem({ inspection, onClick, className }: Inspectio
           data-testid="inspection-metrics"
           className="col-span-2 flex items-end justify-between gap-3 border-t border-border/60 pt-2 sm:col-span-1 sm:block sm:border-t-0 sm:pt-0 sm:text-right"
         >
-          <p className="font-display text-lg font-bold">{inspection.confidence_score}%</p>
+          <p className={cn("font-display text-lg font-bold", confidenceTextClass)}>{inspection.confidence_score}%</p>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground">confidence</p>
           <p className="mt-1 flex items-center justify-end gap-1 text-[10px] text-muted-foreground">
             <Hash className="h-3 w-3" />
