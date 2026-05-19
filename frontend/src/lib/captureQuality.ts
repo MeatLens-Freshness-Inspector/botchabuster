@@ -4,6 +4,7 @@ export interface CaptureQualityResult {
 }
 
 const CLIENT_MAX_CENTER_OFFSET = 0.2;
+const MIN_FOREGROUND_PIXEL_RATIO = 0.025;
 
 // Blur gating is adaptive to scene contrast to avoid false positives on smooth cuts.
 const BASE_BLUR_THRESHOLD = 95;
@@ -14,6 +15,11 @@ const STRICT_BLUR_REJECTION_FACTOR = 0.75;
 export interface BlurDecision {
   adaptiveThreshold: number;
   rejectThreshold: number;
+  rejected: boolean;
+}
+
+export interface ForegroundPresenceDecision {
+  minRatio: number;
   rejected: boolean;
 }
 
@@ -34,6 +40,13 @@ export function evaluateBlur(blurScore: number, contrastVariance: number): BlurD
   };
 }
 
+export function evaluateForegroundPresence(foregroundRatio: number): ForegroundPresenceDecision {
+  return {
+    minRatio: MIN_FOREGROUND_PIXEL_RATIO,
+    rejected: foregroundRatio < MIN_FOREGROUND_PIXEL_RATIO,
+  };
+}
+
 export function assessCanvasQuality(canvas: HTMLCanvasElement): CaptureQualityResult {
   const { data, width, height } = getDownscaledImageData(canvas);
   const grayscale = toGrayscale(data, width, height);
@@ -41,16 +54,25 @@ export function assessCanvasQuality(canvas: HTMLCanvasElement): CaptureQualityRe
   const contrastVariance = computeVariance(grayscale);
   const blurDecision = evaluateBlur(blurScore, contrastVariance);
   const centerOffset = computeForegroundCenterOffset(grayscale, width, height);
+  const foregroundDecision = evaluateForegroundPresence(centerOffset.foregroundRatio);
 
   const reasons: string[] = [];
+  if (foregroundDecision.rejected) {
+    reasons.push(
+      `No meat detected in frame (foreground ${(centerOffset.foregroundRatio * 100).toFixed(1)}% < ${(foregroundDecision.minRatio * 100).toFixed(1)}%). Place the meat sample inside the guide box and retake.`
+    );
+  }
   if (blurDecision.rejected) {
     reasons.push(
       `Image appears blurry (sharpness ${blurScore.toFixed(1)} < ${blurDecision.rejectThreshold.toFixed(1)}). Retake with steadier focus.`
     );
   }
   if (
-    Math.abs(centerOffset.offsetX) > CLIENT_MAX_CENTER_OFFSET ||
-    Math.abs(centerOffset.offsetY) > CLIENT_MAX_CENTER_OFFSET
+    !foregroundDecision.rejected &&
+    (
+      Math.abs(centerOffset.offsetX) > CLIENT_MAX_CENTER_OFFSET ||
+      Math.abs(centerOffset.offsetY) > CLIENT_MAX_CENTER_OFFSET
+    )
   ) {
     reasons.push("Image is off-center. Center the sample before using this photo.");
   }
@@ -150,8 +172,8 @@ function computeForegroundCenterOffset(
   pixels: Uint8Array,
   width: number,
   height: number
-): { offsetX: number; offsetY: number } {
-  if (width === 0 || height === 0) return { offsetX: 0, offsetY: 0 };
+): { offsetX: number; offsetY: number; foregroundRatio: number } {
+  if (width === 0 || height === 0) return { offsetX: 0, offsetY: 0, foregroundRatio: 0 };
 
   const borderSamples: number[] = [];
   for (let x = 0; x < width; x++) {
@@ -181,7 +203,7 @@ function computeForegroundCenterOffset(
     }
   }
 
-  if (count === 0) return { offsetX: 1, offsetY: 1 };
+  if (count === 0) return { offsetX: 1, offsetY: 1, foregroundRatio: 0 };
 
   const centroidX = sumX / count;
   const centroidY = sumY / count;
@@ -191,6 +213,7 @@ function computeForegroundCenterOffset(
   return {
     offsetX: (centroidX - centerX) / width,
     offsetY: (centroidY - centerY) / height,
+    foregroundRatio: count / (width * height),
   };
 }
 
