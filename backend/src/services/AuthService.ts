@@ -143,7 +143,7 @@ export class AuthService {
 
     const { data: codeIsValid, error: validateError } = await supabase.rpc("validate_access_code", { _code: accessCode });
     if (validateError) throw new Error(`Failed to validate access code: ${validateError.message}`);
-    if (!codeIsValid) throw new Error("Invalid or expired access code");
+    if (!codeIsValid) throw new Error("Access code is invalid, inactive, expired, or no longer available");
 
     const fullName = input.fullName?.trim() || undefined;
 

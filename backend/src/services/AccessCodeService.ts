@@ -36,10 +36,15 @@ export class AccessCodeService {
     return Boolean(data);
   }
 
-  async create(code: string, description?: string): Promise<AccessCode> {
+  async create(code: string, description?: string, createdBy?: string): Promise<AccessCode> {
     const { data, error } = await (supabase
       .from("access_codes") as any)
-      .insert({ code, description: description || null, is_active: true })
+      .insert({
+        code: code.trim(),
+        description: description || null,
+        is_active: true,
+        created_by: createdBy || null,
+      })
       .select()
       .single();
     if (error) throw new Error(`Failed to create access code: ${error.message}`);
