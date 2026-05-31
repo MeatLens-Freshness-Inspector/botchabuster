@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { profileClient } from "@/integrations/api/ProfileClient";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { markOnboardingSkippedForSession } from "@/lib/onboardingSession";
 
 const coreSteps = ["welcome", "safety", "profile", "inspect", "history"] as const;
 
@@ -74,6 +75,13 @@ const OnboardingPage = () => {
     setFullName(profile?.full_name ?? "");
     setEmail(user?.email ?? "");
   }, [profile?.full_name, user?.email]);
+
+  const handleSkipForNow = () => {
+    if (!user) return;
+
+    markOnboardingSkippedForSession(user.id);
+    navigate("/inspect", { replace: true });
+  };
 
   const handleContinue = async () => {
     if (currentStep === "welcome") {
@@ -172,7 +180,17 @@ const OnboardingPage = () => {
             <ShieldCheck className="h-6 w-6 text-primary" />
           </div>
           <div className="space-y-1">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{progressLabel}</p>
+            <div className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              <p>{progressLabel}</p>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-8 px-2 text-[11px] uppercase tracking-[0.16em]"
+                onClick={handleSkipForNow}
+              >
+                Skip for now
+              </Button>
+            </div>
             <CardTitle className="font-display text-2xl uppercase tracking-wider sm:text-3xl">
               {heading}
             </CardTitle>

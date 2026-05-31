@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import type { ReactNode } from "react";
 import { NetworkLoadingScreen } from "@/components/NetworkLoadingScreen";
+import { hasSkippedOnboardingForSession } from "@/lib/onboardingSession";
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, isAdmin, isLoading, profile, profileStatus, retryProfileLoad } = useAuth();
@@ -17,7 +18,10 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   if (profileStatus !== "ready") {
     return <NetworkLoadingScreen status="auth_loading" />;
   }
-  if (!isAdmin && !profile?.onboarding_completed_at) {
+
+  const skippedForSession = hasSkippedOnboardingForSession(user.id);
+
+  if (!isAdmin && !profile?.onboarding_completed_at && !skippedForSession) {
     return <Navigate to="/onboarding" replace />;
   }
 

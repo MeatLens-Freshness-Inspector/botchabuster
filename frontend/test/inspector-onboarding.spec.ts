@@ -2,6 +2,54 @@ import { expect, test } from "@playwright/test";
 import type { ApiSpy } from "./helpers/app";
 import { mockCommonApi, seedSignedInSession } from "./helpers/app";
 
+test("lets inspectors skip onboarding for the current session", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, {
+    userId: "user-1",
+    onboardingCompletedAt: null,
+  });
+
+  await page.goto("/inspect");
+  await expect(page).toHaveURL(/\/onboarding$/);
+
+  await page.getByRole("button", { name: /skip for now/i }).click();
+
+  await expect(page).toHaveURL(/\/inspect$/);
+
+  await page.goto("/history");
+  await expect(page).toHaveURL(/\/history$/);
+});
+
+test("shows onboarding again on a later sign-in after a skip", async ({ browser }) => {
+  const firstContext = await browser.newContext();
+  const firstPage = await firstContext.newPage();
+
+  await seedSignedInSession(firstPage, { userId: "user-1" });
+  await mockCommonApi(firstPage, {
+    userId: "user-1",
+    onboardingCompletedAt: null,
+  });
+
+  await firstPage.goto("/inspect");
+  await firstPage.getByRole("button", { name: /skip for now/i }).click();
+  await expect(firstPage).toHaveURL(/\/inspect$/);
+  await firstContext.close();
+
+  const secondContext = await browser.newContext();
+  const secondPage = await secondContext.newPage();
+
+  await seedSignedInSession(secondPage, { userId: "user-1" });
+  await mockCommonApi(secondPage, {
+    userId: "user-1",
+    onboardingCompletedAt: null,
+  });
+
+  await secondPage.goto("/inspect");
+  await expect(secondPage).toHaveURL(/\/onboarding$/);
+
+  await secondContext.close();
+});
+
 test("redirects first-time inspectors to /onboarding before protected app routes", async ({ page }) => {
   test.setTimeout(900_000);
 
