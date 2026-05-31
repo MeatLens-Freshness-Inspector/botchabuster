@@ -27,6 +27,7 @@ test("signup requires accepting terms and conditions before account creation", a
   await page.getByLabel("Full Name").fill("Inspector One");
   await page.getByLabel("Email").fill("inspector.one@example.com");
   await page.getByLabel("Password").fill("hunter22");
+  await page.getByLabel("Access Code").fill("INSP-001");
 
   await page.getByRole("button", { name: "Create Account" }).click();
 
@@ -34,6 +35,7 @@ test("signup requires accepting terms and conditions before account creation", a
   expect(signUpCalls).toBe(0);
 
   await page.getByRole("checkbox", { name: /i agree to the meatlens terms and conditions/i }).click();
+  await page.getByRole("checkbox", { name: /i have read the meatlens privacy policy/i }).click();
   await page.getByRole("button", { name: "Create Account" }).click();
 
   await expect.poll(() => signUpCalls).toBe(1);

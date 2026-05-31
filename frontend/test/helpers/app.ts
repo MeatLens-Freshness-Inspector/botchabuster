@@ -63,7 +63,11 @@ export async function mockCommonApi(
   const email = options.email ?? "inspector@example.com";
   const isAdmin = options.isAdmin ?? false;
   const showDetailedResults = options.showDetailedResults ?? true;
-  const onboardingCompletedAt = options.onboardingCompletedAt ?? null;
+  const onboardingCompletedAt =
+    options.onboardingCompletedAt === undefined
+      ? "2026-05-31T03:00:00.000Z"
+      : options.onboardingCompletedAt;
+  const inspectionCreatedAt = new Date().toISOString();
   const profileState = {
     id: userId,
     full_name: "Inspector",
@@ -214,8 +218,8 @@ export async function mockCommonApi(
             image_url: null,
             location: "North Market",
             inspector_notes: null,
-            created_at: "2026-04-19T02:55:00.000Z",
-            updated_at: "2026-04-19T02:55:00.000Z",
+            created_at: inspectionCreatedAt,
+            updated_at: inspectionCreatedAt,
           },
         ])
       );
@@ -227,8 +231,8 @@ export async function mockCommonApi(
         jsonResponse({
           id: "inspection-created",
           user_id: userId,
-          created_at: "2026-04-19T02:55:00.000Z",
-          updated_at: "2026-04-19T02:55:00.000Z",
+          created_at: inspectionCreatedAt,
+          updated_at: inspectionCreatedAt,
         })
       );
       return;
