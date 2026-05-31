@@ -6,6 +6,7 @@ import type { Page } from "@playwright/test";
 const helperFilePath = fileURLToPath(import.meta.url);
 const helperDir = dirname(helperFilePath);
 const DEFAULT_SAMPLE_IMAGE_PATH = [
+  resolve(helperDir, "../../../backend/uploads/1777603520236-92490810.jpg"),
   resolve(helperDir, "../../../../../backend/uploads/1777603520236-92490810.jpg"),
   fileURLToPath(new URL("../../public/android-chrome-512x512.png", import.meta.url)),
 ].find((candidate) => existsSync(candidate)) as string;
