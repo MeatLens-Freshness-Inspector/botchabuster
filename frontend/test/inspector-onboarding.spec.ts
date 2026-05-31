@@ -96,3 +96,35 @@ test("keeps inspectors on confirm profile when saving fails", async ({ page }) =
   await expect(page.getByRole("heading", { name: /confirm profile/i })).toBeVisible();
   await expect(page.getByRole("alert")).toContainText(/failed to save profile/i);
 });
+
+test("marks onboarding complete and opens Inspect after the required steps", async ({ page }) => {
+  const spies: ApiSpy[] = [];
+
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(
+    page,
+    {
+      userId: "user-1",
+      onboardingCompletedAt: null,
+    },
+    spies,
+  );
+
+  await page.goto("/onboarding");
+  await page.getByRole("button", { name: /begin setup/i }).click();
+  await page.getByRole("checkbox", { name: /i understand/i }).click();
+  await page.getByRole("button", { name: /continue/i }).click();
+  await page.getByRole("button", { name: /save and continue/i }).click();
+  await page.getByRole("button", { name: /continue/i }).click();
+  await page.getByRole("button", { name: /continue/i }).click();
+  await page.getByRole("button", { name: /start inspecting/i }).click();
+
+  await expect(page).toHaveURL(/\/inspect$/);
+  await expect(page.getByRole("heading", { name: "Inspect" })).toBeVisible();
+
+  const completionWrite = spies
+    .filter((spy) => spy.method === "PUT" && spy.url.endsWith("/api/profiles/user-1"))
+    .at(-1);
+
+  expect(completionWrite?.postData ?? "").toContain("\"onboarding_completed_at\"");
+});

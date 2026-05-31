@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { ShieldCheck } from "lucide-react";
+import { MessageSquare, ShieldCheck, UserRound } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,23 +14,23 @@ const coreSteps = ["welcome", "safety", "profile", "inspect", "history"] as cons
 
 type CoreStep = (typeof coreSteps)[number];
 
-const stepTitles: Record<CoreStep, string> = {
-  welcome: "Welcome to MeatLens",
-  safety: "Safety and Usage",
-  profile: "Confirm Profile",
-  inspect: "How Inspect Works",
-  history: "How History Works",
-};
+type OnboardingStep = CoreStep | "complete";
 
-const stepDescriptions: Record<CoreStep, string> = {
-  welcome: "Let's complete a short first-time setup before you begin inspecting.",
-  safety: "MeatLens supports your inspection work, but official protocols still decide the final outcome.",
-  profile: "Review your account details before entering the app.",
-  inspect: "Inspect guidance will be added in the next task.",
-  history: "History guidance will be added in the next task.",
-};
+const inspectGuide = [
+  { title: "Select a Market", description: "Choose the active inspection location before capture." },
+  { title: "Capture the Sample", description: "Use the guided camera flow to frame the meat sample." },
+  { title: "Run Analysis", description: "Review the classification and confidence before saving." },
+  { title: "Save the Record", description: "Persist the inspection once you are satisfied with the result." },
+];
+
+const historyGuide = [
+  { title: "Review Past Records", description: "Open History to revisit saved inspections." },
+  { title: "Check Confidence", description: "Use stored classifications and confidence to support follow-up." },
+  { title: "Track Traceability", description: "Use past records when you need to compare or confirm findings." },
+];
 
 const OnboardingPage = () => {
+  const navigate = useNavigate();
   const { user, profile, setProfileState, updateEmail } = useAuth();
   const [stepIndex, setStepIndex] = useState(0);
   const [acceptedSafety, setAcceptedSafety] = useState(false);
@@ -37,12 +38,37 @@ const OnboardingPage = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
 
-  const currentStep = coreSteps[stepIndex] ?? "welcome";
+  const currentStep: OnboardingStep = stepIndex >= coreSteps.length ? "complete" : coreSteps[stepIndex];
   const progressLabel = useMemo(
     () => `Step ${Math.min(stepIndex + 1, coreSteps.length)} of ${coreSteps.length}`,
     [stepIndex],
   );
+  const heading =
+    currentStep === "welcome"
+      ? "Welcome to MeatLens"
+      : currentStep === "safety"
+        ? "Safety and Usage"
+        : currentStep === "profile"
+          ? "Confirm Profile"
+          : currentStep === "inspect"
+            ? "How Inspect Works"
+            : currentStep === "history"
+              ? "How History Works"
+              : "Setup Complete";
+  const description =
+    currentStep === "welcome"
+      ? "Let's complete a short first-time setup before you begin inspecting."
+      : currentStep === "safety"
+        ? "MeatLens supports your inspection work, but official protocols still decide the final outcome."
+        : currentStep === "profile"
+          ? "Review and confirm your account details before entering the app."
+          : currentStep === "inspect"
+            ? "This is the core field workflow you will use every time you inspect."
+            : currentStep === "history"
+              ? "History helps you review saved findings after the capture session ends."
+              : "Optional tools are below. Your required setup is finished.";
 
   useEffect(() => {
     setFullName(profile?.full_name ?? "");
@@ -101,6 +127,40 @@ const OnboardingPage = () => {
       } finally {
         setIsSavingProfile(false);
       }
+
+      return;
+    }
+
+    if (currentStep === "inspect") {
+      setStepError(null);
+      setStepIndex(4);
+      return;
+    }
+
+    if (currentStep === "history") {
+      setStepError(null);
+      setStepIndex(5);
+    }
+  };
+
+  const handleFinish = async () => {
+    if (!user) return;
+
+    setIsCompleting(true);
+    setStepError(null);
+
+    try {
+      const updatedProfile = await profileClient.updateProfile(user.id, {
+        onboarding_completed_at: new Date().toISOString(),
+      });
+      setProfileState(updatedProfile);
+      navigate("/inspect", { replace: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to finish onboarding";
+      setStepError(message);
+      toast.error(message);
+    } finally {
+      setIsCompleting(false);
     }
   };
 
@@ -114,10 +174,10 @@ const OnboardingPage = () => {
           <div className="space-y-1">
             <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{progressLabel}</p>
             <CardTitle className="font-display text-2xl uppercase tracking-wider sm:text-3xl">
-              {stepTitles[currentStep]}
+              {heading}
             </CardTitle>
             <CardDescription className="mx-auto max-w-md text-sm sm:text-base">
-              {stepDescriptions[currentStep]}
+              {description}
             </CardDescription>
           </div>
         </CardHeader>
@@ -187,6 +247,59 @@ const OnboardingPage = () => {
             </div>
           )}
 
+          {currentStep === "inspect" && (
+            <div className="grid gap-3">
+              {inspectGuide.map((item) => (
+                <div key={item.title} className="rounded-2xl border border-border/70 bg-background/55 p-4">
+                  <p className="font-display text-sm uppercase tracking-wider">{item.title}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {currentStep === "history" && (
+            <div className="grid gap-3">
+              {historyGuide.map((item) => (
+                <div key={item.title} className="rounded-2xl border border-border/70 bg-background/55 p-4">
+                  <p className="font-display text-sm uppercase tracking-wider">{item.title}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {currentStep === "complete" && (
+            <div className="space-y-4">
+              <div className="rounded-2xl border border-border/70 bg-[hsl(var(--primary)/0.16)] p-4">
+                <p className="font-display text-sm uppercase tracking-wider">You're Ready</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Your required setup is complete. You can start inspecting now and come back to optional tools later.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-border/70 bg-background/55 p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4 text-primary" />
+                    <p className="font-display text-sm uppercase tracking-wider">Messages</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Use Messages when you need to coordinate with admins or other users.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-border/70 bg-background/55 p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <UserRound className="h-4 w-4 text-primary" />
+                    <p className="font-display text-sm uppercase tracking-wider">Profile</p>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Use Profile to review your account details, inspector code, and personal settings.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {stepError ? (
             <p role="alert" className="text-sm font-medium text-destructive">
               {stepError}
@@ -197,7 +310,7 @@ const OnboardingPage = () => {
             <Button
               type="button"
               variant="ghost"
-              disabled={stepIndex === 0 || isSavingProfile}
+              disabled={stepIndex === 0 || isSavingProfile || isCompleting}
               onClick={() => {
                 setStepError(null);
                 setStepIndex((current) => Math.max(current - 1, 0));
@@ -205,8 +318,18 @@ const OnboardingPage = () => {
             >
               Back
             </Button>
-            <Button type="button" onClick={() => void handleContinue()} disabled={isSavingProfile}>
-              {currentStep === "welcome" ? "Begin Setup" : currentStep === "profile" ? "Save and Continue" : "Continue"}
+            <Button
+              type="button"
+              onClick={currentStep === "complete" ? () => void handleFinish() : () => void handleContinue()}
+              disabled={isSavingProfile || isCompleting}
+            >
+              {currentStep === "welcome"
+                ? "Begin Setup"
+                : currentStep === "profile"
+                  ? "Save and Continue"
+                  : currentStep === "complete"
+                    ? "Start Inspecting"
+                    : "Continue"}
             </Button>
           </div>
         </CardContent>
