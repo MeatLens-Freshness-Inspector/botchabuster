@@ -1,8 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useAuth } from "@/contexts/AuthContext";
+import { profileClient } from "@/integrations/api/ProfileClient";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 const coreSteps = ["welcome", "safety", "profile", "inspect", "history"] as const;
@@ -26,9 +30,13 @@ const stepDescriptions: Record<CoreStep, string> = {
 };
 
 const OnboardingPage = () => {
+  const { user, profile, setProfileState, updateEmail } = useAuth();
   const [stepIndex, setStepIndex] = useState(0);
   const [acceptedSafety, setAcceptedSafety] = useState(false);
   const [stepError, setStepError] = useState<string | null>(null);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   const currentStep = coreSteps[stepIndex] ?? "welcome";
   const progressLabel = useMemo(
@@ -36,7 +44,12 @@ const OnboardingPage = () => {
     [stepIndex],
   );
 
-  const handleContinue = () => {
+  useEffect(() => {
+    setFullName(profile?.full_name ?? "");
+    setEmail(user?.email ?? "");
+  }, [profile?.full_name, user?.email]);
+
+  const handleContinue = async () => {
     if (currentStep === "welcome") {
       setStepError(null);
       setStepIndex(1);
@@ -51,6 +64,43 @@ const OnboardingPage = () => {
 
       setStepError(null);
       setStepIndex(2);
+      return;
+    }
+
+    if (currentStep === "profile") {
+      if (!user) return;
+
+      const trimmedName = fullName.trim();
+      const trimmedEmail = email.trim();
+
+      if (!trimmedName || !trimmedEmail) {
+        setStepError("Full name and email are required.");
+        return;
+      }
+
+      setIsSavingProfile(true);
+      setStepError(null);
+
+      try {
+        if (trimmedName !== (profile?.full_name ?? "")) {
+          const updatedProfile = await profileClient.updateProfile(user.id, {
+            full_name: trimmedName,
+          });
+          setProfileState(updatedProfile);
+        }
+
+        if (trimmedEmail !== (user.email ?? "")) {
+          await updateEmail(trimmedEmail);
+        }
+
+        setStepIndex(3);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to save profile";
+        setStepError(message);
+        toast.error(message);
+      } finally {
+        setIsSavingProfile(false);
+      }
     }
   };
 
@@ -104,8 +154,36 @@ const OnboardingPage = () => {
           )}
 
           {currentStep === "profile" && (
-            <div className="rounded-2xl border border-border/70 bg-background/55 p-4 text-sm leading-relaxed text-muted-foreground">
-              Profile confirmation is the next step and will be added after this shell is in place.
+            <div className="space-y-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl border border-border/70 bg-[hsl(var(--warning)/0.16)] p-3">
+                  <Label htmlFor="onboarding-full-name" className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                    Full Name
+                  </Label>
+                  <Input
+                    id="onboarding-full-name"
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                    className="mt-2 bg-background/65"
+                  />
+                </div>
+                <div className="rounded-2xl border border-border/70 bg-[hsl(var(--primary)/0.16)] p-3">
+                  <Label htmlFor="onboarding-email" className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                    Email
+                  </Label>
+                  <Input
+                    id="onboarding-email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    className="mt-2 bg-background/65"
+                  />
+                </div>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/55 p-4">
+                <p className="text-[11px] uppercase tracking-widest text-muted-foreground">Inspector Code</p>
+                <p className="mt-1 font-display text-sm tracking-widest">{profile?.inspector_code ?? "No assigned code"}</p>
+              </div>
             </div>
           )}
 
@@ -119,7 +197,7 @@ const OnboardingPage = () => {
             <Button
               type="button"
               variant="ghost"
-              disabled={stepIndex === 0}
+              disabled={stepIndex === 0 || isSavingProfile}
               onClick={() => {
                 setStepError(null);
                 setStepIndex((current) => Math.max(current - 1, 0));
@@ -127,8 +205,8 @@ const OnboardingPage = () => {
             >
               Back
             </Button>
-            <Button type="button" onClick={handleContinue}>
-              {currentStep === "welcome" ? "Begin Setup" : "Continue"}
+            <Button type="button" onClick={() => void handleContinue()} disabled={isSavingProfile}>
+              {currentStep === "welcome" ? "Begin Setup" : currentStep === "profile" ? "Save and Continue" : "Continue"}
             </Button>
           </div>
         </CardContent>

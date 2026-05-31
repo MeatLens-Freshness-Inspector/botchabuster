@@ -8,6 +8,10 @@ export interface MockedSessionOptions {
   isAdmin?: boolean;
   showDetailedResults?: boolean;
   onboardingCompletedAt?: string | null;
+  failProfileLoad?: boolean;
+  failProfileUpdate?: boolean;
+  failEmailUpdate?: boolean;
+  failOnboardingCompletion?: boolean;
 }
 
 export interface ApiSpy {
@@ -60,6 +64,20 @@ export async function mockCommonApi(
   const isAdmin = options.isAdmin ?? false;
   const showDetailedResults = options.showDetailedResults ?? true;
   const onboardingCompletedAt = options.onboardingCompletedAt ?? null;
+  const profileState = {
+    id: userId,
+    full_name: "Inspector",
+    avatar_url: null,
+    inspector_code: "INSP-001",
+    is_dark_mode: false,
+    show_detailed_results: showDetailedResults,
+    onboarding_completed_at: onboardingCompletedAt,
+    onboarding_version: 1,
+    email,
+    location: "North Market",
+    created_at: "2026-04-01T00:00:00.000Z",
+    updated_at: "2026-04-01T00:00:00.000Z",
+  };
 
   await page.route("**/api/**", async (route: Route) => {
     const request = route.request();
@@ -87,22 +105,51 @@ export async function mockCommonApi(
       return;
     }
 
-    if (path === `/api/profiles/${userId}`) {
+    if (path === `/api/profiles/${userId}` && method === "GET") {
+      if (options.failProfileLoad) {
+        await route.fulfill(jsonResponse({ error: "Failed to fetch profile" }, 500));
+        return;
+      }
+
+      await route.fulfill(jsonResponse(profileState));
+      return;
+    }
+
+    if (path === `/api/profiles/${userId}` && method === "PUT") {
+      const payload = JSON.parse(request.postData() ?? "{}") as Record<string, unknown>;
+
+      if (options.failProfileUpdate && !("onboarding_completed_at" in payload)) {
+        await route.fulfill(jsonResponse({ error: "Failed to save profile" }, 500));
+        return;
+      }
+
+      if (options.failOnboardingCompletion && "onboarding_completed_at" in payload) {
+        await route.fulfill(jsonResponse({ error: "Failed to finish onboarding" }, 500));
+        return;
+      }
+
+      Object.assign(profileState, payload, {
+        updated_at: "2026-05-31T00:00:00.000Z",
+      });
+
+      await route.fulfill(jsonResponse(profileState));
+      return;
+    }
+
+    if (path === `/api/auth/users/${userId}/email` && method === "PATCH") {
+      if (options.failEmailUpdate) {
+        await route.fulfill(jsonResponse({ error: "Failed to update email" }, 500));
+        return;
+      }
+
+      const payload = JSON.parse(request.postData() ?? "{}") as { email?: string };
+      profileState.email = payload.email?.trim() ?? profileState.email;
+
       await route.fulfill(
         jsonResponse({
           id: userId,
-          full_name: "Inspector",
-          avatar_url: null,
-          inspector_code: "INSP-001",
-          is_dark_mode: false,
-          show_detailed_results: showDetailedResults,
-          onboarding_completed_at: onboardingCompletedAt,
-          onboarding_version: 1,
-          email,
-          location: "North Market",
-          created_at: "2026-04-01T00:00:00.000Z",
-          updated_at: "2026-04-01T00:00:00.000Z",
-        })
+          email: profileState.email,
+        }),
       );
       return;
     }
@@ -127,18 +174,7 @@ export async function mockCommonApi(
       await route.fulfill(
         jsonResponse([
           {
-            id: userId,
-            full_name: "Inspector",
-            avatar_url: null,
-            inspector_code: "INSP-001",
-            is_dark_mode: false,
-            show_detailed_results: showDetailedResults,
-            onboarding_completed_at: onboardingCompletedAt,
-            onboarding_version: 1,
-            email,
-            location: "North Market",
-            created_at: "2026-04-01T00:00:00.000Z",
-            updated_at: "2026-04-01T00:00:00.000Z",
+            ...profileState,
           },
           {
             id: "user-2",
