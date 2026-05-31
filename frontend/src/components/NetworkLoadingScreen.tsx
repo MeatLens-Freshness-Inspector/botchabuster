@@ -2,7 +2,7 @@ import { Loader2, WifiOff, ServerCrash, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { StartupNetworkStatus } from "@/hooks/useStartupNetworkCheck";
 
-type LoadingScreenStatus = StartupNetworkStatus | "auth_loading";
+type LoadingScreenStatus = StartupNetworkStatus | "auth_loading" | "profile_error";
 
 interface NetworkLoadingScreenProps {
   status: LoadingScreenStatus;
@@ -28,6 +28,13 @@ const configByStatus: Record<LoadingScreenStatus, {
     message: "Please wait while we prepare your profile.",
     hint: "Do not close this page.",
     canRetry: false,
+    icon: "shield",
+  },
+  profile_error: {
+    title: "We Couldn't Load Your Onboarding Status",
+    message: "Your account is signed in, but we could not confirm whether onboarding is complete.",
+    hint: "Tap Try Again to reload your profile.",
+    canRetry: true,
     icon: "shield",
   },
   offline: {
@@ -95,7 +102,15 @@ export function NetworkLoadingScreen({ status, onRetry }: NetworkLoadingScreenPr
             Status
           </p>
           <p className="mt-1 text-lg font-semibold">
-            {status === "checking" ? "Connecting..." : status === "auth_loading" ? "Loading..." : status === "offline" ? "Offline" : "Unavailable"}
+            {status === "checking"
+              ? "Connecting..."
+              : status === "auth_loading"
+                ? "Loading..."
+                : status === "profile_error"
+                  ? "Profile unavailable"
+                  : status === "offline"
+                    ? "Offline"
+                    : "Unavailable"}
           </p>
         </div>
 

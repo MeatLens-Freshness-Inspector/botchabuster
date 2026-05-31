@@ -1,0 +1,3 @@
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMPTZ NULL,
+ADD COLUMN IF NOT EXISTS onboarding_version INTEGER NOT NULL DEFAULT 1;

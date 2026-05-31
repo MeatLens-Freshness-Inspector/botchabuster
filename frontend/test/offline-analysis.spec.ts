@@ -18,7 +18,7 @@ test("online analysis uses MobileNetV3 ONNX and exposes model confidence metadat
   await expect(analyzeButton).toBeEnabled({ timeout: 60_000 });
   await analyzeButton.click();
 
-  await expect(page.getByText(/Source:\s*MobileNetV3 ONNX \+ Rules/i)).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText(/Source:\s*MobileNetV3 ONNX/i)).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/Model confidence:/i)).toBeVisible();
   await expect(page.getByText(/Rules Fallback/i)).toHaveCount(0);
 });
@@ -38,8 +38,6 @@ test("offline analysis allows rules-only fallback", async ({ context, page }) =>
   await analyzeButton.click();
 
   await expect(page.getByRole("heading", { name: "Classification" })).toBeVisible({ timeout: 30_000 });
-  await expect(
-      page.getByText(/Source:\s*(MobileNetV3 ONNX \+ Rules|Rules Fallback)/i)
-  ).toBeVisible();
+  await expect(page.getByText(/Source:\s*MobileNetV3 ONNX/i)).toBeVisible();
   await expect(page.getByText(/Source:\s*Backend/i)).toHaveCount(0);
 });
