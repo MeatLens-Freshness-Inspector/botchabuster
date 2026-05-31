@@ -28,11 +28,20 @@ export interface Profile {
   inspector_code: string | null;
   is_dark_mode: boolean | null;
   show_detailed_results: boolean | null;
+  onboarding_completed_at: string | null;
+  onboarding_version: number;
   email?: string | null;
   location: string | null;
   created_at: string;
   updated_at: string;
 }
+
+type ProfileUpdateInput = Partial<
+  Pick<
+    Profile,
+    "full_name" | "avatar_url" | "location" | "is_dark_mode" | "show_detailed_results" | "onboarding_completed_at"
+  >
+>;
 
 export interface AdminCreateUserPayload {
   email: string;
@@ -100,7 +109,7 @@ export class ProfileClient {
     return res.json();
   }
 
-  async updateProfile(userId: string, updates: Partial<Pick<Profile, "full_name" | "avatar_url" | "location" | "is_dark_mode" | "show_detailed_results">>): Promise<Profile> {
+  async updateProfile(userId: string, updates: ProfileUpdateInput): Promise<Profile> {
     const res = await fetch(`${API_BASE_URL}/profiles/${userId}`, {
       method: "PUT",
       headers: this.createHeaders({ "Content-Type": "application/json" }),

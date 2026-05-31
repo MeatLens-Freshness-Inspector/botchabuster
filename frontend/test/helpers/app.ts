@@ -7,6 +7,7 @@ export interface MockedSessionOptions {
   email?: string;
   isAdmin?: boolean;
   showDetailedResults?: boolean;
+  onboardingCompletedAt?: string | null;
 }
 
 export interface ApiSpy {
@@ -58,6 +59,7 @@ export async function mockCommonApi(
   const email = options.email ?? "inspector@example.com";
   const isAdmin = options.isAdmin ?? false;
   const showDetailedResults = options.showDetailedResults ?? true;
+  const onboardingCompletedAt = options.onboardingCompletedAt ?? null;
 
   await page.route("**/api/**", async (route: Route) => {
     const request = route.request();
@@ -94,6 +96,8 @@ export async function mockCommonApi(
           inspector_code: "INSP-001",
           is_dark_mode: false,
           show_detailed_results: showDetailedResults,
+          onboarding_completed_at: onboardingCompletedAt,
+          onboarding_version: 1,
           email,
           location: "North Market",
           created_at: "2026-04-01T00:00:00.000Z",
@@ -129,6 +133,8 @@ export async function mockCommonApi(
             inspector_code: "INSP-001",
             is_dark_mode: false,
             show_detailed_results: showDetailedResults,
+            onboarding_completed_at: onboardingCompletedAt,
+            onboarding_version: 1,
             email,
             location: "North Market",
             created_at: "2026-04-01T00:00:00.000Z",
@@ -141,6 +147,8 @@ export async function mockCommonApi(
             inspector_code: "INSP-002",
             is_dark_mode: false,
             show_detailed_results: true,
+            onboarding_completed_at: "2026-04-02T03:00:00.000Z",
+            onboarding_version: 1,
             email: "blair@example.com",
             location: "South Market",
             created_at: "2026-04-02T00:00:00.000Z",

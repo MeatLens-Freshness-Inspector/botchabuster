@@ -5,7 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { ProtectedRoute, AdminRoute } from "@/components/ProtectedRoute";
+import { ProtectedRoute, AdminRoute, OnboardingRoute } from "@/components/ProtectedRoute";
 import { BottomNav } from "@/components/BottomNav";
 import { AIChatbot } from "@/components/AIChatbot";
 import { NetworkLoadingScreen } from "@/components/NetworkLoadingScreen";
@@ -26,6 +26,7 @@ import DesktopAdminDashboard from "./pages/DesktopAdminDashboard";
 import AdminDashboardWrapper from "./pages/AdminDashboardWrapper";
 import ProfilePage from "./pages/ProfilePage";
 import MessagesPage from "./pages/MessagesPage";
+import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -69,7 +70,7 @@ function ThemeRouteController() {
   const { user, profile } = useAuth();
 
   useEffect(() => {
-    const forceLightPaths = new Set(["/", "/signup", "/login", "/forgot-password", "/reset-password"]);
+    const forceLightPaths = new Set(["/", "/signup", "/login", "/forgot-password", "/reset-password", "/onboarding"]);
     const forceLight = forceLightPaths.has(location.pathname);
     if (forceLight) {
       applyTheme(false);
@@ -103,6 +104,7 @@ const App = () => {
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/onboarding" element={<OnboardingRoute><OnboardingPage /></OnboardingRoute>} />
 
               {/* Protected app routes */}
               <Route path="/inspect" element={<ProtectedRoute><AppLayout><InspectPage /></AppLayout></ProtectedRoute>} />

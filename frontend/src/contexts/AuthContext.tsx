@@ -12,6 +12,8 @@ const USER_STORAGE_KEY = "meatlens-auth-user";
 const SESSION_STORAGE_KEY = "meatlens-auth-session";
 const AUTH_EXPIRED_EVENT = "meatlens:auth-expired";
 
+type ProfileStatus = "idle" | "loading" | "ready" | "error";
+
 const createAuditId = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
@@ -39,6 +41,8 @@ interface AuthContextType {
   profile: Profile | null;
   isAdmin: boolean;
   isLoading: boolean;
+  profileStatus: ProfileStatus;
+  retryProfileLoad: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
   signUp: (email: string, password: string, fullName: string, accessCode: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -57,24 +61,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [profileStatus, setProfileStatus] = useState<ProfileStatus>("idle");
 
   const loadUserData = useCallback(async (currentUser: AuthUser | null) => {
     if (!currentUser) {
       setProfile(null);
       setIsAdmin(false);
+      setProfileStatus("idle");
       return;
     }
+
+    setProfileStatus("loading");
+
     try {
       const [userProfile, admin] = await Promise.all([
         profileClient.getProfile(currentUser.id),
         profileClient.hasRole(currentUser.id, "admin"),
       ]);
+      if (!userProfile) {
+        throw new Error("Profile record missing");
+      }
       setProfile(userProfile);
       setIsAdmin(admin);
+      setProfileStatus("ready");
     } catch (err) {
       console.error("Failed to load user data:", err);
+      setProfile(null);
+      setIsAdmin(false);
+      setProfileStatus("error");
     }
   }, []);
+
+  const retryProfileLoad = useCallback(async () => {
+    await loadUserData(user);
+  }, [loadUserData, user]);
 
   useEffect(() => {
     let mounted = true;
@@ -89,6 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(null);
           setProfile(null);
           setIsAdmin(false);
+          setProfileStatus("idle");
           setIsLoading(false);
         }
         return;
@@ -115,6 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(null);
           setProfile(null);
           setIsAdmin(false);
+          setProfileStatus("idle");
         }
       } finally {
         if (mounted) setIsLoading(false);
@@ -134,6 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(null);
       setProfile(null);
       setIsAdmin(false);
+      setProfileStatus("idle");
       setIsLoading(false);
     };
 
@@ -216,6 +239,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     setIsAdmin(false);
+    setProfileStatus("idle");
 
     if (navigator.onLine) {
       // Online: notify server and fully clear local storage
@@ -277,6 +301,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         isAdmin,
         isLoading,
+        profileStatus,
+        retryProfileLoad,
         signIn,
         signUp,
         signOut,

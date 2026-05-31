@@ -40,7 +40,14 @@ export class ProfileController {
   async updateProfile(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { full_name, avatar_url, location, is_dark_mode, show_detailed_results } = req.body;
+      const {
+        full_name,
+        avatar_url,
+        location,
+        is_dark_mode,
+        show_detailed_results,
+        onboarding_completed_at,
+      } = req.body;
       if (!id) {
         res.status(400).json({ error: "User ID is required" });
         return;
@@ -56,7 +63,23 @@ export class ProfileController {
         return;
       }
 
-      const profile = await profileService.updateProfile(id, { full_name, avatar_url, location, is_dark_mode, show_detailed_results });
+      if (
+        onboarding_completed_at !== undefined &&
+        onboarding_completed_at !== null &&
+        (typeof onboarding_completed_at !== "string" || Number.isNaN(Date.parse(onboarding_completed_at)))
+      ) {
+        res.status(400).json({ error: "onboarding_completed_at must be null or an ISO timestamp string" });
+        return;
+      }
+
+      const profile = await profileService.updateProfile(id, {
+        full_name,
+        avatar_url,
+        location,
+        is_dark_mode,
+        show_detailed_results,
+        onboarding_completed_at,
+      });
       res.json(profile);
     } catch (error) {
       console.error("Update profile error:", error);
