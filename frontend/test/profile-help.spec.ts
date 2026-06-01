@@ -51,3 +51,14 @@ test("replays help demos independently without writing onboarding completion", a
 
   expect(completionWrites).toHaveLength(0);
 });
+
+test("redirects admins away from /profile/help", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "admin-1" });
+  await mockCommonApi(page, {
+    userId: "admin-1",
+    isAdmin: true,
+  });
+
+  await page.goto("/profile/help");
+  await expect(page).toHaveURL(/\/profile$/);
+});

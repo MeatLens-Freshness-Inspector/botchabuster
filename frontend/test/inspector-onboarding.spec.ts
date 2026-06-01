@@ -137,3 +137,76 @@ test("marks onboarding complete and opens Inspect after the required demos", asy
 
   expect(completionWrite?.postData ?? "").toContain("\"onboarding_completed_at\"");
 });
+
+test("lets completed inspectors bypass onboarding", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, {
+    userId: "user-1",
+    onboardingCompletedAt: "2026-05-31T03:00:00.000Z",
+  });
+
+  await page.goto("/inspect");
+
+  await expect(page).toHaveURL(/\/inspect$/);
+  await expect(page.getByRole("heading", { name: "Inspect" })).toBeVisible();
+});
+
+test("lets admins bypass inspector onboarding", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "admin-1" });
+  await mockCommonApi(page, {
+    userId: "admin-1",
+    isAdmin: true,
+    onboardingCompletedAt: null,
+  });
+
+  await page.goto("/inspect");
+
+  await expect(page).toHaveURL(/\/inspect$/);
+  await expect(page.getByRole("heading", { name: "Inspect" })).toBeVisible();
+});
+
+test("shows a blocking retry screen when onboarding status cannot be loaded", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, {
+    userId: "user-1",
+    onboardingCompletedAt: null,
+    failProfileLoad: true,
+  });
+
+  await page.goto("/inspect");
+
+  await expect(
+    page.getByRole("heading", { name: /couldn't load your onboarding status/i }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: /try again/i })).toBeVisible();
+});
+
+test("shows an Open Help action on the onboarding completion screen", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, {
+    userId: "user-1",
+    onboardingCompletedAt: null,
+  });
+
+  await page.goto("/onboarding");
+  await completeRequiredTutorial(page);
+
+  await expect(page.getByRole("button", { name: /start inspecting/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /open help/i })).toBeVisible();
+});
+
+test("keeps inspectors on the completion screen when the completion write fails", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, {
+    userId: "user-1",
+    onboardingCompletedAt: null,
+    failOnboardingCompletion: true,
+  });
+
+  await page.goto("/onboarding");
+  await completeRequiredTutorial(page);
+  await page.getByRole("button", { name: /start inspecting/i }).click();
+
+  await expect(page.getByRole("button", { name: /start inspecting/i })).toBeVisible();
+  await expect(page.getByRole("alert")).toContainText(/failed to finish onboarding/i);
+});

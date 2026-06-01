@@ -56,6 +56,10 @@ const OnboardingPage = () => {
       onFinish={() => void handleFinish()}
       isBusy={isCompleting}
       errorMessage={stepError}
+      secondaryAction={{
+        label: "Open Help",
+        onClick: () => navigate("/profile/help"),
+      }}
     />
   );
 };
