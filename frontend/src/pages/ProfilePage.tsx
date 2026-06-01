@@ -5,6 +5,7 @@ import {
   Loader2,
   Copy,
   LogOut,
+  LifeBuoy,
   ShieldCheck,
   Sun,
   Moon,
@@ -364,6 +365,29 @@ const ProfilePage = () => {
                 View Privacy Policy
               </Button>
             </section>
+
+            {!isAdmin ? (
+              <section className="rounded-3xl border border-border/70 bg-card/90 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="font-display text-lg font-semibold">Help</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Replay the guided demos for Inspect, History, safety
+                      reminders, and profile orientation.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-10 rounded-xl border-border/80 text-xs uppercase tracking-wider"
+                    onClick={() => navigate("/profile/help")}
+                  >
+                    <LifeBuoy className="mr-2 h-4 w-4" />
+                    Open Help Tutorials
+                  </Button>
+                </div>
+              </section>
+            ) : null}
           </div>
 
           <div className="space-y-4">
