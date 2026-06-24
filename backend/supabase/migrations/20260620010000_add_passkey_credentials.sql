@@ -11,5 +11,8 @@ CREATE TABLE public.passkey_credentials (
   last_used_at TIMESTAMPTZ
 );
 
+ALTER TABLE public.passkey_credentials ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.passkey_credentials FORCE ROW LEVEL SECURITY;
+
 CREATE INDEX passkey_credentials_user_id_idx
   ON public.passkey_credentials (user_id);

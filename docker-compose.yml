@@ -11,6 +11,8 @@ services:
       - PORT=3001
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - AUDIT_LOG_KEY=${AUDIT_LOG_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      - AUDIT_LOG_KEY_ID=${AUDIT_LOG_KEY_ID:-v1}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:8080}
       - UPLOAD_DIR=/tmp/meatlens-uploads
     volumes:
@@ -24,8 +26,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: frontend/Dockerfile
       args:
         - VITE_API_URL=${VITE_API_URL:-}
     restart: unless-stopped

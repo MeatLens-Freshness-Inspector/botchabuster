@@ -43,6 +43,9 @@ frontend/public/models/mobilenetv3_meat/meatlens_best_model_metadata.json
 docs
 .worktrees/
 
+# Brainstorming visuals
+.superpowers/
+
 
 
 

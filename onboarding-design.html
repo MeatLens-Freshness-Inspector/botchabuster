@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onboarding Design v2 - Botchabuster</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f0f12; color: #e4e4e7; padding: 24px; }
+  h1 { font-size: 24px; margin-bottom: 8px; color: #fff; }
+  .subtitle { color: #a1a1aa; margin-bottom: 24px; }
+  .section { background: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .section h2 { font-size: 18px; margin-bottom: 12px; color: #fff; }
+  .badge { display: inline-block; background: #a78bfa20; color: #a78bfa; border: 1px solid #a78bfa40; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .layout { max-width: 1200px; margin: 0 auto; }
+
+  /* Phone mockup using app's actual Tailwind patterns */
+  .phone { max-width: 380px; margin: 0 auto; background: transparent; }
+  .phone .page { min-height: 640px; border-radius: 24px; padding: 16px; background: radial-gradient(circle at top left, rgba(167,139,250,0.16), transparent 42%), linear-gradient(180deg, #09090b, #09090b); }
+  .phone .card { border-radius: 24px; border: 1px solid rgba(39,39,42,0.7); background: rgba(24,24,27,0.92); padding: 16px; box-shadow: 0 20px 65px -34px rgba(0,0,0,0.65); }
+  .phone .card-sm { border-radius: 16px; border: 1px solid rgba(39,39,42,0.7); background: rgba(24,24,27,0.55); padding: 12px; }
+
+  .mock-title { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.01em; }
+  .mock-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #a1a1aa; }
+
+  .steps { display: flex; justify-content: center; gap: 4px; margin-bottom: 20px; }
+  .steps .s { height: 4px; border-radius: 4px; background: #3f3f46; flex: 1; max-width: 60px; }
+  .steps .s.active { background: #a78bfa; }
+  .steps .s.done { background: #a78bfa; }
+
+  .pref-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(9,9,11,0.55); border: 1px solid rgba(39,39,42,0.7); border-radius: 12px; margin-bottom: 8px; }
+  .pref-row .lbl { font-size: 13px; }
+  .pref-row .tog { width: 36px; height: 20px; background: #3f3f46; border-radius: 10px; position: relative; cursor: pointer; }
+  .pref-row .tog.on { background: #a78bfa; }
+  .pref-row .tog::after { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #fff; top: 2px; transition: left 0.15s; }
+  .pref-row .tog::after { left: 2px; }
+  .pref-row .tog.on::after { left: 18px; }
+
+  .btn-p { display: block; width: 100%; padding: 12px 20px; background: #a78bfa; color: #fff; border: none; border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; margin-top: 12px; }
+  .btn-o { display: block; width: 100%; padding: 12px 20px; background: transparent; color: #a1a1aa; border: 1px solid rgba(39,39,42,0.7); border-radius: 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; cursor: pointer; margin-top: 8px; }
+  .btn-o:hover { background: rgba(39,39,42,0.3); }
+
+  .camera-box { background: rgba(24,24,27,0.55); border: 2px dashed rgba(63,63,70,0.7); border-radius: 16px; padding: 36px 20px; text-align: center; }
+  .camera-box .ico { font-size: 36px; margin-bottom: 8px; }
+  .camera-box .hint { font-size: 12px; color: #a1a1aa; }
+
+  .tip { margin-top: 12px; padding: 10px 14px; background: rgba(39,39,42,0.5); border-radius: 12px; font-size: 12px; color: #a1a1aa; }
+  .tip strong { color: #e4e4e7; }
+
+  .tour-row { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(9,9,11,0.55); border: 1px solid rgba(39,39,42,0.7); border-radius: 12px; margin-bottom: 8px; }
+  .tour-row .ico { font-size: 20px; width: 36px; text-align: center; }
+  .tour-row .info { flex: 1; }
+  .tour-row .info .n { font-size: 14px; font-weight: 600; }
+  .tour-row .info .d { font-size: 12px; color: #a1a1aa; }
+
+  .complete { text-align: center; padding: 32px 0; }
+  .complete .emoji { font-size: 48px; margin-bottom: 12px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  ul.details { list-style: none; font-size: 13px; color: #a1a1aa; display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
+  ul.details li::before { content: '✓ '; color: #22c55e; }
+
+  .tbl { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .tbl th, .tbl td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #27272a; font-size: 13px; }
+  .tbl th { color: #a1a1aa; font-weight: 500; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag.db { background: #1e3a5f; color: #93c5fd; }
+  .tag.be { background: #3b1f4e; color: #d8b4fe; }
+  .tag.fe { background: #1e3a2b; color: #86efac; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <h1>Onboarding Tutorial — Final Design</h1>
+  <p class="subtitle">Using the same Tailwind patterns as the existing app</p>
+
+  <div class="section">
+    <h2>🧭 User Flow</h2>
+    <div class="steps" style="max-width: 400px; margin: 16px auto;">
+      <div class="s done"></div><div class="s" style="background: #a78bfa;"></div><div class="s"></div><div class="s"></div><div class="s"></div>
+    </div>
+    <p style="text-align: center; font-size: 13px; color: #a1a1aa;">
+      Login → Check onboarding → <strong>/onboarding</strong> (3-step stepper) → Redirect to <strong>/inspect</strong>
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>📄 Step 1: Welcome + Preferences</h2>
+    <div class="grid-2">
+      <div class="phone">
+        <div class="page">
+          <div class="steps"><div class="s done"></div><div class="s active"></div><div class="s"></div></div>
+          <div class="card">
+            <div class="badge" style="margin-bottom: 12px;">Welcome</div>
+            <div class="mock-title">Welcome to MeatLens</div>
+            <p style="font-size: 13px; color: #a1a1aa; margin: 8px 0 16px;">AI-assisted meat freshness inspection for field inspectors. Set your preferences to get started.</p>
+            <div class="pref-row"><span class="lbl">🌙 Dark Mode</span><div class="tog"></div></div>
+            <div class="pref-row"><span class="lbl">📊 Detailed Results</span><div class="tog on"></div></div>
+            <button class="btn-p">Continue</button>
+            <button class="btn-o" style="font-size: 11px;">Skip Tutorial</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <ul class="details">
+          <li>Welcome copy explaining MeatLens purpose</li>
+          <li>Dark mode toggle — saves to profile via PATCH /profiles/:id</li>
+          <li>Detailed results toggle — saves to profile via PATCH /profiles/:id</li>
+          <li>"Continue" button → proceeds to Step 2</li>
+          <li>"Skip Tutorial" → sets onboarding_complete=true → redirects to /inspect</li>
+          <li>Matches app pattern: <code>rounded-3xl border border-border/70 bg-card/95 p-4 shadow-[...]</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📸 Step 2: Guided First Inspection</h2>
+    <div class="grid-2">
+      <div class="phone">
+        <div class="page">
+          <div class="steps"><div class="s done"></div><div class="s done"></div><div class="s active"></div></div>
+          <div class="card">
+            <div class="badge" style="margin-bottom: 12px;">First Inspection</div>
+            <div class="mock-title" style="font-size: 16px;">Take Your First Photo</div>
+            <p style="font-size: 13px; color: #a1a1aa; margin: 8px 0 16px;">Capture a meat sample to run your first freshness analysis.</p>
+            <div class="camera-box"><div class="ico">📷</div><div class="hint">Tap to capture a photo</div></div>
+            <div class="tip">💡 <strong>Tip:</strong> Hold the camera steady and ensure even lighting for best results.</div>
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+              <button class="btn-o" style="flex: 1; font-size: 11px;">Skip</button>
+              <button class="btn-p" style="flex: 2;">Take Photo</button>
+            </div>
+            <button class="btn-o" style="font-size: 11px;">Finish Tutorial</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <ul class="details">
+          <li>Uses same CameraCapture component from the Inspect page</li>
+          <li>"Take Photo" → real capture + analysis flow (reuses existing hooks)</li>
+          <li>"Skip" → proceeds to Step 3 (Feature Tour)</li>
+          <li>"Finish Tutorial" → marks onboarding_complete=true → /inspect</li>
+          <li>If photo taken, shows real analysis results inline in the step</li>
+          <li>No redirect to /inspect — everything stays in the stepper</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🧭 Step 3: Feature Tour</h2>
+    <div class="grid-2">
+      <div class="phone">
+        <div class="page">
+          <div class="steps"><div class="s done"></div><div class="s done"></div><div class="s done"></div></div>
+          <div class="card">
+            <div class="badge" style="margin-bottom: 12px;">Explore the App</div>
+            <div class="mock-title" style="font-size: 16px;">App Overview</div>
+            <p style="font-size: 13px; color: #a1a1aa; margin: 8px 0 16px;">Quick tour of the main sections you'll use every day:</p>
+            <div class="tour-row"><div class="ico">📷</div><div class="info"><div class="n">Inspect</div><div class="d">Capture and analyze meat samples with AI</div></div></div>
+            <div class="tour-row"><div class="ico">📋</div><div class="info"><div class="n">History</div><div class="d">View past inspections and results</div></div></div>
+            <div class="tour-row"><div class="ico">💬</div><div class="info"><div class="n">Messages</div><div class="d">Chat with your inspection team</div></div></div>
+            <div class="tour-row"><div class="ico">👤</div><div class="info"><div class="n">Profile</div><div class="d">Account settings, theme, and preferences</div></div></div>
+            <button class="btn-p">Complete Tutorial</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <ul class="details">
+          <li>4 cards — one for each BottomNav item with icon + description</li>
+          <li>"Complete Tutorial" → sets onboarding_complete=true → /inspect</li>
+          <li>Brief, scannable descriptions users can read in seconds</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🎨 Styling — Matches App Patterns</h2>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 8px;">
+      <div style="background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 12px;">
+        <p class="mock-label">Background</p>
+        <code style="font-size: 11px; color: #a1a1aa; word-break: break-all;">bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))]</code>
+      </div>
+      <div style="background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 12px;">
+        <p class="mock-label">Cards</p>
+        <code style="font-size: 11px; color: #a1a1aa;">rounded-3xl border border-border/70 bg-card/95 p-4 shadow-[0_20px_65px_-34px_rgba(0,0,0,0.65)]</code>
+      </div>
+      <div style="background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 12px;">
+        <p class="mock-label">Buttons</p>
+        <code style="font-size: 11px; color: #a1a1aa;">rounded-xl font-display text-xs uppercase tracking-wider</code>
+      </div>
+    </div>
+    <p style="font-size: 12px; color: #a1a1aa; margin-top: 12px;">
+      All typography uses <code>font-display</code> with <code>uppercase tracking-wider</code> for labels and headings.
+      Preference rows use the same toggle switches (shadcn/ui Switch) as the Profile page.
+    </p>
+  </div>
+
+  <div class="section">
+    <h2>📦 File Changes</h2>
+    <table class="tbl">
+      <thead><tr><th>File</th><th>Action</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td>backend/supabase/migrations/20260530000000_add_onboarding_complete.sql</td><td><span class="tag db">NEW</span></td><td>ALTER TABLE profiles ADD COLUMN onboarding_complete BOOLEAN NOT NULL DEFAULT FALSE</td></tr>
+        <tr><td>backend/src/services/ProfileService.ts</td><td><span class="tag be">EDIT</span></td><td>Add onboarding_complete to Profile interface + updateProfile allowed fields</td></tr>
+        <tr><td>backend/src/controllers/ProfileController.ts</td><td><span class="tag be">EDIT</span></td><td>Accept onboarding_complete in updateProfile request body</td></tr>
+        <tr><td>frontend/src/integrations/api/ProfileClient.ts</td><td><span class="tag fe">EDIT</span></td><td>Add onboarding_complete to Profile interface + updateProfile type</td></tr>
+        <tr><td>frontend/src/contexts/AuthContext.tsx</td><td><span class="tag fe">EDIT</span></td><td>Expose onboarding_complete on profile, add redirect logic after login</td></tr>
+        <tr><td>frontend/src/pages/OnboardingPage.tsx</td><td><span class="tag fe">NEW</span></td><td>3-step stepper with Welcome, Guided Inspection, Feature Tour</td></tr>
+        <tr><td>frontend/src/App.tsx</td><td><span class="tag fe">EDIT</span></td><td>Add /onboarding route</td></tr>
+        <tr><td>frontend/src/components/ProtectedRoute.tsx</td><td><span class="tag fe">EDIT</span></td><td>Redirect to /onboarding if profile loaded + onboarding_complete === false</td></tr>
+        <tr><td>frontend/src/pages/ProfilePage.tsx</td><td><span class="tag fe">EDIT</span></td><td>Add "Show Tutorial" button in Actions section</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>
