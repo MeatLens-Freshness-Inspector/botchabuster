@@ -1,15 +1,36 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { authClient, type AuthSession, type AuthUser } from "@/integrations/api/AuthClient";
+import { passkeyClient } from "@/integrations/api/PasskeyClient";
 import { profileClient, type Profile } from "@/integrations/api/ProfileClient";
 import {
+  clearCachedAdmin,
+  clearCachedAuth,
+  clearCachedProfile,
+  getCachedAdmin,
+  getCachedAuthSession,
+  getCachedAuthUser,
+  getCachedProfile,
+  setCachedAdmin,
+  setCachedAuth,
+  setCachedProfile,
+} from "@/lib/authCache";
+import {
+  clearOfflineCredential,
   storeOfflineCredential,
   verifyOfflineCredential,
-  clearOfflineCredential,
 } from "@/lib/offlineCredentials";
 import { queueAuditLog } from "@/lib/offlineAuditQueue";
+import { startPasskeyAuthentication } from "@/lib/passkeys/browser";
+import {
+  createLocalPasskeyAuthenticationOptions,
+  createLocalPasskeyChallenge,
+  getStoredLocalPasskey,
+  isOfflineUnlockRequired as getStoredOfflineUnlockRequired,
+  setOfflineUnlockRequired as setStoredOfflineUnlockRequired,
+  storeLocalPasskey,
+  verifyLocalPasskeyAssertion,
+} from "@/lib/passkeys/localUnlock";
 
-const USER_STORAGE_KEY = "meatlens-auth-user";
-const SESSION_STORAGE_KEY = "meatlens-auth-session";
 const AUTH_EXPIRED_EVENT = "meatlens:auth-expired";
 
 type ProfileStatus = "idle" | "loading" | "ready" | "error";
@@ -35,6 +56,12 @@ function hasValidAccessToken(session: AuthSession | null): boolean {
   return expiresAtMs > Date.now() + 30_000;
 }
 
+interface LoadUserDataOptions {
+  allowCachedFallback?: boolean;
+  skipRemote?: boolean;
+  isAdminHint?: boolean | null;
+}
+
 interface AuthContextType {
   user: AuthUser | null;
   session: AuthSession | null;
@@ -42,8 +69,12 @@ interface AuthContextType {
   isAdmin: boolean;
   isLoading: boolean;
   profileStatus: ProfileStatus;
+  offlineUnlockRequired: boolean;
+  canUnlockWithLocalPasskey: boolean;
   retryProfileLoad: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
+  signInWithPasskey: () => Promise<{ isAdmin: boolean }>;
+  unlockWithLocalPasskey: () => Promise<{ isAdmin: boolean }>;
   signUp: (email: string, password: string, fullName: string, accessCode: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -62,12 +93,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [profileStatus, setProfileStatus] = useState<ProfileStatus>("idle");
+  const [offlineUnlockRequired, setOfflineUnlockRequiredState] = useState(false);
 
-  const loadUserData = useCallback(async (currentUser: AuthUser | null) => {
+  const syncOfflineUnlockRequired = useCallback((required: boolean) => {
+    setStoredOfflineUnlockRequired(required);
+    setOfflineUnlockRequiredState(required);
+  }, []);
+
+  const clearStoredAuthState = useCallback(() => {
+    clearCachedAuth();
+    clearCachedProfile();
+    clearCachedAdmin();
+    syncOfflineUnlockRequired(false);
+  }, [syncOfflineUnlockRequired]);
+
+  const clearInMemoryAuthState = useCallback(() => {
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setIsAdmin(false);
+    setProfileStatus("idle");
+  }, []);
+
+  const applyCachedProfileState = useCallback((currentUser: AuthUser, isAdminHint?: boolean | null): boolean => {
+    const cachedProfile = getCachedProfile(currentUser.id);
+    if (!cachedProfile) {
+      return false;
+    }
+
+    setProfile(cachedProfile);
+    setIsAdmin(Boolean(isAdminHint ?? getCachedAdmin(currentUser.id) ?? false));
+    setProfileStatus("ready");
+    return true;
+  }, []);
+
+  const loadUserData = useCallback(async (
+    currentUser: AuthUser | null,
+    options: LoadUserDataOptions = {},
+  ) => {
     if (!currentUser) {
       setProfile(null);
       setIsAdmin(false);
       setProfileStatus("idle");
+      return;
+    }
+
+    if (options.skipRemote) {
+      if (applyCachedProfileState(currentUser, options.isAdminHint)) {
+        return;
+      }
+
+      setProfile(null);
+      setIsAdmin(Boolean(options.isAdminHint));
+      setProfileStatus("error");
       return;
     }
 
@@ -78,68 +156,84 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profileClient.getProfile(currentUser.id),
         profileClient.hasRole(currentUser.id, "admin"),
       ]);
+
       if (!userProfile) {
         throw new Error("Profile record missing");
       }
+
       setProfile(userProfile);
       setIsAdmin(admin);
       setProfileStatus("ready");
+      setCachedProfile(userProfile);
+      setCachedAdmin(currentUser.id, admin);
     } catch (err) {
       console.error("Failed to load user data:", err);
+
+      if (options.allowCachedFallback && applyCachedProfileState(currentUser, options.isAdminHint)) {
+        return;
+      }
+
       setProfile(null);
-      setIsAdmin(false);
+      setIsAdmin(Boolean(options.isAdminHint));
       setProfileStatus("error");
     }
-  }, []);
+  }, [applyCachedProfileState]);
 
   const retryProfileLoad = useCallback(async () => {
-    await loadUserData(user);
+    await loadUserData(user, {
+      allowCachedFallback: !navigator.onLine,
+      skipRemote: !navigator.onLine,
+      isAdminHint: user ? getCachedAdmin(user.id) : null,
+    });
   }, [loadUserData, user]);
 
   useEffect(() => {
     let mounted = true;
 
     const restoreAuth = async () => {
-      const storedUserRaw = window.localStorage.getItem(USER_STORAGE_KEY);
-      const storedSessionRaw = window.localStorage.getItem(SESSION_STORAGE_KEY);
+      const cachedUser = getCachedAuthUser();
+      const cachedSession = getCachedAuthSession();
 
-      if (!storedUserRaw) {
+      if (!cachedUser) {
+        clearStoredAuthState();
         if (mounted) {
-          setUser(null);
-          setSession(null);
-          setProfile(null);
-          setIsAdmin(false);
-          setProfileStatus("idle");
+          clearInMemoryAuthState();
           setIsLoading(false);
         }
         return;
       }
 
       try {
-        const parsedUser = JSON.parse(storedUserRaw) as AuthUser;
-        const parsedSession = storedSessionRaw ? JSON.parse(storedSessionRaw) as AuthSession : null;
+        if (!hasValidAccessToken(cachedSession)) {
+          throw new Error("Cached auth session is missing or expired");
+        }
 
-        if (!parsedUser?.id) throw new Error("Invalid cached user");
-        if (!hasValidAccessToken(parsedSession)) throw new Error("Cached auth session is missing or expired");
-
+        const lockRequired = getStoredOfflineUnlockRequired();
         if (!mounted) return;
 
-        setUser(parsedUser);
-        setSession(parsedSession);
-        await loadUserData(parsedUser);
+        setOfflineUnlockRequiredState(lockRequired);
+        if (lockRequired) {
+          clearInMemoryAuthState();
+          return;
+        }
+
+        setUser(cachedUser);
+        setSession(cachedSession);
+        await loadUserData(cachedUser, {
+          allowCachedFallback: !navigator.onLine,
+          skipRemote: !navigator.onLine,
+          isAdminHint: getCachedAdmin(cachedUser.id),
+        });
       } catch (err) {
         console.error("Failed to restore auth session:", err);
-        window.localStorage.removeItem(USER_STORAGE_KEY);
-        window.localStorage.removeItem(SESSION_STORAGE_KEY);
+        clearStoredAuthState();
         if (mounted) {
-          setUser(null);
-          setSession(null);
-          setProfile(null);
-          setIsAdmin(false);
-          setProfileStatus("idle");
+          clearInMemoryAuthState();
         }
       } finally {
-        if (mounted) setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -148,15 +242,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       mounted = false;
     };
-  }, [loadUserData]);
+  }, [clearInMemoryAuthState, clearStoredAuthState, loadUserData, syncOfflineUnlockRequired]);
 
   useEffect(() => {
     const handleAuthExpired = () => {
-      setUser(null);
-      setSession(null);
-      setProfile(null);
-      setIsAdmin(false);
-      setProfileStatus("idle");
+      clearStoredAuthState();
+      clearInMemoryAuthState();
       setIsLoading(false);
     };
 
@@ -164,10 +255,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
     };
-  }, []);
+  }, [clearInMemoryAuthState, clearStoredAuthState]);
 
   const signIn = async (email: string, password: string): Promise<{ isAdmin: boolean }> => {
-    // ── Offline path ──────────────────────────────────────────────────────────
     if (!navigator.onLine) {
       const { valid, isAdmin: cachedAdmin } = await verifyOfflineCredential(email, password);
       if (!valid) {
@@ -176,21 +266,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Please connect to the internet to sign in for the first time.",
         );
       }
-      const storedUser = window.localStorage.getItem(USER_STORAGE_KEY);
-      if (!storedUser) {
+
+      const cachedUser = getCachedAuthUser();
+      const cachedSession = getCachedAuthSession();
+
+      if (!cachedUser || !hasValidAccessToken(cachedSession)) {
         throw new Error(
           "No cached session found. Please sign in online at least once before going offline.",
         );
       }
-      const cachedUser = JSON.parse(storedUser) as AuthUser;
-      const cachedSession = window.localStorage.getItem(SESSION_STORAGE_KEY)
-        ? (JSON.parse(window.localStorage.getItem(SESSION_STORAGE_KEY)!) as AuthSession)
-        : null;
+
+      syncOfflineUnlockRequired(false);
       setUser(cachedUser);
       setSession(cachedSession);
-      setIsAdmin(cachedAdmin);
-      // Best-effort profile restore (no network needed if React Query has it cached)
-      await loadUserData(cachedUser).catch(() => {});
+      await loadUserData(cachedUser, {
+        allowCachedFallback: true,
+        skipRemote: true,
+        isAdminHint: cachedAdmin,
+      });
 
       try {
         await queueAuditLog({
@@ -209,17 +302,90 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { isAdmin: cachedAdmin };
     }
 
-    // ── Online path ───────────────────────────────────────────────────────────
     const result = await authClient.signIn(email, password);
     setUser(result.user);
     setSession(result.session);
-    window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(result.user));
-    window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(result.session));
+    setCachedAuth(result.user, result.session);
+    syncOfflineUnlockRequired(false);
     await loadUserData(result.user);
     const admin = await profileClient.hasRole(result.user.id, "admin");
-    // Persist a hash for future offline re-authentication
     void storeOfflineCredential(email, password, admin);
     return { isAdmin: admin };
+  };
+
+  const signInWithPasskey = async (): Promise<{ isAdmin: boolean }> => {
+    if (!navigator.onLine) {
+      throw new Error("Passkey sign-in requires an internet connection");
+    }
+
+    const { challengeId, options } = await passkeyClient.getAuthenticationOptions();
+    const credential = await startPasskeyAuthentication(options);
+    const result = await passkeyClient.verifyAuthentication({
+      challengeId,
+      credential,
+    });
+
+    setUser(result.user);
+    setSession(result.session);
+    setCachedAuth(result.user, result.session);
+    syncOfflineUnlockRequired(false);
+    await loadUserData(result.user);
+    const admin = await profileClient.hasRole(result.user.id, "admin");
+    return { isAdmin: admin };
+  };
+
+  const unlockWithLocalPasskey = async (): Promise<{ isAdmin: boolean }> => {
+    if (!offlineUnlockRequired) {
+      throw new Error("No cached offline session is waiting for passkey unlock");
+    }
+
+    const storedPasskey = getStoredLocalPasskey();
+    if (!storedPasskey) {
+      throw new Error("This device is not enrolled for local passkey unlock");
+    }
+
+    const cachedUser = getCachedAuthUser();
+    const cachedSession = getCachedAuthSession();
+    if (!cachedUser || !hasValidAccessToken(cachedSession)) {
+      throw new Error(
+        "No cached session found. Please sign in online at least once before going offline.",
+      );
+    }
+
+    const challenge = createLocalPasskeyChallenge();
+    const credential = await startPasskeyAuthentication(
+      createLocalPasskeyAuthenticationOptions(storedPasskey, challenge),
+    );
+    const verification = await verifyLocalPasskeyAssertion({
+      storedCredential: storedPasskey,
+      credential,
+      expectedChallenge: challenge,
+      expectedOrigin: window.location.origin,
+    });
+
+    if (!verification.verified) {
+      throw new Error("Local passkey verification failed");
+    }
+
+    if (verification.newCounter > storedPasskey.counter) {
+      storeLocalPasskey({
+        ...storedPasskey,
+        counter: verification.newCounter,
+      });
+    }
+
+    const cachedAdmin = storedPasskey.isAdmin || getCachedAdmin(cachedUser.id) || false;
+
+    syncOfflineUnlockRequired(false);
+    setUser(cachedUser);
+    setSession(cachedSession);
+    await loadUserData(cachedUser, {
+      allowCachedFallback: true,
+      skipRemote: !navigator.onLine,
+      isAdminHint: cachedAdmin,
+    });
+
+    return { isAdmin: cachedAdmin };
   };
 
   const signUp = async (email: string, password: string, fullName: string, accessCode: string) => {
@@ -234,38 +400,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     const currentUser = user;
-    // Always clear in-memory state immediately
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setIsAdmin(false);
-    setProfileStatus("idle");
+
+    clearInMemoryAuthState();
 
     if (navigator.onLine) {
-      // Online: notify server and fully clear local storage
-      try { await authClient.signOut(); } catch { /* ignore */ }
-      window.localStorage.removeItem(USER_STORAGE_KEY);
-      window.localStorage.removeItem(SESSION_STORAGE_KEY);
-      clearOfflineCredential();
-    }
-    // Offline: keep localStorage so the user can re-authenticate offline.
-    // The credential hash and cached session are preserved but in-memory
-    // state is cleared, so the app treats the user as signed out.
-
-    if (!navigator.onLine && currentUser) {
       try {
-        await queueAuditLog({
-          id: createAuditId(),
-          userId: currentUser.id,
-          eventType: "auth.sign_out",
-          eventTime: new Date().toISOString(),
-          data: { email: currentUser.email },
-          source: { is_offline: true },
-          queuedAt: new Date().toISOString(),
-        });
+        await authClient.signOut();
       } catch {
-        // Best-effort only; never block offline sign-out.
+        // Ignore sign-out transport failures.
       }
+
+      clearStoredAuthState();
+      clearOfflineCredential();
+      return;
+    }
+
+    if (currentUser) {
+      syncOfflineUnlockRequired(true);
+    }
+
+    if (!currentUser) {
+      return;
+    }
+
+    try {
+      await queueAuditLog({
+        id: createAuditId(),
+        userId: currentUser.id,
+        eventType: "auth.sign_out",
+        eventTime: new Date().toISOString(),
+        data: { email: currentUser.email },
+        source: { is_offline: true },
+        queuedAt: new Date().toISOString(),
+      });
+    } catch {
+      // Best-effort only; never block offline sign-out.
     }
   };
 
@@ -281,7 +450,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) throw new Error("Not signed in");
     const updatedUser = await authClient.updateEmail(user.id, email);
     setUser(updatedUser);
-    window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(updatedUser));
+    setCachedAuth(updatedUser, session);
   };
 
   const updatePassword = async (password: string) => {
@@ -291,7 +460,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setProfileState = (nextProfile: Profile | null) => {
     setProfile(nextProfile);
+    setCachedProfile(nextProfile);
   };
+
+  const canUnlockWithLocalPasskey =
+    offlineUnlockRequired &&
+    Boolean(getStoredLocalPasskey()) &&
+    Boolean(getCachedAuthUser()) &&
+    hasValidAccessToken(getCachedAuthSession());
 
   return (
     <AuthContext.Provider
@@ -302,8 +478,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin,
         isLoading,
         profileStatus,
+        offlineUnlockRequired,
+        canUnlockWithLocalPasskey,
         retryProfileLoad,
         signIn,
+        signInWithPasskey,
+        unlockWithLocalPasskey,
         signUp,
         signOut,
         resetPassword,

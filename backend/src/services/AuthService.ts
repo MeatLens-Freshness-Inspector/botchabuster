@@ -1,4 +1,5 @@
 import { supabase, supabaseAuth } from "../integrations/supabase";
+import { getAppSessionService } from "./AppSessionService";
 
 export interface AuthUser {
   id: string;
@@ -178,6 +179,10 @@ export class AuthService {
     // Backend is stateless for frontend auth. Sessions are managed client-side.
   }
 
+  createAppSession(user: AuthUser): AuthSession {
+    return getAppSessionService().createSession(user);
+  }
+
   async sendPasswordReset(email: string, redirectTo?: string): Promise<void> {
     const { error } = await supabaseAuth.auth.resetPasswordForEmail(email.trim(), redirectTo ? { redirectTo } : undefined);
     if (error) throw new Error(`Failed to send password reset: ${error.message}`);
@@ -201,6 +206,14 @@ export class AuthService {
     const trimmedToken = accessToken.trim();
     if (!trimmedToken) {
       throw new Error("Authentication required");
+    }
+
+    try {
+      return await getAppSessionService().getUserFromAccessToken(trimmedToken);
+    } catch (error) {
+      if (getAppSessionService().looksLikeAppSessionToken(trimmedToken)) {
+        throw error;
+      }
     }
 
     const { supabaseUrl, supabasePublishableKey } = this.getSupabaseAuthConfig();

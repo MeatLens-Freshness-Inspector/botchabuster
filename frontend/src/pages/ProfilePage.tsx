@@ -14,6 +14,8 @@ import {
   Phone,
   CalendarDays,
   UserRound,
+  KeyRound,
+  Trash2,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -24,8 +26,19 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PrivacyPolicyDialog } from "@/components/PrivacyPolicyDialog";
 import { TermsAndConditionsDialog } from "@/components/TermsAndConditionsDialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { passkeyClient, type RegisteredPasskey } from "@/integrations/api/PasskeyClient";
 import { profileClient, type Profile } from "@/integrations/api/ProfileClient";
 import { uploadClient } from "@/integrations/api/UploadClient";
+import {
+  canUsePasskeys,
+  getDefaultPasskeyDeviceLabel,
+  startPasskeyRegistration,
+} from "@/lib/passkeys/browser";
+import {
+  clearStoredLocalPasskey,
+  getStoredLocalPasskey,
+  storeLocalPasskey,
+} from "@/lib/passkeys/localUnlock";
 import { applyTheme } from "@/lib/themePreference";
 
 const ProfilePage = () => {
@@ -44,6 +57,11 @@ const ProfilePage = () => {
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
+  const [passkeyAvailable, setPasskeyAvailable] = useState(false);
+  const [passkeys, setPasskeys] = useState<RegisteredPasskey[]>([]);
+  const [isLoadingPasskeys, setIsLoadingPasskeys] = useState(false);
+  const [isRegisteringPasskey, setIsRegisteringPasskey] = useState(false);
+  const [removingCredentialId, setRemovingCredentialId] = useState<string | null>(null);
 
   const initials = useMemo(() => {
     const source = fullName.trim() || user?.email || "User";
@@ -58,6 +76,15 @@ const ProfilePage = () => {
   const isShowingDetailedResults = Boolean(profile?.show_detailed_results);
   const roleLabel = isAdmin ? "Administrator" : "Inspector";
 
+  const applyLocalDeviceReady = (registeredPasskeys: RegisteredPasskey[]): RegisteredPasskey[] => {
+    const localCredentialId = getStoredLocalPasskey()?.credentialId;
+
+    return registeredPasskeys.map((passkey) => ({
+      ...passkey,
+      localDeviceReady: passkey.localDeviceReady || passkey.credentialId === localCredentialId,
+    }));
+  };
+
   useEffect(() => {
     if (!user) return;
     setEmail(user.email ?? "");
@@ -68,6 +95,28 @@ const ProfilePage = () => {
     const isDarkMode = Boolean(profile?.is_dark_mode);
     setIsLightMode(!isDarkMode);
   }, [profile?.is_dark_mode]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const checkPasskeyAvailability = async () => {
+      const supported = await canUsePasskeys();
+      if (mounted) {
+        setPasskeyAvailable(supported);
+      }
+    };
+
+    void checkPasskeyAvailability();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    void loadPasskeys();
+  }, [user]);
 
   const loadProfile = async (userId: string) => {
     setIsLoading(true);
@@ -81,6 +130,19 @@ const ProfilePage = () => {
       toast.error("Failed to load profile");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadPasskeys = async () => {
+    setIsLoadingPasskeys(true);
+    try {
+      const registeredPasskeys = await passkeyClient.listPasskeys();
+      setPasskeys(applyLocalDeviceReady(registeredPasskeys));
+    } catch (err) {
+      console.error("Failed to load registered passkeys:", err);
+      toast.error("Failed to load passkeys");
+    } finally {
+      setIsLoadingPasskeys(false);
     }
   };
 
@@ -217,6 +279,58 @@ const ProfilePage = () => {
       toast.error("Failed to update inspect result preference");
     } finally {
       setIsSavingInspectPreference(false);
+    }
+  };
+
+  const handleRegisterPasskey = async () => {
+    setIsRegisteringPasskey(true);
+    try {
+      const { challengeId, options } = await passkeyClient.getRegistrationOptions();
+      const credential = await startPasskeyRegistration(options);
+      const createdPasskey = await passkeyClient.verifyRegistration({
+        challengeId,
+        credential,
+        deviceLabel: getDefaultPasskeyDeviceLabel(),
+      });
+
+      if (credential.response.publicKey && typeof credential.response.publicKeyAlgorithm === "number") {
+        storeLocalPasskey({
+          credentialId: createdPasskey.credentialId,
+          publicKey: credential.response.publicKey,
+          publicKeyAlgorithm: credential.response.publicKeyAlgorithm,
+          transports: createdPasskey.transports,
+          deviceLabel: createdPasskey.deviceLabel,
+          rpId: window.location.hostname,
+          counter: 0,
+          isAdmin,
+        });
+      }
+
+      setPasskeys((currentPasskeys) => applyLocalDeviceReady([
+        createdPasskey,
+        ...currentPasskeys.filter((entry) => entry.credentialId !== createdPasskey.credentialId),
+      ]));
+      toast.success("Passkey enrolled for this device");
+    } catch (err) {
+      console.error("Passkey registration failed:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to enroll passkey");
+    } finally {
+      setIsRegisteringPasskey(false);
+    }
+  };
+
+  const handleRemovePasskey = async (credentialId: string) => {
+    setRemovingCredentialId(credentialId);
+    try {
+      await passkeyClient.deletePasskey(credentialId);
+      clearStoredLocalPasskey(credentialId);
+      setPasskeys((currentPasskeys) => currentPasskeys.filter((entry) => entry.credentialId !== credentialId));
+      toast.success("Passkey removed");
+    } catch (err) {
+      console.error("Passkey removal failed:", err);
+      toast.error(err instanceof Error ? err.message : "Failed to remove passkey");
+    } finally {
+      setRemovingCredentialId(null);
     }
   };
 
@@ -474,6 +588,77 @@ const ProfilePage = () => {
                 </div>
               </section>
             </div>
+
+            <section className="rounded-3xl border border-border/70 bg-card/92 p-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <h3 className="font-display text-lg font-semibold">Passkeys and Device Unlock</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Register this device for faster sign-in with fingerprint, face recognition, or platform unlock.
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-xl border-border/80 text-xs uppercase tracking-wider"
+                  onClick={handleRegisterPasskey}
+                  disabled={!passkeyAvailable || isRegisteringPasskey}
+                >
+                  {isRegisteringPasskey ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+                  Enroll This Device
+                </Button>
+              </div>
+
+              {!passkeyAvailable ? (
+                <p className="mt-3 rounded-2xl border border-border/70 bg-background/50 px-3 py-3 text-sm text-muted-foreground">
+                  Passkeys are not available on this browser or device.
+                </p>
+              ) : null}
+
+              {isLoadingPasskeys ? (
+                <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading registered devices
+                </div>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {passkeys.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-border/70 bg-background/45 px-4 py-4 text-sm text-muted-foreground">
+                      No passkeys enrolled yet.
+                    </div>
+                  ) : (
+                    passkeys.map((passkey) => (
+                      <div
+                        key={passkey.credentialId}
+                        className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-background/50 px-4 py-4 md:flex-row md:items-center md:justify-between"
+                      >
+                        <div>
+                          <p className="font-medium text-foreground">{passkey.deviceLabel}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {passkey.localDeviceReady ? "Local device unlock ready" : "Online passkey only"}
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="justify-start text-destructive hover:text-destructive"
+                          onClick={() => void handleRemovePasskey(passkey.credentialId)}
+                          disabled={removingCredentialId === passkey.credentialId}
+                          aria-label={`Remove ${passkey.deviceLabel}`}
+                        >
+                          {removingCredentialId === passkey.credentialId ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                          Remove
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </section>
           </div>
         </div>
       </div>
