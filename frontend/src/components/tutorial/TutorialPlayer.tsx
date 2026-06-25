@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,6 +9,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { TutorialStepDefinition } from "@/lib/tutorials/tutorialDefinitions";
+import { MockPhoneFrame } from "@/components/tutorial/MockPhoneFrame";
+import { TutorialScene } from "@/components/tutorial/TutorialScene";
 
 interface TutorialPlayerProps {
   steps: TutorialStepDefinition[];
@@ -44,6 +46,11 @@ export function TutorialPlayer({
 
   const activeStep = steps[stepIndex];
 
+  const handleAdvance = () => {
+    setStepIndex((current) => current + 1);
+  };
+
+  /* ── Completion screen ─────────────────────────────────────── */
   if (!activeStep) {
     return (
       <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_36%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] px-4 py-6">
@@ -96,12 +103,32 @@ export function TutorialPlayer({
     );
   }
 
+  /* ── Step progress dots ────────────────────────────────────── */
+  const stepDots = steps.map((s, i) => {
+    const isPast = i < stepIndex;
+    const isActive = i === stepIndex;
+    return (
+      <div
+        key={s.id}
+        className={`h-1.5 rounded-full transition-all duration-300 ${
+          isActive
+            ? "w-6 bg-primary"
+            : isPast
+              ? "w-1.5 bg-primary/50"
+              : "w-1.5 bg-border"
+        }`}
+      />
+    );
+  });
+
+  /* ── Main step layout ──────────────────────────────────────── */
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_36%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] px-4 py-6">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-4 flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-          <span>
-            {activeStep.sectionTitle} {stepIndex + 1} of {steps.length}
+        {/* Top bar: section label + skip */}
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <span className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+            {activeStep.sectionTitle} · Step {stepIndex + 1} of {steps.length}
           </span>
           {onSkip ? (
             <Button
@@ -115,95 +142,63 @@ export function TutorialPlayer({
           ) : null}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
-          <div className="relative rounded-[36px] border border-border/70 bg-card/88 p-3 shadow-[0_36px_120px_-56px_rgba(0,0,0,0.78)]">
-            <div className="pointer-events-none absolute inset-3 rounded-[32px] bg-black/18" />
-            <div className="relative overflow-hidden rounded-[28px] border border-border/70 bg-background">
-              <div className="border-b border-border/70 bg-card/90 px-4 py-4">
-                <p className="font-display text-lg font-semibold tracking-tight">
-                  {activeStep.sceneTitle}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {activeStep.sceneSubtitle}
-                </p>
-              </div>
-              <div className="space-y-3 p-4">
-                {activeStep.blocks.map((block) => {
-                  const isHotspot = block.hotspotLabel === activeStep.hotspotLabel;
-                  const toneClass =
-                    block.tone === "warning"
-                      ? "border-[hsl(var(--warning)/0.45)] bg-[hsl(var(--warning)/0.16)]"
-                      : block.tone === "accent"
-                        ? "border-primary/45 bg-[hsl(var(--primary)/0.12)]"
-                        : "border-border/70 bg-card/70";
-
-                  if (isHotspot) {
-                    return (
-                      <button
-                        key={block.id}
-                        type="button"
-                        aria-label={block.hotspotLabel}
-                        onClick={() => setStepIndex((current) => current + 1)}
-                        className={`group flex w-full items-start justify-between rounded-2xl border px-4 py-4 text-left shadow-[0_0_0_1px_hsl(var(--primary)/0.16),0_0_0_10px_hsl(var(--primary)/0.08)] transition-transform hover:-translate-y-0.5 ${toneClass}`}
-                      >
-                        <div>
-                          <p className="font-display text-sm uppercase tracking-[0.12em]">
-                            {block.title}
-                          </p>
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {block.description}
-                          </p>
-                        </div>
-                        <ArrowRight className="mt-1 h-4 w-4 text-primary" />
-                      </button>
-                    );
-                  }
-
-                  return (
-                    <div
-                      key={block.id}
-                      aria-hidden="true"
-                      className={`rounded-2xl border px-4 py-4 opacity-65 ${toneClass}`}
-                    >
-                      <p className="font-display text-sm uppercase tracking-[0.12em]">
-                        {block.title}
-                      </p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {block.description}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+        {/* Two-column layout: phone frame | instruction card */}
+        <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center">
+          {/* Phone frame with real mock UI */}
+          <div className="flex-shrink-0">
+            <MockPhoneFrame>
+              <TutorialScene step={activeStep} onAdvance={handleAdvance} />
+            </MockPhoneFrame>
           </div>
 
-          <Card className="rounded-[32px] border border-border/70 bg-card/95 shadow-[0_32px_100px_-48px_rgba(0,0,0,0.72)]">
-            <CardHeader className="space-y-3">
-              <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                {activeStep.sectionTitle}
-              </p>
-              <CardTitle className="font-display text-2xl uppercase tracking-[0.12em]">
-                {activeStep.stepTitle}
-              </CardTitle>
-              <CardDescription className="text-sm leading-relaxed sm:text-base">
-                {activeStep.instruction}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-2xl border border-border/70 bg-background/55 p-4 text-sm text-muted-foreground">
-                Tap the highlighted action:{" "}
-                <span className="font-semibold text-foreground">
-                  {activeStep.hotspotLabel}
-                </span>
-              </div>
-              {errorMessage ? (
-                <p role="alert" className="text-sm font-medium text-destructive">
-                  {errorMessage}
-                </p>
-              ) : null}
-            </CardContent>
-          </Card>
+          {/* Instruction card */}
+          <div className="w-full max-w-sm lg:max-w-md">
+            <Card className="rounded-[28px] border border-border/70 bg-card/95 shadow-[0_32px_100px_-48px_rgba(0,0,0,0.72)]">
+              <CardHeader className="space-y-4">
+                {/* Step progress dots */}
+                <div className="flex items-center gap-1">{stepDots}</div>
+
+                <div className="space-y-1">
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    {activeStep.sectionTitle}
+                  </p>
+                  <CardTitle className="font-display text-xl uppercase tracking-[0.12em] sm:text-2xl">
+                    {activeStep.stepTitle}
+                  </CardTitle>
+                </div>
+
+                <CardDescription className="text-sm leading-relaxed sm:text-base">
+                  {activeStep.instruction}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                {/* Hotspot hint */}
+                <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-background/55 p-4">
+                  {/* Pulsing dot indicator */}
+                  <div className="mt-0.5 flex-shrink-0">
+                    <span className="relative flex h-3 w-3">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+                      <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Tap the highlighted{" "}
+                    <span className="font-semibold text-foreground">
+                      {activeStep.hotspotLabel}
+                    </span>{" "}
+                    in the phone screen to continue.
+                  </p>
+                </div>
+
+                {errorMessage ? (
+                  <p role="alert" className="text-sm font-medium text-destructive">
+                    {errorMessage}
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
