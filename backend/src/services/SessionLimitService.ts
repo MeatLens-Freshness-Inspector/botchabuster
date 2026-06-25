@@ -27,7 +27,7 @@ export class SessionLimitService {
   constructor(
     private readonly limit: number = parseInt(process.env.SESSION_LIMIT ?? "2", 10),
     private readonly useDb: boolean = false,
-  ) {}
+  ) { }
 
   // ---- Public API --------------------------------------------------------
 
