@@ -4,6 +4,7 @@ import { authService } from "../services/AuthService";
 import { profileService } from "../services/ProfileService";
 import { auditLogService, type AuditLogWriteInput } from "../services/AuditLogService";
 import { passkeyService } from "../services/PasskeyService";
+import { getSessionLimitService } from "../services/SessionLimitService";
 
 export class AuthController {
   private resolveOrigin(req: Request): string {
@@ -45,6 +46,23 @@ export class AuthController {
 
       const result = await authService.signIn({ email, password });
       const isAdmin = await profileService.hasRole(result.user.id, "admin");
+
+      const sessionLimit = getSessionLimitService();
+      await sessionLimit.pruneExpiredSessions(result.user.id);
+      if (await sessionLimit.isAtLimit(result.user.id)) {
+        res.status(429).json({
+          error: "You are already signed in on the maximum number of devices. Please sign out from another device first.",
+        });
+        return;
+      }
+
+      if (result.session?.access_token && result.session.expires_at) {
+        await sessionLimit.registerSession(
+          result.user.id,
+          result.session.access_token,
+          result.session.expires_at,
+        );
+      }
 
       await this.writeAuditLogSafely({
         payload: {
@@ -128,6 +146,7 @@ export class AuthController {
       const isAdmin = await profileService.hasRole(user.id, "admin");
 
       await authService.signOut();
+      await getSessionLimitService().removeSession(accessToken);
 
       await this.writeAuditLogSafely({
         payload: {
@@ -317,6 +336,21 @@ export class AuthController {
         response: credential,
       });
       const isAdmin = await profileService.hasRole(result.user.id, "admin");
+
+      const sessionLimit = getSessionLimitService();
+      await sessionLimit.pruneExpiredSessions(result.user.id);
+      if (await sessionLimit.isAtLimit(result.user.id)) {
+        res.status(429).json({
+          error: "You are already signed in on the maximum number of devices. Please sign out from another device first.",
+        });
+        return;
+      }
+
+      await sessionLimit.registerSession(
+        result.user.id,
+        result.session.access_token,
+        result.session.expires_at,
+      );
 
       await this.writeAuditLogSafely({
         payload: {

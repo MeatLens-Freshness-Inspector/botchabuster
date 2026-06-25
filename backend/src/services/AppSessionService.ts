@@ -18,6 +18,7 @@ interface AppSessionPayload {
   sub: string;
   email: string | null;
   type: "app-session";
+  jti: string;
   iat: number;
   exp: number;
 }
@@ -51,6 +52,7 @@ export class AppSessionService {
       sub: user.id,
       email: user.email,
       type: "app-session",
+      jti: crypto.randomUUID(),
       iat: issuedAtSeconds,
       exp: expiresAtSeconds,
     } satisfies AppSessionPayload));
@@ -63,6 +65,25 @@ export class AppSessionService {
       expires_in: this.ttlSeconds,
       expires_at: expiresAtSeconds,
     };
+  }
+
+  /**
+   * Extracts the jti (session ID) from an app-session token without full
+   * signature verification. Returns null for non-app-session tokens.
+   */
+  getSessionId(accessToken: string): string | null {
+    const parts = accessToken.trim().split(".");
+    if (parts.length !== 3) return null;
+
+    try {
+      const parsedPayload = JSON.parse(decodeBase64Url(parts[1])) as Partial<AppSessionPayload>;
+      if (parsedPayload.iss !== "meatlens-app" || parsedPayload.type !== "app-session") {
+        return null;
+      }
+      return parsedPayload.jti ?? null;
+    } catch {
+      return null;
+    }
   }
 
   async getUserFromAccessToken(accessToken: string): Promise<AppSessionUser> {
