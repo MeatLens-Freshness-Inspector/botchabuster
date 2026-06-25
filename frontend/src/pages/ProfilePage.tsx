@@ -16,6 +16,7 @@ import {
   UserRound,
   KeyRound,
   Trash2,
+  Sparkles,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -480,28 +481,74 @@ const ProfilePage = () => {
               </Button>
             </section>
 
-            {!isAdmin ? (
-              <section className="rounded-3xl border border-border/70 bg-card/90 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-display text-lg font-semibold">Help</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Replay the guided demos for Inspect, History, safety
-                      reminders, and profile orientation.
-                    </p>
+            <section className="rounded-3xl border border-border/70 bg-card/90 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-display text-lg font-semibold">Tutorials</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Reopen the full onboarding walkthrough or jump into
+                    focused demo replays whenever you need a refresher.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-3 lg:grid-cols-[1.08fr_0.92fr]">
+                <div className="rounded-2xl border border-primary/20 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.18),transparent_52%),linear-gradient(180deg,hsl(var(--background)/0.92),hsl(var(--background)/0.74))] p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.18em] text-primary/90">
+                        Full Walkthrough
+                      </p>
+                      <p className="mt-1 font-display text-base font-semibold">
+                        Replay the complete onboarding tutorial
+                      </p>
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                        Run the same safety, profile, inspect, and history
+                        sequence from your profile tab without changing your
+                        account state.
+                      </p>
+                    </div>
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-primary/20 bg-[hsl(var(--primary)/0.14)]">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    className="mt-4 h-10 rounded-xl px-5 font-display text-xs uppercase tracking-[0.16em]"
+                    onClick={() => navigate("/profile/tutorial")}
+                  >
+                    Replay Full Tutorial
+                  </Button>
+                </div>
+
+                <div className="rounded-2xl border border-border/70 bg-background/55 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                        Quick Demos
+                      </p>
+                      <p className="mt-1 font-display text-base font-semibold">
+                        Open the tutorial library
+                      </p>
+                      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                        Jump straight to Inspect, History, safety reminders,
+                        or profile orientation demos.
+                      </p>
+                    </div>
+                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-background/70">
+                      <LifeBuoy className="h-5 w-5 text-primary" />
+                    </div>
                   </div>
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-10 rounded-xl border-border/80 text-xs uppercase tracking-wider"
+                    className="mt-4 h-10 rounded-xl border-border/80 px-5 text-xs uppercase tracking-[0.16em]"
                     onClick={() => navigate("/profile/help")}
                   >
-                    <LifeBuoy className="mr-2 h-4 w-4" />
                     Open Help Tutorials
                   </Button>
                 </div>
-              </section>
-            ) : null}
+              </div>
+            </section>
           </div>
 
           <div className="space-y-4">

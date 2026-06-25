@@ -1,4 +1,4 @@
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { TutorialPlayer } from "@/components/tutorial/TutorialPlayer";
-import { useAuth } from "@/contexts/AuthContext";
 import {
   helpTutorialCards,
   isTutorialId,
@@ -19,11 +18,6 @@ import {
 const ProfileHelpPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { isAdmin } = useAuth();
-
-  if (isAdmin) {
-    return <Navigate to="/profile" replace />;
-  }
 
   const demoParam = searchParams.get("demo");
   const activeDemo = isTutorialId(demoParam) ? demoParam : null;

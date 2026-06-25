@@ -26,6 +26,7 @@ import DesktopAdminDashboard from "./pages/DesktopAdminDashboard";
 import AdminDashboardWrapper from "./pages/AdminDashboardWrapper";
 import ProfilePage from "./pages/ProfilePage";
 import ProfileHelpPage from "./pages/ProfileHelpPage";
+import ProfileTutorialPage from "./pages/ProfileTutorialPage";
 import MessagesPage from "./pages/MessagesPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/NotFound";
@@ -113,6 +114,7 @@ const App = () => {
               <Route path="/messages" element={<ProtectedRoute><AppLayout><MessagesPage /></AppLayout></ProtectedRoute>} />
               <Route path="/dashboard" element={<Navigate to="/history" replace />} />
               <Route path="/profile" element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
+              <Route path="/profile/tutorial" element={<ProtectedRoute><AppLayout><ProfileTutorialPage /></AppLayout></ProtectedRoute>} />
               <Route path="/profile/help" element={<ProtectedRoute><AppLayout><ProfileHelpPage /></AppLayout></ProtectedRoute>} />
 
               {/* Admin routes */}
