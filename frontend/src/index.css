@@ -151,3 +151,8 @@
     padding-top: env(safe-area-inset-top, 0px);
   }
 }
+
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
