@@ -33,6 +33,8 @@ import {
   RefreshCcw,
   ShieldCheck,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   UserPlus,
   Pencil,
   MapPin,
@@ -221,6 +223,7 @@ const AdminDashboard = () => {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [isSavingUser, setIsSavingUser] = useState(false);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+  const [auditLogPage, setAuditLogPage] = useState(1);
   const [logsLoading, setLogsLoading] = useState(false);
   const [reportStartDate, setReportStartDate] = useState(() => format(subDays(new Date(), REPORT_DEFAULT_RANGE_DAYS - 1), "yyyy-MM-dd"));
   const [reportEndDate, setReportEndDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
@@ -1350,6 +1353,10 @@ const AdminDashboard = () => {
   const activeTabConfig = tabs.find((tab) => tab.key === activeTab) ?? tabs[0];
   const ActiveTabIcon = activeTabConfig.icon;
 
+  const auditLogsPerPage = 5;
+  const paginatedAuditLogs = auditLogs.slice((auditLogPage - 1) * auditLogsPerPage, auditLogPage * auditLogsPerPage);
+  const totalAuditLogPages = Math.ceil(auditLogs.length / auditLogsPerPage);
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] pb-24">
       <div className="mx-auto w-full max-w-7xl min-w-0 px-4 pt-4">
@@ -2196,8 +2203,9 @@ const AdminDashboard = () => {
                   ) : auditLogs.length === 0 ? (
                     <p className="py-8 text-center text-sm text-muted-foreground">No audit logs found.</p>
                   ) : (
+                    <>
                     <div className="space-y-3">
-                      {auditLogs.map((log) => {
+                      {paginatedAuditLogs.map((log) => {
                         const payload = log.payload ?? {};
                         const eventType = parsePayloadText(payload, "event_type") || "unknown.event";
                         const eventTime = parsePayloadText(payload, "event_time") || log.created_at;
@@ -2230,6 +2238,36 @@ const AdminDashboard = () => {
                         );
                       })}
                     </div>
+                    {totalAuditLogPages > 1 && (
+                      <div className="mt-4 flex items-center justify-between border-t border-border/70 pt-4">
+                        <p className="text-xs text-muted-foreground">
+                          Page {auditLogPage} of {totalAuditLogPages}
+                        </p>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setAuditLogPage((p) => Math.max(1, p - 1))}
+                            disabled={auditLogPage === 1}
+                            className="h-8 px-2"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                            <span className="sr-only">Previous</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setAuditLogPage((p) => Math.min(totalAuditLogPages, p + 1))}
+                            disabled={auditLogPage === totalAuditLogPages}
+                            className="h-8 px-2"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                            <span className="sr-only">Next</span>
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    </>
                   )}
                 </CardContent>
               </Card>
