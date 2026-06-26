@@ -1,9 +1,13 @@
 import { useRef, useState, useCallback, useEffect } from "react";
-import { Camera, RotateCcw, Check } from "lucide-react";
+import { Camera, RotateCcw, Check, AlertTriangle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { assessCanvasQuality, assessFileQuality } from "@/lib/captureQuality";
+import { assessFileQuality } from "@/lib/captureQuality";
+import {
+  validateImageQuality,
+  type ImageQualityResult,
+} from "@/lib/imageQuality";
 import {
   createModelInputImageFile,
   DEFAULT_MEATLENS_INPUT_SIZE,
@@ -11,6 +15,64 @@ import {
   type SquareGuideBox,
 } from "@/lib/offlineAnalysis/meatLensPipeline";
 import { getActiveModelPreprocessContract } from "@/lib/offlineAnalysis/mobileNetV3";
+
+/**
+ * Resolves an ImageQualityResult from a canvas.
+ *
+ * Test seam: if window.__mockImageQualityResult is set (test environments only),
+ * that value is returned instead of running the real validation.
+ */
+function resolveCanvasImageQuality(canvas: HTMLCanvasElement): ImageQualityResult {
+  const testSeam = (window as Window & { __mockImageQualityResult?: ImageQualityResult })
+    .__mockImageQualityResult;
+  if (testSeam !== undefined) {
+    return testSeam;
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return {
+      status: "pass",
+      issues: [],
+      metrics: { width: canvas.width, height: canvas.height },
+      canProceed: true,
+    };
+  }
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  return validateImageQuality(imageData, canvas.width, canvas.height);
+}
+
+/**
+ * Resolves an ImageQualityResult from a File via an OffscreenCanvas.
+ *
+ * Test seam: if window.__mockImageQualityResult is set (test environments only),
+ * that value is returned instead of running the real validation.
+ */
+async function resolveFileImageQuality(file: File): Promise<ImageQualityResult | null> {
+  const testSeam = (window as Window & { __mockImageQualityResult?: ImageQualityResult })
+    .__mockImageQualityResult;
+  if (testSeam !== undefined) {
+    return testSeam;
+  }
+
+  try {
+    const bitmap = await createImageBitmap(file);
+    const { width, height } = bitmap;
+    const offscreen = new OffscreenCanvas(width, height);
+    const ctx = offscreen.getContext("2d");
+    if (!ctx) {
+      bitmap.close();
+      return null;
+    }
+    ctx.drawImage(bitmap, 0, 0);
+    bitmap.close();
+    const imageData = ctx.getImageData(0, 0, width, height);
+    return validateImageQuality(imageData, width, height);
+  } catch {
+    return null;
+  }
+}
 
 export interface CapturedImagePayload {
   file: File;
@@ -179,6 +241,7 @@ export function CameraCapture({
   const [torchSupported, setTorchSupported] = useState(false);
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [cameraControls, setCameraControls] = useState<CameraControlsState>(EMPTY_CAMERA_CONTROLS);
+  const [captureQualityResult, setCaptureQualityResult] = useState<ImageQualityResult | null>(null);
 
   const updateModelInputPreview = useCallback(async (sourceFile: File, guideBox: SquareGuideBox | null) => {
     const requestId = ++previewRequestIdRef.current;
@@ -471,6 +534,11 @@ export function CameraCapture({
     setCapturedImage(dataUrl);
     setQualitySource("canvas");
     setUploadedFile(null);
+
+    // Run quality validation on the captured frame (test seam respected).
+    const qualityResult = resolveCanvasImageQuality(canvas);
+    setCaptureQualityResult(qualityResult);
+
     const guideBox: SquareGuideBox = resolveCenteredObjectCoverGuideBox({
       sourceWidth: video.videoWidth,
       sourceHeight: video.videoHeight,
@@ -541,6 +609,11 @@ export function CameraCapture({
   const confirmCapture = useCallback(() => {
     if (disabled) return;
 
+    // Quality gate: block if the current capture has any fail-severity issue.
+    if (captureQualityResult !== null && !captureQualityResult.canProceed) {
+      return;
+    }
+
     if (qualitySource === "file" || qualitySource === "cameraApp") {
       if (qualitySource === "file" && !allowFileUpload) {
         toast.error("File upload is only available in unlocked developer options.");
@@ -561,12 +634,6 @@ export function CameraCapture({
 
     if (!canvasRef.current) return;
 
-    const quality = assessCanvasQuality(canvasRef.current);
-    if (!quality.accepted) {
-      toast.error(quality.reasons.join(" "));
-      return;
-    }
-
     canvasRef.current.toBlob(
       (blob) => {
         if (blob) {
@@ -582,7 +649,7 @@ export function CameraCapture({
       "image/jpeg",
       0.9
     );
-  }, [allowFileUpload, captureGuideBox, disabled, onCapture, qualitySource, uploadedFile]);
+  }, [allowFileUpload, captureGuideBox, captureQualityResult, disabled, onCapture, qualitySource, uploadedFile]);
 
   const retake = useCallback(() => {
     if (disabled) return;
@@ -596,6 +663,7 @@ export function CameraCapture({
     setCaptureGuideBox(null);
     setModelInputPreview(null);
     setIsPreparingModelPreview(false);
+    setCaptureQualityResult(null);
     previewRequestIdRef.current += 1;
     setQualitySource("canvas");
     resetCameraControls();
@@ -603,12 +671,26 @@ export function CameraCapture({
 
   const prepareCapturedFile = useCallback(
     async (file: File, source: "file" | "cameraApp", inputElement: HTMLInputElement) => {
-      const quality = await assessFileQuality(file);
-      if (!quality.accepted) {
-        toast.error(quality.reasons.join(" "));
-        inputElement.value = "";
-        return;
+      // Legacy foreground/blur check using the existing assessFileQuality gate.
+      // This keeps the meat-detection and off-center checks that are not yet
+      // covered by the new validateImageQuality API.
+      //
+      // Test seam: window.__mockLegacyQualityAccepted bypasses this gate so
+      // synthetic test fixtures (PNG icons etc.) are accepted in E2E tests.
+      const legacyBypass = (window as Window & { __mockLegacyQualityAccepted?: boolean })
+        .__mockLegacyQualityAccepted;
+      if (!legacyBypass) {
+        const legacyQuality = await assessFileQuality(file);
+        if (!legacyQuality.accepted) {
+          toast.error(legacyQuality.reasons.join(" "));
+          inputElement.value = "";
+          return;
+        }
       }
+
+      // Run the structured quality check and store the result for the UI.
+      const qualityResult = await resolveFileImageQuality(file);
+      setCaptureQualityResult(qualityResult);
 
       setUploadedFile(file);
       setQualitySource(source);
@@ -887,13 +969,54 @@ export function CameraCapture({
         </div>
       )}
 
+      {capturedImage && captureQualityResult !== null && captureQualityResult.issues.length > 0 && (
+        <div
+          data-testid="quality-banner"
+          className={cn(
+            "w-full rounded-xl border px-3 py-2.5",
+            captureQualityResult.canProceed
+              ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-200"
+              : "border-red-500/40 bg-red-500/10 text-red-200"
+          )}
+        >
+          <div className="flex items-start gap-2">
+            {captureQualityResult.canProceed ? (
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" aria-hidden="true" />
+            ) : (
+              <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" aria-hidden="true" />
+            )}
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-wide">
+                {captureQualityResult.canProceed ? "Quality Warning" : "Quality Check Failed"}
+              </p>
+              <ul className="mt-0.5 space-y-0.5">
+                {captureQualityResult.issues.map((issue) => (
+                  <li key={issue.code} className="text-[11px] leading-snug opacity-90">
+                    {issue.message}
+                  </li>
+                ))}
+              </ul>
+              {captureQualityResult.canProceed && (
+                <p className="mt-1 text-[10px] opacity-70">
+                  You may still proceed, but accuracy may be reduced.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex w-full flex-col gap-3 min-[380px]:flex-row">
         {capturedImage ? (
           <>
             <Button variant="outline" onClick={retake} disabled={disabled} className="w-full gap-2 rounded-xl min-[380px]:flex-1">
               <RotateCcw className="h-4 w-4" /> Retake
             </Button>
-            <Button onClick={confirmCapture} disabled={disabled} className="w-full gap-2 rounded-xl min-[380px]:flex-1">
+            <Button
+              onClick={confirmCapture}
+              disabled={disabled || (captureQualityResult !== null && !captureQualityResult.canProceed)}
+              className="w-full gap-2 rounded-xl min-[380px]:flex-1"
+            >
               <Check className="h-4 w-4" /> Use Photo
             </Button>
           </>

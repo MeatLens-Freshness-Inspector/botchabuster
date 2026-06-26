@@ -22,6 +22,7 @@ import {
   DEFAULT_MEATLENS_INPUT_SIZE,
   type SquareGuideBox,
 } from "./meatLensPipeline";
+import { validateImageQuality, type ImageQualityResult } from "@/lib/imageQuality";
 
 export { prewarmModel } from "./mobileNetV3";
 
@@ -287,7 +288,40 @@ async function waitForModelLoad(timeoutMs: number): Promise<boolean> {
 }
 
 /**
+ * Validates image quality from a File using an off-screen canvas.
+ * Returns the structured ImageQualityResult so the caller can gate inference.
+ *
+ * Operates on the raw capture file — NOT the preprocessed 224×224 model input.
+ */
+async function assessFileImageQuality(file: File): Promise<ImageQualityResult | null> {
+  try {
+    const bitmap = await createImageBitmap(file);
+    const { width, height } = bitmap;
+
+    const canvas = new OffscreenCanvas(width, height);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      bitmap.close();
+      return null;
+    }
+
+    ctx.drawImage(bitmap, 0, 0);
+    bitmap.close();
+
+    const imageData = ctx.getImageData(0, 0, width, height);
+    return validateImageQuality(imageData, width, height);
+  } catch {
+    // If quality assessment itself fails (e.g., unsupported format), do not block inference.
+    return null;
+  }
+}
+
+/**
  * Run full offline analysis on the captured image file.
+ *
+ * Before invoking the ONNX model, the raw capture is validated for minimum
+ * quality (resolution, brightness, sharpness). If validation fails, an error
+ * is thrown with the issue descriptions so the UI can prompt a retake.
  *
  * The model is given a short load window; if it is still unavailable,
  * analysis returns an error so callers can retry after warmup.
@@ -297,6 +331,31 @@ export async function analyzeOffline(
   meatType: string,
   options: AnalyzeOfflineOptions = {}
 ): Promise<AnalysisResult> {
+  // --- Pre-inference quality gate -------------------------------------------
+  // Validate image quality on the original capture before any preprocessing.
+  // Warnings are logged but do not block. Hard failures abort early so we
+  // never waste model load time or inference compute on unusable frames.
+  const qualityResult = await assessFileImageQuality(imageFile);
+  if (qualityResult !== null) {
+    if (!qualityResult.canProceed) {
+      const failMessages = qualityResult.issues
+        .filter((issue) => issue.severity === "fail")
+        .map((issue) => issue.message)
+        .join(" ");
+      throw new Error(
+        `Image quality check failed. Retake the photo and ensure the sample is well-lit and in focus. Details: ${failMessages}`
+      );
+    }
+
+    if (qualityResult.issues.length > 0) {
+      console.warn(
+        "[Model][QualityGate] Image quality warnings (inference will proceed):",
+        qualityResult.issues.map((i) => `[${i.code}] ${i.message}`).join("; ")
+      );
+    }
+  }
+  // --------------------------------------------------------------------------
+
   const preprocessContract = getActiveModelPreprocessContract();
   const requiresSegmentedCenterRoi = preprocessContract === "segmented_center_roi";
 
