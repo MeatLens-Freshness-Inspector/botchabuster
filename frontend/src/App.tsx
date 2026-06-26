@@ -29,7 +29,7 @@ import ProfileHelpPage from "./pages/ProfileHelpPage";
 import ProfileTutorialPage from "./pages/ProfileTutorialPage";
 import MessagesPage from "./pages/MessagesPage";
 import OnboardingPage from "./pages/OnboardingPage";
-import NotFound from "./pages/NotFound";
+import NotFound from "./pages/not-found/NotFound";
 
 const queryClient = new QueryClient({
   defaultOptions: {

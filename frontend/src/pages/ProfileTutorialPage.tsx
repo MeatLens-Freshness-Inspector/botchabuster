@@ -1,24 +1,10 @@
-import { useNavigate } from "react-router-dom";
-import { TutorialPlayer } from "@/components/tutorial/TutorialPlayer";
-import { firstRunOnboardingSteps } from "@/lib/tutorials/tutorialDefinitions";
+import { ProfileTutorialPageView } from "./user/tutorials/components/ProfileTutorialPageView";
+import { useProfileTutorialPage } from "./user/tutorials/hooks/useProfileTutorialPage";
 
 const ProfileTutorialPage = () => {
-  const navigate = useNavigate();
+  const profileTutorialPage = useProfileTutorialPage();
 
-  return (
-    <TutorialPlayer
-      steps={firstRunOnboardingSteps}
-      finishLabel="Back to Profile"
-      completionTitle="Tutorial replay complete"
-      completionBody="This replay used simulated data only and did not change your account."
-      onFinish={() => navigate("/profile")}
-      onSkip={() => navigate("/profile")}
-      secondaryAction={{
-        label: "Open Help",
-        onClick: () => navigate("/profile/help"),
-      }}
-    />
-  );
+  return <ProfileTutorialPageView {...profileTutorialPage} />;
 };
 
 export default ProfileTutorialPage;
