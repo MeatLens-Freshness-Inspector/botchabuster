@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
 import { InspectionListItem } from "@/components/InspectionListItem";
+import { InspectionDetailSheet } from "@/components/InspectionDetailSheet";
 import { useInspections } from "@/hooks/useInspections";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, ClipboardList, Search, CalendarDays, BarChart3, CheckCircle2, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import type { FreshnessClassification } from "@/types/inspection";
+import type { Inspection } from "@/types/inspection";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { toast } from "sonner";
 
@@ -34,6 +36,7 @@ const HistoryPage = () => {
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedReportDay, setSelectedReportDay] = useState(() => format(new Date(), "yyyy-MM-dd"));
+  const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
   const PAGE_SIZE = 6;
 
   const totalInspections = inspections?.length ?? 0;
@@ -488,7 +491,13 @@ const HistoryPage = () => {
                 </div>
               ) : (
                 <>
-                  {pagedInspections.map((inspection) => <InspectionListItem key={inspection.id} inspection={inspection} />)}
+                  {pagedInspections.map((inspection) => (
+                    <InspectionListItem
+                      key={inspection.id}
+                      inspection={inspection}
+                      onSelect={setSelectedInspection}
+                    />
+                  ))}
                   {totalPages > 1 && (
                     <div className="flex items-center justify-between gap-2 pt-1">
                       <Button
@@ -597,6 +606,12 @@ const HistoryPage = () => {
           </section>
         </div>
       </div>
+
+      <InspectionDetailSheet
+        inspection={selectedInspection}
+        open={selectedInspection !== null}
+        onOpenChange={(open) => { if (!open) setSelectedInspection(null); }}
+      />
     </div>
   );
 };

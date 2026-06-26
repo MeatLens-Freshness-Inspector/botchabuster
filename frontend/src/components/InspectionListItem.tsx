@@ -11,10 +11,11 @@ import { MapPin, Hash } from "lucide-react";
 interface InspectionListItemProps {
   inspection: Inspection;
   onClick?: () => void;
+  onSelect?: (inspection: Inspection) => void;
   className?: string;
 }
 
-export function InspectionListItem({ inspection, onClick, className }: InspectionListItemProps) {
+export function InspectionListItem({ inspection, onClick, onSelect, className }: InspectionListItemProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const confidenceTextClass = getConfidenceTextClass(inspection.confidence_score);
 
@@ -32,7 +33,7 @@ export function InspectionListItem({ inspection, onClick, className }: Inspectio
         "cursor-pointer rounded-2xl border border-border/70 bg-card/95 transition-all hover:-translate-y-0.5 hover:shadow-[0_16px_35px_-24px_rgba(0,0,0,0.75)]",
         className
       )}
-      onClick={onClick}
+      onClick={() => { onClick?.(); onSelect?.(inspection); }}
     >
       <CardContent
         data-testid="inspection-card-layout"
