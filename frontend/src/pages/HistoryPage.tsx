@@ -1,8 +1,8 @@
-import { HistoryHeader } from "./history/components/HistoryHeader";
-import { InspectionTimelineSection } from "./history/components/InspectionTimelineSection";
-import { HistorySidebar } from "./history/components/HistorySidebar";
+import { HistoryHeader } from "./user/history/components/HistoryHeader";
+import { InspectionTimelineSection } from "./user/history/components/InspectionTimelineSection";
+import { HistorySidebar } from "./user/history/components/HistorySidebar";
 import { InspectionDetailSheet } from "@/components/InspectionDetailSheet";
-import { useHistoryPage } from "./history/hooks/useHistoryPage";
+import { useHistoryPage } from "./user/history/hooks/useHistoryPage";
 
 const HistoryPage = () => {
   const {

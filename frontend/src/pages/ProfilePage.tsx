@@ -2,10 +2,10 @@ import { Loader2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PrivacyPolicyDialog } from "@/components/PrivacyPolicyDialog";
 import { TermsAndConditionsDialog } from "@/components/TermsAndConditionsDialog";
-import { ProfilePageHeader } from "./profile/components/ProfilePageHeader";
-import { ProfileOverviewColumn } from "./profile/components/ProfileOverviewColumn";
-import { ProfileSettingsColumn } from "./profile/components/ProfileSettingsColumn";
-import { useProfilePage } from "./profile/hooks/useProfilePage";
+import { ProfilePageHeader } from "./user/profile/components/ProfilePageHeader";
+import { ProfileOverviewColumn } from "./user/profile/components/ProfileOverviewColumn";
+import { ProfileSettingsColumn } from "./user/profile/components/ProfileSettingsColumn";
+import { useProfilePage } from "./user/profile/hooks/useProfilePage";
 
 const ProfilePage = () => {
   const {

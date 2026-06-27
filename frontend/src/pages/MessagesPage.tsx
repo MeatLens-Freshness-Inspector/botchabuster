@@ -1,7 +1,7 @@
-import { MessagesHeader } from "./messages/components/MessagesHeader";
-import { ContactsPanel } from "./messages/components/ContactsPanel";
-import { ThreadPanel } from "./messages/components/ThreadPanel";
-import { useMessagesPage } from "./messages/hooks/useMessagesPage";
+import { MessagesHeader } from "./user/messages/components/MessagesHeader";
+import { ContactsPanel } from "./user/messages/components/ContactsPanel";
+import { ThreadPanel } from "./user/messages/components/ThreadPanel";
+import { useMessagesPage } from "./user/messages/hooks/useMessagesPage";
 
 export default function MessagesPage() {
   const {
