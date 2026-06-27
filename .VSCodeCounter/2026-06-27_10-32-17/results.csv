@@ -1,0 +1,367 @@
+"filename", "language", "JavaScript", "Markdown", "HTML", "JSON", "YAML", "TypeScript", "JSON with Comments", "Docker", "Properties", "TypeScript JSX", "PostCSS", "MS SQL", "WebAssembly Text Format", "comment", "blank", "total"
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\.github\workflows\keep-awake.yml", "YAML", 0, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 15
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\IMAGE_ACCESS_CONTROL.md", "Markdown", 0, 78, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 103
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\MIGRATION_SUMMARY.md", "Markdown", 0, 84, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 108
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\README.md", "Markdown", 0, 119, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 39, 158
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\STORAGE_SETUP.md", "Markdown", 0, 76, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 94
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\Dockerfile", "Docker", 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 0, 0, 0, 3, 13, 34
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\README.md", "Markdown", 0, 41, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 51
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\model-train-james-download\new6_mobilenetv3small_8fold_processed_roi_cnn_only.ipynb", "JSON", 0, 0, 0, 3202, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3203
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\package.json", "JSON", 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 36
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\config\cors.ts", "TypeScript", 0, 0, 0, 0, 0, 43, 0, 0, 0, 0, 0, 0, 0, 0, 13, 56
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\config\index.ts", "TypeScript", 0, 0, 0, 0, 0, 39, 0, 0, 0, 0, 0, 0, 0, 0, 6, 45
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\AccessCodeController.ts", "TypeScript", 0, 0, 0, 0, 0, 164, 0, 0, 0, 0, 0, 0, 0, 0, 22, 186
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\AnalysisController.ts", "TypeScript", 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 4, 26
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\AuditLogController.ts", "TypeScript", 0, 0, 0, 0, 0, 120, 0, 0, 0, 0, 0, 0, 0, 0, 22, 142
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\AuthController.ts", "TypeScript", 0, 0, 0, 0, 0, 372, 0, 0, 0, 0, 0, 0, 0, 0, 56, 428
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\ChatController.ts", "TypeScript", 0, 0, 0, 0, 0, 129, 0, 0, 0, 0, 0, 0, 0, 0, 19, 148
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\DeveloperOptionsController.ts", "TypeScript", 0, 0, 0, 0, 0, 102, 0, 0, 0, 0, 0, 0, 0, 0, 21, 123
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\InspectionController.ts", "TypeScript", 0, 0, 0, 0, 0, 181, 0, 0, 0, 0, 0, 0, 0, 0, 26, 207
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\MarketLocationController.ts", "TypeScript", 0, 0, 0, 0, 0, 113, 0, 0, 0, 0, 0, 0, 0, 0, 22, 135
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\ProfileController.ts", "TypeScript", 0, 0, 0, 0, 0, 263, 0, 0, 0, 0, 0, 0, 0, 0, 30, 293
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\StatsController.ts", "TypeScript", 0, 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 0, 2, 15
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\UploadController.ts", "TypeScript", 0, 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 0, 12, 7, 53
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\UserChatController.ts", "TypeScript", 0, 0, 0, 0, 0, 68, 0, 0, 0, 0, 0, 0, 0, 0, 12, 80
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\integrations\supabase.ts", "TypeScript", 0, 0, 0, 0, 0, 21, 0, 0, 0, 0, 0, 0, 0, 0, 6, 27
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\middleware\upload.ts", "TypeScript", 0, 0, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 4, 29
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\models\InspectionResult.ts", "TypeScript", 0, 0, 0, 0, 0, 26, 0, 0, 0, 0, 0, 0, 0, 0, 4, 30
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\accessCodes.ts", "TypeScript", 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 4, 14
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\analysis.ts", "TypeScript", 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 5, 15
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\auditLogs.ts", "TypeScript", 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 4, 11
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\auth.ts", "TypeScript", 0, 0, 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 0, 0, 4, 22
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\chat.ts", "TypeScript", 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 4, 10
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\developerOptions.ts", "TypeScript", 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 4, 11
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\inspections.ts", "TypeScript", 0, 0, 0, 0, 0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 4, 14
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\marketLocations.ts", "TypeScript", 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 4, 12
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\profiles.ts", "TypeScript", 0, 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 1, 4, 18
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\stats.ts", "TypeScript", 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 4, 10
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\upload.ts", "TypeScript", 0, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 1, 4, 16
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\routes\userChat.ts", "TypeScript", 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 4, 12
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\server.ts", "TypeScript", 0, 0, 0, 0, 0, 85, 0, 0, 0, 0, 0, 0, 0, 3, 17, 105
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\AccessCodeService.ts", "TypeScript", 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 11, 75
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\AppSessionService.ts", "TypeScript", 0, 0, 0, 0, 0, 140, 0, 0, 0, 0, 0, 0, 0, 4, 26, 170
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\AuditLogService.ts", "TypeScript", 0, 0, 0, 0, 0, 171, 0, 0, 0, 0, 0, 0, 0, 0, 36, 207
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\AuthService.ts", "TypeScript", 0, 0, 0, 0, 0, 201, 0, 0, 0, 0, 0, 0, 0, 1, 48, 250
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\DeveloperOptionsService.ts", "TypeScript", 0, 0, 0, 0, 0, 86, 0, 0, 0, 0, 0, 0, 0, 0, 24, 110
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\InspectionService.ts", "TypeScript", 0, 0, 0, 0, 0, 153, 0, 0, 0, 0, 0, 0, 0, 0, 41, 194
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\MarketLocationService.ts", "TypeScript", 0, 0, 0, 0, 0, 50, 0, 0, 0, 0, 0, 0, 0, 0, 14, 64
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\PasskeyCeremonyStore.ts", "TypeScript", 0, 0, 0, 0, 0, 42, 0, 0, 0, 0, 0, 0, 0, 0, 12, 54
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\PasskeyService.ts", "TypeScript", 0, 0, 0, 0, 0, 265, 0, 0, 0, 0, 0, 0, 0, 0, 48, 313
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\ProfileService.ts", "TypeScript", 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0, 0, 0, 2, 53, 310
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\SessionLimitService.ts", "TypeScript", 0, 0, 0, 0, 0, 84, 0, 0, 0, 0, 0, 0, 0, 19, 21, 124
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\StatsService.ts", "TypeScript", 0, 0, 0, 0, 0, 48, 0, 0, 0, 0, 0, 0, 0, 3, 12, 63
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\StorageService.ts", "TypeScript", 0, 0, 0, 0, 0, 78, 0, 0, 0, 0, 0, 0, 0, 19, 16, 113
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\UserChatService.ts", "TypeScript", 0, 0, 0, 0, 0, 179, 0, 0, 0, 0, 0, 0, 0, 0, 39, 218
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\types\inspection.ts", "TypeScript", 0, 0, 0, 0, 0, 29, 0, 0, 0, 0, 0, 0, 0, 0, 2, 31
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\functions\chat\index.ts", "TypeScript", 0, 0, 0, 0, 0, 118, 0, 0, 0, 0, 0, 0, 0, 0, 13, 131
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260313113439_12beb873-661e-4be0-b120-769e29e49af8.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 37, 0, 0, 10, 47
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260313114452_8a069c85-ba36-44a0-a563-9f459050c478.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 91, 0, 8, 21, 120
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260313121403_6ae6f63c-5d00-49d0-8f39-826bae180616.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 3, 7, 44
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260322000000_storage_policies.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 48, 11, 65
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260414000000_add_inspector_code_to_profiles.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 0, 0, 5, 31
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260415001000_add_is_dark_mode_to_profiles.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 3
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260415002000_add_client_submission_id_to_inspections.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 2, 7
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260415003000_add_show_detailed_results_to_profiles.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 1, 3
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260502000000_add_not_fresh_classification.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 2
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260503001000_add_market_locations.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 0, 0, 6, 33
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260508000000_fix_rls_policies.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 24, 18, 74
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260508010000_add_audit_logs.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0, 8, 42
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260508121000_add_captured_at_to_inspections.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 4, 13
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260508193000_harden_audit_logs_rls.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 2, 6, 23
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260517090000_add_user_chat_messages.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 0, 0, 10, 45
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260531010000_add_onboarding_fields_to_profiles.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1, 4
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260620010000_add_passkey_credentials.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 3, 19
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260624000000_add_passkey_credentials_rls.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 4, 14
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260625010000_add_user_sessions.sql", "MS SQL", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 0, 4, 5, 21
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\templates\README.md", "Markdown", 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 38
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\templates\confirmation.html", "HTML", 0, 0, 173, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 174
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\templates\email_change.html", "HTML", 0, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 60
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\templates\invite.html", "HTML", 0, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 60
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\templates\magic_link.html", "HTML", 0, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 60
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\templates\reauthentication.html", "HTML", 0, 0, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 51
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\templates\recovery.html", "HTML", 0, 0, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 60
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\test\AppSessionService.test.ts", "TypeScript", 0, 0, 0, 0, 0, 56, 0, 0, 0, 0, 0, 0, 0, 0, 13, 69
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\test\PasskeyCeremonyStore.test.ts", "TypeScript", 0, 0, 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 0, 9, 44
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\test\SessionLimitService.test.ts", "TypeScript", 0, 0, 0, 0, 0, 67, 0, 0, 0, 0, 0, 0, 0, 3, 14, 84
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\tsconfig.json", "JSON with Comments", 0, 0, 0, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 1, 26
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\docker-compose.yml", "YAML", 0, 0, 0, 0, 39, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 42
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\documentation\ARCHITECTURE.md", "Markdown", 0, 400, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 54, 454
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\documentation\DEPLOYMENT.md", "Markdown", 0, 143, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 72, 215
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\documentation\GETTING_STARTED.md", "Markdown", 0, 141, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 53, 194
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\documentation\PROJECT_OVERVIEW.md", "Markdown", 0, 150, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 37, 187
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\documentation\README.md", "Markdown", 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 19
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\documentation\backend_documentation.md", "Markdown", 0, 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 85
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\documentation\frontend_documentation.md", "Markdown", 0, 72, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11, 83
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\Dockerfile", "Docker", 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 6, 10, 31
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\README.md", "Markdown", 0, 50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 73
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\components.json", "JSON", 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 21
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\eslint.config.js", "JavaScript", 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 27
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\index.html", "HTML", 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 23
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\nginx.conf", "Properties", 0, 0, 0, 0, 0, 0, 0, 0, 23, 0, 0, 0, 0, 3, 6, 32
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\package-lock.json", "JSON", 0, 0, 0, 11573, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 11574
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\package.json", "JSON", 0, 0, 0, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 97
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\playwright-fixture.ts", "TypeScript", 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 1, 4
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\playwright-report\index.html", "HTML", 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 90
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\playwright.config.ts", "TypeScript", 0, 0, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 4, 29
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\postcss.config.js", "JavaScript", 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 7
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\model\NEW-meatlens_best_model_metadata.json", "JSON", 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 26
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\model\model2\meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json", "JSON", 0, 0, 0, 53, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 53
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\models\mobilenetv3_meat\NEW-meatlens_best_model_metadata.json", "JSON", 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 26
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\models\mobilenetv3_meat\meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata (1).json", "JSON", 0, 0, 0, 28, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\ort\ort-wasm-simd-threaded.asyncify.mjs", "JavaScript", 112, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 113
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\ort\ort-wasm-simd-threaded.asyncify.wasm", "WebAssembly Text Format", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 525717, 5041, 12647, 543405
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\ort\ort-wasm-simd-threaded.jsep.mjs", "JavaScript", 106, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 107
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\ort\ort-wasm-simd-threaded.jsep.wasm", "WebAssembly Text Format", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 593867, 0, 13990, 607857
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\ort\ort-wasm-simd-threaded.jspi.mjs", "JavaScript", 107, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 108
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\ort\ort-wasm-simd-threaded.jspi.wasm", "WebAssembly Text Format", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 273843, 7882, 5847, 287572
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\ort\ort-wasm-simd-threaded.mjs", "JavaScript", 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 60
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\public\ort\ort-wasm-simd-threaded.wasm", "WebAssembly Text Format", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 260594, 0, 4632, 265226
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\App.css", "PostCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 37, 0, 0, 0, 6, 43
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\App.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 113, 0, 0, 0, 6, 15, 134
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\AIChatbot.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 165, 0, 0, 0, 3, 16, 184
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\AnalysisResultCard.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 119, 0, 0, 0, 0, 7, 126
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\BottomNav.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 59, 0, 0, 0, 0, 4, 63
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\CameraCapture.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 945, 0, 0, 0, 21, 110, 1076
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ConfirmDialog.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0, 0, 0, 3, 53
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\DeveloperOptionsPanel.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 388, 0, 0, 0, 0, 29, 417
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\FreshnessBadge.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 0, 0, 0, 0, 5, 40
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\InactivityGuard.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 52, 0, 0, 0, 14, 12, 78
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\InspectionDetailSheet.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 189, 0, 0, 0, 8, 13, 210
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\InspectionListItem.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 10, 110
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\MetricCard.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 0, 0, 3, 21
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\NavLink.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 5, 29
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\NetworkLoadingScreen.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 117, 0, 0, 0, 0, 13, 130
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\OfflineBanner.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 7, 29
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\OfflineSyncManager.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 160, 0, 0, 0, 15, 30, 205
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\PageHeader.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 3, 25
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\PrivacyPolicyContent.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 104, 0, 0, 0, 0, 18, 122
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\PrivacyPolicyDialog.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 0, 0, 0, 0, 3, 30
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ProtectedRoute.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 0, 0, 0, 0, 14, 63
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\TermsAndConditionsContent.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 118, 0, 0, 0, 0, 16, 134
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\TermsAndConditionsDialog.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 27, 0, 0, 0, 0, 3, 30
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\landing\old.ts", "TypeScript", 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\tutorial\MockHotspot.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 2, 6, 40
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\tutorial\MockPhoneFrame.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 31, 0, 0, 0, 5, 6, 42
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\tutorial\TutorialPlayer.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 182, 0, 0, 0, 10, 15, 207
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\tutorial\TutorialScene.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 0, 0, 0, 0, 3, 26
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\tutorial\scenes\HistoryMockScene.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 177, 0, 0, 0, 10, 14, 201
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\tutorial\scenes\InspectMockScene.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 148, 0, 0, 0, 9, 13, 170
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\tutorial\scenes\ProfileMockScene.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 110, 0, 0, 0, 6, 9, 125
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\tutorial\scenes\SafetyMockScene.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 72, 0, 0, 0, 6, 9, 87
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\accordion.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 45, 0, 0, 0, 0, 8, 53
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\alert-dialog.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 91, 0, 0, 0, 0, 14, 105
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\alert.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 37, 0, 0, 0, 0, 7, 44
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\aspect-ratio.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 3, 6
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\avatar.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 0, 0, 0, 0, 6, 39
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\badge.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 6, 30
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\breadcrumb.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 80, 0, 0, 0, 0, 11, 91
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\button.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 42, 0, 0, 0, 0, 6, 48
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\calendar.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 50, 0, 0, 0, 0, 5, 55
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\card.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 35, 0, 0, 0, 0, 9, 44
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\carousel.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 195, 0, 0, 0, 0, 30, 225
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\chart.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 270, 0, 0, 0, 2, 32, 304
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\checkbox.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 0, 0, 0, 0, 4, 27
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\collapsible.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 5, 10
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\command.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 115, 0, 0, 0, 0, 18, 133
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\context-menu.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 161, 0, 0, 0, 0, 18, 179
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\dialog.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 83, 0, 0, 0, 0, 13, 96
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\drawer.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 75, 0, 0, 0, 0, 13, 88
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\dropdown-menu.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 162, 0, 0, 0, 0, 18, 180
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\form.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 105, 0, 0, 0, 0, 25, 130
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\hover-card.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 6, 28
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\input-otp.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 54, 0, 0, 0, 0, 8, 62
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\input.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 19, 0, 0, 0, 0, 4, 23
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\label.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 0, 0, 0, 0, 5, 18
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\menubar.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 189, 0, 0, 0, 0, 19, 208
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\navigation-menu.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 109, 0, 0, 0, 0, 12, 121
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\pagination.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 71, 0, 0, 0, 0, 11, 82
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\popover.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 6, 30
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\progress.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 4, 24
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\radio-group.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 5, 37
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\resizable.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 6, 38
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\scroll-area.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0, 0, 0, 5, 39
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\select.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 130, 0, 0, 0, 0, 14, 144
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\separator.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 0, 0, 4, 21
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\sheet.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 93, 0, 0, 0, 0, 15, 108
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\sidebar.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 572, 0, 0, 0, 12, 54, 638
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\skeleton.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 3, 8
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\slider.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 4, 24
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\sonner.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0, 0, 0, 9, 43
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\switch.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 4, 28
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\table.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 0, 0, 0, 0, 11, 73
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\tabs.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 47, 0, 0, 0, 0, 7, 54
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\textarea.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 0, 0, 5, 22
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\toast.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 99, 0, 0, 0, 0, 13, 112
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\toaster.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 3, 25
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\toggle-group.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 41, 0, 0, 0, 0, 9, 50
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\toggle.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 6, 38
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\tooltip.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 7, 29
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\ui\use-toast.ts", "TypeScript", 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 4
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\contexts\AuthContext.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 430, 0, 0, 0, 3, 73, 506
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\hooks\use-desktop.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 4, 19
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\hooks\use-mobile.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 0, 5, 20
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\hooks\use-toast.ts", "TypeScript", 0, 0, 0, 0, 0, 154, 0, 0, 0, 0, 0, 0, 0, 2, 31, 187
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\hooks\useInspections.ts", "TypeScript", 0, 0, 0, 0, 0, 48, 0, 0, 0, 0, 0, 0, 0, 0, 9, 57
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\hooks\useStartupNetworkCheck.ts", "TypeScript", 0, 0, 0, 0, 0, 54, 0, 0, 0, 0, 0, 0, 0, 0, 15, 69
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\index.css", "PostCSS", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 122, 0, 0, 0, 37, 159
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\AccessCodeClient.ts", "TypeScript", 0, 0, 0, 0, 0, 82, 0, 0, 0, 0, 0, 0, 0, 0, 17, 99
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\AuditLogClient.ts", "TypeScript", 0, 0, 0, 0, 0, 87, 0, 0, 0, 0, 0, 0, 0, 0, 22, 109
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\AuthClient.ts", "TypeScript", 0, 0, 0, 0, 0, 123, 0, 0, 0, 0, 0, 0, 0, 0, 29, 152
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\DeveloperOptionsClient.ts", "TypeScript", 0, 0, 0, 0, 0, 75, 0, 0, 0, 0, 0, 0, 0, 1, 18, 94
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\InspectionClient.ts", "TypeScript", 0, 0, 0, 0, 0, 136, 0, 0, 0, 0, 0, 0, 0, 1, 24, 161
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\MarketLocationClient.ts", "TypeScript", 0, 0, 0, 0, 0, 75, 0, 0, 0, 0, 0, 0, 0, 0, 19, 94
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\PasskeyClient.ts", "TypeScript", 0, 0, 0, 0, 0, 183, 0, 0, 0, 0, 0, 0, 0, 1, 34, 218
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\ProfileClient.ts", "TypeScript", 0, 0, 0, 0, 0, 154, 0, 0, 0, 0, 0, 0, 0, 1, 26, 181
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\StatsClient.ts", "TypeScript", 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 8, 32
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\UploadClient.ts", "TypeScript", 0, 0, 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 6, 9, 42
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\UserChatClient.ts", "TypeScript", 0, 0, 0, 0, 0, 117, 0, 0, 0, 0, 0, 0, 0, 1, 28, 146
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\index.ts", "TypeScript", 0, 0, 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 1, 20
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\authCache.ts", "TypeScript", 0, 0, 0, 0, 0, 75, 0, 0, 0, 0, 0, 0, 0, 0, 23, 98
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\authUrlHash.ts", "TypeScript", 0, 0, 0, 0, 0, 37, 0, 0, 0, 0, 0, 0, 0, 1, 10, 48
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\captureQuality.ts", "TypeScript", 0, 0, 0, 0, 0, 196, 0, 0, 0, 0, 0, 0, 0, 1, 35, 232
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\confidenceLevel.ts", "TypeScript", 0, 0, 0, 0, 0, 39, 0, 0, 0, 0, 0, 0, 0, 0, 15, 54
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\demoMode.ts", "TypeScript", 0, 0, 0, 0, 0, 196, 0, 0, 0, 0, 0, 0, 0, 18, 17, 231
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\developerOptions.ts", "TypeScript", 0, 0, 0, 0, 0, 90, 0, 0, 0, 0, 0, 0, 0, 0, 23, 113
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\imageQuality.ts", "TypeScript", 0, 0, 0, 0, 0, 156, 0, 0, 0, 0, 0, 0, 0, 80, 37, 273
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\marketLocations.ts", "TypeScript", 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 1, 9
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\offlineAnalysis\index.ts", "TypeScript", 0, 0, 0, 0, 0, 330, 0, 0, 0, 0, 0, 0, 0, 38, 63, 431
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\offlineAnalysis\meatLensPipeline.ts", "TypeScript", 0, 0, 0, 0, 0, 757, 0, 0, 0, 0, 0, 0, 0, 7, 153, 917
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\offlineAnalysis\mobileNetV3.ts", "TypeScript", 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 2, 18
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\offlineAnalysis\mobileNetV3Onnx.ts", "TypeScript", 0, 0, 0, 0, 0, 565, 0, 0, 0, 0, 0, 0, 0, 6, 99, 670
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\offlineAnalysis\modelExplanation.ts", "TypeScript", 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 0, 9, 73
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\offlineAuditQueue.ts", "TypeScript", 0, 0, 0, 0, 0, 70, 0, 0, 0, 0, 0, 0, 0, 0, 8, 78
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\offlineCredentials.ts", "TypeScript", 0, 0, 0, 0, 0, 66, 0, 0, 0, 0, 0, 0, 0, 23, 8, 97
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\offlineQueue.ts", "TypeScript", 0, 0, 0, 0, 0, 74, 0, 0, 0, 0, 0, 0, 0, 7, 9, 90
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\onboardingSession.ts", "TypeScript", 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 8, 30
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\passkeys\browser.ts", "TypeScript", 0, 0, 0, 0, 0, 147, 0, 0, 0, 0, 0, 0, 0, 0, 26, 173
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\passkeys\localUnlock.ts", "TypeScript", 0, 0, 0, 0, 0, 217, 0, 0, 0, 0, 0, 0, 0, 0, 48, 265
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\themePreference.ts", "TypeScript", 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 4
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\tutorials\tutorialDefinitions.ts", "TypeScript", 0, 0, 0, 0, 0, 423, 0, 0, 0, 0, 0, 0, 0, 0, 9, 432
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\utils.ts", "TypeScript", 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 2, 7
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\main.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 3, 3, 21
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\AdminDashboard.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 2, 6
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\AdminDashboardWrapper.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 3, 19
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\DashboardPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 65, 0, 0, 0, 0, 9, 74
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\DesktopAdminDashboard.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 2, 6
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\ForgotPasswordPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 3, 8
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\HistoryPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 86, 0, 0, 0, 0, 7, 93
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\Index.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 493, 0, 0, 0, 4, 64, 561
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\LandingPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0, 0, 0, 9, 43
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\LoginPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 3, 8
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\MessagesPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 72, 0, 0, 0, 0, 5, 77
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\OnboardingPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 11
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\ProfileHelpPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 11
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\ProfilePage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 3, 8
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\ProfileTutorialPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 0, 4, 11
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\ResetPasswordPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 113, 0, 0, 0, 0, 9, 122
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\SignupPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 3, 8
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\admin-dashboard\components\AdminDashboardDesktopPage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 2298, 0, 0, 0, 0, 186, 2484
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\admin-dashboard\components\AdminDashboardMobilePage.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 2238, 0, 0, 0, 0, 184, 2422
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\admin-dashboard\desktop\test.ts", "TypeScript", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\admin-dashboard\mobile\test.ts", "TypeScript", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\forget-password\components\ForgotPasswordPageView.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 78, 0, 0, 0, 0, 4, 82
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\forget-password\hooks\useForgotPasswordPage.ts", "TypeScript", 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 5, 35
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\forget-password\utils\forgotPasswordPage.ts", "TypeScript", 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 0, 1, 6
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\components\AnimatedStat.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 4, 24
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\components\BottomCtaSection.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 44, 0, 0, 0, 0, 3, 47
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\components\FeaturesSection.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 6, 66
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\components\HeroSection.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 72, 0, 0, 0, 0, 8, 80
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\components\LandingFooter.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 0, 0, 2, 20
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\components\LandingHeader.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 118, 0, 0, 0, 0, 5, 123
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\components\LogTicker.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 49, 0, 0, 0, 0, 6, 55
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\components\Simulator.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 143, 0, 0, 0, 0, 17, 160
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\components\TestimonialsSection.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 46, 0, 0, 0, 0, 3, 49
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\components\WorkflowSection.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 34, 0, 0, 0, 0, 3, 37
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\hooks\useCountUp.ts", "TypeScript", 0, 0, 0, 0, 0, 34, 0, 0, 0, 0, 0, 0, 0, 0, 10, 44
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\hooks\useLandingStats.ts", "TypeScript", 0, 0, 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 0, 9, 44
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\landing-page\utils\landingData.ts", "TypeScript", 0, 0, 0, 0, 0, 121, 0, 0, 0, 0, 0, 0, 0, 0, 6, 127
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\login\components\LoginPageView.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 124, 0, 0, 0, 0, 4, 128
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\login\hooks\useLoginPage.ts", "TypeScript", 0, 0, 0, 0, 0, 85, 0, 0, 0, 0, 0, 0, 0, 0, 13, 98
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\login\utils\loginPage.ts", "TypeScript", 0, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 0, 3, 14
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\signup\components\SignupPageView.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 177, 0, 0, 0, 0, 4, 181
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\signup\hooks\useSignupPage.ts", "TypeScript", 0, 0, 0, 0, 0, 79, 0, 0, 0, 0, 0, 0, 0, 0, 10, 89
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\signup\utils\signupPage.ts", "TypeScript", 0, 0, 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 5, 24
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\types.ts", "TypeScript", 0, 0, 0, 0, 0, 41, 0, 0, 0, 0, 0, 0, 0, 0, 7, 48
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\not-found\NotFound.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 13, 0, 0, 0, 0, 4, 17
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\not-found\components\NotFoundPageView.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 130, 0, 0, 0, 0, 13, 143
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\not-found\hooks\useNotFoundPage.ts", "TypeScript", 0, 0, 0, 0, 0, 36, 0, 0, 0, 0, 0, 0, 0, 0, 8, 44
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\not-found\types.ts", "TypeScript", 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 1, 7
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\not-found\utils\notFoundPage.ts", "TypeScript", 0, 0, 0, 0, 0, 52, 0, 0, 0, 0, 0, 0, 0, 0, 5, 57
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\components\HistoryHeader.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 77, 0, 0, 0, 0, 5, 82
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\components\HistorySidebar.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 106, 0, 0, 0, 0, 6, 112
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\components\InspectionTimelineSection.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 165, 0, 0, 0, 0, 8, 173
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\hooks\useHistoryPage.ts", "TypeScript", 0, 0, 0, 0, 0, 203, 0, 0, 0, 0, 0, 0, 0, 0, 37, 240
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\types.ts", "TypeScript", 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 5, 21
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\utils\historyPage.ts", "TypeScript", 0, 0, 0, 0, 0, 241, 0, 0, 0, 0, 0, 0, 0, 0, 11, 252
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\messages\components\ContactsPanel.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 115, 0, 0, 0, 0, 6, 121
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\messages\components\MessagesHeader.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 69, 0, 0, 0, 0, 5, 74
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\messages\components\ThreadPanel.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 160, 0, 0, 0, 0, 7, 167
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\messages\hooks\useMessagesPage.ts", "TypeScript", 0, 0, 0, 0, 0, 196, 0, 0, 0, 0, 0, 0, 0, 0, 32, 228
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\messages\types.ts", "TypeScript", 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\messages\utils\formatters.ts", "TypeScript", 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 5, 21
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\onboarding\components\OnboardingPageView.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 3, 33
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\onboarding\hooks\useOnboardingPage.ts", "TypeScript", 0, 0, 0, 0, 0, 56, 0, 0, 0, 0, 0, 0, 0, 0, 8, 64
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\onboarding\types.ts", "TypeScript", 0, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 0, 2, 13
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\onboarding\utils\onboardingPage.ts", "TypeScript", 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 5, 13
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\profile\components\ProfileOverviewColumn.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 267, 0, 0, 0, 0, 10, 277
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\profile\components\ProfilePageHeader.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 0, 0, 3, 25
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\profile\components\ProfilePageView.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 125, 0, 0, 0, 0, 7, 132
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\profile\components\ProfileSettingsColumn.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 252, 0, 0, 0, 0, 8, 260
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\profile\hooks\useProfilePage.ts", "TypeScript", 0, 0, 0, 0, 0, 326, 0, 0, 0, 0, 0, 0, 0, 0, 41, 367
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\profile\types.ts", "TypeScript", 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 2, 8
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\profile\utils\profilePage.ts", "TypeScript", 0, 0, 0, 0, 0, 20, 0, 0, 0, 0, 0, 0, 0, 0, 5, 25
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\tutorials\components\ProfileHelpPageView.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 90, 0, 0, 0, 0, 5, 95
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\tutorials\components\ProfileTutorialPageView.tsx", "TypeScript JSX", 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 0, 0, 0, 0, 3, 29
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\tutorials\hooks\useProfileHelpPage.ts", "TypeScript", 0, 0, 0, 0, 0, 31, 0, 0, 0, 0, 0, 0, 0, 0, 5, 36
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\tutorials\hooks\useProfileTutorialPage.ts", "TypeScript", 0, 0, 0, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 0, 3, 17
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\tutorials\types.ts", "TypeScript", 0, 0, 0, 0, 0, 23, 0, 0, 0, 0, 0, 0, 0, 0, 4, 27
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\tutorials\utils\tutorialPages.ts", "TypeScript", 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 10, 34
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\test\setup.ts", "TypeScript", 0, 0, 0, 0, 0, 27, 0, 0, 0, 0, 0, 0, 0, 0, 5, 32
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\types\inspection.ts", "TypeScript", 0, 0, 0, 0, 0, 47, 0, 0, 0, 0, 0, 0, 0, 0, 5, 52
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\vite-env.d.ts", "TypeScript", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\tailwind.config.ts", "TypeScript", 0, 0, 0, 0, 0, 113, 0, 0, 0, 0, 0, 0, 0, 0, 2, 115
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test-results\.last-run.json", "JSON", 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\admin-dashboard.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 106, 0, 0, 0, 0, 0, 0, 0, 0, 10, 116
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\ai-chatbot.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 7, 32
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\analysis-result-card.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 5, 24
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\auth-token-url-sanitization.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 5, 17
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\backend-cors.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 51, 0, 0, 0, 0, 0, 0, 0, 0, 9, 60
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\camera-capture.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 172, 0, 0, 0, 0, 0, 0, 0, 0, 28, 200
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\camera-quality-integration.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 171, 0, 0, 0, 0, 0, 0, 0, 57, 44, 272
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\capture-quality.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 30, 0, 0, 0, 0, 0, 0, 0, 0, 8, 38
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\example.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 2, 6
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\helpers\app.ts", "TypeScript", 0, 0, 0, 0, 0, 267, 0, 0, 0, 0, 0, 0, 0, 0, 36, 303
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\helpers\image.ts", "TypeScript", 0, 0, 0, 0, 0, 19, 0, 0, 0, 0, 0, 0, 0, 0, 4, 23
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\image-quality.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 230, 0, 0, 0, 0, 0, 0, 0, 65, 49, 344
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\inspect-page.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 45, 0, 0, 0, 0, 0, 0, 0, 0, 9, 54
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\inspection-client.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 156, 0, 0, 0, 0, 0, 0, 0, 0, 26, 182
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\inspection-list-item.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 17, 0, 0, 0, 0, 0, 0, 0, 0, 7, 24
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\inspector-onboarding.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 167, 0, 0, 0, 0, 0, 0, 0, 0, 46, 213
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\meatlens-pipeline.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 103, 0, 0, 0, 0, 0, 0, 0, 0, 24, 127
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\not-found.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 11, 0, 0, 0, 0, 0, 0, 0, 0, 3, 14
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\offline-analysis-explanation.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 44, 0, 0, 0, 0, 0, 0, 0, 0, 7, 51
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\offline-analysis.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 35, 0, 0, 0, 0, 0, 0, 0, 0, 9, 44
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\offline-passkey-unlock.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 127, 0, 0, 0, 0, 0, 0, 0, 0, 17, 144
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\passkey-auth.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 166, 0, 0, 0, 0, 0, 0, 0, 0, 27, 193
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\profile-help.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 109, 0, 0, 0, 0, 0, 0, 0, 0, 28, 137
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\profile-page.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 23, 0, 0, 0, 0, 0, 0, 0, 0, 8, 31
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\terms-and-conditions.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 50, 0, 0, 0, 0, 0, 0, 0, 0, 13, 63
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\use-inspections.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 36, 0, 0, 0, 0, 0, 0, 0, 0, 8, 44
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\user-chat-client.spec.ts", "TypeScript", 0, 0, 0, 0, 0, 67, 0, 0, 0, 0, 0, 0, 0, 0, 12, 79
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\tsconfig.app.json", "JSON", 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 33
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\tsconfig.json", "JSON with Comments", 0, 0, 0, 0, 0, 0, 24, 0, 0, 0, 0, 0, 0, 0, 0, 24
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\tsconfig.node.json", "JSON", 0, 0, 0, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 23
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\unit\local-passkey-auth.test.ts", "TypeScript", 0, 0, 0, 0, 0, 133, 0, 0, 0, 0, 0, 0, 0, 0, 11, 144
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\vite.config.ts", "TypeScript", 0, 0, 0, 0, 0, 133, 0, 0, 0, 0, 0, 0, 0, 9, 2, 144
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\model\NEW-meatlens_best_model_metadata.json", "JSON", 0, 0, 0, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 26
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\onboarding-design.html", "HTML", 0, 0, 202, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18, 220
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\package-lock.json", "JSON", 0, 0, 0, 14014, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 14015
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\package.json", "JSON", 0, 0, 0, 26, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 27
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\progress\progress-report.html", "HTML", 0, 0, 269, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 36, 305
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\render.yaml", "YAML", 0, 0, 0, 0, 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 24
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\scripts\check-netlify-preflight.mjs", "JavaScript", 64, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 76
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\scripts\dev-script.test.mjs", "JavaScript", 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 25
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\scripts\run-build.mjs", "JavaScript", 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 17
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\scripts\run-dev.mjs", "JavaScript", 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 15, 69
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\scripts\sync-onnx-model.mjs", "JavaScript", 145, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 23, 168
+"Total", "-", 708, 1467, 1034, 29176, 74, 13459, 49, 33, 23, 15737, 159, 397, 1654021, 13561, 41977, 1771875
