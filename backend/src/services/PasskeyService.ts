@@ -10,7 +10,8 @@ import {
   type WebAuthnCredential,
 } from "@simplewebauthn/server";
 import { supabase } from "../integrations/supabase";
-import { authService, type AuthSession, type AuthUser } from "./AuthService";
+import { type AppSession } from "./AppSessionService";
+import { authService, type AuthUser } from "./AuthService";
 import { passkeyCeremonyStore, type PasskeyCeremonyType } from "./PasskeyCeremonyStore";
 
 interface PasskeyRow {
@@ -177,7 +178,7 @@ export class PasskeyService {
     challengeId: string;
     origin: string;
     response: AuthenticationResponseJSON;
-  }): Promise<{ user: AuthUser; session: AuthSession }> {
+  }): Promise<{ user: AuthUser; session: AppSession }> {
     const ceremony = this.consumeCeremony(input.challengeId, "authentication");
 
     if (ceremony.origin !== input.origin) {

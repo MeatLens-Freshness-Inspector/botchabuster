@@ -1,5 +1,5 @@
 import { supabase, supabaseAuth } from "../integrations/supabase";
-import { getAppSessionService } from "./AppSessionService";
+import { getAppSessionService, type AppSession } from "./AppSessionService";
 
 export interface AuthUser {
   id: string;
@@ -179,7 +179,7 @@ export class AuthService {
     // Backend is stateless for frontend auth. Sessions are managed client-side.
   }
 
-  createAppSession(user: AuthUser): AuthSession {
+  createAppSession(user: AuthUser): AppSession {
     return getAppSessionService().createSession(user);
   }
 
