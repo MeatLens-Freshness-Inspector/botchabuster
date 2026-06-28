@@ -30,6 +30,7 @@ import {
   storeLocalPasskey,
   verifyLocalPasskeyAssertion,
 } from "@/lib/passkeys/localUnlock";
+import type { ReportOrganization } from "@/lib/reportOrganizations";
 
 const AUTH_EXPIRED_EVENT = "meatlens:auth-expired";
 
@@ -75,7 +76,13 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
   signInWithPasskey: () => Promise<{ isAdmin: boolean }>;
   unlockWithLocalPasskey: () => Promise<{ isAdmin: boolean }>;
-  signUp: (email: string, password: string, fullName: string, accessCode: string) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string,
+    accessCode: string,
+    reportOrganization: ReportOrganization,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePasswordWithRecoveryToken: (accessToken: string, password: string) => Promise<void>;
@@ -388,12 +395,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { isAdmin: cachedAdmin };
   };
 
-  const signUp = async (email: string, password: string, fullName: string, accessCode: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName: string,
+    accessCode: string,
+    reportOrganization: ReportOrganization,
+  ) => {
     await authClient.signUp({
       email,
       password,
       fullName,
       accessCode,
+      reportOrganization,
       emailRedirectTo: window.location.origin,
     });
   };

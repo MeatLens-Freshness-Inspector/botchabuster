@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+  isReportOrganization,
+  type ReportOrganization,
+} from "@/lib/reportOrganizations";
+import {
   getErrorMessage,
   validateSignupState,
 } from "../utils/signupPage";
@@ -12,9 +16,12 @@ export function useSignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [accessCode, setAccessCode] = useState("");
+  const [reportOrganization, setReportOrganization] = useState<
+    ReportOrganization | ""
+  >("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
-  const [termsError, setTermsError] = useState("");
+  const [formError, setFormError] = useState("");
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,19 +35,31 @@ export function useSignupPage() {
       acceptedPrivacy,
       acceptedTerms,
       accessCode,
+      reportOrganization,
     });
 
     if (validationError) {
-      setTermsError(validationError);
+      setFormError(validationError);
       toast.error(validationError);
       return;
     }
 
-    setTermsError("");
+    if (!isReportOrganization(reportOrganization)) {
+      setFormError("Please select the report header organization before creating an account.");
+      return;
+    }
+
+    setFormError("");
     setLoading(true);
 
     try {
-      await signUp(email, password, fullName, accessCode.trim());
+      await signUp(
+        email,
+        password,
+        fullName,
+        accessCode.trim(),
+        reportOrganization,
+      );
       toast.success("Account created! Check your email to verify.");
       navigate("/login");
     } catch (error) {
@@ -53,14 +72,14 @@ export function useSignupPage() {
   const handleAcceptedTermsChange = (checked: boolean) => {
     setAcceptedTerms(checked);
     if (checked) {
-      setTermsError("");
+      setFormError("");
     }
   };
 
   const handleAcceptedPrivacyChange = (checked: boolean) => {
     setAcceptedPrivacy(checked);
     if (checked) {
-      setTermsError("");
+      setFormError("");
     }
   };
 
@@ -69,9 +88,10 @@ export function useSignupPage() {
     email,
     password,
     accessCode,
+    reportOrganization,
     acceptedTerms,
     acceptedPrivacy,
-    termsError,
+    formError,
     showTermsDialog,
     showPrivacyDialog,
     loading,
@@ -79,6 +99,7 @@ export function useSignupPage() {
     setEmail,
     setPassword,
     setAccessCode,
+    setReportOrganization,
     setShowTermsDialog,
     setShowPrivacyDialog,
     handleSubmit,

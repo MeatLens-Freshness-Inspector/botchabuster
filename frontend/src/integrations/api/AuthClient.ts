@@ -1,3 +1,5 @@
+import type { ReportOrganization } from "@/lib/reportOrganizations";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 
 export interface AuthUser {
@@ -70,6 +72,7 @@ export class AuthClient {
     password: string;
     fullName?: string;
     accessCode: string;
+    reportOrganization: ReportOrganization;
     emailRedirectTo?: string;
   }): Promise<{ user: AuthUser | null; session: AuthSession | null }> {
     const res = await fetch(`${API_BASE_URL}/auth/sign-up`, {

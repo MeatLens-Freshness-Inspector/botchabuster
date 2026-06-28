@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { getReportOrganizationLabel } from "@/lib/reportOrganizations";
 import type {
   FreshnessClassification,
   Inspection,
@@ -55,7 +56,9 @@ export function buildDetailedHistoryReportHtml({
   generatedAt,
   inspections,
   selectedReportDay,
+  reportOrganization,
 }: DetailedHistoryReportInput): string {
+  const organizationLabel = getReportOrganizationLabel(reportOrganization);
   const inspectionCards = inspections
     .map((inspection, index) => {
       const imageSection = inspection.image_url
@@ -89,7 +92,7 @@ export function buildDetailedHistoryReportHtml({
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>MeatLens Inspector Report ${escapeHtml(selectedReportDay)}</title>
+    <title>${escapeHtml(organizationLabel)} Report ${escapeHtml(selectedReportDay)}</title>
     <style>
       :root { color-scheme: light; }
       body {
@@ -107,8 +110,16 @@ export function buildDetailedHistoryReportHtml({
         border-radius: 14px;
         padding: 20px;
       }
+      .org-heading {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: #0f766e;
+      }
       h1 {
-        margin: 0 0 4px 0;
+        margin: 6px 0 4px 0;
         font-size: 24px;
       }
       .meta {
@@ -208,6 +219,7 @@ export function buildDetailedHistoryReportHtml({
   </head>
   <body>
     <main class="sheet">
+      <p class="org-heading">${escapeHtml(organizationLabel)}</p>
       <h1>Inspector Daily Detailed Report</h1>
       <p class="meta">
         Inspection Day: ${escapeHtml(selectedReportDay)}<br />

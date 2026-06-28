@@ -1,10 +1,12 @@
 import { supabase } from "../integrations/supabase";
+import type { ReportOrganization } from "../types/reportOrganization";
 
 export interface Profile {
   id: string;
   full_name: string | null;
   avatar_url: string | null;
   inspector_code: string | null;
+  report_organization: ReportOrganization | null;
   is_dark_mode: boolean | null;
   show_detailed_results: boolean | null;
   onboarding_completed_at: string | null;
@@ -30,6 +32,7 @@ export interface AdminCreateUserInput {
   full_name?: string | null;
   avatar_url?: string | null;
   inspector_code?: string | null;
+  report_organization?: ReportOrganization | null;
   location?: string | null;
 }
 
@@ -39,6 +42,7 @@ export interface AdminUpdateUserInput {
   full_name?: string | null;
   avatar_url?: string | null;
   inspector_code?: string | null;
+  report_organization?: ReportOrganization | null;
   location?: string | null;
 }
 
@@ -133,6 +137,7 @@ export class ProfileService {
   async createUserByAdmin(input: AdminCreateUserInput): Promise<AdminProfile> {
     const fullName = input.full_name?.trim() || null;
     const inspectorCode = input.inspector_code?.trim() || null;
+    const reportOrganization = input.report_organization ?? null;
     const location = input.location?.trim() || null;
     const avatarUrl = input.avatar_url?.trim() || null;
 
@@ -143,6 +148,7 @@ export class ProfileService {
       user_metadata: {
         ...(fullName ? { full_name: fullName } : {}),
         ...(inspectorCode ? { access_code: inspectorCode } : {}),
+        ...(reportOrganization ? { report_organization: reportOrganization } : {}),
       },
     });
 
@@ -157,6 +163,7 @@ export class ProfileService {
         id: createdUserId,
         full_name: fullName,
         inspector_code: inspectorCode,
+        report_organization: reportOrganization,
         location,
         avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),
@@ -176,7 +183,10 @@ export class ProfileService {
   }
 
   async updateUserByAdmin(userId: string, input: AdminUpdateUserInput): Promise<AdminProfile> {
-    const shouldUpdateMetadata = input.full_name !== undefined || input.inspector_code !== undefined;
+    const shouldUpdateMetadata =
+      input.full_name !== undefined ||
+      input.inspector_code !== undefined ||
+      input.report_organization !== undefined;
     const authUserPatch: {
       email?: string;
       password?: string;
@@ -212,6 +222,14 @@ export class ProfileService {
         else delete currentMetadata.access_code;
       }
 
+      if (input.report_organization !== undefined) {
+        if (input.report_organization) {
+          currentMetadata.report_organization = input.report_organization;
+        } else {
+          delete currentMetadata.report_organization;
+        }
+      }
+
       authUserPatch.user_metadata = currentMetadata;
     }
 
@@ -221,11 +239,14 @@ export class ProfileService {
       updatedEmail = updatedAuthUser.user?.email ?? updatedEmail;
     }
 
-    const profilePatch: Partial<Pick<Profile, "full_name" | "avatar_url" | "inspector_code" | "location">> = {};
+    const profilePatch: Partial<
+      Pick<Profile, "full_name" | "avatar_url" | "inspector_code" | "report_organization" | "location">
+    > = {};
 
     if (input.full_name !== undefined) profilePatch.full_name = input.full_name?.trim() || null;
     if (input.avatar_url !== undefined) profilePatch.avatar_url = input.avatar_url?.trim() || null;
     if (input.inspector_code !== undefined) profilePatch.inspector_code = input.inspector_code?.trim() || null;
+    if (input.report_organization !== undefined) profilePatch.report_organization = input.report_organization ?? null;
     if (input.location !== undefined) profilePatch.location = input.location?.trim() || null;
 
     let updatedProfile: Profile | null = null;

@@ -68,20 +68,38 @@ export async function mockCommonApi(
       ? "2026-05-31T03:00:00.000Z"
       : options.onboardingCompletedAt;
   const inspectionCreatedAt = new Date().toISOString();
-  const profileState = {
-    id: userId,
-    full_name: "Inspector",
-    avatar_url: null,
-    inspector_code: "INSP-001",
-    is_dark_mode: false,
-    show_detailed_results: showDetailedResults,
-    onboarding_completed_at: onboardingCompletedAt,
-    onboarding_version: 1,
-    email,
-    location: "North Market",
-    created_at: "2026-04-01T00:00:00.000Z",
-    updated_at: "2026-04-01T00:00:00.000Z",
-  };
+  const profilesState = [
+    {
+      id: userId,
+      full_name: "Inspector",
+      avatar_url: null,
+      inspector_code: "INSP-001",
+      report_organization: "gordon_college_ccs",
+      is_dark_mode: false,
+      show_detailed_results: showDetailedResults,
+      onboarding_completed_at: onboardingCompletedAt,
+      onboarding_version: 1,
+      email,
+      location: "North Market",
+      created_at: "2026-04-01T00:00:00.000Z",
+      updated_at: "2026-04-01T00:00:00.000Z",
+    },
+    {
+      id: "user-2",
+      full_name: "Blair",
+      avatar_url: null,
+      inspector_code: "INSP-002",
+      report_organization: null,
+      is_dark_mode: false,
+      show_detailed_results: true,
+      onboarding_completed_at: "2026-04-02T03:00:00.000Z",
+      onboarding_version: 1,
+      email: "blair@example.com",
+      location: "South Market",
+      created_at: "2026-04-02T00:00:00.000Z",
+      updated_at: "2026-04-02T00:00:00.000Z",
+    },
+  ];
 
   await page.route("**/api/**", async (route: Route) => {
     const request = route.request();
@@ -115,12 +133,19 @@ export async function mockCommonApi(
         return;
       }
 
+      const profileState = profilesState.find((profile) => profile.id === userId) ?? null;
       await route.fulfill(jsonResponse(profileState));
       return;
     }
 
     if (path === `/api/profiles/${userId}` && method === "PUT") {
       const payload = JSON.parse(request.postData() ?? "{}") as Record<string, unknown>;
+      const profileState = profilesState.find((profile) => profile.id === userId);
+
+      if (!profileState) {
+        await route.fulfill(jsonResponse({ error: "Profile not found" }, 404));
+        return;
+      }
 
       if (options.failProfileUpdate && !("onboarding_completed_at" in payload)) {
         await route.fulfill(jsonResponse({ error: "Failed to save profile" }, 500));
@@ -141,6 +166,12 @@ export async function mockCommonApi(
     }
 
     if (path === `/api/auth/users/${userId}/email` && method === "PATCH") {
+      const profileState = profilesState.find((profile) => profile.id === userId);
+      if (!profileState) {
+        await route.fulfill(jsonResponse({ error: "Profile not found" }, 404));
+        return;
+      }
+
       if (options.failEmailUpdate) {
         await route.fulfill(jsonResponse({ error: "Failed to update email" }, 500));
         return;
@@ -155,6 +186,54 @@ export async function mockCommonApi(
           email: profileState.email,
         }),
       );
+      return;
+    }
+
+    if (path === "/api/profiles/admin/users" && method === "POST") {
+      const payload = JSON.parse(request.postData() ?? "{}") as {
+        email?: string;
+        full_name?: string | null;
+        inspector_code?: string | null;
+        report_organization?: string | null;
+        location?: string | null;
+      };
+
+      const createdUser = {
+        id: `user-${profilesState.length + 1}`,
+        full_name: payload.full_name ?? null,
+        avatar_url: null,
+        inspector_code: payload.inspector_code ?? null,
+        report_organization: payload.report_organization ?? null,
+        is_dark_mode: false,
+        show_detailed_results: true,
+        onboarding_completed_at: null,
+        onboarding_version: 1,
+        email: payload.email ?? null,
+        location: payload.location ?? null,
+        created_at: "2026-04-03T00:00:00.000Z",
+        updated_at: "2026-04-03T00:00:00.000Z",
+      };
+
+      profilesState.unshift(createdUser);
+      await route.fulfill(jsonResponse(createdUser, 201));
+      return;
+    }
+
+    if (/^\/api\/profiles\/admin\/users\/[^/]+$/.test(path) && method === "PUT") {
+      const userIdToUpdate = path.split("/").pop();
+      const payload = JSON.parse(request.postData() ?? "{}") as Record<string, unknown>;
+      const profileState = profilesState.find((profile) => profile.id === userIdToUpdate);
+
+      if (!profileState) {
+        await route.fulfill(jsonResponse({ error: "Profile not found" }, 404));
+        return;
+      }
+
+      Object.assign(profileState, payload, {
+        updated_at: "2026-04-04T00:00:00.000Z",
+      });
+
+      await route.fulfill(jsonResponse(profileState));
       return;
     }
 
@@ -175,27 +254,7 @@ export async function mockCommonApi(
     }
 
     if (path === "/api/profiles") {
-      await route.fulfill(
-        jsonResponse([
-          {
-            ...profileState,
-          },
-          {
-            id: "user-2",
-            full_name: "Blair",
-            avatar_url: null,
-            inspector_code: "INSP-002",
-            is_dark_mode: false,
-            show_detailed_results: true,
-            onboarding_completed_at: "2026-04-02T03:00:00.000Z",
-            onboarding_version: 1,
-            email: "blair@example.com",
-            location: "South Market",
-            created_at: "2026-04-02T00:00:00.000Z",
-            updated_at: "2026-04-02T00:00:00.000Z",
-          },
-        ])
-      );
+      await route.fulfill(jsonResponse(profilesState));
       return;
     }
 

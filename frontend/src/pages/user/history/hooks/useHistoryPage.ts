@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import { useInspections } from "@/hooks/useInspections";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
 import type { FilterOption, HistoryMonthlyCount } from "../types";
@@ -13,6 +14,7 @@ import {
 const PAGE_SIZE = 6;
 
 export function useHistoryPage() {
+  const { profile } = useAuth();
   const { data: inspections, isLoading } = useInspections();
   const [activeFilter, setActiveFilter] = useState<FilterOption>("all");
   const [searchText, setSearchText] = useState("");
@@ -174,6 +176,7 @@ export function useHistoryPage() {
           generatedAt,
           inspections: selectedDayInspections,
           selectedReportDay,
+          reportOrganization: profile?.report_organization ?? null,
         }),
       ],
       { type: "text/html;charset=utf-8" },
@@ -203,6 +206,7 @@ export function useHistoryPage() {
     toast.success("Detailed report opened. Save as PDF in the print dialog.");
   }, [
     hasValidReportDay,
+    profile?.report_organization,
     selectedDayAverageConfidence,
     selectedDayInspections,
     selectedReportDay,

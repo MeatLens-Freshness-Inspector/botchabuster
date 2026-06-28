@@ -11,6 +11,14 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { REPORT_ORGANIZATION_OPTIONS } from "@/lib/reportOrganizations";
 import { TermsAndConditionsDialog } from "@/components/TermsAndConditionsDialog";
 import { PrivacyPolicyDialog } from "@/components/PrivacyPolicyDialog";
 import { useSignupPage } from "../hooks/useSignupPage";
@@ -21,9 +29,10 @@ const SignupPageView = () => {
     email,
     password,
     accessCode,
+    reportOrganization,
     acceptedTerms,
     acceptedPrivacy,
-    termsError,
+    formError,
     showTermsDialog,
     showPrivacyDialog,
     loading,
@@ -31,6 +40,7 @@ const SignupPageView = () => {
     setEmail,
     setPassword,
     setAccessCode,
+    setReportOrganization,
     setShowTermsDialog,
     setShowPrivacyDialog,
     handleSubmit,
@@ -95,6 +105,24 @@ const SignupPageView = () => {
                 required
               />
             </div>
+            <div className="space-y-2">
+              <Label>Report Header Organization</Label>
+              <Select
+                value={reportOrganization || undefined}
+                onValueChange={(value) => setReportOrganization(value)}
+              >
+                <SelectTrigger aria-label="Report header organization">
+                  <SelectValue placeholder="Select report header organization" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPORT_ORGANIZATION_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2 rounded-xl border border-border/70 bg-background/60 p-3">
               <div className="flex items-start gap-3">
                 <Checkbox
@@ -119,9 +147,9 @@ const SignupPageView = () => {
                   </Button>
                 </div>
               </div>
-              {termsError ? (
+              {formError ? (
                 <p role="alert" className="text-xs font-medium text-destructive">
-                  {termsError}
+                  {formError}
                 </p>
               ) : null}
             </div>

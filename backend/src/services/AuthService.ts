@@ -1,5 +1,10 @@
 import { supabase, supabaseAuth } from "../integrations/supabase";
 import { getAppSessionService, type AppSession } from "./AppSessionService";
+import {
+  isReportOrganization,
+  requireReportOrganization,
+  type ReportOrganization,
+} from "../types/reportOrganization";
 
 export interface AuthUser {
   id: string;
@@ -24,6 +29,7 @@ export interface SignUpInput {
   password: string;
   fullName?: string;
   accessCode: string;
+  reportOrganization: ReportOrganization;
   emailRedirectTo?: string;
 }
 
@@ -85,7 +91,7 @@ export class AuthService {
   }): Promise<void> {
     const { data: existingProfile, error: existingProfileError } = await supabase
       .from("profiles")
-      .select("id")
+      .select("id, report_organization")
       .eq("id", user.id)
       .maybeSingle();
 
@@ -93,13 +99,37 @@ export class AuthService {
       throw new Error(`Failed to verify profile: ${existingProfileError.message}`);
     }
 
-    if (existingProfile) return;
-
     const fullNameRaw = user.user_metadata?.full_name;
     const accessCodeRaw = user.user_metadata?.access_code;
+    const reportOrganizationRaw = user.user_metadata?.report_organization;
 
     const fullName = typeof fullNameRaw === "string" ? fullNameRaw.trim() : "";
     const inspectorCode = typeof accessCodeRaw === "string" ? accessCodeRaw.trim() : "";
+    const reportOrganization = isReportOrganization(reportOrganizationRaw)
+      ? reportOrganizationRaw
+      : null;
+
+    if (existingProfile) {
+      const profileRecord = existingProfile as { id: string; report_organization: string | null };
+
+      if (!profileRecord.report_organization && reportOrganization) {
+        const { error: updateProfileError } = await (supabase
+          .from("profiles") as any)
+          .update({
+            report_organization: reportOrganization,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", user.id);
+
+        if (updateProfileError) {
+          throw new Error(
+            `Failed to update missing profile organization: ${updateProfileError.message}`,
+          );
+        }
+      }
+
+      return;
+    }
 
     const { error: insertProfileError } = await (supabase
       .from("profiles") as any)
@@ -107,6 +137,7 @@ export class AuthService {
         id: user.id,
         full_name: fullName || null,
         inspector_code: inspectorCode || null,
+        report_organization: reportOrganization,
       });
 
     if (insertProfileError) {
@@ -146,6 +177,7 @@ export class AuthService {
     if (validateError) throw new Error(`Failed to validate access code: ${validateError.message}`);
     if (!codeIsValid) throw new Error("Access code is invalid, inactive, expired, or no longer available");
 
+    const reportOrganization = requireReportOrganization(input.reportOrganization);
     const fullName = input.fullName?.trim() || undefined;
 
     const { data, error } = await supabaseAuth.auth.signUp({
@@ -155,6 +187,7 @@ export class AuthService {
         data: {
           ...(fullName ? { full_name: fullName } : {}),
           access_code: accessCode,
+          report_organization: reportOrganization,
         },
         ...(input.emailRedirectTo ? { emailRedirectTo: input.emailRedirectTo } : {}),
       },

@@ -5,6 +5,7 @@ import { profileService } from "../services/ProfileService";
 import { auditLogService, type AuditLogWriteInput } from "../services/AuditLogService";
 import { passkeyService } from "../services/PasskeyService";
 import { getSessionLimitService } from "../services/SessionLimitService";
+import { isReportOrganization } from "../types/reportOrganization";
 
 export class AuthController {
   private resolveOrigin(req: Request): string {
@@ -91,11 +92,12 @@ export class AuthController {
 
   async signUp(req: Request, res: Response): Promise<void> {
     try {
-      const { email, password, fullName, accessCode, emailRedirectTo } = req.body as {
+      const { email, password, fullName, accessCode, reportOrganization, emailRedirectTo } = req.body as {
         email?: string;
         password?: string;
         fullName?: string;
         accessCode?: string;
+        reportOrganization?: string;
         emailRedirectTo?: string;
       };
 
@@ -114,11 +116,19 @@ export class AuthController {
         return;
       }
 
+      if (!isReportOrganization(reportOrganization)) {
+        res.status(400).json({
+          error: "Report organization must be one of: dti, city_veterinary_office_olongapo, gordon_college_ccs",
+        });
+        return;
+      }
+
       const result = await authService.signUp({
         email,
         password,
         fullName,
         accessCode: accessCode.trim(),
+        reportOrganization,
         emailRedirectTo,
       });
       res.status(201).json(result);

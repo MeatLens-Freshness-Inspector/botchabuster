@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { profileService } from "../services/ProfileService";
 import { authService } from "../services/AuthService";
 import { auditLogService } from "../services/AuditLogService";
+import { isReportOrganization } from "../types/reportOrganization";
 
 export class ProfileController {
   private async resolveActor(req: Request): Promise<{ id: string; role: string } | null> {
@@ -124,11 +125,12 @@ export class ProfileController {
 
   async createUserByAdmin(req: Request, res: Response): Promise<void> {
     try {
-      const { email, password, full_name, inspector_code, location, avatar_url } = req.body as {
+      const { email, password, full_name, inspector_code, report_organization, location, avatar_url } = req.body as {
         email?: string;
         password?: string;
         full_name?: string | null;
         inspector_code?: string | null;
+        report_organization?: string | null;
         location?: string | null;
         avatar_url?: string | null;
       };
@@ -143,11 +145,23 @@ export class ProfileController {
         return;
       }
 
+      if (
+        report_organization !== undefined &&
+        report_organization !== null &&
+        !isReportOrganization(report_organization)
+      ) {
+        res.status(400).json({
+          error: "report_organization must be one of: dti, city_veterinary_office_olongapo, gordon_college_ccs",
+        });
+        return;
+      }
+
       const createdUser = await profileService.createUserByAdmin({
         email,
         password,
         full_name,
         inspector_code,
+        report_organization: report_organization ?? null,
         location,
         avatar_url,
       });
@@ -170,6 +184,7 @@ export class ProfileController {
               user_id: createdUser.id,
               email: createdUser.email,
               inspector_code: createdUser.inspector_code,
+              report_organization: createdUser.report_organization,
               location: createdUser.location,
             },
           },
@@ -191,11 +206,12 @@ export class ProfileController {
         return;
       }
 
-      const { email, password, full_name, inspector_code, location, avatar_url } = req.body as {
+      const { email, password, full_name, inspector_code, report_organization, location, avatar_url } = req.body as {
         email?: string;
         password?: string;
         full_name?: string | null;
         inspector_code?: string | null;
+        report_organization?: string | null;
         location?: string | null;
         avatar_url?: string | null;
       };
@@ -205,11 +221,23 @@ export class ProfileController {
         return;
       }
 
+      if (
+        report_organization !== undefined &&
+        report_organization !== null &&
+        !isReportOrganization(report_organization)
+      ) {
+        res.status(400).json({
+          error: "report_organization must be one of: dti, city_veterinary_office_olongapo, gordon_college_ccs",
+        });
+        return;
+      }
+
       const updatedUser = await profileService.updateUserByAdmin(id, {
         email,
         password,
         full_name,
         inspector_code,
+        report_organization: report_organization ?? undefined,
         location,
         avatar_url,
       });
@@ -221,6 +249,7 @@ export class ProfileController {
           password !== undefined ? "password" : null,
           full_name !== undefined ? "full_name" : null,
           inspector_code !== undefined ? "inspector_code" : null,
+          report_organization !== undefined ? "report_organization" : null,
           location !== undefined ? "location" : null,
           avatar_url !== undefined ? "avatar_url" : null,
         ].filter(Boolean);
@@ -240,6 +269,7 @@ export class ProfileController {
             data: {
               user_id: updatedUser.id,
               changed_fields: changedFields,
+              report_organization: updatedUser.report_organization,
             },
           },
         });

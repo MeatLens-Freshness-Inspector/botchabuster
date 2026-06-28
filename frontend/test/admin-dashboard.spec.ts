@@ -85,6 +85,35 @@ test("renders the expanded business analytics section with fallback labels", asy
   await expect(page.getByText(/Unspecified/i).first()).toBeVisible();
 });
 
+test("admin can assign report header organizations when creating and editing users", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true });
+  await mockCommonApi(page, { userId: "admin-1", isAdmin: true });
+
+  await page.goto("/admin");
+  await expect(page).toHaveURL(/\/admin$/);
+  await page.getByRole("button", { name: /^Users$/i }).click();
+  await expect(page.getByText(/Add User/i)).toBeVisible();
+
+  await page.getByPlaceholder("inspector@example.com").fill("new.user@example.com");
+  await page.getByPlaceholder("At least 6 characters").fill("hunter22");
+  await page.getByLabel("Report header organization").click();
+  await page.getByRole("option", { name: "DTI" }).click();
+  await page.getByRole("button", { name: /Create User/i }).click();
+
+  const newUserCard = page.locator("div.rounded-2xl").filter({ hasText: "new.user@example.com" }).first();
+  await expect(newUserCard).toContainText(/Report Header:\s*DTI/i);
+
+  const blairCard = page.locator("div.rounded-2xl").filter({ hasText: "blair@example.com" }).first();
+  await blairCard.getByRole("button", { name: /^Edit$/i }).click();
+  await page.getByLabel("Report header organization").click();
+  await page.getByRole("option", { name: "City Veterinary Office of Olongapo" }).click();
+  await page.getByRole("button", { name: /Save Changes/i }).click();
+
+  await expect(blairCard).toContainText(
+    /Report Header:\s*City Veterinary Office of Olongapo/i,
+  );
+});
+
 test.describe("mobile viewport", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 

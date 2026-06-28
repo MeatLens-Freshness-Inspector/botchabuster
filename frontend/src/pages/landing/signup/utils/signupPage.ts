@@ -1,7 +1,10 @@
+import { isReportOrganization } from "@/lib/reportOrganizations";
+
 export function validateSignupState(input: {
   acceptedPrivacy: boolean;
   acceptedTerms: boolean;
   accessCode: string;
+  reportOrganization: string;
 }): string | null {
   if (!input.acceptedTerms) {
     return "Please accept the Terms and Conditions before creating an account.";
@@ -13,6 +16,10 @@ export function validateSignupState(input: {
 
   if (!input.accessCode.trim()) {
     return "Access code is required.";
+  }
+
+  if (!isReportOrganization(input.reportOrganization)) {
+    return "Please select the report header organization before creating an account.";
   }
 
   return null;

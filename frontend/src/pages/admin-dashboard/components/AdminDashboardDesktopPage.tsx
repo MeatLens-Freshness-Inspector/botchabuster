@@ -4,6 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DeveloperOptionsPanel } from "@/components/DeveloperOptionsPanel";
@@ -46,6 +53,12 @@ import { toast } from "sonner";
 import { format, subDays, startOfDay, endOfDay, isAfter } from "date-fns";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
+import {
+  REPORT_ORGANIZATION_OPTIONS,
+  getReportOrganizationLabel,
+  isReportOrganization,
+  type ReportOrganization,
+} from "@/lib/reportOrganizations";
 
 type RoleStat = {
   role: string;
@@ -57,6 +70,7 @@ type ManagedUserForm = {
   email: string;
   password: string;
   inspector_code: string;
+  report_organization: ReportOrganization | "";
   location: string;
 };
 
@@ -232,6 +246,7 @@ const AdminDashboard = () => {
     email: "",
     password: "",
     inspector_code: "",
+    report_organization: "",
     location: "",
   });
 
@@ -245,6 +260,7 @@ const AdminDashboard = () => {
       email: "",
       password: "",
       inspector_code: "",
+      report_organization: "",
       location: "",
     });
     setEditingUserId(null);
@@ -257,6 +273,7 @@ const AdminDashboard = () => {
       email: profile.email || "",
       password: "",
       inspector_code: profile.inspector_code || "",
+      report_organization: profile.report_organization || "",
       location: profile.location || "",
     });
   };
@@ -307,6 +324,9 @@ const AdminDashboard = () => {
   const handleSubmitUserForm = async () => {
     const email = userForm.email.trim();
     const password = userForm.password.trim();
+    const reportOrganization = isReportOrganization(userForm.report_organization)
+      ? userForm.report_organization
+      : null;
 
     if (!email) {
       toast.error("Email is required");
@@ -331,6 +351,7 @@ const AdminDashboard = () => {
           email,
           full_name: userForm.full_name.trim() || null,
           inspector_code: userForm.inspector_code.trim() || null,
+          report_organization: reportOrganization,
           location: userForm.location.trim() || null,
           ...(password ? { password } : {}),
         });
@@ -343,6 +364,7 @@ const AdminDashboard = () => {
           password,
           full_name: userForm.full_name.trim() || null,
           inspector_code: userForm.inspector_code.trim() || null,
+          report_organization: reportOrganization,
           location: userForm.location.trim() || null,
         });
 
@@ -1901,6 +1923,35 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="space-y-1">
+                    <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+                      Report Header Organization
+                    </Label>
+                    <Select
+                      value={userForm.report_organization || undefined}
+                      onValueChange={(value) =>
+                        setUserForm((prev) => ({
+                          ...prev,
+                          report_organization: value as ReportOrganization,
+                        }))
+                      }
+                    >
+                      <SelectTrigger
+                        aria-label="Report header organization"
+                        className="h-10 rounded-xl bg-background/80"
+                      >
+                        <SelectValue placeholder="Select report header organization" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {REPORT_ORGANIZATION_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
                     <Label className="text-xs uppercase tracking-widest text-muted-foreground">Location</Label>
                     <Input
                       value={userForm.location}
@@ -1962,6 +2013,12 @@ const AdminDashboard = () => {
                             <p>Joined: {format(new Date(p.created_at), "MMM d, yyyy")}</p>
                             <p>Location: {p.location || "No location"}</p>
                             <p className="break-all">Inspector Code: {p.inspector_code || "N/A"}</p>
+                            <p>
+                              Report Header:{" "}
+                              {p.report_organization
+                                ? getReportOrganizationLabel(p.report_organization)
+                                : "Gordon College CCS (fallback)"}
+                            </p>
                           </div>
                           <div className="mt-3 flex flex-wrap items-center gap-2">
                             <Button

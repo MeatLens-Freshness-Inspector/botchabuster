@@ -1,3 +1,4 @@
+import type { ReportOrganization } from "@/lib/reportOrganizations";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
 
 export type FilterOption = "all" | FreshnessClassification;
@@ -17,4 +18,5 @@ export type DetailedHistoryReportInput = {
   generatedAt: string;
   inspections: Inspection[];
   selectedReportDay: string;
+  reportOrganization: ReportOrganization | null | undefined;
 };

@@ -1,3 +1,5 @@
+import type { ReportOrganization } from "@/lib/reportOrganizations";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 const SESSION_STORAGE_KEY = "meatlens-auth-session";
 
@@ -26,6 +28,7 @@ export interface Profile {
   full_name: string | null;
   avatar_url: string | null;
   inspector_code: string | null;
+  report_organization: ReportOrganization | null;
   is_dark_mode: boolean | null;
   show_detailed_results: boolean | null;
   onboarding_completed_at: string | null;
@@ -48,6 +51,7 @@ export interface AdminCreateUserPayload {
   password: string;
   full_name?: string | null;
   inspector_code?: string | null;
+  report_organization?: ReportOrganization | null;
   location?: string | null;
   avatar_url?: string | null;
 }
@@ -57,6 +61,7 @@ export interface AdminUpdateUserPayload {
   password?: string;
   full_name?: string | null;
   inspector_code?: string | null;
+  report_organization?: ReportOrganization | null;
   location?: string | null;
   avatar_url?: string | null;
 }
