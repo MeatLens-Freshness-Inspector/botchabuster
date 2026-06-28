@@ -975,18 +975,23 @@ export function CameraCapture({
           className={cn(
             "w-full rounded-xl border px-3 py-2.5",
             captureQualityResult.canProceed
-              ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-200"
-              : "border-red-500/40 bg-red-500/10 text-red-200"
+              ? "border-warning/40 bg-warning/10 text-foreground"
+              : "border-destructive/40 bg-destructive/10 text-foreground"
           )}
         >
           <div className="flex items-start gap-2">
             {captureQualityResult.canProceed ? (
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" aria-hidden="true" />
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
             ) : (
-              <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" aria-hidden="true" />
+              <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" aria-hidden="true" />
             )}
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wide">
+              <p
+                className={cn(
+                  "text-[11px] font-semibold uppercase tracking-wide",
+                  captureQualityResult.canProceed ? "text-warning" : "text-destructive"
+                )}
+              >
                 {captureQualityResult.canProceed ? "Quality Warning" : "Quality Check Failed"}
               </p>
               <ul className="mt-0.5 space-y-0.5">

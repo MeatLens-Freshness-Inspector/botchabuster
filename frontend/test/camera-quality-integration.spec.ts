@@ -132,6 +132,19 @@ async function uploadViaCameraApp(page: Page): Promise<void> {
   await fileInput.setInputFiles("public/android-chrome-192x192.png");
 }
 
+async function resolveCssColor(page: Page, colorExpression: string): Promise<string> {
+  return page.evaluate((expression) => {
+    const probe = document.createElement("div");
+    probe.style.color = expression;
+    probe.style.position = "absolute";
+    probe.style.visibility = "hidden";
+    document.body.appendChild(probe);
+    const color = getComputedStyle(probe).color;
+    probe.remove();
+    return color;
+  }, colorExpression);
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -173,6 +186,25 @@ test.describe("Camera quality integration", () => {
     // Both action buttons are present and enabled
     await expect(page.getByRole("button", { name: /retake/i })).toBeEnabled();
     await expect(page.getByRole("button", { name: /use photo/i })).toBeEnabled();
+  });
+
+  test("warning quality: light mode keeps banner text readable while preserving warning accent", async ({ page }) => {
+    await installQualityMock(page, "warning");
+    await seedSignedInSession(page, { userId: "user-1" });
+    await mockCommonApi(page, { userId: "user-1" });
+
+    await page.goto("/inspect");
+    await uploadViaCameraApp(page);
+
+    const banner = page.getByTestId("quality-banner");
+    await expect(banner).toBeVisible();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+    const expectedBodyColor = await resolveCssColor(page, "hsl(var(--foreground))");
+    await expect(banner).toHaveCSS("color", expectedBodyColor);
+
+    const expectedAccentColor = await resolveCssColor(page, "hsl(var(--warning))");
+    await expect(banner.getByText("Quality Warning", { exact: true })).toHaveCSS("color", expectedAccentColor);
   });
 
   test("warning quality: Use Photo proceeds to analyze step", async ({ page }) => {
