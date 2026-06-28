@@ -1,0 +1,109 @@
+Date : 2026-06-28 14:39:36
+Directory : c:\Users\Adriaan M. Dimate\Desktop\botchabuster
+Total : 40 files,  954 codes, -2 comments, 115 blanks, all 1067 lines
+
+Languages
++----------------+------------+------------+------------+------------+------------+
+| language       | files      | code       | comment    | blank      | total      |
++----------------+------------+------------+------------+------------+------------+
+| TypeScript     |         26 |        964 |          2 |        145 |      1,111 |
+| MS SQL         |          1 |         38 |          0 |          6 |         44 |
+| TypeScript JSX |         13 |        -48 |         -4 |        -36 |        -88 |
++----------------+------------+------------+------------+------------+------------+
+
+Directories
++------------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                                               | files      | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                                                  |         40 |        954 |         -2 |        115 |      1,067 |
+| backend                                                                                                                            |          8 |        200 |          0 |         27 |        227 |
+| backend\src                                                                                                                        |          6 |        125 |          0 |         17 |        142 |
+| backend\src\controllers                                                                                                            |          2 |         37 |          0 |          3 |         40 |
+| backend\src\services                                                                                                               |          3 |         51 |          0 |          4 |         55 |
+| backend\src\types                                                                                                                  |          1 |         37 |          0 |         10 |         47 |
+| backend\supabase                                                                                                                   |          1 |         38 |          0 |          6 |         44 |
+| backend\supabase\migrations                                                                                                        |          1 |         38 |          0 |          6 |         44 |
+| backend\test                                                                                                                       |          1 |         37 |          0 |          4 |         41 |
+| frontend                                                                                                                           |         32 |        754 |         -2 |         88 |        840 |
+| frontend\src                                                                                                                       |         27 |        581 |         -2 |         55 |        634 |
+| frontend\src\components                                                                                                            |          1 |          5 |          0 |          0 |          5 |
+| frontend\src\contexts                                                                                                              |          1 |         14 |          0 |          0 |         14 |
+| frontend\src\integrations                                                                                                          |          2 |          6 |          0 |          2 |          8 |
+| frontend\src\integrations\api                                                                                                      |          2 |          6 |          0 |          2 |          8 |
+| frontend\src\lib                                                                                                                   |          1 |         38 |          0 |          8 |         46 |
+| frontend\src\pages                                                                                                                 |         22 |        518 |         -2 |         45 |        561 |
+| frontend\src\pages (Files)                                                                                                         |          2 |       -596 |         -4 |        -67 |       -667 |
+| frontend\src\pages\admin-dashboard                                                                                                 |          2 |        112 |          0 |          2 |        114 |
+| frontend\src\pages\admin-dashboard\components                                                                                      |          2 |        112 |          0 |          2 |        114 |
+| frontend\src\pages\landing                                                                                                         |          7 |        238 |          0 |         26 |        264 |
+| frontend\src\pages\landing\reset-password                                                                                          |          4 |        185 |          0 |         23 |        208 |
+| frontend\src\pages\landing\reset-password (Files)                                                                                  |          1 |          5 |          0 |          1 |          6 |
+| frontend\src\pages\landing\reset-password\components                                                                               |          1 |         87 |          0 |          5 |         92 |
+| frontend\src\pages\landing\reset-password\hooks                                                                                    |          1 |         59 |          0 |         11 |         70 |
+| frontend\src\pages\landing\reset-password\utils                                                                                    |          1 |         34 |          0 |          6 |         40 |
+| frontend\src\pages\landing\signup                                                                                                  |          3 |         53 |          0 |          3 |         56 |
+| frontend\src\pages\landing\signup\components                                                                                       |          1 |         28 |          0 |          0 |         28 |
+| frontend\src\pages\landing\signup\hooks                                                                                            |          1 |         20 |          0 |          1 |         21 |
+| frontend\src\pages\landing\signup\utils                                                                                            |          1 |          5 |          0 |          2 |          7 |
+| frontend\src\pages\user                                                                                                            |         11 |        764 |          2 |         84 |        850 |
+| frontend\src\pages\user\history                                                                                                    |          3 |         18 |          0 |          0 |         18 |
+| frontend\src\pages\user\history (Files)                                                                                            |          1 |          2 |          0 |          0 |          2 |
+| frontend\src\pages\user\history\hooks                                                                                              |          1 |          4 |          0 |          0 |          4 |
+| frontend\src\pages\user\history\utils                                                                                              |          1 |         12 |          0 |          0 |         12 |
+| frontend\src\pages\user\inspections                                                                                                |          8 |        746 |          2 |         84 |        832 |
+| frontend\src\pages\user\inspections (Files)                                                                                        |          1 |         31 |          0 |          3 |         34 |
+| frontend\src\pages\user\inspections\components                                                                                     |          5 |        302 |          0 |         24 |        326 |
+| frontend\src\pages\user\inspections\hooks                                                                                          |          1 |        361 |          2 |         46 |        409 |
+| frontend\src\pages\user\inspections\utils                                                                                          |          1 |         52 |          0 |         11 |         63 |
+| frontend\test                                                                                                                      |          4 |        132 |          0 |         27 |        159 |
+| frontend\test (Files)                                                                                                              |          3 |         82 |          0 |         18 |        100 |
+| frontend\test\helpers                                                                                                              |          1 |         50 |          0 |          9 |         59 |
+| frontend\unit                                                                                                                      |          1 |         41 |          0 |          6 |         47 |
++------------------------------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++------------------------------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
+| filename                                                                                                                           | language       | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\AuthController.ts                                          | TypeScript     |          9 |          0 |          1 |         10 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\ProfileController.ts                                       | TypeScript     |         28 |          0 |          2 |         30 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\AuthService.ts                                                | TypeScript     |         30 |          0 |          3 |         33 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\PasskeyService.ts                                             | TypeScript     |          1 |          0 |          0 |          1 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\ProfileService.ts                                             | TypeScript     |         20 |          0 |          1 |         21 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\types\reportOrganization.ts                                            | TypeScript     |         37 |          0 |         10 |         47 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260628010000_add_report_organization_to_profiles.sql | MS SQL         |         38 |          0 |          6 |         44 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\test\reportOrganization.test.ts                                            | TypeScript     |         37 |          0 |          4 |         41 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\CameraCapture.tsx                                          | TypeScript JSX |          5 |          0 |          0 |          5 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\contexts\AuthContext.tsx                                              | TypeScript JSX |         14 |          0 |          0 |         14 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\AuthClient.ts                                        | TypeScript     |          2 |          0 |          1 |          3 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\ProfileClient.ts                                     | TypeScript     |          4 |          0 |          1 |          5 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\reportOrganizations.ts                                            | TypeScript     |         38 |          0 |          8 |         46 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\Index.tsx                                                       | TypeScript JSX |       -488 |         -4 |        -61 |       -553 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\ResetPasswordPage.tsx                                           | TypeScript JSX |       -108 |          0 |         -6 |       -114 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\admin-dashboard\components\AdminDashboardDesktopPage.tsx        | TypeScript JSX |         56 |          0 |          1 |         57 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\admin-dashboard\components\AdminDashboardMobilePage.tsx         | TypeScript JSX |         56 |          0 |          1 |         57 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\reset-password\components\ResetPasswordPageView.tsx     | TypeScript JSX |         87 |          0 |          5 |         92 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\reset-password\hooks\useResetPasswordPage.ts            | TypeScript     |         59 |          0 |         11 |         70 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\reset-password\types.ts                                 | TypeScript     |          5 |          0 |          1 |          6 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\reset-password\utils\resetPasswordPage.ts               | TypeScript     |         34 |          0 |          6 |         40 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\signup\components\SignupPageView.tsx                    | TypeScript JSX |         28 |          0 |          0 |         28 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\signup\hooks\useSignupPage.ts                           | TypeScript     |         20 |          0 |          1 |         21 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\signup\utils\signupPage.ts                              | TypeScript     |          5 |          0 |          2 |          7 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\hooks\useHistoryPage.ts                            | TypeScript     |          4 |          0 |          0 |          4 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\types.ts                                           | TypeScript     |          2 |          0 |          0 |          2 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\utils\historyPage.ts                               | TypeScript     |         12 |          0 |          0 |         12 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\components\InspectActionsSection.tsx           | TypeScript JSX |         47 |          0 |          3 |         50 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\components\InspectAnalysisSection.tsx          | TypeScript JSX |         36 |          0 |          4 |         40 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\components\InspectCaptureSection.tsx           | TypeScript JSX |        104 |          0 |          6 |        110 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\components\InspectHeroSection.tsx              | TypeScript JSX |         63 |          0 |          4 |         67 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\components\InspectPageView.tsx                 | TypeScript JSX |         52 |          0 |          7 |         59 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\hooks\useInspectPage.ts                        | TypeScript     |        361 |          2 |         46 |        409 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\types.ts                                       | TypeScript     |         31 |          0 |          3 |         34 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\utils\inspectPage.ts                           | TypeScript     |         52 |          0 |         11 |         63 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\admin-dashboard.spec.ts                                              | TypeScript     |         23 |          0 |          6 |         29 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\camera-quality-integration.spec.ts                                   | TypeScript     |         26 |          0 |          6 |         32 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\helpers\app.ts                                                       | TypeScript     |         50 |          0 |          9 |         59 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\terms-and-conditions.spec.ts                                         | TypeScript     |         33 |          0 |          6 |         39 |
+| c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\unit\history-report-organization.test.ts                                  | TypeScript     |         41 |          0 |          6 |         47 |
+| Total                                                                                                                              |                |        954 |         -2 |        115 |      1,067 |
++------------------------------------------------------------------------------------------------------------------------------------+----------------+------------+------------+------------+------------+

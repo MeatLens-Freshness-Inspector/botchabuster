@@ -1,0 +1,42 @@
+"filename", "language", "TypeScript", "TypeScript JSX", "MS SQL", "comment", "blank", "total"
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\AuthController.ts", "TypeScript", 9, 0, 0, 0, 1, 10
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\controllers\ProfileController.ts", "TypeScript", 28, 0, 0, 0, 2, 30
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\AuthService.ts", "TypeScript", 30, 0, 0, 0, 3, 33
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\PasskeyService.ts", "TypeScript", 1, 0, 0, 0, 0, 1
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\services\ProfileService.ts", "TypeScript", 20, 0, 0, 0, 1, 21
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\src\types\reportOrganization.ts", "TypeScript", 37, 0, 0, 0, 10, 47
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\supabase\migrations\20260628010000_add_report_organization_to_profiles.sql", "MS SQL", 0, 0, 38, 0, 6, 44
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\backend\test\reportOrganization.test.ts", "TypeScript", 37, 0, 0, 0, 4, 41
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\components\CameraCapture.tsx", "TypeScript JSX", 0, 5, 0, 0, 0, 5
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\contexts\AuthContext.tsx", "TypeScript JSX", 0, 14, 0, 0, 0, 14
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\AuthClient.ts", "TypeScript", 2, 0, 0, 0, 1, 3
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\integrations\api\ProfileClient.ts", "TypeScript", 4, 0, 0, 0, 1, 5
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\lib\reportOrganizations.ts", "TypeScript", 38, 0, 0, 0, 8, 46
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\Index.tsx", "TypeScript JSX", 0, -488, 0, -4, -61, -553
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\ResetPasswordPage.tsx", "TypeScript JSX", 0, -108, 0, 0, -6, -114
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\admin-dashboard\components\AdminDashboardDesktopPage.tsx", "TypeScript JSX", 0, 56, 0, 0, 1, 57
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\admin-dashboard\components\AdminDashboardMobilePage.tsx", "TypeScript JSX", 0, 56, 0, 0, 1, 57
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\reset-password\components\ResetPasswordPageView.tsx", "TypeScript JSX", 0, 87, 0, 0, 5, 92
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\reset-password\hooks\useResetPasswordPage.ts", "TypeScript", 59, 0, 0, 0, 11, 70
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\reset-password\types.ts", "TypeScript", 5, 0, 0, 0, 1, 6
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\reset-password\utils\resetPasswordPage.ts", "TypeScript", 34, 0, 0, 0, 6, 40
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\signup\components\SignupPageView.tsx", "TypeScript JSX", 0, 28, 0, 0, 0, 28
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\signup\hooks\useSignupPage.ts", "TypeScript", 20, 0, 0, 0, 1, 21
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\landing\signup\utils\signupPage.ts", "TypeScript", 5, 0, 0, 0, 2, 7
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\hooks\useHistoryPage.ts", "TypeScript", 4, 0, 0, 0, 0, 4
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\types.ts", "TypeScript", 2, 0, 0, 0, 0, 2
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\history\utils\historyPage.ts", "TypeScript", 12, 0, 0, 0, 0, 12
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\components\InspectActionsSection.tsx", "TypeScript JSX", 0, 47, 0, 0, 3, 50
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\components\InspectAnalysisSection.tsx", "TypeScript JSX", 0, 36, 0, 0, 4, 40
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\components\InspectCaptureSection.tsx", "TypeScript JSX", 0, 104, 0, 0, 6, 110
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\components\InspectHeroSection.tsx", "TypeScript JSX", 0, 63, 0, 0, 4, 67
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\components\InspectPageView.tsx", "TypeScript JSX", 0, 52, 0, 0, 7, 59
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\hooks\useInspectPage.ts", "TypeScript", 361, 0, 0, 2, 46, 409
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\types.ts", "TypeScript", 31, 0, 0, 0, 3, 34
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\src\pages\user\inspections\utils\inspectPage.ts", "TypeScript", 52, 0, 0, 0, 11, 63
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\admin-dashboard.spec.ts", "TypeScript", 23, 0, 0, 0, 6, 29
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\camera-quality-integration.spec.ts", "TypeScript", 26, 0, 0, 0, 6, 32
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\helpers\app.ts", "TypeScript", 50, 0, 0, 0, 9, 59
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\test\terms-and-conditions.spec.ts", "TypeScript", 33, 0, 0, 0, 6, 39
+"c:\Users\Adriaan M. Dimate\Desktop\botchabuster\frontend\unit\history-report-organization.test.ts", "TypeScript", 41, 0, 0, 0, 6, 47
+"Total", "-", 964, -48, 38, -2, 115, 1067
