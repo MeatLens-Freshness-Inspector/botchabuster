@@ -19,7 +19,11 @@
  */
 
 import { test, expect, type Page } from "@playwright/test";
-import { mockCommonApi, seedSignedInSession } from "./helpers/app";
+import {
+  mockCommonApi,
+  seedDeveloperOptionsSession,
+  seedSignedInSession,
+} from "./helpers/app";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -281,16 +285,17 @@ test.describe("Camera quality integration", () => {
     await expect(page.getByRole("button", { name: /analyze sample/i })).not.toBeVisible();
   });
 
-  test("open camera path: quality banner appears after capture with warning result", async ({ page }) => {
+  test("in-app cam path: quality banner appears after capture with warning result", async ({ page }) => {
     await installQualityMock(page, "warning");
     await installMockCamera(page);
-    await seedSignedInSession(page, { userId: "user-1" });
-    await mockCommonApi(page, { userId: "user-1" });
+    await seedSignedInSession(page, { userId: "admin-1", isAdmin: true });
+    await seedDeveloperOptionsSession(page, "admin-1");
+    await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
 
     await page.goto("/inspect");
 
-    // Open camera and capture
-    await page.getByRole("button", { name: /open camera/i }).click();
+    // Open the developer-only in-app stream and capture
+    await page.getByRole("button", { name: /in-app cam/i }).click();
     await expect(page.getByRole("button", { name: /capture/i })).toBeVisible({ timeout: 5_000 });
     await page.getByRole("button", { name: /capture/i }).click();
 

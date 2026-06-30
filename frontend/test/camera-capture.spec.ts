@@ -1,5 +1,9 @@
 import { test, expect, type Page } from "@playwright/test";
-import { mockCommonApi, seedSignedInSession } from "./helpers/app";
+import {
+  mockCommonApi,
+  seedDeveloperOptionsSession,
+  seedSignedInSession,
+} from "./helpers/app";
 
 interface MockCameraOptions {
   capabilities?: Record<string, unknown>;
@@ -113,22 +117,42 @@ async function setRangeInputValue(page: Page, labelPattern: RegExp, value: numbe
   }, value);
 }
 
-test("camera app capture option is available without developer file-upload mode", async ({ page }) => {
+test("inspectors only see the default open camera entrypoint", async ({ page }) => {
   await seedSignedInSession(page, { userId: "user-1" });
   await mockCommonApi(page, { userId: "user-1" });
 
   await page.goto("/inspect");
-  await expect(page.getByText("Use Camera App")).toBeVisible();
+  await expect(page.getByRole("button", { name: /open camera/i })).toBeVisible();
+  await expect(page.getByText("Use Camera App")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /in-app cam/i })).toHaveCount(0);
   await expect(page.locator('input[type="file"][capture="environment"]')).toHaveCount(1);
+});
+
+test("developer-unlocked admins can use the in-app camera option", async ({ page }) => {
+  await installMockCamera(page);
+  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true });
+  await seedDeveloperOptionsSession(page, "admin-1");
+  await mockCommonApi(page, {
+    userId: "admin-1",
+    isAdmin: true,
+    developerOptionsValid: true,
+  });
+
+  await page.goto("/inspect");
+  await expect(page.getByRole("button", { name: /in-app cam/i })).toBeVisible();
+
+  await page.getByRole("button", { name: /in-app cam/i }).click();
+  await expect(page.getByRole("button", { name: /capture/i })).toBeVisible();
 });
 
 test("manual camera controls apply focus and exposure constraints when supported", async ({ page }) => {
   await installMockCamera(page);
-  await seedSignedInSession(page, { userId: "user-1" });
-  await mockCommonApi(page, { userId: "user-1" });
+  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true });
+  await seedDeveloperOptionsSession(page, "admin-1");
+  await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
 
   await page.goto("/inspect");
-  await page.getByRole("button", { name: /open camera/i }).click();
+  await page.getByRole("button", { name: /in-app cam/i }).click();
   await expect(page.getByRole("button", { name: /capture/i })).toBeVisible();
 
   await expect(page.getByText(/camera controls/i)).toBeVisible();
@@ -187,11 +211,12 @@ test("shows unsupported message when manual controls are unavailable", async ({ 
     },
     settings: {},
   });
-  await seedSignedInSession(page, { userId: "user-1" });
-  await mockCommonApi(page, { userId: "user-1" });
+  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true });
+  await seedDeveloperOptionsSession(page, "admin-1");
+  await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
 
   await page.goto("/inspect");
-  await page.getByRole("button", { name: /open camera/i }).click();
+  await page.getByRole("button", { name: /in-app cam/i }).click();
   await expect(page.getByRole("button", { name: /capture/i })).toBeVisible();
 
   await expect(page.getByText(/manual camera controls are unavailable on this device\/browser/i)).toBeVisible();

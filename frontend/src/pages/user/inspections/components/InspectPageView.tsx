@@ -29,6 +29,7 @@ const InspectPageView = () => {
             isAnalyzeBlockedByModel={inspectPage.isAnalyzeBlockedByModel}
             isAnalyzing={inspectPage.isAnalyzing}
             isDebugFileUploadEnabled={inspectPage.isDebugFileUploadEnabled}
+            isInAppCameraEnabled={inspectPage.isInAppCameraEnabled}
             showModelInputPreview={inspectPage.showModelInputPreview}
             onSelectedLocationChange={inspectPage.onSelectedLocationChange}
             onCapture={inspectPage.onCapture}

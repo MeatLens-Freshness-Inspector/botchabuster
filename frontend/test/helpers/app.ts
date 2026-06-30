@@ -6,6 +6,7 @@ export interface MockedSessionOptions {
   userId?: string;
   email?: string;
   isAdmin?: boolean;
+  developerOptionsValid?: boolean;
   showDetailedResults?: boolean;
   onboardingCompletedAt?: string | null;
   failProfileLoad?: boolean;
@@ -54,6 +55,18 @@ export async function seedSignedInSession(page: Page, options: MockedSessionOpti
   }, { userId: userId, initEmail: email });
 }
 
+export async function seedDeveloperOptionsSession(page: Page, userId: string): Promise<void> {
+  await page.addInitScript(({ currentUserId }) => {
+    window.localStorage.setItem(
+      `meatlens-developer-options-session:${currentUserId}`,
+      JSON.stringify({
+        token: "developer-session-token",
+        expiresAt: "2099-01-01T00:00:00.000Z",
+      }),
+    );
+  }, { currentUserId: userId });
+}
+
 export async function mockCommonApi(
   page: Page,
   options: MockedSessionOptions = {},
@@ -62,6 +75,7 @@ export async function mockCommonApi(
   const userId = options.userId ?? "user-1";
   const email = options.email ?? "inspector@example.com";
   const isAdmin = options.isAdmin ?? false;
+  const developerOptionsValid = options.developerOptionsValid ?? false;
   const showDetailedResults = options.showDetailedResults ?? true;
   const onboardingCompletedAt =
     options.onboardingCompletedAt === undefined
@@ -124,6 +138,11 @@ export async function mockCommonApi(
 
     if (path === "/api/analysis/health") {
       await route.fulfill(jsonResponse({ status: "ok" }));
+      return;
+    }
+
+    if (path === "/api/developer-options/verify" && method === "POST") {
+      await route.fulfill(jsonResponse({ valid: developerOptionsValid }));
       return;
     }
 

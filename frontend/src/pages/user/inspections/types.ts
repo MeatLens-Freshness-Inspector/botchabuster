@@ -14,6 +14,7 @@ export interface InspectPageViewModel {
   isCaptureDisabled: boolean;
   isCreateInspectionPending: boolean;
   isDebugFileUploadEnabled: boolean;
+  isInAppCameraEnabled: boolean;
   isLocationSelectionDisabled: boolean;
   saveStatus: InspectionSaveStatus;
   showDetailedResults: boolean;

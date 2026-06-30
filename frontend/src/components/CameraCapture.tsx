@@ -212,6 +212,7 @@ interface CameraCaptureProps {
   className?: string;
   disabled?: boolean;
   allowFileUpload?: boolean;
+  allowInAppCamera?: boolean;
   showModelInputPreview?: boolean;
 }
 
@@ -220,10 +221,12 @@ export function CameraCapture({
   className,
   disabled = false,
   allowFileUpload = false,
+  allowInAppCamera = false,
   showModelInputPreview = true,
 }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const cameraAppInputRef = useRef<HTMLInputElement>(null);
   const capturedImageRef = useRef<HTMLImageElement>(null);
   const previewRequestIdRef = useRef(0);
   const videoTrackRef = useRef<MediaStreamTrack | null>(null);
@@ -733,6 +736,11 @@ export function CameraCapture({
     [disabled, prepareCapturedFile]
   );
 
+  const openCameraApp = useCallback(() => {
+    if (disabled) return;
+    cameraAppInputRef.current?.click();
+  }, [disabled]);
+
   const supportsManualFocusMode = cameraControls.focusModeOptions.includes("manual");
   const showManualFocusSlider = Boolean(cameraControls.focusDistanceRange);
   const hasManualControlSupport =
@@ -1031,25 +1039,17 @@ export function CameraCapture({
           </Button>
         ) : (
           <div className="flex w-full flex-col gap-3 min-[380px]:flex-row">
-            <Button
-              onClick={() => void startCamera()}
-              size="lg"
-              className="w-full gap-2 rounded-xl min-[380px]:flex-1"
-              disabled={disabled || isStarting}
-            >
-              <Camera className="h-5 w-5" /> {isStarting ? "Starting..." : "Open Camera"}
-            </Button>
-            <label className="w-full min-[380px]:flex-1">
+            <div className="w-full min-[380px]:flex-1">
               <Button
-                variant="outline"
+                onClick={openCameraApp}
                 size="lg"
-                className="w-full cursor-pointer gap-2 rounded-xl"
+                className="w-full gap-2 rounded-xl"
                 disabled={disabled}
-                asChild
               >
-                <span>Use Camera App</span>
+                <Camera className="h-5 w-5" /> Open Camera
               </Button>
               <input
+                ref={cameraAppInputRef}
                 type="file"
                 accept="image/*"
                 capture="environment"
@@ -1057,7 +1057,18 @@ export function CameraCapture({
                 disabled={disabled}
                 onChange={handleCameraAppInput}
               />
-            </label>
+            </div>
+            {allowInAppCamera && (
+              <Button
+                onClick={() => void startCamera()}
+                variant="outline"
+                size="lg"
+                className="w-full gap-2 rounded-xl min-[380px]:flex-1"
+                disabled={disabled || isStarting}
+              >
+                <Camera className="h-5 w-5" /> {isStarting ? "Starting..." : "In-App Cam"}
+              </Button>
+            )}
             {allowFileUpload && (
               <label className="w-full min-[380px]:flex-1">
                 <Button

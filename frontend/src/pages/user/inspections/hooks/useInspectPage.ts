@@ -373,6 +373,11 @@ export function useInspectPage(): InspectPageViewModel {
     isDeveloperUnlocked &&
     developerFlags.enableDebugFileUpload,
   );
+  const isInAppCameraEnabled = Boolean(
+    user &&
+    isAdmin &&
+    isDeveloperUnlocked,
+  );
   const confidenceSummaryClass = result ? getConfidenceTextClass(result.confidence_score) : "";
   const isAnalyzeBlockedByModel = navigator.onLine && !isModelReady;
 
@@ -387,6 +392,7 @@ export function useInspectPage(): InspectPageViewModel {
     isCaptureDisabled: saveStatus === "saving" || createInspection.isPending,
     isCreateInspectionPending: createInspection.isPending,
     isDebugFileUploadEnabled,
+    isInAppCameraEnabled,
     isLocationSelectionDisabled:
       saveStatus === "saving" || createInspection.isPending || marketLocations.length === 0,
     saveStatus,

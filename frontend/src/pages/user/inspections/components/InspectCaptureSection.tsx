@@ -20,6 +20,7 @@ type InspectCaptureSectionProps = {
   isAnalyzeBlockedByModel: boolean;
   isAnalyzing: boolean;
   isDebugFileUploadEnabled: boolean;
+  isInAppCameraEnabled: boolean;
   showModelInputPreview: boolean;
   onSelectedLocationChange: (value: string) => void;
   onCapture: (capture: CapturedImagePayload) => void;
@@ -36,6 +37,7 @@ export function InspectCaptureSection({
   isAnalyzeBlockedByModel,
   isAnalyzing,
   isDebugFileUploadEnabled,
+  isInAppCameraEnabled,
   showModelInputPreview,
   onSelectedLocationChange,
   onCapture,
@@ -74,6 +76,7 @@ export function InspectCaptureSection({
         onCapture={onCapture}
         disabled={isCaptureDisabled}
         allowFileUpload={isDebugFileUploadEnabled}
+        allowInAppCamera={isInAppCameraEnabled}
         showModelInputPreview={showModelInputPreview}
       />
 
