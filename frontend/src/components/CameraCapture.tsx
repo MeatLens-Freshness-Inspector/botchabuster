@@ -4,10 +4,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { assessFileQuality } from "@/lib/captureQuality";
-import {
-  validateImageQuality,
-  type ImageQualityResult,
-} from "@/lib/imageQuality";
+import { type ImageQualityResult } from "@/lib/imageQuality";
 import {
   createModelInputImageFile,
   DEFAULT_MEATLENS_INPUT_SIZE,
@@ -15,6 +12,7 @@ import {
   type SquareGuideBox,
 } from "@/lib/offlineAnalysis/meatLensPipeline";
 import { getActiveModelPreprocessContract } from "@/lib/offlineAnalysis/mobileNetV3";
+import { GUIDE_BOX_SIZE_RATIO, PREVIEW_EXPORT_QUALITY } from "./camera/constants";
 import {
   clampToRange,
   EMPTY_CAMERA_CONTROLS,
@@ -28,92 +26,16 @@ import {
   type ExtendedMediaTrackCapabilities,
   type ExtendedMediaTrackSettings,
 } from "./camera/controls";
-
-/**
- * Resolves an ImageQualityResult from a canvas.
- *
- * Test seam: if window.__mockImageQualityResult is set (test environments only),
- * that value is returned instead of running the real validation.
- */
-function resolveCanvasImageQuality(canvas: HTMLCanvasElement): ImageQualityResult {
-  const testSeam = (window as Window & { __mockImageQualityResult?: ImageQualityResult })
-    .__mockImageQualityResult;
-  if (testSeam !== undefined) {
-    return testSeam;
-  }
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    return {
-      status: "pass",
-      issues: [],
-      metrics: { width: canvas.width, height: canvas.height },
-      canProceed: true,
-    };
-  }
-
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  return validateImageQuality(imageData, canvas.width, canvas.height);
-}
-
-/**
- * Resolves an ImageQualityResult from a File via an OffscreenCanvas.
- *
- * Test seam: if window.__mockImageQualityResult is set (test environments only),
- * that value is returned instead of running the real validation.
- */
-async function resolveFileImageQuality(file: File): Promise<ImageQualityResult | null> {
-  const testSeam = (window as Window & { __mockImageQualityResult?: ImageQualityResult })
-    .__mockImageQualityResult;
-  if (testSeam !== undefined) {
-    return testSeam;
-  }
-
-  try {
-    const bitmap = await createImageBitmap(file);
-    const { width, height } = bitmap;
-    const offscreen = new OffscreenCanvas(width, height);
-    const ctx = offscreen.getContext("2d");
-    if (!ctx) {
-      bitmap.close();
-      return null;
-    }
-    ctx.drawImage(bitmap, 0, 0);
-    bitmap.close();
-    const imageData = ctx.getImageData(0, 0, width, height);
-    return validateImageQuality(imageData, width, height);
-  } catch {
-    return null;
-  }
-}
-
-export interface CapturedImagePayload {
-  file: File;
-  guideBox?: SquareGuideBox | null;
-  source: "camera" | "file";
-  capturedAt: string;
-}
-
-const GUIDE_BOX_SIZE_RATIO = 0.72;
-const PREVIEW_EXPORT_QUALITY = 0.92;
-
-function readBlobAsDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(new Error("Failed to render model-input preview."));
-    reader.readAsDataURL(blob);
-  });
-}
-
-interface CameraCaptureProps {
-  onCapture: (payload: CapturedImagePayload) => void;
-  className?: string;
-  disabled?: boolean;
-  allowFileUpload?: boolean;
-  allowInAppCamera?: boolean;
-  showModelInputPreview?: boolean;
-}
+import {
+  readBlobAsDataUrl,
+  resolveCanvasImageQuality,
+  resolveFileImageQuality,
+} from "./camera/quality";
+import {
+  type CameraCaptureProps,
+  type CaptureQualitySource,
+} from "./camera/types";
+export type { CapturedImagePayload } from "./camera/types";
 
 export function CameraCapture({
   onCapture,
@@ -134,7 +56,7 @@ export function CameraCapture({
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isStarting, setIsStarting] = useState(false);
-  const [qualitySource, setQualitySource] = useState<"canvas" | "file" | "cameraApp">("canvas");
+  const [qualitySource, setQualitySource] = useState<CaptureQualitySource>("canvas");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [captureGuideBox, setCaptureGuideBox] = useState<SquareGuideBox | null>(null);
   const [modelInputPreview, setModelInputPreview] = useState<string | null>(null);
