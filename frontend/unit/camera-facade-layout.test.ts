@@ -17,6 +17,7 @@ test("CameraCapture keeps a thin public facade while logic lives in src/componen
   const internalIndexSource = await readFile(internalIndexPath, "utf8");
   assert.match(internalIndexSource, /export\s*\{\s*CameraCapture\s*\}\s*from\s*["']\.\/CameraCapture["'];/);
   assert.match(internalIndexSource, /export\s+type\s*\{\s*CapturedImagePayload\s*\}\s*from\s*["']\.\/types["'];/);
+  assert.match(internalIndexSource, /export\s+type\s*\{\s*CameraCaptureProps\s*\}\s*from\s*["']\.\/types["'];/);
 
   const internalComponentSource = await readFile(internalComponentPath, "utf8");
   assert.match(internalComponentSource, /useCameraCapture/);
