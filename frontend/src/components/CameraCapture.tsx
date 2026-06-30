@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { Camera, RotateCcw, Check, AlertTriangle, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { assessFileQuality } from "@/lib/captureQuality";
@@ -226,7 +226,6 @@ export function CameraCapture({
 }: CameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const cameraAppInputRef = useRef<HTMLInputElement>(null);
   const capturedImageRef = useRef<HTMLImageElement>(null);
   const previewRequestIdRef = useRef(0);
   const videoTrackRef = useRef<MediaStreamTrack | null>(null);
@@ -736,11 +735,6 @@ export function CameraCapture({
     [disabled, prepareCapturedFile]
   );
 
-  const openCameraApp = useCallback(() => {
-    if (disabled) return;
-    cameraAppInputRef.current?.click();
-  }, [disabled]);
-
   const supportsManualFocusMode = cameraControls.focusModeOptions.includes("manual");
   const showManualFocusSlider = Boolean(cameraControls.focusDistanceRange);
   const hasManualControlSupport =
@@ -1039,25 +1033,28 @@ export function CameraCapture({
           </Button>
         ) : (
           <div className="flex w-full flex-col gap-3 min-[380px]:flex-row">
-            <div className="w-full min-[380px]:flex-1">
-              <Button
-                onClick={openCameraApp}
-                size="lg"
-                className="w-full gap-2 rounded-xl"
-                disabled={disabled}
-              >
+            <label
+              role="button"
+              aria-disabled={disabled || undefined}
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "relative w-full cursor-pointer gap-2 rounded-xl min-[380px]:flex-1",
+                disabled && "pointer-events-none opacity-50"
+              )}
+            >
+              <span className="pointer-events-none inline-flex items-center gap-2">
                 <Camera className="h-5 w-5" /> Open Camera
-              </Button>
+              </span>
               <input
-                ref={cameraAppInputRef}
                 type="file"
                 accept="image/*"
                 capture="environment"
-                className="hidden"
+                aria-label="Open Camera"
+                className="absolute inset-0 cursor-pointer opacity-0"
                 disabled={disabled}
                 onChange={handleCameraAppInput}
               />
-            </div>
+            </label>
             {allowInAppCamera && (
               <Button
                 onClick={() => void startCamera()}

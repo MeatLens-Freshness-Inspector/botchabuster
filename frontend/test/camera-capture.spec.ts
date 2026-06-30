@@ -122,10 +122,21 @@ test("inspectors only see the default open camera entrypoint", async ({ page }) 
   await mockCommonApi(page, { userId: "user-1" });
 
   await page.goto("/inspect");
-  await expect(page.getByRole("button", { name: /open camera/i })).toBeVisible();
+  await expect(page.locator('label[role="button"]').filter({ hasText: "Open Camera" })).toBeVisible();
   await expect(page.getByText("Use Camera App")).toHaveCount(0);
   await expect(page.getByRole("button", { name: /in-app cam/i })).toHaveCount(0);
   await expect(page.locator('input[type="file"][capture="environment"]')).toHaveCount(1);
+});
+
+test("open camera uses a directly tappable capture input for iOS compatibility", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, { userId: "user-1" });
+
+  await page.goto("/inspect");
+
+  const cameraInput = page.getByLabel(/open camera/i);
+  await expect(cameraInput).toHaveAttribute("capture", "environment");
+  await expect(cameraInput).not.toHaveCSS("display", "none");
 });
 
 test("developer-unlocked admins can use the in-app camera option", async ({ page }) => {
