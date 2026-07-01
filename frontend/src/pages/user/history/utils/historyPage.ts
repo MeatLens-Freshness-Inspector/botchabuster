@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
 import { getReportOrganizationLabel } from "@/lib/reportOrganizations";
 import type {
   FreshnessClassification,
@@ -61,6 +62,12 @@ export function buildDetailedHistoryReportHtml({
   const organizationLabel = getReportOrganizationLabel(reportOrganization);
   const inspectionCards = inspections
     .map((inspection, index) => {
+      const locationLabel =
+        formatInspectionLocationLabel(
+          inspection.location,
+          inspection.location_latitude,
+          inspection.location_longitude,
+        ) || "-";
       const imageSection = inspection.image_url
         ? `<div class="image-wrap"><img src="${escapeHtml(inspection.image_url)}" alt="Inspection image ${index + 1}" /></div>`
         : '<div class="no-image">No inspection image saved</div>';
@@ -77,7 +84,7 @@ export function buildDetailedHistoryReportHtml({
             <p><strong>Meat Type:</strong> ${escapeHtml(inspection.meat_type)}</p>
             <p><strong>Classification:</strong> ${escapeHtml(inspection.classification)}</p>
             <p><strong>Confidence:</strong> ${inspection.confidence_score}%</p>
-            <p><strong>Location:</strong> ${escapeHtml(inspection.location ?? "-")}</p>
+            <p><strong>Location:</strong> ${escapeHtml(locationLabel)}</p>
             <p><strong>Notes:</strong> ${escapeHtml(inspection.inspector_notes ?? "-")}</p>
             <p class="full"><strong>Flagged Deviations:</strong> ${escapeHtml(inspection.flagged_deviations.join(", ") || "-")}</p>
             <p class="full"><strong>Explanation:</strong> ${escapeHtml(inspection.explanation ?? "-")}</p>
@@ -252,9 +259,16 @@ export function getHistoryClassificationColorClass(
 }
 
 export function buildHistorySearchText(inspection: Inspection): string {
+  const locationLabel = formatInspectionLocationLabel(
+    inspection.location,
+    inspection.location_latitude,
+    inspection.location_longitude,
+  );
+
   return [
     inspection.meat_type,
     inspection.location ?? "",
+    locationLabel,
     inspection.classification,
     inspection.id,
   ]

@@ -37,6 +37,18 @@ interface AnalyzeOfflineOptions {
   guideBox?: SquareGuideBox | null;
 }
 
+interface OfflineAnalysisTestWindow extends Window {
+  __mockOfflineAnalysisResult?: AnalysisResult;
+}
+
+export function getMockOfflineAnalysisResult(): AnalysisResult | null {
+  return (window as OfflineAnalysisTestWindow).__mockOfflineAnalysisResult ?? null;
+}
+
+export function hasMockOfflineAnalysisResult(): boolean {
+  return getMockOfflineAnalysisResult() !== null;
+}
+
 function formatClassificationLabel(classification: FreshnessClassification): string {
   if (classification === "not fresh") {
     return "Not Fresh";
@@ -355,6 +367,11 @@ export async function analyzeOffline(
     }
   }
   // --------------------------------------------------------------------------
+
+  const mockResult = getMockOfflineAnalysisResult();
+  if (mockResult) {
+    return mockResult;
+  }
 
   const preprocessContract = getActiveModelPreprocessContract();
   const requiresSegmentedCenterRoi = preprocessContract === "segmented_center_roi";

@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getConfidenceFillClass, getConfidenceTextClass } from "@/lib/confidenceLevel";
+import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
@@ -42,6 +43,11 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
   const confidenceFillClass = getConfidenceFillClass(inspection.confidence_score);
   const confidenceTextClass = getConfidenceTextClass(inspection.confidence_score);
   const classificationColor = CLASSIFICATION_COLORS[inspection.classification];
+  const locationLabel = formatInspectionLocationLabel(
+    inspection.location,
+    inspection.location_latitude,
+    inspection.location_longitude,
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -145,12 +151,12 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
               </p>
               <p className="mt-1 text-xs font-semibold capitalize">{inspection.meat_type}</p>
             </div>
-            {inspection.location && (
+            {locationLabel && (
               <div className="rounded-xl border border-border/70 bg-card p-3">
                 <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
                   <MapPin className="h-3 w-3" /> Location
                 </p>
-                <p className="mt-1 truncate text-xs font-semibold">{inspection.location}</p>
+                <p className="mt-1 break-words text-xs font-semibold leading-snug">{locationLabel}</p>
               </div>
             )}
           </div>

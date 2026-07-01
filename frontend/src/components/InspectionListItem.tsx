@@ -4,6 +4,7 @@ import { FreshnessBadge } from "@/components/FreshnessBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { getConfidenceTextClass } from "@/lib/confidenceLevel";
+import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { MapPin, Hash } from "lucide-react";
@@ -18,6 +19,11 @@ interface InspectionListItemProps {
 export function InspectionListItem({ inspection, onClick, onSelect, className }: InspectionListItemProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const confidenceTextClass = getConfidenceTextClass(inspection.confidence_score);
+  const locationLabel = formatInspectionLocationLabel(
+    inspection.location,
+    inspection.location_latitude,
+    inspection.location_longitude,
+  );
 
   const surfaceByClass = {
     fresh: "bg-[hsl(var(--fresh)/0.14)]",
@@ -72,10 +78,10 @@ export function InspectionListItem({ inspection, onClick, onSelect, className }:
           <p className="font-display text-sm font-semibold capitalize truncate">{inspection.meat_type}</p>
           <p className="text-xs text-muted-foreground mt-0.5">{format(new Date(inspection.created_at), "h:mm a")}</p>
 
-          {inspection.location && (
-            <p className="mt-1 flex items-center gap-1 truncate text-xs text-muted-foreground">
+          {locationLabel && (
+            <p className="mt-1 flex items-start gap-1 break-words text-xs leading-snug text-muted-foreground">
               <MapPin className="h-3 w-3 flex-shrink-0" />
-              {inspection.location}
+              <span>{locationLabel}</span>
             </p>
           )}
         </div>

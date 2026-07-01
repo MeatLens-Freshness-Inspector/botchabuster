@@ -1,7 +1,8 @@
 import { Microscope } from "lucide-react";
 
 type InspectHeroSectionProps = {
-  selectedLocation: string;
+  locationDisplayLabel: string;
+  coordinateStatusText: string | null;
   captureStatusText: string;
   analysisStatusText: string;
   confidenceText: string;
@@ -9,7 +10,8 @@ type InspectHeroSectionProps = {
 };
 
 export function InspectHeroSection({
-  selectedLocation,
+  locationDisplayLabel,
+  coordinateStatusText,
   captureStatusText,
   analysisStatusText,
   confidenceText,
@@ -36,9 +38,12 @@ export function InspectHeroSection({
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
             Market Location
           </p>
-          <p className="mt-1 truncate font-display text-2xl font-semibold">
-            {selectedLocation || "--"}
+          <p className="mt-1 break-words font-display text-xl font-semibold leading-tight">
+            {locationDisplayLabel || "--"}
           </p>
+          {coordinateStatusText && (
+            <p className="mt-1 text-[11px] text-muted-foreground">{coordinateStatusText}</p>
+          )}
         </div>
         <div className="rounded-2xl border border-border/70 bg-[hsl(var(--primary)/0.16)] p-3">
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">

@@ -8,6 +8,7 @@ import { auditLogClient, type AuditLogEntry } from "@/integrations/api/AuditLogC
 import { inspectionClient } from "@/integrations/api/InspectionClient";
 import { marketLocationClient, type MarketLocation } from "@/integrations/api/MarketLocationClient";
 import { profileClient, type Profile } from "@/integrations/api/ProfileClient";
+import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
 import { isReportOrganization } from "@/lib/reportOrganizations";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
 import type {
@@ -472,6 +473,13 @@ export function useAdminDashboardPage() {
   const reportRows = useMemo<ReportRow[]>(() => {
     return reportFilteredInspections.map((inspection) => {
       const profile = inspection.user_id ? profileById.get(inspection.user_id) : undefined;
+      const manualLocation = getLocationLabel(inspection.location, profile);
+      const locationLabel =
+        formatInspectionLocationLabel(
+          manualLocation,
+          inspection.location_latitude,
+          inspection.location_longitude,
+        ) || manualLocation;
 
       return {
         id: inspection.id,
@@ -480,7 +488,10 @@ export function useAdminDashboardPage() {
         inspector: getInspectorLabel(profile),
         inspectorEmail: getOptionalText(profile?.email),
         inspectorCode: getOptionalText(profile?.inspector_code),
-        location: getLocationLabel(inspection.location, profile),
+        manualLocation,
+        location: locationLabel,
+        locationLatitude: inspection.location_latitude,
+        locationLongitude: inspection.location_longitude,
         profileLocation: getOptionalText(profile?.location),
         meatType: inspection.meat_type,
         classification: inspection.classification,
@@ -512,7 +523,7 @@ export function useAdminDashboardPage() {
     const spoiledCount = reportRows.filter((row) => row.classification === "spoiled").length;
     const spoiledRate = Math.round((spoiledCount / total) * 100);
     const uniqueInspectors = new Set(reportRows.map((row) => row.inspector)).size;
-    const uniqueLocations = new Set(reportRows.map((row) => row.location)).size;
+    const uniqueLocations = new Set(reportRows.map((row) => row.manualLocation)).size;
     const flaggedRecords = reportRows.filter((row) => row.flaggedDeviations !== "-").length;
 
     return { total, averageConfidence, spoiledRate, uniqueInspectors, uniqueLocations, flaggedRecords };
@@ -554,13 +565,13 @@ export function useAdminDashboardPage() {
     const aggregates = new Map<string, { count: number; spoiledCount: number; totalConfidence: number }>();
 
     reportRows.forEach((row) => {
-      const current = aggregates.get(row.location) ?? { count: 0, spoiledCount: 0, totalConfidence: 0 };
+      const current = aggregates.get(row.manualLocation) ?? { count: 0, spoiledCount: 0, totalConfidence: 0 };
       current.count += 1;
       current.totalConfidence += row.confidenceScore;
       if (row.classification === "spoiled") {
         current.spoiledCount += 1;
       }
-      aggregates.set(row.location, current);
+      aggregates.set(row.manualLocation, current);
     });
 
     return Array.from(aggregates.entries())
@@ -695,6 +706,9 @@ export function useAdminDashboardPage() {
       "Inspector Email",
       "Inspector Code",
       "Location",
+      "Manual Location",
+      "Latitude",
+      "Longitude",
       "Profile Location",
       "Meat Type",
       "Classification",
@@ -712,6 +726,9 @@ export function useAdminDashboardPage() {
       row.inspectorEmail,
       row.inspectorCode,
       row.location,
+      row.manualLocation,
+      row.locationLatitude,
+      row.locationLongitude,
       row.profileLocation,
       row.meatType,
       row.classification,

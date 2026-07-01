@@ -43,6 +43,8 @@ async function processScan(
     client_submission_id: scan.id,
     meat_type: scan.meatType,
     location: scan.location ?? null,
+    location_latitude: scan.locationLatitude ?? null,
+    location_longitude: scan.locationLongitude ?? null,
     captured_at: scan.capturedAt ?? scan.queuedAt,
     classification: result.classification,
     confidence_score: result.confidence_score,

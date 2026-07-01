@@ -15,13 +15,24 @@ import {
   saveDeveloperAnalysisSnapshot,
   type DeveloperOptionsFlags,
 } from "@/lib/developerOptions";
-import { analyzeOffline } from "@/lib/offlineAnalysis";
+import {
+  analyzeOffline,
+  getMockOfflineAnalysisResult,
+  hasMockOfflineAnalysisResult,
+} from "@/lib/offlineAnalysis";
 import {
   isModelReady as getMobileNetModelReady,
   loadMobileNetV3,
   setActiveMobileNetModelVariant,
 } from "@/lib/offlineAnalysis/mobileNetV3";
 import { queueScan, removeScan } from "@/lib/offlineQueue";
+import {
+  formatInspectionLocationLabel,
+  getCoordinateStatusText,
+  requestCurrentCoordinates,
+  type CoordinateCaptureStatus,
+  type InspectionCoordinates,
+} from "@/lib/inspectionLocation";
 import type { AnalysisResult } from "@/types/inspection";
 import type { CapturedImagePayload } from "@/components/CameraCapture";
 import type { InspectPageViewModel, InspectionSaveStatus } from "../types";
@@ -48,10 +59,14 @@ export function useInspectPage(): InspectPageViewModel {
   const [isModelReady, setIsModelReady] = useState<boolean>(() => !navigator.onLine || getMobileNetModelReady());
   const [saveStatus, setSaveStatus] = useState<InspectionSaveStatus>("idle");
   const [clientSubmissionId, setClientSubmissionId] = useState<string | null>(null);
+  const [coordinates, setCoordinates] = useState<InspectionCoordinates | null>(null);
+  const [coordinateStatus, setCoordinateStatus] = useState<CoordinateCaptureStatus>("idle");
   const [developerFlags, setDeveloperFlags] = useState<DeveloperOptionsFlags>(DEFAULT_DEVELOPER_OPTIONS_FLAGS);
   const [isDeveloperUnlocked, setIsDeveloperUnlocked] = useState(false);
   const saveLockRef = useRef(false);
   const autoSaveAttemptedRef = useRef(false);
+  const coordinateRequestIdRef = useRef(0);
+  const queuedAtRef = useRef<string | null>(null);
   const createInspection = useCreateInspection();
 
   useEffect(() => {
@@ -185,43 +200,107 @@ export function useInspectPage(): InspectPageViewModel {
     };
   }, []);
 
+  const persistPendingScan = useCallback(
+    async (
+      submissionId: string,
+      capture: CapturedImagePayload,
+      queuedAt: string,
+      analysisResult?: AnalysisResult,
+      nextCoordinates?: InspectionCoordinates | null,
+    ) => {
+      if (!user) {
+        return;
+      }
+
+      const imageData = await capture.file.arrayBuffer();
+      await queueScan({
+        id: submissionId,
+        imageData,
+        imageType: capture.file.type,
+        imageName: capture.file.name,
+        meatType: DEFAULT_MEAT_TYPE,
+        location: selectedLocation.trim() || null,
+        locationLatitude: nextCoordinates?.latitude ?? null,
+        locationLongitude: nextCoordinates?.longitude ?? null,
+        capturedAt: capture.capturedAt,
+        queuedAt,
+        userId: user.id,
+        analysisResult,
+      });
+    },
+    [selectedLocation, user],
+  );
+
   const handleCapture = useCallback((capture: CapturedImagePayload) => {
     if (saveStatus === "saving") return;
 
     const submissionId = createClientSubmissionId();
+    const requestId = coordinateRequestIdRef.current + 1;
+    coordinateRequestIdRef.current = requestId;
     setCapturedInput(capture);
     setResult(null);
     setSaveStatus("idle");
     saveLockRef.current = false;
     autoSaveAttemptedRef.current = false;
     setClientSubmissionId(submissionId);
+    setCoordinates(null);
+    setCoordinateStatus("capturing");
+    queuedAtRef.current = null;
+    const mockAnalysisResult = getMockOfflineAnalysisResult();
+
+    void requestCurrentCoordinates().then((nextCoordinates) => {
+      if (coordinateRequestIdRef.current !== requestId) {
+        return;
+      }
+
+      if (nextCoordinates) {
+        setCoordinates(nextCoordinates);
+        setCoordinateStatus("captured");
+      } else {
+        setCoordinates(null);
+        setCoordinateStatus("unavailable");
+      }
+
+      if (mockAnalysisResult) {
+        setResult(mockAnalysisResult);
+      }
+    });
 
     if (!navigator.onLine && user) {
       void (async () => {
         try {
-          const imageData = await capture.file.arrayBuffer();
-          await queueScan({
-            id: submissionId,
-            imageData,
-            imageType: capture.file.type,
-            imageName: capture.file.name,
-            meatType: DEFAULT_MEAT_TYPE,
-            location: selectedLocation.trim() || null,
-            capturedAt: capture.capturedAt,
-            queuedAt: new Date().toISOString(),
-            userId: user.id,
-          });
+          const queuedAt = new Date().toISOString();
+          queuedAtRef.current = queuedAt;
+          await persistPendingScan(submissionId, capture, queuedAt);
           toast.info("Captured offline - image cached locally for sync.");
         } catch {
           toast.error("Failed to cache offline capture.");
         }
       })();
     }
-  }, [saveStatus, selectedLocation, user]);
+  }, [persistPendingScan, saveStatus, user]);
+
+  useEffect(() => {
+    if (!capturedInput || !clientSubmissionId || !queuedAtRef.current) {
+      return;
+    }
+
+    if (coordinates == null && result == null) {
+      return;
+    }
+
+    void persistPendingScan(
+      clientSubmissionId,
+      capturedInput,
+      queuedAtRef.current,
+      result ?? undefined,
+      coordinates,
+    );
+  }, [capturedInput, clientSubmissionId, coordinates, persistPendingScan, result]);
 
   const handleAnalyze = useCallback(async () => {
     if (!capturedInput?.file) return;
-    if (navigator.onLine && !isModelReady) {
+    if (navigator.onLine && !isModelReady && !hasMockOfflineAnalysisResult()) {
       toast.info("Preparing MobileNetV3 model. Please wait a moment.");
       return;
     }
@@ -236,6 +315,7 @@ export function useInspectPage(): InspectPageViewModel {
         if (!navigator.onLine && clientSubmissionId) {
           try {
             await removeScan(clientSubmissionId);
+            queuedAtRef.current = null;
           } catch {
             // Keep analysis flow even if local queue cleanup fails.
           }
@@ -293,19 +373,9 @@ export function useInspectPage(): InspectPageViewModel {
 
     if (!navigator.onLine) {
       try {
-        const imageData = await capturedInput.file.arrayBuffer();
-        await queueScan({
-          id: submissionId,
-          imageData,
-          imageType: capturedInput.file.type,
-          imageName: capturedInput.file.name,
-          meatType: DEFAULT_MEAT_TYPE,
-          location: selectedLocation.trim() || null,
-          capturedAt: capturedInput.capturedAt,
-          queuedAt: new Date().toISOString(),
-          userId: user.id,
-          analysisResult: result,
-        });
+        const queuedAt = queuedAtRef.current ?? new Date().toISOString();
+        queuedAtRef.current = queuedAt;
+        await persistPendingScan(submissionId, capturedInput, queuedAt, result, coordinates);
         setSaveStatus("queued");
         toast.info("You're offline - save queued. It will upload and record when you reconnect.");
       } catch {
@@ -331,6 +401,8 @@ export function useInspectPage(): InspectPageViewModel {
         client_submission_id: submissionId,
         meat_type: DEFAULT_MEAT_TYPE,
         location: selectedLocation.trim() || null,
+        location_latitude: coordinates?.latitude ?? null,
+        location_longitude: coordinates?.longitude ?? null,
         captured_at: capturedInput.capturedAt,
         classification: result.classification,
         confidence_score: result.confidence_score,
@@ -346,7 +418,7 @@ export function useInspectPage(): InspectPageViewModel {
       console.error("Save error:", error);
       toast.error("Failed to save inspection");
     }
-  }, [capturedInput, clientSubmissionId, createInspection, result, saveStatus, selectedLocation, user]);
+  }, [capturedInput, clientSubmissionId, coordinates, createInspection, persistPendingScan, result, saveStatus, selectedLocation, user]);
 
   useEffect(() => {
     if (!result || !capturedInput?.file || !user) return;
@@ -359,12 +431,16 @@ export function useInspectPage(): InspectPageViewModel {
   }, [capturedInput, handleSave, result, saveStatus, user]);
 
   const handleReset = useCallback(() => {
+    coordinateRequestIdRef.current += 1;
     setCapturedInput(null);
     setResult(null);
+    setCoordinates(null);
+    setCoordinateStatus("idle");
     setSaveStatus("idle");
     saveLockRef.current = false;
     autoSaveAttemptedRef.current = false;
     setClientSubmissionId(null);
+    queuedAtRef.current = null;
   }, []);
 
   const isDebugFileUploadEnabled = Boolean(
@@ -380,12 +456,24 @@ export function useInspectPage(): InspectPageViewModel {
   );
   const confidenceSummaryClass = result ? getConfidenceTextClass(result.confidence_score) : "";
   const isAnalyzeBlockedByModel = navigator.onLine && !isModelReady;
+  const locationDisplayLabel =
+    formatInspectionLocationLabel(
+      selectedLocation,
+      coordinates?.latitude ?? null,
+      coordinates?.longitude ?? null,
+    ) || selectedLocation;
+  const coordinateStatusText =
+    coordinateStatus === "captured"
+      ? null
+      : getCoordinateStatusText(coordinateStatus, coordinates);
 
   return {
     capturedInput,
     result,
     marketLocations,
     selectedLocation,
+    locationDisplayLabel,
+    coordinateStatusText,
     isAnalyzing,
     isAnalyzeBlockedByModel,
     isAnalyzeDisabled: isAnalyzing || isAnalyzeBlockedByModel,

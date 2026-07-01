@@ -18,6 +18,8 @@ export interface PendingScan {
   imageName: string;
   meatType: MeatType;
   location: string | null;
+  locationLatitude: number | null;
+  locationLongitude: number | null;
   capturedAt?: string;
   queuedAt: string;
   userId: string;

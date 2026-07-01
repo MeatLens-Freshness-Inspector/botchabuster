@@ -12,6 +12,8 @@ import { Loader2, ScanLine, TestTube2 } from "lucide-react";
 
 type InspectCaptureSectionProps = {
   selectedLocation: string;
+  locationDisplayLabel: string;
+  coordinateStatusText: string | null;
   marketLocations: string[];
   isLocationSelectionDisabled: boolean;
   isCaptureDisabled: boolean;
@@ -29,6 +31,8 @@ type InspectCaptureSectionProps = {
 
 export function InspectCaptureSection({
   selectedLocation,
+  locationDisplayLabel,
+  coordinateStatusText,
   marketLocations,
   isLocationSelectionDisabled,
   isCaptureDisabled,
@@ -70,6 +74,15 @@ export function InspectCaptureSection({
             ))}
           </SelectContent>
         </Select>
+        <p className="text-[11px] leading-relaxed text-muted-foreground">
+          Manual location is saved, and real-time GPS coordinates are captured when available.
+        </p>
+        <p className="text-xs font-medium text-foreground">
+          Saved to report: {locationDisplayLabel || selectedLocation || "--"}
+        </p>
+        {coordinateStatusText && (
+          <p className="text-[11px] text-muted-foreground">{coordinateStatusText}</p>
+        )}
       </div>
 
       <CameraCapture

@@ -8,6 +8,8 @@ export interface InspectPageViewModel {
   result: AnalysisResult | null;
   marketLocations: string[];
   selectedLocation: string;
+  locationDisplayLabel: string;
+  coordinateStatusText: string | null;
   isAnalyzing: boolean;
   isAnalyzeBlockedByModel: boolean;
   isAnalyzeDisabled: boolean;

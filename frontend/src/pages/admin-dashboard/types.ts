@@ -32,7 +32,10 @@ export type ReportRow = {
   inspector: string;
   inspectorEmail: string;
   inspectorCode: string;
+  manualLocation: string;
   location: string;
+  locationLatitude: number | null;
+  locationLongitude: number | null;
   profileLocation: string;
   meatType: string;
   classification: FreshnessClassification;

@@ -201,6 +201,8 @@ export function DeveloperOptionsPanel() {
         userId: scan.userId,
         meatType: scan.meatType,
         location: scan.location,
+        locationLatitude: scan.locationLatitude,
+        locationLongitude: scan.locationLongitude,
         queuedAt: scan.queuedAt,
         capturedAt: scan.capturedAt ?? null,
         imageName: scan.imageName,

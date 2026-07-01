@@ -112,6 +112,8 @@ export class InspectionClient {
         explanation: inspection.explanation ?? null,
         image_url: inspection.image_url ?? null,
         location: inspection.location ?? null,
+        location_latitude: inspection.location_latitude ?? null,
+        location_longitude: inspection.location_longitude ?? null,
         inspector_notes: inspection.inspector_notes ?? null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

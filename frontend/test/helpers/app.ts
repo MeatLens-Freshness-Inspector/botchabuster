@@ -295,6 +295,8 @@ export async function mockCommonApi(
             explanation: "Looks fresh",
             image_url: null,
             location: "North Market",
+            location_latitude: null,
+            location_longitude: null,
             inspector_notes: null,
             created_at: inspectionCreatedAt,
             updated_at: inspectionCreatedAt,
@@ -309,6 +311,8 @@ export async function mockCommonApi(
         jsonResponse({
           id: "inspection-created",
           user_id: userId,
+          location_latitude: null,
+          location_longitude: null,
           created_at: inspectionCreatedAt,
           updated_at: inspectionCreatedAt,
         })

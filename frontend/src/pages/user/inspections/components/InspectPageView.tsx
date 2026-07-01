@@ -11,7 +11,8 @@ const InspectPageView = () => {
     <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] pb-24">
       <div className="mx-auto w-full max-w-6xl min-w-0 px-4 pt-4">
         <InspectHeroSection
-          selectedLocation={inspectPage.selectedLocation}
+          locationDisplayLabel={inspectPage.locationDisplayLabel}
+          coordinateStatusText={inspectPage.coordinateStatusText}
           captureStatusText={inspectPage.captureStatusText}
           analysisStatusText={inspectPage.analysisStatusText}
           confidenceText={inspectPage.confidenceText}
@@ -21,6 +22,8 @@ const InspectPageView = () => {
         <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-[1.05fr_0.95fr]">
           <InspectCaptureSection
             selectedLocation={inspectPage.selectedLocation}
+            locationDisplayLabel={inspectPage.locationDisplayLabel}
+            coordinateStatusText={inspectPage.coordinateStatusText}
             marketLocations={inspectPage.marketLocations}
             isLocationSelectionDisabled={inspectPage.isLocationSelectionDisabled}
             isCaptureDisabled={inspectPage.isCaptureDisabled}
