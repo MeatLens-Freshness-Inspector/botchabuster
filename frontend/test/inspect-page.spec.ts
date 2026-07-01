@@ -70,7 +70,7 @@ test("prevents saving the same analyzed record more than once", async ({ page })
   await expect(page.getByRole("button", { name: "Record Saved" })).toBeDisabled();
 });
 
-test("captures GPS coordinates in real time and sends them with the inspection save payload", async ({ page }) => {
+test("waits for the in-flight GPS capture before auto-saving the inspection payload", async ({ page }) => {
   test.setTimeout(120_000);
 
   await seedSignedInSession(page, { userId: "user-1" });
@@ -104,24 +104,26 @@ test("captures GPS coordinates in real time and sends them with the inspection s
       configurable: true,
       value: {
         getCurrentPosition(success: PositionCallback) {
-          success({
-            coords: {
-              latitude: 14.5995,
-              longitude: 120.9842,
-              accuracy: 5,
-              altitude: null,
-              altitudeAccuracy: null,
-              heading: null,
-              speed: null,
+          window.setTimeout(() => {
+            success({
+              coords: {
+                latitude: 14.5995,
+                longitude: 120.9842,
+                accuracy: 5,
+                altitude: null,
+                altitudeAccuracy: null,
+                heading: null,
+                speed: null,
+                toJSON() {
+                  return {};
+                },
+              },
+              timestamp: Date.now(),
               toJSON() {
                 return {};
               },
-            },
-            timestamp: Date.now(),
-            toJSON() {
-              return {};
-            },
-          } as GeolocationPosition);
+            } as GeolocationPosition);
+          }, 1_500);
         },
         watchPosition() {
           return 1;
@@ -131,9 +133,19 @@ test("captures GPS coordinates in real time and sends them with the inspection s
     });
   });
 
+  let createCalls = 0;
   let createPayload = "";
+  await page.route("**/api/upload/inspection-image", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ imageUrl: "https://example.com/sample.jpg" }),
+    });
+  });
+
   await page.route("**/api/inspections", async (route) => {
     if (route.request().method() === "POST") {
+      createCalls += 1;
       createPayload = route.request().postData() ?? "";
       await route.fulfill({
         status: 200,
@@ -153,7 +165,11 @@ test("captures GPS coordinates in real time and sends them with the inspection s
 
   await uploadSamplePhoto(page);
   await page.getByRole("button", { name: "Use Photo" }).click();
-  await expect(page.getByText("Old Market (14.599500, 120.984200)", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Analyze Sample" }).click();
+  await expect.poll(() => createCalls, { timeout: 6_000 }).toBe(1);
+  await expect(
+    page.getByText("Old Market | Lat: 14.599500 | Long: 120.984200", { exact: true }),
+  ).toBeVisible();
   await expect(page.getByRole("button", { name: "Record Saved" })).toBeDisabled();
 
   expect(JSON.parse(createPayload)).toMatchObject({

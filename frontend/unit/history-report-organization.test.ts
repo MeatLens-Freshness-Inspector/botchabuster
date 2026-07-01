@@ -13,6 +13,8 @@ const inspections = [
     explanation: "Looks fresh",
     image_url: null,
     location: "North Market",
+    location_latitude: 14.5995,
+    location_longitude: 120.9842,
     inspector_notes: "No issues",
     created_at: "2026-06-28T08:00:00.000Z",
     updated_at: "2026-06-28T08:00:00.000Z",
@@ -30,6 +32,7 @@ test("renders the selected organization header for DTI reports", () => {
 
   assert.match(html, /DTI/);
   assert.match(html, /Inspector Daily Detailed Report/);
+  assert.match(html, /North Market \| Lat: 14.599500 \| Long: 120.984200/);
 });
 
 test("falls back to Gordon College CCS when the profile organization is missing", () => {

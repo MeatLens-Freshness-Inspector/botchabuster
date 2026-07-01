@@ -13,19 +13,34 @@ export function formatCoordinateValue(value: number): string {
   return value.toFixed(6);
 }
 
+export function formatInspectionCoordinateLabel(
+  latitude: number | null | undefined,
+  longitude: number | null | undefined,
+): string {
+  if (latitude == null || longitude == null) {
+    return "";
+  }
+
+  return `Lat: ${formatCoordinateValue(latitude)} | Long: ${formatCoordinateValue(longitude)}`;
+}
+
 export function formatInspectionLocationLabel(
   location: string | null | undefined,
   latitude: number | null | undefined,
   longitude: number | null | undefined,
 ): string {
   const manualLocation = location?.trim() ?? "";
-  if (!manualLocation) {
-    if (latitude == null || longitude == null) return "";
-    return `${formatCoordinateValue(latitude)}, ${formatCoordinateValue(longitude)}`;
-  }
-  if (latitude == null || longitude == null) return manualLocation;
+  const coordinateLabel = formatInspectionCoordinateLabel(latitude, longitude);
 
-  return `${manualLocation} (${formatCoordinateValue(latitude)}, ${formatCoordinateValue(longitude)})`;
+  if (!manualLocation) {
+    return coordinateLabel;
+  }
+
+  if (!coordinateLabel) {
+    return manualLocation;
+  }
+
+  return `${manualLocation} | ${coordinateLabel}`;
 }
 
 export function getCoordinateStatusText(
@@ -37,7 +52,10 @@ export function getCoordinateStatusText(
   }
 
   if (status === "captured" && coordinates) {
-    return `${formatCoordinateValue(coordinates.latitude)}, ${formatCoordinateValue(coordinates.longitude)}`;
+    return formatInspectionCoordinateLabel(
+      coordinates.latitude,
+      coordinates.longitude,
+    );
   }
 
   if (status === "unavailable") {

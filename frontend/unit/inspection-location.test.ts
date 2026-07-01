@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  formatInspectionCoordinateLabel,
   formatInspectionLocationLabel,
   getCoordinateStatusText,
   requestCurrentCoordinates,
@@ -70,18 +71,26 @@ test("requestCurrentCoordinates returns null when geolocation fails", async () =
 test("formatInspectionLocationLabel appends coordinates beside the manual location", () => {
   assert.equal(
     formatInspectionLocationLabel("Old Market", 14.5995, 120.9842),
-    "Old Market (14.599500, 120.984200)",
+    "Old Market | Lat: 14.599500 | Long: 120.984200",
   );
   assert.equal(
     formatInspectionLocationLabel(null, 14.5995, 120.9842),
-    "14.599500, 120.984200",
+    "Lat: 14.599500 | Long: 120.984200",
   );
   assert.equal(
     formatInspectionLocationLabel("Old Market", null, null),
     "Old Market",
   );
   assert.equal(
+    formatInspectionCoordinateLabel(14.5995, 120.9842),
+    "Lat: 14.599500 | Long: 120.984200",
+  );
+  assert.equal(
     getCoordinateStatusText("capturing", null),
     "Capturing GPS coordinates...",
+  );
+  assert.equal(
+    getCoordinateStatusText("captured", { latitude: 14.5995, longitude: 120.9842 }),
+    "Lat: 14.599500 | Long: 120.984200",
   );
 });
