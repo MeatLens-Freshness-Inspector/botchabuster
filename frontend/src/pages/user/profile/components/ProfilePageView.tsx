@@ -4,12 +4,12 @@ import { PrivacyPolicyDialog } from "@/components/PrivacyPolicyDialog";
 import { TermsAndConditionsDialog } from "@/components/TermsAndConditionsDialog";
 import { useProfilePage } from "../hooks/useProfilePage";
 import { ProfilePageHeader } from "./ProfilePageHeader";
-import { ProfileOverviewColumn } from "./ProfileOverviewColumn";
-import { ProfileSettingsColumn } from "./ProfileSettingsColumn";
+import { ProfilePrimaryColumn } from "./ProfilePrimaryColumn";
+import { ProfileSecondaryColumn } from "./ProfileSecondaryColumn";
+import { ProfileSummaryCard } from "./ProfileSummaryCard";
 
 export function ProfilePageView() {
   const {
-    user,
     profile,
     fullName,
     email,
@@ -56,52 +56,58 @@ export function ProfilePageView() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] pb-24">
+    return (
+      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] pb-24">
       <div className="mx-auto w-full max-w-6xl px-4 pt-4">
         <ProfilePageHeader onBack={navigateBack} />
 
-        <div className="grid gap-4 lg:grid-cols-[0.92fr_1.08fr]">
-          <ProfileOverviewColumn
+        <ProfileSummaryCard
+          fullName={fullName}
+          initials={initials}
+          inspectorCode={inspectorCode}
+          isUploadingAvatar={isUploadingAvatar}
+          onAvatarUpload={handleAvatarUpload}
+          onCopyCode={handleCopyCode}
+          profile={profile}
+          roleLabel={roleLabel}
+        />
+
+        <div className="mt-4 grid gap-4 lg:grid-cols-[0.98fr_1.02fr]">
+          <ProfilePrimaryColumn
             email={email}
             fullName={fullName}
-            initials={initials}
             inspectorCode={inspectorCode}
-            isLightMode={isLightMode}
-            isSavingProfile={isSavingProfile}
-            isShowingDetailedResults={isShowingDetailedResults}
-            isUploadingAvatar={isUploadingAvatar}
-            onAvatarUpload={handleAvatarUpload}
-            onCopyCode={handleCopyCode}
-            onEmailChange={setEmail}
-            onFullNameChange={setFullName}
-            onOpenHelpTutorials={openHelpTutorials}
-            onOpenPrivacyDialog={() => setDialogOpen("showPrivacyDialog", true)}
-            onOpenProfileTutorial={openProfileTutorial}
-            onOpenTermsDialog={() => setDialogOpen("showTermsDialog", true)}
-            onSaveProfile={handleSaveProfile}
-            profile={profile}
-            roleLabel={roleLabel}
-          />
-
-          <ProfileSettingsColumn
             isLightMode={isLightMode}
             isLoadingPasskeys={isLoadingPasskeys}
             isRegisteringPasskey={isRegisteringPasskey}
-            isSavingInspectPreference={isSavingInspectPreference}
             isSavingPassword={isSavingPassword}
+            isSavingProfile={isSavingProfile}
             isShowingDetailedResults={isShowingDetailedResults}
+            isUploadingAvatar={isUploadingAvatar}
             passkeyAvailable={passkeyAvailable}
             passkeys={passkeys}
             password={password}
             removingCredentialId={removingCredentialId}
-            onDetailedResultsToggle={handleDetailedResultsToggle}
-            onOpenSignOutConfirm={() => setDialogOpen("showSignOutConfirm", true)}
+            onEmailChange={setEmail}
+            onFullNameChange={setFullName}
+            onOpenHelpTutorials={openHelpTutorials}
+            onOpenProfileTutorial={openProfileTutorial}
             onPasswordChange={setPassword}
             onRegisterPasskey={handleRegisterPasskey}
             onRemovePasskey={handleRemovePasskey}
-            onThemeToggle={handleThemeToggle}
+            onSaveProfile={handleSaveProfile}
             onUpdatePassword={handleUpdatePassword}
+          />
+
+          <ProfileSecondaryColumn
+            isLightMode={isLightMode}
+            isSavingInspectPreference={isSavingInspectPreference}
+            isShowingDetailedResults={isShowingDetailedResults}
+            onDetailedResultsToggle={handleDetailedResultsToggle}
+            onOpenPrivacyDialog={() => setDialogOpen("showPrivacyDialog", true)}
+            onOpenSignOutConfirm={() => setDialogOpen("showSignOutConfirm", true)}
+            onOpenTermsDialog={() => setDialogOpen("showTermsDialog", true)}
+            onThemeToggle={handleThemeToggle}
           />
         </div>
       </div>
