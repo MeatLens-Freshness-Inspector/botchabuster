@@ -1,0 +1,3 @@
+ALTER TABLE public.inspections
+  ADD COLUMN IF NOT EXISTS location_latitude DOUBLE PRECISION,
+  ADD COLUMN IF NOT EXISTS location_longitude DOUBLE PRECISION;

@@ -8,6 +8,8 @@ export interface Inspection {
   explanation: string | null;
   image_url: string | null;
   location: string | null;
+  location_latitude: number | null;
+  location_longitude: number | null;
   inspector_notes: string | null;
   client_submission_id: string | null;
   captured_at: string;
@@ -24,6 +26,8 @@ export interface InspectionInsert {
   explanation?: string | null;
   image_url?: string | null;
   location?: string | null;
+  location_latitude?: number | null;
+  location_longitude?: number | null;
   inspector_notes?: string | null;
   captured_at?: string;
   client_submission_id: string;

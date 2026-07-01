@@ -1,5 +1,6 @@
 import { supabase } from "../integrations/supabase";
 import type { Inspection, InspectionInsert } from "../types/inspection";
+import { mergeInspectionCoordinates } from "../types/inspectionCoordinates";
 
 export type InspectionScope = "mine" | "all";
 
@@ -24,6 +25,8 @@ type InspectionInsertPayload = {
   explanation?: string | null;
   image_url?: string | null;
   location?: string | null;
+  location_latitude?: number | null;
+  location_longitude?: number | null;
   inspector_notes?: string | null;
 };
 
@@ -171,7 +174,7 @@ export class InspectionService {
     userId: string,
     clientSubmissionId: string,
   ): InspectionInsertPayload {
-    const payload: InspectionInsertPayload = {
+    let payload: InspectionInsertPayload = {
       user_id: userId,
       client_submission_id: clientSubmissionId,
       meat_type: inspection.meat_type,
@@ -185,6 +188,11 @@ export class InspectionService {
     if (inspection.image_url !== undefined) payload.image_url = inspection.image_url;
     if (inspection.location !== undefined) payload.location = inspection.location;
     if (inspection.inspector_notes !== undefined) payload.inspector_notes = inspection.inspector_notes;
+
+    payload = mergeInspectionCoordinates(payload, {
+      location_latitude: inspection.location_latitude,
+      location_longitude: inspection.location_longitude,
+    });
 
     return payload;
   }

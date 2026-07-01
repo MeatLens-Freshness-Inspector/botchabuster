@@ -5,6 +5,7 @@ import type { InspectionScope } from "../services/InspectionService";
 import { profileService } from "../services/ProfileService";
 import type { InspectionInsert } from "../types/inspection";
 import { auditLogService } from "../services/AuditLogService";
+import { normalizeInspectionCoordinates } from "../types/inspectionCoordinates";
 
 class RequestAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -114,7 +115,16 @@ export class InspectionController {
   async create(req: Request, res: Response): Promise<void> {
     try {
       const accessContext = await this.getRequestAccessContext(req);
-      const { captured_at, ...input } = req.body as Partial<InspectionInsert> & { captured_at?: string };
+      const {
+        captured_at,
+        location_latitude,
+        location_longitude,
+        ...input
+      } = req.body as Partial<InspectionInsert> & {
+        captured_at?: string;
+        location_latitude?: unknown;
+        location_longitude?: unknown;
+      };
       if (!input.client_submission_id) {
         res.status(400).json({ error: "client_submission_id is required" });
         return;
@@ -130,8 +140,22 @@ export class InspectionController {
         normalizedCapturedAt = new Date(parsedCapturedAt).toISOString();
       }
 
+      let coordinates;
+      try {
+        coordinates = normalizeInspectionCoordinates({
+          location_latitude,
+          location_longitude,
+        });
+      } catch (error) {
+        res.status(400).json({
+          error: error instanceof Error ? error.message : "Invalid inspection coordinates",
+        });
+        return;
+      }
+
       const inspectionInput: InspectionInsert = {
         ...(input as InspectionInsert),
+        ...coordinates,
         ...(normalizedCapturedAt ? { captured_at: normalizedCapturedAt } : {}),
       };
 
@@ -155,6 +179,8 @@ export class InspectionController {
               client_submission_id: inspection.client_submission_id,
               meat_type: inspection.meat_type,
               location: inspection.location,
+              location_latitude: inspection.location_latitude,
+              location_longitude: inspection.location_longitude,
               classification: inspection.classification,
               confidence_score: inspection.confidence_score,
             },
