@@ -1,113 +1,50 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, LogOut, KeyRound, Moon, Sun, Trash2, UserRound } from "lucide-react";
+import { Loader2, LogOut, KeyRound, Moon, Sun, Trash2 } from "lucide-react";
 import type { RegisteredPasskey } from "@/integrations/api/PasskeyClient";
 
 type ProfileSettingsColumnProps = {
-  email: string;
-  fullName: string;
   isLightMode: boolean;
   isLoadingPasskeys: boolean;
   isRegisteringPasskey: boolean;
   isSavingInspectPreference: boolean;
   isSavingPassword: boolean;
-  isSavingProfile: boolean;
   isShowingDetailedResults: boolean;
-  isUploadingAvatar: boolean;
   passkeyAvailable: boolean;
   passkeys: RegisteredPasskey[];
   password: string;
   removingCredentialId: string | null;
   onDetailedResultsToggle: (checked: boolean) => void | Promise<void>;
-  onEmailChange: (value: string) => void;
-  onFullNameChange: (value: string) => void;
   onOpenSignOutConfirm: () => void;
   onPasswordChange: (value: string) => void;
   onRegisterPasskey: () => void | Promise<void>;
   onRemovePasskey: (credentialId: string) => void | Promise<void>;
-  onSaveProfile: () => void | Promise<void>;
   onThemeToggle: () => void | Promise<void>;
   onUpdatePassword: () => void | Promise<void>;
 };
 
 export function ProfileSettingsColumn({
-  email,
-  fullName,
   isLightMode,
   isLoadingPasskeys,
   isRegisteringPasskey,
   isSavingInspectPreference,
   isSavingPassword,
-  isSavingProfile,
   isShowingDetailedResults,
-  isUploadingAvatar,
   passkeyAvailable,
   passkeys,
   password,
   removingCredentialId,
   onDetailedResultsToggle,
-  onEmailChange,
-  onFullNameChange,
   onOpenSignOutConfirm,
   onPasswordChange,
   onRegisterPasskey,
   onRemovePasskey,
-  onSaveProfile,
   onThemeToggle,
   onUpdatePassword,
 }: ProfileSettingsColumnProps) {
   return (
     <div className="space-y-4">
-      <section className="rounded-3xl border border-border/70 bg-card/92 p-4 shadow-[0_18px_55px_-34px_rgba(0,0,0,0.55)]">
-        <div className="grid gap-3 md:grid-cols-2">
-          <div className="rounded-2xl border border-border/70 bg-[hsl(var(--warning)/0.16)] p-3">
-            <Label
-              htmlFor="fullName"
-              className="text-[11px] uppercase tracking-widest text-muted-foreground"
-            >
-              Name
-            </Label>
-            <Input
-              id="fullName"
-              value={fullName}
-              onChange={(event) => onFullNameChange(event.target.value)}
-              className="mt-2 bg-background/65"
-            />
-          </div>
-          <div className="rounded-2xl border border-border/70 bg-[hsl(var(--primary)/0.14)] p-3">
-            <Label
-              htmlFor="email"
-              className="text-[11px] uppercase tracking-widest text-muted-foreground"
-            >
-              Email
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(event) => onEmailChange(event.target.value)}
-              className="mt-2 bg-background/65"
-            />
-          </div>
-        </div>
-        <div className="mt-3 flex justify-end">
-          <Button
-            onClick={onSaveProfile}
-            disabled={isSavingProfile || isUploadingAvatar}
-            className="h-10 rounded-xl px-5 font-display text-xs uppercase tracking-widest"
-          >
-            {isSavingProfile ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <UserRound className="mr-2 h-4 w-4" />
-            )}
-            Save Profile
-          </Button>
-        </div>
-      </section>
-
       <div className="grid gap-4 md:grid-cols-[1.35fr_0.65fr]">
         <section className="rounded-3xl border border-border/70 bg-card/92 p-4">
           <h3 className="font-display text-lg font-semibold">Password Reset Section</h3>

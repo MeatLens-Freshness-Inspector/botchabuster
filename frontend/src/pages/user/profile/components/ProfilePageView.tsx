@@ -68,42 +68,38 @@ export function ProfilePageView() {
             initials={initials}
             inspectorCode={inspectorCode}
             isLightMode={isLightMode}
+            isSavingProfile={isSavingProfile}
             isShowingDetailedResults={isShowingDetailedResults}
             isUploadingAvatar={isUploadingAvatar}
             onAvatarUpload={handleAvatarUpload}
             onCopyCode={handleCopyCode}
+            onEmailChange={setEmail}
+            onFullNameChange={setFullName}
             onOpenHelpTutorials={openHelpTutorials}
             onOpenPrivacyDialog={() => setDialogOpen("showPrivacyDialog", true)}
             onOpenProfileTutorial={openProfileTutorial}
             onOpenTermsDialog={() => setDialogOpen("showTermsDialog", true)}
+            onSaveProfile={handleSaveProfile}
             profile={profile}
             roleLabel={roleLabel}
-            userEmail={user?.email}
           />
 
           <ProfileSettingsColumn
-            email={email}
-            fullName={fullName}
             isLightMode={isLightMode}
             isLoadingPasskeys={isLoadingPasskeys}
             isRegisteringPasskey={isRegisteringPasskey}
             isSavingInspectPreference={isSavingInspectPreference}
             isSavingPassword={isSavingPassword}
-            isSavingProfile={isSavingProfile}
             isShowingDetailedResults={isShowingDetailedResults}
-            isUploadingAvatar={isUploadingAvatar}
             passkeyAvailable={passkeyAvailable}
             passkeys={passkeys}
             password={password}
             removingCredentialId={removingCredentialId}
             onDetailedResultsToggle={handleDetailedResultsToggle}
-            onEmailChange={setEmail}
-            onFullNameChange={setFullName}
             onOpenSignOutConfirm={() => setDialogOpen("showSignOutConfirm", true)}
             onPasswordChange={setPassword}
             onRegisterPasskey={handleRegisterPasskey}
             onRemovePasskey={handleRemovePasskey}
-            onSaveProfile={handleSaveProfile}
             onThemeToggle={handleThemeToggle}
             onUpdatePassword={handleUpdatePassword}
           />
