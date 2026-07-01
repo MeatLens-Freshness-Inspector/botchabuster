@@ -1,4 +1,8 @@
-import type { MeatType, AnalysisResult } from "@/types/inspection";
+import type {
+  AnalysisResult,
+  InspectionDecisionSource,
+  MeatType,
+} from "@/types/inspection";
 
 const DB_NAME = "meatlens-offline";
 const DB_VERSION = 1;
@@ -20,6 +24,15 @@ export interface PendingScan {
   location: string | null;
   locationLatitude: number | null;
   locationLongitude: number | null;
+  stallNumber: string | null;
+  meatInspectionCertificateProof: string | null;
+  meatExpiryDate: string | null;
+  storageCorrect: boolean | null;
+  lightColorCorrect: boolean | null;
+  lightColorObserved: string | null;
+  areaClean: boolean | null;
+  inspectionDecisionSource: InspectionDecisionSource;
+  protocolSpoiledReason: string | null;
   capturedAt?: string;
   queuedAt: string;
   userId: string;

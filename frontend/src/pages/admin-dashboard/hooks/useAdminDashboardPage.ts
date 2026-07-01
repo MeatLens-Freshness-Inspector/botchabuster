@@ -31,6 +31,7 @@ import {
   REPORT_CLASSIFICATIONS,
   REPORT_DEFAULT_RANGE_DAYS,
   REPORT_PDF_DETAIL_ROW_LIMIT,
+  buildPreScanReportFields,
   escapeHtml,
   formatReportDateTime,
   getInspectorLabel,
@@ -480,6 +481,7 @@ export function useAdminDashboardPage() {
           inspection.location_latitude,
           inspection.location_longitude,
         ) || manualLocation;
+      const preScanFields = buildPreScanReportFields(inspection);
 
       return {
         id: inspection.id,
@@ -496,6 +498,7 @@ export function useAdminDashboardPage() {
         meatType: inspection.meat_type,
         classification: inspection.classification,
         confidenceScore: inspection.confidence_score,
+        ...preScanFields,
         flaggedDeviations: inspection.flagged_deviations.length > 0 ? inspection.flagged_deviations.join("; ") : "-",
         explanation: getOptionalText(inspection.explanation),
         inspectorNotes: getOptionalText(inspection.inspector_notes),
@@ -713,6 +716,15 @@ export function useAdminDashboardPage() {
       "Meat Type",
       "Classification",
       "Confidence",
+      "Decision Source",
+      "Protocol Spoiled Reason",
+      "Stall Number",
+      "Certificate Proof",
+      "Meat Expiry Date",
+      "Storage Correct",
+      "Light Color Correct",
+      "Light Color Observed",
+      "Area Clean",
       "Flagged Deviations",
       "Explanation",
       "Inspector Notes",
@@ -733,6 +745,15 @@ export function useAdminDashboardPage() {
       row.meatType,
       row.classification,
       row.confidenceScore,
+      row.decisionSource,
+      row.protocolSpoiledReason,
+      row.stallNumber,
+      row.certificateProof,
+      row.meatExpiryDate,
+      row.storageCorrect,
+      row.lightColorCorrect,
+      row.lightColorObserved,
+      row.areaClean,
       row.flaggedDeviations,
       row.explanation,
       row.inspectorNotes,
@@ -857,6 +878,8 @@ export function useAdminDashboardPage() {
           <td>${escapeHtml(row.location)}</td>
           <td>${escapeHtml(row.meatType)}</td>
           <td>${escapeHtml(row.classification)}</td>
+          <td>${escapeHtml(row.decisionSource)}</td>
+          <td>${escapeHtml(row.stallNumber)}</td>
           <td>${row.confidenceScore}%</td>
           <td>${escapeHtml(row.flaggedDeviations)}</td>
           <td>${escapeHtml(row.inspectorNotes)}</td>
@@ -1058,7 +1081,7 @@ export function useAdminDashboardPage() {
         <h2>Inspection Detail</h2>
         ${detailRowsNotice}
         <table>
-          <thead><tr><th>Created At</th><th>Inspector</th><th>Location</th><th>Meat Type</th><th>Class</th><th>Confidence</th><th>Flagged Deviations</th><th>Inspector Notes</th></tr></thead>
+          <thead><tr><th>Created At</th><th>Inspector</th><th>Location</th><th>Meat Type</th><th>Class</th><th>Decision Source</th><th>Stall Number</th><th>Confidence</th><th>Flagged Deviations</th><th>Inspector Notes</th></tr></thead>
           <tbody>${detailRows}</tbody>
         </table>
       </section>

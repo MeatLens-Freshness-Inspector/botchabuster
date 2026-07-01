@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import type { Profile } from "@/integrations/api/ProfileClient";
-import type { FreshnessClassification } from "@/types/inspection";
+import type { FreshnessClassification, Inspection } from "@/types/inspection";
 import type { AdminDashboardTabKey } from "../types";
 
 export const CLASS_COLORS: Record<FreshnessClassification, string> = {
@@ -134,6 +134,39 @@ export const toCsvValue = (value: unknown): string => {
 export const getOptionalText = (
   value: string | null | undefined,
 ): string => value?.trim() || "-";
+
+const formatYesNo = (value: boolean | null | undefined): string =>
+  value == null ? "-" : value ? "Yes" : "No";
+
+export const buildPreScanReportFields = (
+  inspection: Pick<
+    Inspection,
+    | "stall_number"
+    | "meat_inspection_certificate_proof"
+    | "meat_expiry_date"
+    | "storage_correct"
+    | "light_color_correct"
+    | "light_color_observed"
+    | "area_clean"
+    | "inspection_decision_source"
+    | "protocol_spoiled_reason"
+  >,
+) => ({
+  stallNumber: getOptionalText(inspection.stall_number),
+  certificateProof: getOptionalText(inspection.meat_inspection_certificate_proof),
+  meatExpiryDate: getOptionalText(inspection.meat_expiry_date),
+  storageCorrect: formatYesNo(inspection.storage_correct),
+  lightColorCorrect: formatYesNo(inspection.light_color_correct),
+  lightColorObserved: getOptionalText(inspection.light_color_observed),
+  areaClean: formatYesNo(inspection.area_clean),
+  decisionSource:
+    inspection.inspection_decision_source === "protocol_pre_scan"
+      ? "Pre-scan protocol"
+      : inspection.inspection_decision_source === "ai"
+        ? "AI analysis"
+        : "-",
+  protocolSpoiledReason: getOptionalText(inspection.protocol_spoiled_reason),
+});
 
 export const formatReportDateTime = (
   value: string | null | undefined,

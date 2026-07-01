@@ -6,6 +6,7 @@ const DEV_OPTIONS_SNAPSHOT_KEY_PREFIX = "meatlens-developer-options-last-analysi
 
 export interface DeveloperOptionsFlags {
   enableDebugFileUpload: boolean;
+  bypassPreScanChecklist: boolean;
   persistAnalysisSnapshots: boolean;
   verboseOfflineSyncLogs: boolean;
   skipModelPrewarm: boolean;
@@ -28,6 +29,7 @@ export interface DeveloperAnalysisSnapshot {
 
 export const DEFAULT_DEVELOPER_OPTIONS_FLAGS: DeveloperOptionsFlags = {
   enableDebugFileUpload: false,
+  bypassPreScanChecklist: false,
   persistAnalysisSnapshots: false,
   verboseOfflineSyncLogs: false,
   skipModelPrewarm: false,

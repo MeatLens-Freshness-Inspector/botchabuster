@@ -7,6 +7,10 @@ import { inspectionClient } from "@/integrations/api/InspectionClient";
 import { auditLogClient } from "@/integrations/api/AuditLogClient";
 import { getPendingScans, removeScan, type PendingScan } from "@/lib/offlineQueue";
 import { getPendingAuditLogs, removeAuditLog, type PendingAuditLog } from "@/lib/offlineAuditQueue";
+import {
+  PROTOCOL_SPOILED_REASON,
+  buildProtocolSpoiledAnalysisResult,
+} from "@/lib/inspectionPreScan";
 import { analyzeOffline, prewarmModel } from "@/lib/offlineAnalysis";
 import { setActiveMobileNetModelVariant } from "@/lib/offlineAnalysis/mobileNetV3";
 import {
@@ -27,7 +31,10 @@ async function processScan(
   queryClient: ReturnType<typeof useQueryClient>,
 ): Promise<void> {
   const imageFile = new File([scan.imageData], scan.imageName, { type: scan.imageType });
-  const result = scan.analysisResult ?? await analyzeOffline(imageFile, scan.meatType);
+  const result =
+    scan.inspectionDecisionSource === "protocol_pre_scan"
+      ? buildProtocolSpoiledAnalysisResult()
+      : scan.analysisResult ?? await analyzeOffline(imageFile, scan.meatType);
   const shouldRecommendRetake = result.confidence_score < FORCE_RETAKE_CONFIDENCE_THRESHOLD;
 
   // Upload image to Supabase Storage (non-fatal).
@@ -45,6 +52,18 @@ async function processScan(
     location: scan.location ?? null,
     location_latitude: scan.locationLatitude ?? null,
     location_longitude: scan.locationLongitude ?? null,
+    stall_number: scan.stallNumber ?? null,
+    meat_inspection_certificate_proof: scan.meatInspectionCertificateProof ?? null,
+    meat_expiry_date: scan.meatExpiryDate ?? null,
+    storage_correct: scan.storageCorrect ?? null,
+    light_color_correct: scan.lightColorCorrect ?? null,
+    light_color_observed: scan.lightColorObserved ?? null,
+    area_clean: scan.areaClean ?? null,
+    inspection_decision_source: scan.inspectionDecisionSource,
+    protocol_spoiled_reason:
+      scan.inspectionDecisionSource === "protocol_pre_scan"
+        ? scan.protocolSpoiledReason ?? PROTOCOL_SPOILED_REASON
+        : null,
     captured_at: scan.capturedAt ?? scan.queuedAt,
     classification: result.classification,
     confidence_score: result.confidence_score,

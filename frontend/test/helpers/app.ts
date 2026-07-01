@@ -67,6 +67,19 @@ export async function seedDeveloperOptionsSession(page: Page, userId: string): P
   }, { currentUserId: userId });
 }
 
+export async function seedDeveloperOptionsFlags(
+  page: Page,
+  userId: string,
+  flags: Record<string, unknown>,
+): Promise<void> {
+  await page.addInitScript(({ currentUserId, nextFlags }) => {
+    window.localStorage.setItem(
+      `meatlens-developer-options-flags:${currentUserId}`,
+      JSON.stringify(nextFlags),
+    );
+  }, { currentUserId: userId, nextFlags: flags });
+}
+
 export async function mockCommonApi(
   page: Page,
   options: MockedSessionOptions = {},
@@ -297,6 +310,15 @@ export async function mockCommonApi(
             location: "North Market",
             location_latitude: null,
             location_longitude: null,
+            stall_number: null,
+            meat_inspection_certificate_proof: null,
+            meat_expiry_date: null,
+            storage_correct: null,
+            light_color_correct: null,
+            light_color_observed: null,
+            area_clean: null,
+            inspection_decision_source: null,
+            protocol_spoiled_reason: null,
             inspector_notes: null,
             created_at: inspectionCreatedAt,
             updated_at: inspectionCreatedAt,
@@ -307,12 +329,24 @@ export async function mockCommonApi(
     }
 
     if (path === "/api/inspections" && method === "POST") {
+      const payload = JSON.parse(request.postData() ?? "{}") as Record<string, unknown>;
       await route.fulfill(
         jsonResponse({
+          ...payload,
           id: "inspection-created",
           user_id: userId,
-          location_latitude: null,
-          location_longitude: null,
+          location_latitude: payload.location_latitude ?? null,
+          location_longitude: payload.location_longitude ?? null,
+          stall_number: payload.stall_number ?? null,
+          meat_inspection_certificate_proof:
+            payload.meat_inspection_certificate_proof ?? null,
+          meat_expiry_date: payload.meat_expiry_date ?? null,
+          storage_correct: payload.storage_correct ?? null,
+          light_color_correct: payload.light_color_correct ?? null,
+          light_color_observed: payload.light_color_observed ?? null,
+          area_clean: payload.area_clean ?? null,
+          inspection_decision_source: payload.inspection_decision_source ?? null,
+          protocol_spoiled_reason: payload.protocol_spoiled_reason ?? null,
           created_at: inspectionCreatedAt,
           updated_at: inspectionCreatedAt,
         })

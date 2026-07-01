@@ -3,6 +3,7 @@ import { InspectActionsSection } from "./InspectActionsSection";
 import { InspectAnalysisSection } from "./InspectAnalysisSection";
 import { InspectCaptureSection } from "./InspectCaptureSection";
 import { InspectHeroSection } from "./InspectHeroSection";
+import { InspectPreScanSection } from "./InspectPreScanSection";
 
 const InspectPageView = () => {
   const inspectPage = useInspectPage();
@@ -19,12 +20,21 @@ const InspectPageView = () => {
           confidenceSummaryClass={inspectPage.confidenceSummaryClass}
         />
 
+        <InspectPreScanSection
+          form={inspectPage.preScanForm}
+          isBypassed={inspectPage.isPreScanBypassed}
+          isChecklistComplete={inspectPage.isPreScanChecklistComplete}
+          isLocked={Boolean(inspectPage.capturedInput) || inspectPage.saveStatus === "saving"}
+          onFieldChange={inspectPage.onPreScanFieldChange}
+        />
+
         <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-[1.05fr_0.95fr]">
           <InspectCaptureSection
             selectedLocation={inspectPage.selectedLocation}
             locationDisplayLabel={inspectPage.locationDisplayLabel}
             coordinateStatusText={inspectPage.coordinateStatusText}
             marketLocations={inspectPage.marketLocations}
+            isPreScanChecklistComplete={inspectPage.isPreScanChecklistComplete}
             isLocationSelectionDisabled={inspectPage.isLocationSelectionDisabled}
             isCaptureDisabled={inspectPage.isCaptureDisabled}
             showAnalyzeAction={inspectPage.showAnalyzeAction}
@@ -41,6 +51,7 @@ const InspectPageView = () => {
 
           <InspectAnalysisSection
             result={inspectPage.result}
+            inspectionDecisionSource={inspectPage.inspectionDecisionSource}
             showDetailedResults={inspectPage.showDetailedResults}
           />
         </div>

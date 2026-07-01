@@ -36,6 +36,10 @@ const CLASSIFICATION_COLORS: Record<FreshnessClassification, string> = {
   spoiled: "bg-[hsl(var(--spoiled)/0.14)] border-[hsl(var(--spoiled)/0.35)]",
 };
 
+function formatYesNo(value: boolean | null | undefined): string {
+  return value == null ? "-" : value ? "Yes" : "No";
+}
+
 export function InspectionDetailSheet({ inspection, open, onOpenChange }: InspectionDetailSheetProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   if (!inspection) return null;
@@ -47,6 +51,21 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
     inspection.location,
     inspection.location_latitude,
     inspection.location_longitude,
+  );
+  const decisionSourceLabel =
+    inspection.inspection_decision_source === "protocol_pre_scan"
+      ? "Pre-scan protocol"
+      : inspection.inspection_decision_source === "ai"
+        ? "AI analysis"
+        : "Unknown";
+  const hasPreScanMetadata = Boolean(
+    inspection.stall_number ||
+    inspection.meat_inspection_certificate_proof ||
+    inspection.meat_expiry_date ||
+    inspection.storage_correct != null ||
+    inspection.light_color_correct != null ||
+    inspection.light_color_observed ||
+    inspection.area_clean != null,
   );
 
   return (
@@ -130,6 +149,12 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
           {/* Meta grid */}
           <div className="mb-4 grid grid-cols-2 gap-2">
             <div className="rounded-xl border border-border/70 bg-card p-3">
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                Decision Source
+              </p>
+              <p className="mt-1 text-xs font-semibold">{decisionSourceLabel}</p>
+            </div>
+            <div className="rounded-xl border border-border/70 bg-card p-3">
               <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
                 <CalendarDays className="h-3 w-3" /> Date
               </p>
@@ -151,6 +176,14 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
               </p>
               <p className="mt-1 text-xs font-semibold capitalize">{inspection.meat_type}</p>
             </div>
+            {inspection.stall_number && (
+              <div className="rounded-xl border border-border/70 bg-card p-3">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Stall Number
+                </p>
+                <p className="mt-1 text-xs font-semibold">{inspection.stall_number}</p>
+              </div>
+            )}
             {locationLabel && (
               <div className="rounded-xl border border-border/70 bg-card p-3">
                 <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -160,6 +193,25 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
               </div>
             )}
           </div>
+
+          {hasPreScanMetadata && (
+            <section className="mb-4">
+              <p className="mb-2 text-[10px] font-display uppercase tracking-widest text-warning">
+                Pre-Scan Safety Protocol
+              </p>
+              <div className="rounded-xl border border-warning/30 bg-[hsl(var(--warning)/0.08)] p-3 text-xs leading-relaxed">
+                {inspection.protocol_spoiled_reason && (
+                  <p><strong>Protocol Reason:</strong> {inspection.protocol_spoiled_reason}</p>
+                )}
+                <p><strong>Certificate Proof:</strong> {inspection.meat_inspection_certificate_proof ?? "-"}</p>
+                <p><strong>Expiry Date:</strong> {inspection.meat_expiry_date ?? "-"}</p>
+                <p><strong>Storage Correct:</strong> {formatYesNo(inspection.storage_correct)}</p>
+                <p><strong>Light Color Correct:</strong> {formatYesNo(inspection.light_color_correct)}</p>
+                <p><strong>Light Color Observed:</strong> {inspection.light_color_observed ?? "-"}</p>
+                <p><strong>Area Clean:</strong> {formatYesNo(inspection.area_clean)}</p>
+              </div>
+            </section>
+          )}
 
           {/* Analysis / Explanation */}
           {inspection.explanation && (

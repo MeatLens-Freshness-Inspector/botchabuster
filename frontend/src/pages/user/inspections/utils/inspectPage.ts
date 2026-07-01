@@ -1,6 +1,10 @@
 import type { CapturedImagePayload } from "@/components/CameraCapture";
 import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";
-import type { AnalysisResult, MeatType } from "@/types/inspection";
+import type {
+  AnalysisResult,
+  InspectionDecisionSource,
+  MeatType,
+} from "@/types/inspection";
 import type { InspectionSaveStatus } from "../types";
 
 export const DEFAULT_MEAT_TYPE: MeatType = "pork";
@@ -40,7 +44,12 @@ export function getCaptureStatusText(capturedInput: CapturedImagePayload | null)
 export function getAnalysisStatusText(
   isAnalyzing: boolean,
   result: AnalysisResult | null,
+  inspectionDecisionSource: InspectionDecisionSource | null,
 ): string {
+  if (inspectionDecisionSource === "protocol_pre_scan" && result) {
+    return "Protocol Result";
+  }
+
   return isAnalyzing ? "Running" : result ? result.classification : "Pending";
 }
 

@@ -1,6 +1,7 @@
 import { supabase } from "../integrations/supabase";
 import type { Inspection, InspectionInsert } from "../types/inspection";
 import { mergeInspectionCoordinates } from "../types/inspectionCoordinates";
+import { mergeInspectionPreScanFields } from "../types/inspectionPreScan";
 
 export type InspectionScope = "mine" | "all";
 
@@ -27,6 +28,15 @@ type InspectionInsertPayload = {
   location?: string | null;
   location_latitude?: number | null;
   location_longitude?: number | null;
+  stall_number?: string | null;
+  meat_inspection_certificate_proof?: string | null;
+  meat_expiry_date?: string | null;
+  storage_correct?: boolean | null;
+  light_color_correct?: boolean | null;
+  light_color_observed?: string | null;
+  area_clean?: boolean | null;
+  inspection_decision_source?: InspectionInsert["inspection_decision_source"];
+  protocol_spoiled_reason?: string | null;
   inspector_notes?: string | null;
 };
 
@@ -194,7 +204,17 @@ export class InspectionService {
       location_longitude: inspection.location_longitude,
     });
 
-    return payload;
+    return mergeInspectionPreScanFields(payload, {
+      stall_number: inspection.stall_number,
+      meat_inspection_certificate_proof: inspection.meat_inspection_certificate_proof,
+      meat_expiry_date: inspection.meat_expiry_date,
+      storage_correct: inspection.storage_correct,
+      light_color_correct: inspection.light_color_correct,
+      light_color_observed: inspection.light_color_observed,
+      area_clean: inspection.area_clean,
+      inspection_decision_source: inspection.inspection_decision_source,
+      protocol_spoiled_reason: inspection.protocol_spoiled_reason,
+    });
   }
 }
 

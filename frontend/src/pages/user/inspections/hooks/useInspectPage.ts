@@ -16,6 +16,16 @@ import {
   type DeveloperOptionsFlags,
 } from "@/lib/developerOptions";
 import {
+  PROTOCOL_SPOILED_REASON,
+  buildProtocolSpoiledAnalysisResult,
+  createEmptyPreScanForm,
+  getInspectionDecisionSource,
+  hasProtocolFailure,
+  isPreScanChecklistComplete as isPreScanChecklistCompleteHelper,
+  toInspectionPreScanPayload,
+  type InspectionPreScanForm,
+} from "@/lib/inspectionPreScan";
+import {
   analyzeOffline,
   getMockOfflineAnalysisResult,
   hasMockOfflineAnalysisResult,
@@ -33,7 +43,7 @@ import {
   type CoordinateCaptureStatus,
   type InspectionCoordinates,
 } from "@/lib/inspectionLocation";
-import type { AnalysisResult } from "@/types/inspection";
+import type { AnalysisResult, InspectionDecisionSource } from "@/types/inspection";
 import type { CapturedImagePayload } from "@/components/CameraCapture";
 import type { InspectPageViewModel, InspectionSaveStatus } from "../types";
 import {
@@ -53,6 +63,9 @@ export function useInspectPage(): InspectPageViewModel {
   const { user, profile, isAdmin } = useAuth();
   const [capturedInput, setCapturedInput] = useState<CapturedImagePayload | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [preScanForm, setPreScanForm] = useState<InspectionPreScanForm>(() =>
+    createEmptyPreScanForm(),
+  );
   const [marketLocations, setMarketLocations] = useState<string[]>(FALLBACK_MARKET_LOCATIONS);
   const [selectedLocation, setSelectedLocation] = useState<string>(FALLBACK_MARKET_LOCATIONS[0] ?? "");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -61,6 +74,8 @@ export function useInspectPage(): InspectPageViewModel {
   const [clientSubmissionId, setClientSubmissionId] = useState<string | null>(null);
   const [coordinates, setCoordinates] = useState<InspectionCoordinates | null>(null);
   const [coordinateStatus, setCoordinateStatus] = useState<CoordinateCaptureStatus>("idle");
+  const [inspectionDecisionSource, setInspectionDecisionSource] =
+    useState<InspectionDecisionSource | null>(null);
   const [developerFlags, setDeveloperFlags] = useState<DeveloperOptionsFlags>(DEFAULT_DEVELOPER_OPTIONS_FLAGS);
   const [isDeveloperUnlocked, setIsDeveloperUnlocked] = useState(false);
   const saveLockRef = useRef(false);
@@ -200,6 +215,16 @@ export function useInspectPage(): InspectPageViewModel {
     };
   }, []);
 
+  const isPreScanBypassed = Boolean(
+    user &&
+    isAdmin &&
+    isDeveloperUnlocked &&
+    developerFlags.bypassPreScanChecklist,
+  );
+  const isPreScanChecklistComplete = isPreScanBypassed
+    ? true
+    : isPreScanChecklistCompleteHelper(preScanForm);
+
   const persistPendingScan = useCallback(
     async (
       submissionId: string,
@@ -212,6 +237,10 @@ export function useInspectPage(): InspectPageViewModel {
         return;
       }
 
+      const preScanPayload = toInspectionPreScanPayload(preScanForm);
+      const decisionSource =
+        inspectionDecisionSource ??
+        (isPreScanBypassed ? "ai" : getInspectionDecisionSource(preScanForm));
       const imageData = await capture.file.arrayBuffer();
       await queueScan({
         id: submissionId,
@@ -222,29 +251,58 @@ export function useInspectPage(): InspectPageViewModel {
         location: selectedLocation.trim() || null,
         locationLatitude: nextCoordinates?.latitude ?? null,
         locationLongitude: nextCoordinates?.longitude ?? null,
+        stallNumber: preScanPayload.stall_number ?? null,
+        meatInspectionCertificateProof:
+          preScanPayload.meat_inspection_certificate_proof ?? null,
+        meatExpiryDate: preScanPayload.meat_expiry_date ?? null,
+        storageCorrect: preScanPayload.storage_correct ?? null,
+        lightColorCorrect: preScanPayload.light_color_correct ?? null,
+        lightColorObserved: preScanPayload.light_color_observed ?? null,
+        areaClean: preScanPayload.area_clean ?? null,
+        inspectionDecisionSource: decisionSource,
+        protocolSpoiledReason:
+          decisionSource === "protocol_pre_scan" ? PROTOCOL_SPOILED_REASON : null,
         capturedAt: capture.capturedAt,
         queuedAt,
         userId: user.id,
         analysisResult,
       });
     },
-    [selectedLocation, user],
+    [
+      inspectionDecisionSource,
+      isPreScanBypassed,
+      preScanForm,
+      selectedLocation,
+      user,
+    ],
+  );
+
+  const handlePreScanFieldChange = useCallback(
+    (field: keyof InspectionPreScanForm, value: string) => {
+      setPreScanForm((current) => ({
+        ...current,
+        [field]: value,
+      }));
+    },
+    [],
   );
 
   const handleCapture = useCallback((capture: CapturedImagePayload) => {
-    if (saveStatus === "saving") return;
+    if (saveStatus === "saving" || !isPreScanChecklistComplete) return;
 
     const submissionId = createClientSubmissionId();
     const requestId = coordinateRequestIdRef.current + 1;
+    const protocolTriggered = !isPreScanBypassed && hasProtocolFailure(preScanForm);
     coordinateRequestIdRef.current = requestId;
     setCapturedInput(capture);
-    setResult(null);
+    setResult(protocolTriggered ? buildProtocolSpoiledAnalysisResult() : null);
     setSaveStatus("idle");
     saveLockRef.current = false;
     autoSaveAttemptedRef.current = false;
     setClientSubmissionId(submissionId);
     setCoordinates(null);
     setCoordinateStatus("capturing");
+    setInspectionDecisionSource(protocolTriggered ? "protocol_pre_scan" : null);
     queuedAtRef.current = null;
     const mockAnalysisResult = getMockOfflineAnalysisResult();
 
@@ -261,7 +319,8 @@ export function useInspectPage(): InspectPageViewModel {
         setCoordinateStatus("unavailable");
       }
 
-      if (mockAnalysisResult) {
+      if (!protocolTriggered && mockAnalysisResult) {
+        setInspectionDecisionSource("ai");
         setResult(mockAnalysisResult);
       }
     });
@@ -278,7 +337,14 @@ export function useInspectPage(): InspectPageViewModel {
         }
       })();
     }
-  }, [persistPendingScan, saveStatus, user]);
+  }, [
+    isPreScanBypassed,
+    isPreScanChecklistComplete,
+    persistPendingScan,
+    preScanForm,
+    saveStatus,
+    user,
+  ]);
 
   useEffect(() => {
     if (!capturedInput || !clientSubmissionId || !queuedAtRef.current) {
@@ -300,6 +366,7 @@ export function useInspectPage(): InspectPageViewModel {
 
   const handleAnalyze = useCallback(async () => {
     if (!capturedInput?.file) return;
+    if (inspectionDecisionSource === "protocol_pre_scan") return;
     if (navigator.onLine && !isModelReady && !hasMockOfflineAnalysisResult()) {
       toast.info("Preparing MobileNetV3 model. Please wait a moment.");
       return;
@@ -328,6 +395,7 @@ export function useInspectPage(): InspectPageViewModel {
         toast.success("MobileNetV3 ONNX analysis complete.");
       }
 
+      setInspectionDecisionSource("ai");
       setResult(analysisResult);
       if (user && isAdmin && isDeveloperUnlocked && developerFlags.persistAnalysisSnapshots) {
         saveDeveloperAnalysisSnapshot(user.id, {
@@ -352,6 +420,7 @@ export function useInspectPage(): InspectPageViewModel {
     clientSubmissionId,
     capturedInput,
     developerFlags.persistAnalysisSnapshots,
+    inspectionDecisionSource,
     isAdmin,
     isDeveloperUnlocked,
     isModelReady,
@@ -369,6 +438,10 @@ export function useInspectPage(): InspectPageViewModel {
     }
 
     const submissionId = clientSubmissionId ?? createClientSubmissionId();
+    const decisionSource = inspectionDecisionSource ?? getInspectionDecisionSource(preScanForm);
+    const protocolSpoiledReason =
+      decisionSource === "protocol_pre_scan" ? PROTOCOL_SPOILED_REASON : null;
+    const preScanPayload = toInspectionPreScanPayload(preScanForm);
     setClientSubmissionId(submissionId);
 
     if (!navigator.onLine) {
@@ -403,6 +476,9 @@ export function useInspectPage(): InspectPageViewModel {
         location: selectedLocation.trim() || null,
         location_latitude: coordinates?.latitude ?? null,
         location_longitude: coordinates?.longitude ?? null,
+        ...preScanPayload,
+        inspection_decision_source: decisionSource,
+        protocol_spoiled_reason: protocolSpoiledReason,
         captured_at: capturedInput.capturedAt,
         classification: result.classification,
         confidence_score: result.confidence_score,
@@ -418,24 +494,52 @@ export function useInspectPage(): InspectPageViewModel {
       console.error("Save error:", error);
       toast.error("Failed to save inspection");
     }
-  }, [capturedInput, clientSubmissionId, coordinates, createInspection, persistPendingScan, result, saveStatus, selectedLocation, user]);
+  }, [
+    capturedInput,
+    clientSubmissionId,
+    coordinates,
+    createInspection,
+    inspectionDecisionSource,
+    isPreScanBypassed,
+    persistPendingScan,
+    preScanForm,
+    result,
+    saveStatus,
+    selectedLocation,
+    user,
+  ]);
 
   useEffect(() => {
     if (!result || !capturedInput?.file || !user) return;
-    if (result.confidence_score < FORCE_RETAKE_CONFIDENCE_THRESHOLD) return;
+    if (coordinateStatus === "capturing") return;
     if (saveStatus !== "idle") return;
     if (saveLockRef.current || autoSaveAttemptedRef.current) return;
 
+    const shouldAutoSave =
+      inspectionDecisionSource === "protocol_pre_scan" ||
+      result.confidence_score >= FORCE_RETAKE_CONFIDENCE_THRESHOLD;
+    if (!shouldAutoSave) return;
+
     autoSaveAttemptedRef.current = true;
     void handleSave();
-  }, [capturedInput, handleSave, result, saveStatus, user]);
+  }, [
+    capturedInput,
+    coordinateStatus,
+    handleSave,
+    inspectionDecisionSource,
+    result,
+    saveStatus,
+    user,
+  ]);
 
   const handleReset = useCallback(() => {
     coordinateRequestIdRef.current += 1;
     setCapturedInput(null);
     setResult(null);
+    setPreScanForm(createEmptyPreScanForm());
     setCoordinates(null);
     setCoordinateStatus("idle");
+    setInspectionDecisionSource(null);
     setSaveStatus("idle");
     saveLockRef.current = false;
     autoSaveAttemptedRef.current = false;
@@ -470,29 +574,41 @@ export function useInspectPage(): InspectPageViewModel {
   return {
     capturedInput,
     result,
+    preScanForm,
     marketLocations,
     selectedLocation,
     locationDisplayLabel,
     coordinateStatusText,
+    inspectionDecisionSource,
     isAnalyzing,
     isAnalyzeBlockedByModel,
     isAnalyzeDisabled: isAnalyzing || isAnalyzeBlockedByModel,
-    isCaptureDisabled: saveStatus === "saving" || createInspection.isPending,
+    isCaptureDisabled:
+      saveStatus === "saving" ||
+      createInspection.isPending ||
+      !isPreScanChecklistComplete,
     isCreateInspectionPending: createInspection.isPending,
     isDebugFileUploadEnabled,
     isInAppCameraEnabled,
+    isPreScanBypassed,
+    isPreScanChecklistComplete,
     isLocationSelectionDisabled:
       saveStatus === "saving" || createInspection.isPending || marketLocations.length === 0,
     saveStatus,
     showDetailedResults: Boolean(profile?.show_detailed_results),
     showModelInputPreview: developerFlags.showModelInputPreview,
-    showAnalyzeAction: Boolean(capturedInput && !result),
+    showAnalyzeAction: Boolean(capturedInput && !result && inspectionDecisionSource !== "protocol_pre_scan"),
     showSaveActions: Boolean(result),
     captureStatusText: getCaptureStatusText(capturedInput),
-    analysisStatusText: getAnalysisStatusText(isAnalyzing, result),
+    analysisStatusText: getAnalysisStatusText(
+      isAnalyzing,
+      result,
+      inspectionDecisionSource,
+    ),
     confidenceText: getConfidenceText(result),
     confidenceSummaryClass,
     saveButtonLabel: getSaveButtonLabel(saveStatus),
+    onPreScanFieldChange: handlePreScanFieldChange,
     onSelectedLocationChange: setSelectedLocation,
     onCapture: handleCapture,
     onAnalyze: handleAnalyze,

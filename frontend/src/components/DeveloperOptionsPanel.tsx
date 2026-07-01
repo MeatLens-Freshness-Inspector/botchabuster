@@ -36,6 +36,11 @@ const FLAG_DEFINITIONS: FlagDefinition[] = [
     description: "Shows file-based capture input on Inspect page (camera-only mode remains default).",
   },
   {
+    key: "bypassPreScanChecklist",
+    label: "Bypass pre-scan checklist",
+    description: "Lets unlocked developers skip the required pre-scan checklist before opening the camera.",
+  },
+  {
     key: "persistAnalysisSnapshots",
     label: "Persist latest analysis snapshot",
     description: "Stores the most recent analysis payload in local storage for debugging and replay.",

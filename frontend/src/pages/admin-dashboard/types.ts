@@ -40,6 +40,15 @@ export type ReportRow = {
   meatType: string;
   classification: FreshnessClassification;
   confidenceScore: number;
+  decisionSource: string;
+  protocolSpoiledReason: string;
+  stallNumber: string;
+  certificateProof: string;
+  meatExpiryDate: string;
+  storageCorrect: string;
+  lightColorCorrect: string;
+  lightColorObserved: string;
+  areaClean: string;
   flaggedDeviations: string;
   explanation: string;
   inspectorNotes: string;

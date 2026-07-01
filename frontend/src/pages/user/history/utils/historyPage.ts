@@ -36,6 +36,10 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
+function formatYesNo(value: boolean | null | undefined): string {
+  return value == null ? "-" : value ? "Yes" : "No";
+}
+
 export function triggerDownload(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -68,6 +72,12 @@ export function buildDetailedHistoryReportHtml({
           inspection.location_latitude,
           inspection.location_longitude,
         ) || "-";
+      const decisionSourceLabel =
+        inspection.inspection_decision_source === "protocol_pre_scan"
+          ? "Pre-scan protocol"
+          : inspection.inspection_decision_source === "ai"
+            ? "AI analysis"
+            : "-";
       const imageSection = inspection.image_url
         ? `<div class="image-wrap"><img src="${escapeHtml(inspection.image_url)}" alt="Inspection image ${index + 1}" /></div>`
         : '<div class="no-image">No inspection image saved</div>';
@@ -85,6 +95,15 @@ export function buildDetailedHistoryReportHtml({
             <p><strong>Classification:</strong> ${escapeHtml(inspection.classification)}</p>
             <p><strong>Confidence:</strong> ${inspection.confidence_score}%</p>
             <p><strong>Location:</strong> ${escapeHtml(locationLabel)}</p>
+            <p><strong>Decision Source:</strong> ${escapeHtml(decisionSourceLabel)}</p>
+            <p><strong>Stall Number:</strong> ${escapeHtml(inspection.stall_number ?? "-")}</p>
+            <p><strong>Certificate Proof:</strong> ${escapeHtml(inspection.meat_inspection_certificate_proof ?? "-")}</p>
+            <p><strong>Expiry Date:</strong> ${escapeHtml(inspection.meat_expiry_date ?? "-")}</p>
+            <p><strong>Storage Correct:</strong> ${escapeHtml(formatYesNo(inspection.storage_correct))}</p>
+            <p><strong>Light Color Correct:</strong> ${escapeHtml(formatYesNo(inspection.light_color_correct))}</p>
+            <p><strong>Light Color Observed:</strong> ${escapeHtml(inspection.light_color_observed ?? "-")}</p>
+            <p><strong>Area Clean:</strong> ${escapeHtml(formatYesNo(inspection.area_clean))}</p>
+            <p><strong>Protocol Reason:</strong> ${escapeHtml(inspection.protocol_spoiled_reason ?? "-")}</p>
             <p><strong>Notes:</strong> ${escapeHtml(inspection.inspector_notes ?? "-")}</p>
             <p class="full"><strong>Flagged Deviations:</strong> ${escapeHtml(inspection.flagged_deviations.join(", ") || "-")}</p>
             <p class="full"><strong>Explanation:</strong> ${escapeHtml(inspection.explanation ?? "-")}</p>

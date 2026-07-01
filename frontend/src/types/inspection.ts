@@ -1,5 +1,6 @@
 export type FreshnessClassification = 'fresh' | 'not fresh' | 'spoiled' | 'acceptable' | 'warning';
 export type MeatType = 'pork' | 'beef' | 'chicken' | 'fish' | 'other';
+export type InspectionDecisionSource = 'ai' | 'protocol_pre_scan';
 
 export interface Inspection {
   id: string;
@@ -13,6 +14,15 @@ export interface Inspection {
   location: string | null;
   location_latitude: number | null;
   location_longitude: number | null;
+  stall_number?: string | null;
+  meat_inspection_certificate_proof?: string | null;
+  meat_expiry_date?: string | null;
+  storage_correct?: boolean | null;
+  light_color_correct?: boolean | null;
+  light_color_observed?: string | null;
+  area_clean?: boolean | null;
+  inspection_decision_source?: InspectionDecisionSource | null;
+  protocol_spoiled_reason?: string | null;
   inspector_notes: string | null;
   captured_at?: string | null;
   created_at: string;
@@ -31,6 +41,15 @@ export interface InspectionInsert {
   location?: string | null;
   location_latitude?: number | null;
   location_longitude?: number | null;
+  stall_number?: string | null;
+  meat_inspection_certificate_proof?: string | null;
+  meat_expiry_date?: string | null;
+  storage_correct?: boolean | null;
+  light_color_correct?: boolean | null;
+  light_color_observed?: string | null;
+  area_clean?: boolean | null;
+  inspection_decision_source?: InspectionDecisionSource | null;
+  protocol_spoiled_reason?: string | null;
   inspector_notes?: string | null;
   user_id?: string | null;
 }

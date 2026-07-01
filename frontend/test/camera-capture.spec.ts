@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import {
   mockCommonApi,
+  seedDeveloperOptionsFlags,
   seedDeveloperOptionsSession,
   seedSignedInSession,
 } from "./helpers/app";
@@ -117,11 +118,21 @@ async function setRangeInputValue(page: Page, labelPattern: RegExp, value: numbe
   }, value);
 }
 
+async function completePreScanChecklist(page: Page): Promise<void> {
+  await page.getByLabel(/stall number/i).fill("12-A");
+  await page.getByLabel(/meat inspection certificate proof/i).fill("CERT-77");
+  await page.getByLabel(/meat expiry date|expiry of meat/i).fill("2026-07-10");
+  await page.getByLabel(/storage correct/i).selectOption("yes");
+  await page.getByLabel(/light color correct/i).selectOption("yes");
+  await page.getByLabel(/area clean/i).selectOption("yes");
+}
+
 test("inspectors only see the default open camera entrypoint", async ({ page }) => {
   await seedSignedInSession(page, { userId: "user-1" });
   await mockCommonApi(page, { userId: "user-1" });
 
   await page.goto("/inspect");
+  await completePreScanChecklist(page);
   await expect(page.locator('label[role="button"]').filter({ hasText: "Open Camera" })).toBeVisible();
   await expect(page.getByText("Use Camera App")).toHaveCount(0);
   await expect(page.getByRole("button", { name: /in-app cam/i })).toHaveCount(0);
@@ -133,6 +144,7 @@ test("open camera uses a directly tappable capture input for iOS compatibility",
   await mockCommonApi(page, { userId: "user-1" });
 
   await page.goto("/inspect");
+  await completePreScanChecklist(page);
 
   const cameraInput = page.getByLabel(/open camera/i);
   await expect(cameraInput).toHaveAttribute("capture", "environment");
@@ -150,10 +162,30 @@ test("developer-unlocked admins can use the in-app camera option", async ({ page
   });
 
   await page.goto("/inspect");
+  await completePreScanChecklist(page);
   await expect(page.getByRole("button", { name: /in-app cam/i })).toBeVisible();
 
   await page.getByRole("button", { name: /in-app cam/i }).click();
   await expect(page.getByRole("button", { name: /capture/i })).toBeVisible();
+});
+
+test("developer bypass allows camera access without completing the pre-scan checklist", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true });
+  await seedDeveloperOptionsSession(page, "admin-1");
+  await seedDeveloperOptionsFlags(page, "admin-1", {
+    enableDebugFileUpload: false,
+    bypassPreScanChecklist: true,
+    persistAnalysisSnapshots: false,
+    verboseOfflineSyncLogs: false,
+    skipModelPrewarm: false,
+    showModelInputPreview: true,
+    useSeed123Model2: true,
+  });
+  await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
+
+  await page.goto("/inspect");
+  await expect(page.getByText(/developer bypass active/i)).toBeVisible();
+  await expect(page.getByLabel(/open camera/i)).toBeEnabled();
 });
 
 test("manual camera controls apply focus and exposure constraints when supported", async ({ page }) => {
@@ -163,6 +195,7 @@ test("manual camera controls apply focus and exposure constraints when supported
   await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
 
   await page.goto("/inspect");
+  await completePreScanChecklist(page);
   await page.getByRole("button", { name: /in-app cam/i }).click();
   await expect(page.getByRole("button", { name: /capture/i })).toBeVisible();
 
@@ -227,6 +260,7 @@ test("shows unsupported message when manual controls are unavailable", async ({ 
   await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
 
   await page.goto("/inspect");
+  await completePreScanChecklist(page);
   await page.getByRole("button", { name: /in-app cam/i }).click();
   await expect(page.getByRole("button", { name: /capture/i })).toBeVisible();
 

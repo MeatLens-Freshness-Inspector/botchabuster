@@ -6,6 +6,10 @@ import { profileService } from "../services/ProfileService";
 import type { InspectionInsert } from "../types/inspection";
 import { auditLogService } from "../services/AuditLogService";
 import { normalizeInspectionCoordinates } from "../types/inspectionCoordinates";
+import {
+  assertInspectionDecisionPayload,
+  normalizeInspectionPreScan,
+} from "../types/inspectionPreScan";
 
 class RequestAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -153,11 +157,32 @@ export class InspectionController {
         return;
       }
 
+      let preScanFields;
+      try {
+        preScanFields = normalizeInspectionPreScan(input as Record<string, unknown>);
+      } catch (error) {
+        res.status(400).json({
+          error: error instanceof Error ? error.message : "Invalid inspection pre-scan payload",
+        });
+        return;
+      }
+
       const inspectionInput: InspectionInsert = {
         ...(input as InspectionInsert),
         ...coordinates,
+        ...preScanFields,
         ...(normalizedCapturedAt ? { captured_at: normalizedCapturedAt } : {}),
       };
+
+      try {
+        assertInspectionDecisionPayload(inspectionInput);
+      } catch (error) {
+        res.status(400).json({
+          error:
+            error instanceof Error ? error.message : "Invalid inspection decision payload",
+        });
+        return;
+      }
 
       const { inspection, created } = await inspectionService.create(inspectionInput, accessContext.userId);
 
@@ -181,6 +206,16 @@ export class InspectionController {
               location: inspection.location,
               location_latitude: inspection.location_latitude,
               location_longitude: inspection.location_longitude,
+              stall_number: inspection.stall_number,
+              meat_inspection_certificate_proof:
+                inspection.meat_inspection_certificate_proof,
+              meat_expiry_date: inspection.meat_expiry_date,
+              storage_correct: inspection.storage_correct,
+              light_color_correct: inspection.light_color_correct,
+              light_color_observed: inspection.light_color_observed,
+              area_clean: inspection.area_clean,
+              inspection_decision_source: inspection.inspection_decision_source,
+              protocol_spoiled_reason: inspection.protocol_spoiled_reason,
               classification: inspection.classification,
               confidence_score: inspection.confidence_score,
             },

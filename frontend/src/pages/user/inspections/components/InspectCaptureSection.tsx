@@ -15,6 +15,7 @@ type InspectCaptureSectionProps = {
   locationDisplayLabel: string;
   coordinateStatusText: string | null;
   marketLocations: string[];
+  isPreScanChecklistComplete: boolean;
   isLocationSelectionDisabled: boolean;
   isCaptureDisabled: boolean;
   showAnalyzeAction: boolean;
@@ -34,6 +35,7 @@ export function InspectCaptureSection({
   locationDisplayLabel,
   coordinateStatusText,
   marketLocations,
+  isPreScanChecklistComplete,
   isLocationSelectionDisabled,
   isCaptureDisabled,
   showAnalyzeAction,
@@ -84,6 +86,12 @@ export function InspectCaptureSection({
           <p className="text-[11px] text-muted-foreground">{coordinateStatusText}</p>
         )}
       </div>
+
+      {!isPreScanChecklistComplete && (
+        <div className="mb-4 rounded-2xl border border-warning/30 bg-[hsl(var(--warning)/0.08)] px-4 py-3 text-xs text-foreground">
+          Complete the required pre-scan checklist before opening the camera.
+        </div>
+      )}
 
       <CameraCapture
         onCapture={onCapture}
