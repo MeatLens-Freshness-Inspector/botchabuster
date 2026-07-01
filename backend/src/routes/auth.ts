@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/AuthController";
+import { requireSelf } from "../middleware/auth";
 
 const router = Router();
 const controller = new AuthController();
@@ -14,8 +15,8 @@ router.post("/passkeys/authenticate/verify", (req, res) => controller.verifyPass
 router.get("/passkeys", (req, res) => controller.listPasskeys(req, res));
 router.delete("/passkeys/:credentialId", (req, res) => controller.deletePasskey(req, res));
 router.post("/reset-password", (req, res) => controller.sendPasswordReset(req, res));
-router.patch("/users/:id/email", (req, res) => controller.updateEmail(req, res));
-router.patch("/users/:id/password", (req, res) => controller.updatePassword(req, res));
+router.patch("/users/:id/email", requireSelf("id"), (req, res) => controller.updateEmail(req, res));
+router.patch("/users/:id/password", requireSelf("id"), (req, res) => controller.updatePassword(req, res));
 router.post("/recovery/password", (req, res) => controller.updatePasswordWithRecoveryToken(req, res));
 
 export default router;

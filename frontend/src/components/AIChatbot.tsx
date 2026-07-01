@@ -5,8 +5,37 @@ import { MessageCircle, X, Send, Loader2, Bot, User } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
+const API_BASE_URL =
+  ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
+  "http://localhost:3001/api";
 const CHAT_URL = `${API_BASE_URL}/chat`;
+
+function getAccessToken(): string | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const rawSession = window.localStorage.getItem("meatlens-auth-session");
+    if (!rawSession) return null;
+
+    const parsedSession = JSON.parse(rawSession) as { access_token?: string | null };
+    return parsedSession.access_token ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function getChatRequestHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  const accessToken = getAccessToken();
+  if (accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  return headers;
+}
 
 export function AIChatbot() {
   const [open, setOpen] = useState(false);
@@ -35,9 +64,7 @@ export function AIChatbot() {
     try {
       const resp = await fetch(CHAT_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: getChatRequestHeaders(),
         body: JSON.stringify({ messages: allMessages.map((m) => ({ role: m.role, content: m.content })) }),
       });
 

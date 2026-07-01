@@ -16,6 +16,7 @@ npm run dev
 PORT=3001
 SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_KEY=your_service_key
+APP_SESSION_SECRET=your_long_random_app_session_secret
 ```
 
 ## Architecture

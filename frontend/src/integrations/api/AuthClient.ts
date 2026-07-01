@@ -1,6 +1,8 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
+const API_BASE_URL =
+  ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
+  "http://localhost:3001/api";
 
 export interface AuthUser {
   id: string;
@@ -112,7 +114,7 @@ export class AuthClient {
   async updateEmail(userId: string, email: string): Promise<AuthUser> {
     const res = await fetch(`${API_BASE_URL}/auth/users/${userId}/email`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ email }),
     });
 
@@ -127,7 +129,7 @@ export class AuthClient {
   async updatePassword(userId: string, password: string): Promise<void> {
     const res = await fetch(`${API_BASE_URL}/auth/users/${userId}/password`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ password }),
     });
 

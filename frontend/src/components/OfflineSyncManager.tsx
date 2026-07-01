@@ -40,7 +40,7 @@ async function processScan(
   // Upload image to Supabase Storage (non-fatal).
   let imageUrl: string | null = null;
   try {
-    imageUrl = await uploadClient.uploadInspectionImage(imageFile, scan.userId);
+    imageUrl = await uploadClient.uploadInspectionImage(imageFile);
   } catch {
     // Save without image rather than blocking.
   }

@@ -157,13 +157,24 @@ export class AppSessionService {
 
 let appSessionService: AppSessionService | null = null;
 
+export function resolveAppSessionConfig(env: NodeJS.ProcessEnv): { secret: string; ttlSeconds: number } {
+  const secret = env.APP_SESSION_SECRET?.trim() || "";
+  if (!secret) {
+    throw new Error("APP_SESSION_SECRET must be configured");
+  }
+
+  return {
+    secret,
+    ttlSeconds: Math.max(300, parseInt(env.APP_SESSION_TTL_SECONDS || "28800", 10)),
+  };
+}
+
 export function getAppSessionService(): AppSessionService {
   if (appSessionService) {
     return appSessionService;
   }
 
-  const appSessionSecret = process.env.APP_SESSION_SECRET || process.env.SUPABASE_SERVICE_KEY || "";
-  const appSessionTtlSeconds = Math.max(300, parseInt(process.env.APP_SESSION_TTL_SECONDS || "28800", 10));
-  appSessionService = new AppSessionService(appSessionSecret, appSessionTtlSeconds);
+  const appSessionConfig = resolveAppSessionConfig(process.env);
+  appSessionService = new AppSessionService(appSessionConfig.secret, appSessionConfig.ttlSeconds);
   return appSessionService;
 }
