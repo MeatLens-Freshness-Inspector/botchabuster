@@ -2,6 +2,7 @@
   "name": "MeatLens",
   "version": "1.0.0",
   "description": "AI-powered meat freshness inspection for wet markets",
+  "author": "Annah Claire B. Dimate",
   "private": true,
   "workspaces": [
     "frontend",

@@ -1,5 +1,7 @@
 # MeatLens - Project Overview
 
+Maintainer: Annah Claire B. Dimate
+
 ## About MeatLens
 
 **MeatLens** is an AI-powered meat freshness inspection system designed for wet markets. It combines computer vision and machine learning to analyze meat quality using:

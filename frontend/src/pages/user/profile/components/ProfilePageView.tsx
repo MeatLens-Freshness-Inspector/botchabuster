@@ -43,7 +43,6 @@ export function ProfilePageView() {
     handleDetailedResultsToggle,
     handleRegisterPasskey,
     handleRemovePasskey,
-    navigateBack,
     openHelpTutorials,
     openProfileTutorial,
   } = useProfilePage();
@@ -59,7 +58,7 @@ export function ProfilePageView() {
     return (
       <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] pb-24">
       <div className="mx-auto w-full max-w-6xl px-4 pt-4">
-        <ProfilePageHeader onBack={navigateBack} />
+        <ProfilePageHeader />
 
         <ProfileSummaryCard
           fullName={fullName}

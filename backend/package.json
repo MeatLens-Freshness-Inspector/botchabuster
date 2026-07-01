@@ -2,6 +2,7 @@
   "name": "MeatLens-backend",
   "version": "1.0.0",
   "description": "MeatLens backend - API services for CNN-based meat freshness inspection",
+  "author": "Annah Claire B. Dimate",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

@@ -359,7 +359,6 @@ export function useProfilePage() {
     handleDetailedResultsToggle,
     handleRegisterPasskey,
     handleRemovePasskey,
-    navigateBack: () => navigate(-1),
     openHelpTutorials: () => navigate("/profile/help"),
     openProfileTutorial: () => navigate("/profile/tutorial"),
   };

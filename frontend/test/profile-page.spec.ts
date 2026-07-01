@@ -41,6 +41,12 @@ test("loads the profile page without repeatedly refetching profile state", async
   expect(profileLoadRequests).toHaveLength(settledProfileLoadCount);
 });
 
+test("does not render a back button on the main profile page", async ({ page }) => {
+  await openProfilePage(page);
+
+  await expect(page.getByRole("button", { name: /go back/i })).toHaveCount(0);
+});
+
 test("saves profile name and email from the Detailed Information card", async ({ page }) => {
   const spies: ApiSpy[] = [];
 
