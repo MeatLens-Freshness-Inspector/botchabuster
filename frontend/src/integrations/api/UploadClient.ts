@@ -1,3 +1,5 @@
+import { UPLOAD_REQUEST_TIMEOUT_MS, fetchWithTimeout } from "./fetchWithTimeout";
+
 const API_BASE_URL =
   ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
   "http://localhost:3001/api";
@@ -49,11 +51,11 @@ export class UploadClient {
     const formData = new FormData();
     formData.append("image", file);
 
-    const res = await fetch(`${API_BASE_URL}/upload/inspection-image`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/upload/inspection-image`, {
       method: "POST",
       headers: this.createHeaders(),
       body: formData,
-    });
+    }, UPLOAD_REQUEST_TIMEOUT_MS);
 
     if (!res.ok) {
       const error = await res.json().catch(() => ({ error: "Upload failed" }));

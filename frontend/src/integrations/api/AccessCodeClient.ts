@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from "./fetchWithTimeout";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 const SESSION_STORAGE_KEY = "meatlens-auth-session";
 
@@ -48,7 +50,7 @@ export class AccessCodeClient {
   }
 
   async getAll(): Promise<AccessCode[]> {
-    const res = await fetch(`${API_BASE_URL}/access-codes`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/access-codes`, {
       headers: this.createHeaders(),
     });
     if (!res.ok) throw new Error(`Failed to fetch access codes: ${res.statusText}`);
@@ -56,7 +58,7 @@ export class AccessCodeClient {
   }
 
   async validate(code: string): Promise<boolean> {
-    const res = await fetch(`${API_BASE_URL}/access-codes/validate`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/access-codes/validate`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ code }),
@@ -67,7 +69,7 @@ export class AccessCodeClient {
   }
 
   async create(code: string, description?: string): Promise<AccessCode> {
-    const res = await fetch(`${API_BASE_URL}/access-codes`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/access-codes`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ code, description }),
@@ -77,7 +79,7 @@ export class AccessCodeClient {
   }
 
   async delete(id: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/access-codes/${id}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/access-codes/${id}`, {
       method: "DELETE",
       headers: this.createHeaders(),
     });
@@ -85,7 +87,7 @@ export class AccessCodeClient {
   }
 
   async toggleActive(id: string, isActive: boolean): Promise<AccessCode> {
-    const res = await fetch(`${API_BASE_URL}/access-codes/${id}/toggle`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/access-codes/${id}/toggle`, {
       method: "PATCH",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ is_active: isActive }),

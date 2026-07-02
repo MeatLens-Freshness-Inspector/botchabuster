@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from "./fetchWithTimeout";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 const SESSION_STORAGE_KEY = "meatlens-auth-session";
 
@@ -146,7 +148,7 @@ export class PasskeyClient {
   }
 
   async getRegistrationOptions(): Promise<{ challengeId: string; options: RegistrationOptionsJSON }> {
-    const res = await fetch(`${API_BASE_URL}/auth/passkeys/register/options`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/passkeys/register/options`, {
       method: "POST",
       headers: this.createHeaders(),
     });
@@ -160,7 +162,7 @@ export class PasskeyClient {
     credential: RegistrationResponseJSON;
     deviceLabel: string;
   }): Promise<RegisteredPasskey> {
-    const res = await fetch(`${API_BASE_URL}/auth/passkeys/register/verify`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/passkeys/register/verify`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(payload),
@@ -171,7 +173,7 @@ export class PasskeyClient {
   }
 
   async getAuthenticationOptions(): Promise<{ challengeId: string; options: AuthenticationOptionsJSON }> {
-    const res = await fetch(`${API_BASE_URL}/auth/passkeys/authenticate/options`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/passkeys/authenticate/options`, {
       method: "POST",
       headers: this.createHeaders(),
     });
@@ -184,7 +186,7 @@ export class PasskeyClient {
     challengeId: string;
     credential: AuthenticationResponseJSON;
   }): Promise<{ user: AuthUser; session: AuthSession | null }> {
-    const res = await fetch(`${API_BASE_URL}/auth/passkeys/authenticate/verify`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/passkeys/authenticate/verify`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(payload),
@@ -195,7 +197,7 @@ export class PasskeyClient {
   }
 
   async listPasskeys(): Promise<RegisteredPasskey[]> {
-    const res = await fetch(`${API_BASE_URL}/auth/passkeys`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/passkeys`, {
       headers: this.createHeaders(),
     });
 
@@ -205,7 +207,7 @@ export class PasskeyClient {
 
   async deletePasskey(credentialId: string): Promise<void> {
     const encodedCredentialId = encodeURIComponent(credentialId);
-    const res = await fetch(`${API_BASE_URL}/auth/passkeys/${encodedCredentialId}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/passkeys/${encodedCredentialId}`, {
       method: "DELETE",
       headers: this.createHeaders(),
     });

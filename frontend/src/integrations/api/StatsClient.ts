@@ -1,4 +1,5 @@
 import { IS_DEMO_MODE, demoDelay, DEMO_LANDING_STATS } from "@/lib/demoMode";
+import { fetchWithTimeout } from "./fetchWithTimeout";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 
@@ -22,7 +23,7 @@ export class StatsClient {
 
   async getLandingPageStats(): Promise<LandingPageStats> {
     if (IS_DEMO_MODE) return demoDelay({ ...DEMO_LANDING_STATS });
-    const res = await fetch(`${API_BASE_URL}/stats/landing-page`);
+    const res = await fetchWithTimeout(`${API_BASE_URL}/stats/landing-page`);
     if (!res.ok) throw new Error(`Failed to fetch stats: ${res.statusText}`);
     return res.json();
   }

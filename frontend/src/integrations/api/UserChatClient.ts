@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from "./fetchWithTimeout";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 const SESSION_STORAGE_KEY = "meatlens-auth-session";
 const USER_STORAGE_KEY = "meatlens-auth-user";
@@ -97,7 +99,7 @@ export class UserChatClient {
   }
 
   async getContacts(): Promise<UserChatContact[]> {
-    const response = await fetch(`${API_BASE_URL}/user-chat/contacts`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/user-chat/contacts`, {
       headers: this.createHeaders(),
     });
 
@@ -110,7 +112,7 @@ export class UserChatClient {
 
   async getMessages(counterpartyId: string, limit = 250): Promise<UserChatMessage[]> {
     const clampedLimit = Math.max(1, Math.min(limit, 500));
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${API_BASE_URL}/user-chat/messages/${encodeURIComponent(counterpartyId)}?limit=${clampedLimit}`,
       {
         headers: this.createHeaders(),
@@ -125,7 +127,7 @@ export class UserChatClient {
   }
 
   async sendMessage(recipientId: string, content: string): Promise<UserChatMessage> {
-    const response = await fetch(`${API_BASE_URL}/user-chat/messages`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/user-chat/messages`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({

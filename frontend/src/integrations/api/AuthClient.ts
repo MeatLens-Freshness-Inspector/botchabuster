@@ -1,4 +1,5 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
+import { fetchWithTimeout } from "./fetchWithTimeout";
 
 const API_BASE_URL =
   ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
@@ -55,7 +56,7 @@ export class AuthClient {
   }
 
   async signIn(email: string, password: string): Promise<{ user: AuthUser; session: AuthSession | null }> {
-    const res = await fetch(`${API_BASE_URL}/auth/sign-in`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/sign-in`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -77,7 +78,7 @@ export class AuthClient {
     reportOrganization: ReportOrganization;
     emailRedirectTo?: string;
   }): Promise<{ user: AuthUser | null; session: AuthSession | null }> {
-    const res = await fetch(`${API_BASE_URL}/auth/sign-up`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/sign-up`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -92,14 +93,14 @@ export class AuthClient {
   }
 
   async signOut(): Promise<void> {
-    await fetch(`${API_BASE_URL}/auth/sign-out`, {
+    await fetchWithTimeout(`${API_BASE_URL}/auth/sign-out`, {
       method: "POST",
       headers: this.createHeaders(),
     });
   }
 
   async resetPassword(email: string, redirectTo?: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/reset-password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, redirectTo }),
@@ -112,7 +113,7 @@ export class AuthClient {
   }
 
   async updateEmail(userId: string, email: string): Promise<AuthUser> {
-    const res = await fetch(`${API_BASE_URL}/auth/users/${userId}/email`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/users/${userId}/email`, {
       method: "PATCH",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ email }),
@@ -127,7 +128,7 @@ export class AuthClient {
   }
 
   async updatePassword(userId: string, password: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/auth/users/${userId}/password`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/users/${userId}/password`, {
       method: "PATCH",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ password }),
@@ -140,7 +141,7 @@ export class AuthClient {
   }
 
   async updatePasswordWithRecoveryToken(accessToken: string, password: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/auth/recovery/password`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/recovery/password`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accessToken, password }),

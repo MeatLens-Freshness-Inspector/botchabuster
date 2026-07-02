@@ -1,5 +1,6 @@
 import type { Inspection, InspectionInsert } from "@/types/inspection";
 import { IS_DEMO_MODE, demoDelay, DEMO_INSPECTIONS, DEMO_STATS } from "@/lib/demoMode";
+import { fetchWithTimeout } from "./fetchWithTimeout";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 const SESSION_STORAGE_KEY = "meatlens-auth-session";
@@ -84,7 +85,7 @@ export class InspectionClient {
 
   async getAll(limit = 50, offset = 0, scope: InspectionScope = "mine"): Promise<Inspection[]> {
     if (IS_DEMO_MODE) return demoDelay(DEMO_INSPECTIONS.slice(offset, offset + limit));
-    const res = await fetch(`${API_BASE_URL}/inspections?limit=${limit}&offset=${offset}&scope=${scope}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/inspections?limit=${limit}&offset=${offset}&scope=${scope}`, {
       headers: this.createHeaders(),
     });
     if (!res.ok) throw await this.createRequestError("fetch inspections", res);
@@ -93,7 +94,7 @@ export class InspectionClient {
 
   async getById(id: string, scope: InspectionScope = "mine"): Promise<Inspection | null> {
     if (IS_DEMO_MODE) return demoDelay(DEMO_INSPECTIONS.find((i) => i.id === id) ?? null);
-    const res = await fetch(`${API_BASE_URL}/inspections/${id}?scope=${scope}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/inspections/${id}?scope=${scope}`, {
       headers: this.createHeaders(),
     });
     if (!res.ok) {
@@ -135,7 +136,7 @@ export class InspectionClient {
       DEMO_INSPECTIONS.unshift(newItem);
       return demoDelay(newItem);
     }
-    const res = await fetch(`${API_BASE_URL}/inspections`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/inspections`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(inspection),
@@ -150,7 +151,7 @@ export class InspectionClient {
       if (idx !== -1) DEMO_INSPECTIONS.splice(idx, 1);
       return demoDelay(undefined);
     }
-    const res = await fetch(`${API_BASE_URL}/inspections/${id}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/inspections/${id}`, {
       method: "DELETE",
       headers: this.createHeaders(),
     });
@@ -162,7 +163,7 @@ export class InspectionClient {
     byClassification: Record<string, number>;
   }> {
     if (IS_DEMO_MODE) return demoDelay({ ...DEMO_STATS, byClassification: { ...DEMO_STATS.byClassification } });
-    const res = await fetch(`${API_BASE_URL}/inspections/stats?scope=${scope}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/inspections/stats?scope=${scope}`, {
       headers: this.createHeaders(),
     });
     if (!res.ok) throw await this.createRequestError("fetch inspection statistics", res);

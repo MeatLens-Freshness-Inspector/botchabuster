@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from "./fetchWithTimeout";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 const SESSION_STORAGE_KEY = "meatlens-auth-session";
 const USER_STORAGE_KEY = "meatlens-auth-user";
@@ -66,7 +68,7 @@ export class AuditLogClient {
   async createBatch(events: AuditLogEvent[]): Promise<number> {
     if (events.length === 0) return 0;
 
-    const res = await fetch(`${API_BASE_URL}/audit-logs`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/audit-logs`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ events }),
@@ -87,7 +89,7 @@ export class AuditLogClient {
   async listRecent(limit = 100): Promise<AuditLogEntry[]> {
     const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(Math.trunc(limit), 1), 500) : 100;
 
-    const res = await fetch(`${API_BASE_URL}/audit-logs?limit=${safeLimit}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/audit-logs?limit=${safeLimit}`, {
       method: "GET",
       headers: this.createHeaders(),
     });

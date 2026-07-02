@@ -1,4 +1,5 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
+import { fetchWithTimeout } from "./fetchWithTimeout";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 const SESSION_STORAGE_KEY = "meatlens-auth-session";
@@ -104,7 +105,7 @@ export class ProfileClient {
   }
 
   async getProfile(userId: string): Promise<Profile | null> {
-    const res = await fetch(`${API_BASE_URL}/profiles/${userId}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/profiles/${userId}`, {
       headers: this.createHeaders(),
     });
     if (!res.ok) {
@@ -115,7 +116,7 @@ export class ProfileClient {
   }
 
   async updateProfile(userId: string, updates: ProfileUpdateInput): Promise<Profile> {
-    const res = await fetch(`${API_BASE_URL}/profiles/${userId}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/profiles/${userId}`, {
       method: "PUT",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(updates),
@@ -125,7 +126,7 @@ export class ProfileClient {
   }
 
   async getAllProfiles(): Promise<Profile[]> {
-    const res = await fetch(`${API_BASE_URL}/profiles`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/profiles`, {
       headers: this.createHeaders(),
     });
     if (!res.ok) throw new Error(await readApiError(res, "Failed to fetch profiles"));
@@ -133,7 +134,7 @@ export class ProfileClient {
   }
 
   async createUserByAdmin(payload: AdminCreateUserPayload): Promise<Profile> {
-    const res = await fetch(`${API_BASE_URL}/profiles/admin/users`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/profiles/admin/users`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(payload),
@@ -143,7 +144,7 @@ export class ProfileClient {
   }
 
   async updateUserByAdmin(userId: string, payload: AdminUpdateUserPayload): Promise<Profile> {
-    const res = await fetch(`${API_BASE_URL}/profiles/admin/users/${userId}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/profiles/admin/users/${userId}`, {
       method: "PUT",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(payload),
@@ -153,7 +154,7 @@ export class ProfileClient {
   }
 
   async deleteUserByAdmin(userId: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/profiles/admin/users/${userId}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/profiles/admin/users/${userId}`, {
       method: "DELETE",
       headers: this.createHeaders(),
     });
@@ -165,7 +166,7 @@ export class ProfileClient {
     total_inspections: number;
     roles: { role: string; count: number }[] | null;
   }> {
-    const res = await fetch(`${API_BASE_URL}/profiles/stats`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/profiles/stats`, {
       headers: this.createHeaders(),
     });
     if (!res.ok) throw new Error(await readApiError(res, "Failed to fetch stats"));
@@ -173,7 +174,7 @@ export class ProfileClient {
   }
 
   async hasRole(userId: string, role: string): Promise<boolean> {
-    const res = await fetch(`${API_BASE_URL}/profiles/${userId}/has-role/${role}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/profiles/${userId}/has-role/${role}`, {
       headers: this.createHeaders(),
     });
     if (!res.ok) throw new Error(await readApiError(res, "Failed to check user role"));

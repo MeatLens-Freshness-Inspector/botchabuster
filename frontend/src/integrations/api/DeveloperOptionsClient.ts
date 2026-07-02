@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from "./fetchWithTimeout";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 const SESSION_STORAGE_KEY = "meatlens-auth-session";
 
@@ -61,7 +63,7 @@ export class DeveloperOptionsClient {
   }
 
   async unlock(password: string): Promise<DeveloperUnlockResponse> {
-    const response = await fetch(`${API_BASE_URL}/developer-options/unlock`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/developer-options/unlock`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ password }),
@@ -75,7 +77,7 @@ export class DeveloperOptionsClient {
   }
 
   async verify(token: string): Promise<boolean> {
-    const response = await fetch(`${API_BASE_URL}/developer-options/verify`, {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/developer-options/verify`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ token }),

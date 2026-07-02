@@ -1,3 +1,5 @@
+import { fetchWithTimeout } from "./fetchWithTimeout";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 const SESSION_STORAGE_KEY = "meatlens-auth-session";
 
@@ -56,7 +58,7 @@ export class MarketLocationClient {
   }
 
   async getAll(): Promise<MarketLocation[]> {
-    const res = await fetch(`${API_BASE_URL}/market-locations`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/market-locations`, {
       headers: this.createHeaders(),
     });
     if (!res.ok) {
@@ -72,7 +74,7 @@ export class MarketLocationClient {
   }
 
   async create(name: string): Promise<MarketLocation> {
-    const res = await fetch(`${API_BASE_URL}/market-locations`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/market-locations`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ name }),
@@ -82,7 +84,7 @@ export class MarketLocationClient {
   }
 
   async delete(id: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/market-locations/${id}`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/market-locations/${id}`, {
       method: "DELETE",
       headers: this.createHeaders(),
     });
