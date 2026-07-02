@@ -9,6 +9,7 @@ import {
 } from "@/integrations/api/UserChatClient";
 import type { MessagesMobilePanel } from "../types";
 import { formatContactName } from "../utils/formatters";
+import { resolveSelectedContactId } from "../utils/viewState";
 
 const POLL_INTERVAL_MS = 6_000;
 
@@ -104,14 +105,6 @@ export function useMessagesPage() {
     try {
       const nextContacts = await userChatClient.getContacts();
       setContacts(nextContacts);
-
-      setSelectedContactId((currentId) => {
-        if (currentId && nextContacts.some((contact) => contact.id === currentId)) {
-          return currentId;
-        }
-
-        return nextContacts[0]?.id ?? null;
-      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to load chat contacts";
       if (!options?.silent) {
@@ -127,6 +120,12 @@ export function useMessagesPage() {
   useEffect(() => {
     void loadContacts();
   }, [loadContacts]);
+
+  useEffect(() => {
+    setSelectedContactId((currentId) =>
+      resolveSelectedContactId(contacts, currentId, isDesktop),
+    );
+  }, [contacts, isDesktop]);
 
   useEffect(() => {
     if (!selectedContactId) {

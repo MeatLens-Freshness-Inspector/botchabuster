@@ -14,6 +14,7 @@ export default function MessagesPage() {
     messages,
     draftMessage,
     contactSearch,
+    mobilePanel,
     isLoadingContacts,
     isLoadingMessages,
     isSendingMessage,
@@ -29,18 +30,26 @@ export default function MessagesPage() {
     handleSendMessage,
   } = useMessagesPage();
 
+  const showMessagesHeader = isDesktop || mobilePanel === "contacts";
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] pb-24">
       <div className="mx-auto w-full max-w-6xl min-w-0 px-4 pt-4">
-        <MessagesHeader
-          isAdmin={isAdmin}
-          totalContacts={contactStats.total}
-          adminContacts={contactStats.adminContacts}
-          userContacts={contactStats.userContacts}
-          latestActivity={contactStats.latestActivity}
-        />
+        {showMessagesHeader ? (
+          <MessagesHeader
+            isAdmin={isAdmin}
+            totalContacts={contactStats.total}
+            adminContacts={contactStats.adminContacts}
+            userContacts={contactStats.userContacts}
+            latestActivity={contactStats.latestActivity}
+          />
+        ) : null}
 
-        <div className="mt-4 grid min-w-0 gap-4 lg:grid-cols-[minmax(290px,0.95fr)_minmax(0,1.05fr)]">
+        <div
+          className={`grid min-w-0 gap-4 lg:grid-cols-[minmax(290px,0.95fr)_minmax(0,1.05fr)] ${
+            showMessagesHeader ? "mt-4" : ""
+          }`}
+        >
           {showContactsPanel && (
             <ContactsPanel
               contacts={filteredContacts}
