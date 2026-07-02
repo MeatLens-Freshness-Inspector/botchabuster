@@ -4,6 +4,7 @@ import fs from "fs";
 import type { Server } from "http";
 import { Config } from "./config";
 import { createCorsOptions } from "./config/cors";
+import { applySecurityHeaders } from "./middleware/securityHeaders";
 import analysisRoutes from "./routes/analysis";
 import profileRoutes from "./routes/profiles";
 import inspectionRoutes from "./routes/inspections";
@@ -55,6 +56,7 @@ if (!fs.existsSync(config.uploadDir)) {
 }
 
 // Middleware
+app.use(applySecurityHeaders);
 app.use(cors(createCorsOptions(config.allowedOrigins)));
 app.use(express.json());
 

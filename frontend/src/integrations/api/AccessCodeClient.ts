@@ -58,7 +58,7 @@ export class AccessCodeClient {
   async validate(code: string): Promise<boolean> {
     const res = await fetch(`${API_BASE_URL}/access-codes/validate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: this.createHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({ code }),
     });
     if (!res.ok) throw new Error(`Failed to validate access code: ${res.statusText}`);
