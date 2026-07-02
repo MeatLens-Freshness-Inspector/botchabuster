@@ -1,4 +1,5 @@
 import { supabase, supabaseAuth } from "../integrations/supabase";
+import { resolveSupabaseClientConfig } from "../integrations/supabaseConfig";
 import { getAppSessionService, type AppSession } from "./AppSessionService";
 import {
   isReportOrganization,
@@ -68,21 +69,6 @@ export class AuthService {
       expires_in: session.expires_in ?? null,
       expires_at: session.expires_at ?? null,
     };
-  }
-
-  private getSupabaseAuthConfig(): { supabaseUrl: string; supabasePublishableKey: string } {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabasePublishableKey =
-      process.env.SUPABASE_PUBLISHABLE_KEY ||
-      process.env.SUPABASE_ANON_KEY ||
-      process.env.SUPABASE_KEY ||
-      process.env.SUPABASE_SERVICE_KEY;
-
-    if (!supabaseUrl || !supabasePublishableKey) {
-      throw new Error("Supabase environment variables are missing");
-    }
-
-    return { supabaseUrl, supabasePublishableKey };
   }
 
   private async ensureProfileExists(user: {
@@ -249,7 +235,7 @@ export class AuthService {
       }
     }
 
-    const { supabaseUrl, supabasePublishableKey } = this.getSupabaseAuthConfig();
+    const { supabaseUrl, supabasePublishableKey } = resolveSupabaseClientConfig(process.env);
     const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
       headers: {
         Authorization: `Bearer ${trimmedToken}`,

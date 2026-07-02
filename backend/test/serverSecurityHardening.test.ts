@@ -4,8 +4,6 @@ import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import test from "node:test";
 import type { Express } from "express";
-import { authService } from "../src/services/AuthService";
-import { profileService } from "../src/services/ProfileService";
 
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
 process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
@@ -126,6 +124,8 @@ test("public auth endpoints are rate limited after repeated requests", async () 
 });
 
 test("chat requests are rate limited per authenticated user", async () => {
+  const { authService } = await import("../src/services/AuthService");
+  const { profileService } = await import("../src/services/ProfileService");
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalHasRole = profileService.hasRole.bind(profileService);
 

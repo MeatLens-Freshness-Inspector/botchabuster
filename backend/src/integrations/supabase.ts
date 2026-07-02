@@ -1,20 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
+import { resolveSupabaseClientConfig } from "./supabaseConfig";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY;
-const supabasePublishableKey =
-  process.env.SUPABASE_PUBLISHABLE_KEY ||
-  process.env.SUPABASE_ANON_KEY ||
-  process.env.SUPABASE_KEY ||
-  process.env.SUPABASE_SERVICE_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error("Missing SUPABASE_URL and service key environment variables");
-}
-
-if (!supabasePublishableKey) {
-  throw new Error("Missing SUPABASE_PUBLISHABLE_KEY or SUPABASE_ANON_KEY environment variable");
-}
+const { supabaseUrl, supabaseServiceKey, supabasePublishableKey } = resolveSupabaseClientConfig(process.env);
 
 const authOptions = {
   persistSession: false,
