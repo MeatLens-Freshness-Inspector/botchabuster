@@ -4,6 +4,7 @@ import fs from "fs";
 import type { Server } from "http";
 import { Config } from "./config";
 import { createCorsOptions } from "./config/cors";
+import { globalErrorHandler } from "./middleware/errorHandler";
 import { applySecurityHeaders } from "./middleware/securityHeaders";
 import analysisRoutes from "./routes/analysis";
 import profileRoutes from "./routes/profiles";
@@ -73,6 +74,7 @@ app.use("/api/market-locations", marketLocationRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
 app.use("/api/developer-options", developerOptionsRoutes);
 app.use("/api/user-chat", userChatRoutes);
+app.use(globalErrorHandler);
 
 function handleServerError(error: NodeJS.ErrnoException): never {
   if (error.code === "EADDRINUSE") {

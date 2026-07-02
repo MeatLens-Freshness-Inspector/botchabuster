@@ -3,7 +3,9 @@ import { once } from "node:events";
 import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import test from "node:test";
+import express from "express";
 import type { Express, NextFunction, Request, Response } from "express";
+import { globalErrorHandler } from "../src/middleware/errorHandler";
 
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
 process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
@@ -85,15 +87,25 @@ test("malformed JSON requests return a JSON 400 response", async () => {
 });
 
 test("forwarded route errors return a JSON 500 response", async () => {
-  const path = `/__test/error-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  const { baseUrl, close } = await startTestServer((app) => {
-    app.get(path, (_req: Request, _res: Response, next: NextFunction) => {
-      next(new Error("Synthetic route failure"));
-    });
+  const app = express();
+  app.get("/boom", (_req: Request, _res: Response, next: NextFunction) => {
+    next(new Error("Synthetic route failure"));
   });
+  app.use(globalErrorHandler);
+  const originalConsoleError = console.error;
+  console.error = () => {};
+
+  const server = app.listen(0) as Server;
+  await once(server, "listening");
+  const address = server.address() as AddressInfo | null;
+  if (!address) {
+    throw new Error("Server did not expose a listening address");
+  }
+
+  const baseUrl = `http://127.0.0.1:${address.port}`;
 
   try {
-    const response = await fetch(`${baseUrl}${path}`);
+    const response = await fetch(`${baseUrl}/boom`);
     const contentType = response.headers.get("content-type") || "";
     const responseText = await response.text();
     const payload = contentType.match(/application\/json/i)
@@ -104,6 +116,16 @@ test("forwarded route errors return a JSON 500 response", async () => {
     assert.match(contentType, /application\/json/i);
     assert.equal(payload?.error, "Internal server error");
   } finally {
-    await close();
+    console.error = originalConsoleError;
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve();
+      });
+    });
   }
 });
