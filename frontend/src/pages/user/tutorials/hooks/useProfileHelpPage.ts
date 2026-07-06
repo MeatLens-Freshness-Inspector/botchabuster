@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  helpTutorialCards,
+  helpCards,
   isTutorialId,
-  type TutorialId,
+  type HelpCardDefinition,
 } from "@/lib/tutorials/tutorialDefinitions";
 import type { ProfileHelpPageViewModel } from "../types";
 import {
@@ -23,13 +23,22 @@ export function useProfileHelpPage(): ProfileHelpPageViewModel {
     [activeDemo],
   );
 
+  const openCard = (card: HelpCardDefinition) => {
+    if (card.kind === "tutorial") {
+      setSearchParams({ demo: card.id });
+      return;
+    }
+
+    navigate(card.href);
+  };
+
   return {
     activeDemo,
     activeDemoSteps,
     activeDemoTitle: getActiveTutorialTitle(activeDemo),
-    cards: helpTutorialCards,
+    cards: helpCards,
     closeActiveDemo: () => setSearchParams({}),
     navigateBack: () => navigate("/profile"),
-    openDemo: (tutorialId: TutorialId) => setSearchParams({ demo: tutorialId }),
+    openCard,
   };
 }

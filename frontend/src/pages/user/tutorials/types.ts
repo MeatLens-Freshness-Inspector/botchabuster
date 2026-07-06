@@ -1,5 +1,5 @@
 import type {
-  HelpTutorialCardDefinition,
+  HelpCardDefinition,
   TutorialId,
   TutorialStepDefinition,
 } from "@/lib/tutorials/tutorialDefinitions";
@@ -13,10 +13,10 @@ export interface ProfileHelpPageViewModel {
   activeDemo: TutorialId | null;
   activeDemoSteps: TutorialStepDefinition[] | null;
   activeDemoTitle: string;
-  cards: HelpTutorialCardDefinition[];
+  cards: HelpCardDefinition[];
   closeActiveDemo: () => void;
   navigateBack: () => void;
-  openDemo: (tutorialId: TutorialId) => void;
+  openCard: (card: HelpCardDefinition) => void;
 }
 
 export interface ProfileTutorialPageViewModel {

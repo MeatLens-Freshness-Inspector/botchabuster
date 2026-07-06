@@ -23,7 +23,7 @@ export function ProfileHelpPageView({
   cards,
   closeActiveDemo,
   navigateBack,
-  openDemo,
+  openCard,
 }: ProfileHelpPageViewProps) {
   if (activeDemo && activeDemoSteps) {
     return (
@@ -80,9 +80,9 @@ export function ProfileHelpPageView({
                 <Button
                   type="button"
                   className="h-10 rounded-xl px-5"
-                  onClick={() => openDemo(card.id)}
+                  onClick={() => openCard(card)}
                 >
-                  Open {card.title}
+                  {card.buttonLabel ?? `Open ${card.title}`}
                 </Button>
               </CardContent>
             </Card>

@@ -151,3 +151,21 @@ test("renders the scope and delimitations reference page for signed-in inspector
     page.getByText(/final inspection judgment remains with the inspector/i),
   ).toBeVisible();
 });
+
+test("shows a scope and delimitations entry in the help hub and opens the reference page", async ({
+  page,
+}) => {
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, { userId: "user-1" });
+
+  await page.goto("/profile/help");
+
+  await expect(
+    page.getByRole("button", { name: /open scope and delimitations/i }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: /open scope and delimitations/i }).click();
+
+  await expect(page).toHaveURL(/\/profile\/help\/scope$/);
+  await expect(page.getByRole("heading", { name: /scope and delimitations/i })).toBeVisible();
+});
