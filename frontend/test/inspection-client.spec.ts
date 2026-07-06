@@ -6,6 +6,14 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript((storageKey) => {
     window.localStorage.clear();
     window.localStorage.setItem(
+      "meatlens-auth-user",
+      JSON.stringify({
+        id: "user-1",
+        email: "inspector@example.com",
+      })
+    );
+    window.sessionStorage.clear();
+    window.sessionStorage.setItem(
       storageKey,
       JSON.stringify({
         access_token: "session-token",
@@ -168,7 +176,8 @@ test("clears cached auth and surfaces a re-login error when inspections returns 
         message: error instanceof Error ? error.message : String(error),
         authExpiredEvents,
         storedUser: window.localStorage.getItem("meatlens-auth-user"),
-        storedSession: window.localStorage.getItem("meatlens-auth-session"),
+        storedSession: window.sessionStorage.getItem("meatlens-auth-session"),
+        legacyStoredSession: window.localStorage.getItem("meatlens-auth-session"),
       };
     }
   });
@@ -178,4 +187,5 @@ test("clears cached auth and surfaces a re-login error when inspections returns 
   expect(result.authExpiredEvents).toBe(1);
   expect(result.storedUser).toBeNull();
   expect(result.storedSession).toBeNull();
+  expect(result.legacyStoredSession).toBeNull();
 });

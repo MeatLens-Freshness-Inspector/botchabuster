@@ -42,7 +42,7 @@ export async function seedSignedInSession(page: Page, options: MockedSessionOpti
         email: initEmail,
       })
     );
-    window.localStorage.setItem(
+    window.sessionStorage.setItem(
       "meatlens-auth-session",
       JSON.stringify({
         access_token: "session-token",

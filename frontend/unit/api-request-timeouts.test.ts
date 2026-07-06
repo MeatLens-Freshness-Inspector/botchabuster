@@ -66,7 +66,8 @@ function installDom(): () => void {
 
 function setStoredSession(accessToken = "session-token"): void {
   window.localStorage.clear();
-  window.localStorage.setItem(
+  window.sessionStorage.clear();
+  window.sessionStorage.setItem(
     "meatlens-auth-session",
     JSON.stringify({
       access_token: accessToken,

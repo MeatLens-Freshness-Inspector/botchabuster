@@ -6,6 +6,14 @@ test.beforeEach(async ({ page }) => {
   await page.addInitScript((storageKey) => {
     window.localStorage.clear();
     window.localStorage.setItem(
+      "meatlens-auth-user",
+      JSON.stringify({
+        id: "user-1",
+        email: "inspector@example.com",
+      })
+    );
+    window.sessionStorage.clear();
+    window.sessionStorage.setItem(
       storageKey,
       JSON.stringify({
         access_token: "session-token",

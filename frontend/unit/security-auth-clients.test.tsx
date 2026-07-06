@@ -78,7 +78,8 @@ function installDom(): () => void {
 
 function setStoredSession(accessToken = "session-token"): void {
   window.localStorage.clear();
-  window.localStorage.setItem(
+  window.sessionStorage.clear();
+  window.sessionStorage.setItem(
     "meatlens-auth-session",
     JSON.stringify({
       access_token: accessToken,
@@ -172,6 +173,8 @@ test("AIChatbot chat requests use the current bearer token", () => {
 
   try {
     setStoredSession();
+    assert.equal(window.localStorage.getItem("meatlens-auth-session"), null);
+    assert.equal(window.sessionStorage.getItem("meatlens-auth-session") !== null, true);
     assert.deepEqual(getChatRequestHeaders(), {
       "Content-Type": "application/json",
       Authorization: "Bearer session-token",

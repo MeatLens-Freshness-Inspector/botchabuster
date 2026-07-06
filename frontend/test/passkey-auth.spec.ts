@@ -133,8 +133,12 @@ test("signs in with a passkey from the login page", async ({ page }) => {
   expect(verificationPayload).toContain("\"challengeId\":\"login-passkey-flow\"");
   expect(verificationPayload).toContain("\"id\":\"credential-login-1\"");
 
-  const storedSession = await page.evaluate(() => window.localStorage.getItem("meatlens-auth-session"));
-  expect(storedSession).toContain("passkey-token");
+  const storedSession = await page.evaluate(() => ({
+    session: window.sessionStorage.getItem("meatlens-auth-session"),
+    legacy: window.localStorage.getItem("meatlens-auth-session"),
+  }));
+  expect(storedSession.session).toContain("passkey-token");
+  expect(storedSession.legacy).toBeNull();
 });
 
 test("shows passkey management on the profile page and removes a registered device", async ({ page }) => {
