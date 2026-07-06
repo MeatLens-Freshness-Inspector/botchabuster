@@ -1,9 +1,9 @@
+import { createAuthHeaders } from "@/lib/authCache";
 import { UPLOAD_REQUEST_TIMEOUT_MS, fetchWithTimeout } from "./fetchWithTimeout";
 
 const API_BASE_URL =
   ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
   "http://localhost:3001/api";
-const SESSION_STORAGE_KEY = "meatlens-auth-session";
 
 export class UploadClient {
   private static instance: UploadClient;
@@ -17,29 +17,8 @@ export class UploadClient {
     return UploadClient.instance;
   }
 
-  private getAccessToken(): string | null {
-    if (typeof window === "undefined") return null;
-
-    try {
-      const rawSession = window.localStorage.getItem(SESSION_STORAGE_KEY);
-      if (!rawSession) return null;
-
-      const parsedSession = JSON.parse(rawSession) as { access_token?: string | null };
-      return parsedSession.access_token ?? null;
-    } catch {
-      return null;
-    }
-  }
-
   private createHeaders(initialHeaders?: HeadersInit): Headers {
-    const headers = new Headers(initialHeaders);
-    const accessToken = this.getAccessToken();
-
-    if (accessToken) {
-      headers.set("Authorization", `Bearer ${accessToken}`);
-    }
-
-    return headers;
+    return createAuthHeaders(initialHeaders);
   }
 
   /**

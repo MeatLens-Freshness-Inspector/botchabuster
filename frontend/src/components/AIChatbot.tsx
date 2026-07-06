@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getCachedAccessToken } from "@/lib/authCache";
 import { MessageCircle, X, Send, Loader2, Bot, User } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -10,26 +11,12 @@ const API_BASE_URL =
   "http://localhost:3001/api";
 const CHAT_URL = `${API_BASE_URL}/chat`;
 
-function getAccessToken(): string | null {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const rawSession = window.localStorage.getItem("meatlens-auth-session");
-    if (!rawSession) return null;
-
-    const parsedSession = JSON.parse(rawSession) as { access_token?: string | null };
-    return parsedSession.access_token ?? null;
-  } catch {
-    return null;
-  }
-}
-
 export function getChatRequestHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
 
-  const accessToken = getAccessToken();
+  const accessToken = getCachedAccessToken();
   if (accessToken) {
     headers.Authorization = `Bearer ${accessToken}`;
   }

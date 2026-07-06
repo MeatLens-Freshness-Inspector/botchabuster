@@ -1,4 +1,5 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
+import { createAuthHeaders } from "@/lib/authCache";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
 const API_BASE_URL =
@@ -30,29 +31,8 @@ export class AuthClient {
     return AuthClient.instance;
   }
 
-  private getAccessToken(): string | null {
-    if (typeof window === "undefined") return null;
-
-    try {
-      const rawSession = window.localStorage.getItem("meatlens-auth-session");
-      if (!rawSession) return null;
-
-      const parsedSession = JSON.parse(rawSession) as { access_token?: string | null };
-      return parsedSession.access_token ?? null;
-    } catch {
-      return null;
-    }
-  }
-
   private createHeaders(initialHeaders?: HeadersInit): Headers {
-    const headers = new Headers(initialHeaders);
-    const accessToken = this.getAccessToken();
-
-    if (accessToken) {
-      headers.set("Authorization", `Bearer ${accessToken}`);
-    }
-
-    return headers;
+    return createAuthHeaders(initialHeaders);
   }
 
   async signIn(email: string, password: string): Promise<{ user: AuthUser; session: AuthSession | null }> {

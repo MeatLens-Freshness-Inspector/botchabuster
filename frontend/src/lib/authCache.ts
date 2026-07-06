@@ -11,11 +11,9 @@ interface CachedAdminState {
   isAdmin: boolean;
 }
 
-function readJson<T>(storageKey: string): T | null {
-  if (typeof window === "undefined") return null;
-
+function readJson<T>(storage: Storage, storageKey: string): T | null {
   try {
-    const raw = window.localStorage.getItem(storageKey);
+    const raw = storage.getItem(storageKey);
     if (!raw) return null;
     return JSON.parse(raw) as T;
   } catch {
@@ -23,13 +21,72 @@ function readJson<T>(storageKey: string): T | null {
   }
 }
 
+function readLocalJson<T>(storageKey: string): T | null {
+  if (typeof window === "undefined") return null;
+  return readJson<T>(window.localStorage, storageKey);
+}
+
+function readSessionJson<T>(storageKey: string): T | null {
+  if (typeof window === "undefined") return null;
+  return readJson<T>(window.sessionStorage, storageKey);
+}
+
+function clearStoredSession(): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch {
+    // Ignore storage access failures and continue clearing legacy state.
+  }
+
+  window.localStorage.removeItem(SESSION_STORAGE_KEY);
+}
+
+function migrateLegacySession(): AuthSession | null {
+  if (typeof window === "undefined") return null;
+
+  const rawLegacySession = window.localStorage.getItem(SESSION_STORAGE_KEY);
+  if (!rawLegacySession) return null;
+
+  try {
+    const legacySession = JSON.parse(rawLegacySession) as AuthSession;
+    window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(legacySession));
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    return legacySession;
+  } catch {
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+    return null;
+  }
+}
+
 export function getCachedAuthUser(): AuthUser | null {
-  const user = readJson<AuthUser>(USER_STORAGE_KEY);
+  const user = readLocalJson<AuthUser>(USER_STORAGE_KEY);
   return user?.id ? user : null;
 }
 
 export function getCachedAuthSession(): AuthSession | null {
-  return readJson<AuthSession>(SESSION_STORAGE_KEY);
+  const session = readSessionJson<AuthSession>(SESSION_STORAGE_KEY);
+  if (session) {
+    return session;
+  }
+
+  return migrateLegacySession();
+}
+
+export function getCachedAccessToken(): string | null {
+  return getCachedAuthSession()?.access_token ?? null;
+}
+
+export function createAuthHeaders(initialHeaders?: HeadersInit): Headers {
+  const headers = new Headers(initialHeaders);
+  const accessToken = getCachedAccessToken();
+
+  if (accessToken) {
+    headers.set("Authorization", `Bearer ${accessToken}`);
+  }
+
+  return headers;
 }
 
 export function setCachedAuth(user: AuthUser, session: AuthSession | null): void {
@@ -38,22 +95,23 @@ export function setCachedAuth(user: AuthUser, session: AuthSession | null): void
   window.localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
 
   if (session) {
-    window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+    window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
     return;
   }
 
-  window.localStorage.removeItem(SESSION_STORAGE_KEY);
+  clearStoredSession();
 }
 
 export function clearCachedAuth(): void {
   if (typeof window === "undefined") return;
 
   window.localStorage.removeItem(USER_STORAGE_KEY);
-  window.localStorage.removeItem(SESSION_STORAGE_KEY);
+  clearStoredSession();
 }
 
 export function getCachedProfile(userId: string): Profile | null {
-  const profile = readJson<Profile>(PROFILE_STORAGE_KEY);
+  const profile = readLocalJson<Profile>(PROFILE_STORAGE_KEY);
   return profile?.id === userId ? profile : null;
 }
 
@@ -74,7 +132,7 @@ export function clearCachedProfile(): void {
 }
 
 export function getCachedAdmin(userId: string): boolean | null {
-  const cachedAdmin = readJson<CachedAdminState>(ADMIN_STORAGE_KEY);
+  const cachedAdmin = readLocalJson<CachedAdminState>(ADMIN_STORAGE_KEY);
   if (!cachedAdmin || cachedAdmin.userId !== userId) {
     return null;
   }
