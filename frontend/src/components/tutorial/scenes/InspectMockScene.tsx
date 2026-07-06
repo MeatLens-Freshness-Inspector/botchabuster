@@ -76,7 +76,7 @@ export function InspectMockScene({ step, onAdvance }: InspectMockSceneProps) {
 
       <div className="flex flex-col gap-2 p-3">
         {/* Location selector hotspot */}
-        <MockHotspot active={isMarket} onAdvance={onAdvance} label="Tap here">
+        <MockHotspot active={isMarket} onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}>
           <div className="rounded-xl border border-border/60 bg-card/90 p-2.5">
             <p className="mb-1 text-[8px] uppercase tracking-widest text-muted-foreground">
               Location Selection
@@ -92,7 +92,7 @@ export function InspectMockScene({ step, onAdvance }: InspectMockSceneProps) {
         </MockHotspot>
 
         {/* Camera capture area */}
-        <MockHotspot active={isCapture} onAdvance={onAdvance} label="Tap here">
+        <MockHotspot active={isCapture} onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}>
           <div className="flex aspect-[4/3] flex-col items-center justify-center rounded-xl border border-dashed border-border/70 bg-background/50">
             {isCapture ? (
               <>
@@ -122,7 +122,7 @@ export function InspectMockScene({ step, onAdvance }: InspectMockSceneProps) {
 
         {/* Analyze button hotspot */}
         {isAnalysis && (
-          <MockHotspot active={isAnalysis} onAdvance={onAdvance} label="Tap here">
+          <MockHotspot active={isAnalysis} onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}>
             <div className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-primary font-display text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
               <ScanLine className="h-3.5 w-3.5" />
               Analyze Sample
@@ -156,7 +156,7 @@ export function InspectMockScene({ step, onAdvance }: InspectMockSceneProps) {
 
         {/* Save button hotspot */}
         {isSave && (
-          <MockHotspot active={isSave} onAdvance={onAdvance} label="Tap here">
+          <MockHotspot active={isSave} onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}>
             <div className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-primary font-display text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
               <Save className="h-3.5 w-3.5" />
               Save Record

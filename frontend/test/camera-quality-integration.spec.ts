@@ -149,6 +149,15 @@ async function resolveCssColor(page: Page, colorExpression: string): Promise<str
   }, colorExpression);
 }
 
+async function completePreScanChecklist(page: Page): Promise<void> {
+  await page.getByLabel(/stall number/i).fill("12-A");
+  await page.getByLabel(/meat inspection certificate proof/i).fill("CERT-77");
+  await page.getByLabel(/meat expiry date|expiry of meat/i).fill("2026-07-10");
+  await page.getByLabel(/storage correct/i).selectOption("yes");
+  await page.getByLabel(/light color correct/i).selectOption("yes");
+  await page.getByLabel(/area clean/i).selectOption("yes");
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -160,6 +169,7 @@ test.describe("Camera quality integration", () => {
     await mockCommonApi(page, { userId: "user-1" });
 
     await page.goto("/inspect");
+    await completePreScanChecklist(page);
     await uploadViaCameraApp(page);
 
     // The captured image should be displayed
@@ -179,6 +189,7 @@ test.describe("Camera quality integration", () => {
     await mockCommonApi(page, { userId: "user-1" });
 
     await page.goto("/inspect");
+    await completePreScanChecklist(page);
     await uploadViaCameraApp(page);
 
     // Quality warning banner must be visible
@@ -198,6 +209,7 @@ test.describe("Camera quality integration", () => {
     await mockCommonApi(page, { userId: "user-1" });
 
     await page.goto("/inspect");
+    await completePreScanChecklist(page);
     await uploadViaCameraApp(page);
 
     const banner = page.getByTestId("quality-banner");
@@ -217,6 +229,7 @@ test.describe("Camera quality integration", () => {
     await mockCommonApi(page, { userId: "user-1" });
 
     await page.goto("/inspect");
+    await completePreScanChecklist(page);
     await uploadViaCameraApp(page);
 
     await expect(page.getByTestId("quality-banner")).toBeVisible();
@@ -234,6 +247,7 @@ test.describe("Camera quality integration", () => {
     await mockCommonApi(page, { userId: "user-1" });
 
     await page.goto("/inspect");
+    await completePreScanChecklist(page);
     await uploadViaCameraApp(page);
 
     // Quality error banner must be visible
@@ -258,6 +272,7 @@ test.describe("Camera quality integration", () => {
     await mockCommonApi(page, { userId: "user-1" });
 
     await page.goto("/inspect");
+    await completePreScanChecklist(page);
     await uploadViaCameraApp(page);
 
     await expect(page.getByTestId("quality-banner")).toBeVisible();
@@ -276,6 +291,7 @@ test.describe("Camera quality integration", () => {
     await mockCommonApi(page, { userId: "user-1" });
 
     await page.goto("/inspect");
+    await completePreScanChecklist(page);
     await uploadViaCameraApp(page);
 
     // The Use Photo button must be disabled so onCapture is never called
@@ -293,6 +309,7 @@ test.describe("Camera quality integration", () => {
     await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
 
     await page.goto("/inspect");
+    await completePreScanChecklist(page);
 
     // Open the developer-only in-app stream and capture
     await page.getByRole("button", { name: /in-app cam/i }).click();

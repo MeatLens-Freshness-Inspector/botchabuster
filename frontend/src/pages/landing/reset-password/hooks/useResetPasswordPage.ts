@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { clearStoredRecoveryAccessToken } from "@/lib/authUrlHash";
 import {
   getResetPasswordErrorMessage,
   resolveRecoverySession,
@@ -43,6 +44,7 @@ export function useResetPasswordPage() {
 
     try {
       await updatePasswordWithRecoveryToken(accessToken, password);
+      clearStoredRecoveryAccessToken();
       toast.success("Password updated!");
       navigate("/login");
     } catch (error) {
@@ -53,6 +55,7 @@ export function useResetPasswordPage() {
   };
 
   const handleBackToSignIn = () => {
+    clearStoredRecoveryAccessToken();
     navigate("/login");
   };
 

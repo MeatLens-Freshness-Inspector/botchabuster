@@ -64,6 +64,7 @@ export function SafetyMockScene({ step, onAdvance }: SafetyMockSceneProps) {
           active={isAcknowledge}
           onAdvance={onAdvance}
           label="Tap here"
+          ariaLabel={step.hotspotLabel}
         >
           <div className="rounded-xl border border-primary/50 bg-[hsl(var(--primary)/0.12)] p-3">
             <p className="font-display text-[10px] font-semibold uppercase tracking-wider text-primary">

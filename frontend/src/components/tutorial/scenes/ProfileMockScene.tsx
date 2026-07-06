@@ -49,6 +49,7 @@ export function ProfileMockScene({ step, onAdvance }: ProfileMockSceneProps) {
           active={isAccountDetails}
           onAdvance={onAdvance}
           label="Tap here"
+          ariaLabel={step.hotspotLabel}
         >
           <div className="rounded-xl border border-border/60 bg-card/90 p-3">
             <div className="flex items-center justify-between">
@@ -76,6 +77,7 @@ export function ProfileMockScene({ step, onAdvance }: ProfileMockSceneProps) {
           active={isAccessCode}
           onAdvance={onAdvance}
           label="Tap here"
+          ariaLabel={step.hotspotLabel}
         >
           <div className="rounded-xl border border-border/60 bg-card/90 p-3">
             <div className="flex items-center justify-between">
@@ -100,6 +102,7 @@ export function ProfileMockScene({ step, onAdvance }: ProfileMockSceneProps) {
           active={isHelp}
           onAdvance={onAdvance}
           label="Tap here"
+          ariaLabel={step.hotspotLabel}
         >
           <div className="rounded-xl border border-border/60 bg-card/90 p-3">
             <div className="flex items-center justify-between">

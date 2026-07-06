@@ -6,10 +6,18 @@ interface MockHotspotProps {
   active: boolean;
   onAdvance: () => void;
   label?: string;
+  ariaLabel?: string;
   className?: string;
 }
 
-export function MockHotspot({ children, active, onAdvance, label, className }: MockHotspotProps) {
+export function MockHotspot({
+  children,
+  active,
+  onAdvance,
+  label,
+  ariaLabel,
+  className,
+}: MockHotspotProps) {
   if (!active) {
     return <div className={cn("pointer-events-none opacity-40", className)}>{children}</div>;
   }
@@ -30,6 +38,7 @@ export function MockHotspot({ children, active, onAdvance, label, className }: M
       <button
         type="button"
         className="w-full text-left focus:outline-none"
+        aria-label={ariaLabel}
         onClick={onAdvance}
       >
         {children}

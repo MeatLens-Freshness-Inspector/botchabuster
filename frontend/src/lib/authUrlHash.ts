@@ -33,15 +33,22 @@ export function scrubSensitiveAuthHashFromUrl(): void {
   stripHashFromCurrentUrl();
 }
 
-export function consumeStoredRecoveryAccessToken(): string | null {
+export function getStoredRecoveryAccessToken(): string | null {
   if (typeof window === "undefined") return null;
 
   try {
-    const token = window.sessionStorage.getItem(RECOVERY_ACCESS_TOKEN_STORAGE_KEY);
-    if (!token) return null;
-    window.sessionStorage.removeItem(RECOVERY_ACCESS_TOKEN_STORAGE_KEY);
-    return token;
+    return window.sessionStorage.getItem(RECOVERY_ACCESS_TOKEN_STORAGE_KEY);
   } catch {
     return null;
+  }
+}
+
+export function clearStoredRecoveryAccessToken(): void {
+  if (typeof window === "undefined") return;
+
+  try {
+    window.sessionStorage.removeItem(RECOVERY_ACCESS_TOKEN_STORAGE_KEY);
+  } catch {
+    // Best-effort cleanup only.
   }
 }

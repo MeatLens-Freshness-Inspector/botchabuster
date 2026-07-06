@@ -1,4 +1,4 @@
-import { consumeStoredRecoveryAccessToken } from "@/lib/authUrlHash";
+import { getStoredRecoveryAccessToken } from "@/lib/authUrlHash";
 import type { RecoverySessionState } from "../types";
 
 export function resolveRecoverySession(hash: string): RecoverySessionState {
@@ -6,7 +6,7 @@ export function resolveRecoverySession(hash: string): RecoverySessionState {
   const hashParams = new URLSearchParams(hashValue);
   const recoveryType = hashParams.get("type");
   const token = hashParams.get("access_token");
-  const tokenFromStorage = consumeStoredRecoveryAccessToken();
+  const tokenFromStorage = getStoredRecoveryAccessToken();
   const resolvedToken = tokenFromStorage ?? token;
 
   if (recoveryType === "recovery" && resolvedToken) {

@@ -61,7 +61,7 @@ export function HistoryMockScene({ step, onAdvance }: HistoryMockSceneProps) {
       <div className="border-b border-border/60 bg-card/90 px-3 py-2.5">
         <div className="flex items-center gap-2">
           {showDetailView && (
-            <MockHotspot active={isBack} onAdvance={onAdvance} label="Back">
+            <MockHotspot active={isBack} onAdvance={onAdvance} label="Back" ariaLabel={step.hotspotLabel}>
               <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border/60 bg-background/60">
                 <ArrowLeft className="h-3.5 w-3.5 text-foreground" />
               </div>
@@ -96,6 +96,7 @@ export function HistoryMockScene({ step, onAdvance }: HistoryMockSceneProps) {
                 active={isOpenRecord && isFirst}
                 onAdvance={onAdvance}
                 label={isFirst ? "Tap here" : undefined}
+                ariaLabel={step.hotspotLabel}
               >
                 <div className="rounded-xl border border-border/60 bg-card/90 p-2.5">
                   <div className="grid grid-cols-[auto_1fr_auto] gap-2">
@@ -170,7 +171,7 @@ export function HistoryMockScene({ step, onAdvance }: HistoryMockSceneProps) {
           </div>
 
           {/* Confidence + details hotspot */}
-          <MockHotspot active={isReviewDetails} onAdvance={onAdvance} label="Tap here">
+          <MockHotspot active={isReviewDetails} onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}>
             <div className="rounded-xl border border-border/60 bg-card/90 p-2.5">
               <p className="font-display text-[9px] uppercase tracking-wider text-muted-foreground">
                 Confidence &amp; Details

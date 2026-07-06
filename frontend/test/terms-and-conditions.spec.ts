@@ -26,7 +26,7 @@ test("signup requires accepting terms and conditions before account creation", a
   await page.goto("/signup");
   await page.getByLabel("Full Name").fill("Inspector One");
   await page.getByLabel("Email").fill("inspector.one@example.com");
-  await page.getByLabel("Password").fill("hunter22");
+  await page.getByLabel(/^password$/i).fill("hunter22");
   await page.getByLabel("Access Code").fill("INSP-001");
 
   await page.getByRole("button", { name: "Create Account" }).click();
@@ -70,7 +70,7 @@ test("signup requires selecting a report header organization before account crea
   await page.goto("/signup");
   await page.getByLabel("Full Name").fill("Inspector Two");
   await page.getByLabel("Email").fill("inspector.two@example.com");
-  await page.getByLabel("Password").fill("hunter22");
+  await page.getByLabel(/^password$/i).fill("hunter22");
   await page.getByLabel("Access Code").fill("INSP-002");
   await page.getByRole("checkbox", { name: /i agree to the meatlens terms and conditions/i }).click();
   await page.getByRole("checkbox", { name: /i have read the meatlens privacy policy/i }).click();
