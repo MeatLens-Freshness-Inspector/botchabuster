@@ -4,6 +4,7 @@ import { InspectAnalysisSection } from "./InspectAnalysisSection";
 import { InspectCaptureSection } from "./InspectCaptureSection";
 import { InspectHeroSection } from "./InspectHeroSection";
 import { InspectPreScanSection } from "./InspectPreScanSection";
+import { InspectScopeReminder } from "./InspectScopeReminder";
 
 const InspectPageView = () => {
   const inspectPage = useInspectPage();
@@ -19,6 +20,8 @@ const InspectPageView = () => {
           confidenceText={inspectPage.confidenceText}
           confidenceSummaryClass={inspectPage.confidenceSummaryClass}
         />
+
+        <InspectScopeReminder />
 
         <InspectPreScanSection
           form={inspectPage.preScanForm}

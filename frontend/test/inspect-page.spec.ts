@@ -261,3 +261,22 @@ test("protocol failure auto-classifies the capture as spoiled and skips analyze"
     classification: "spoiled",
   });
 });
+
+test("shows a pork-only scope reminder in inspect and links to the full reference", async ({
+  page,
+}) => {
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, { userId: "user-1" });
+
+  await page.goto("/inspect");
+
+  await expect(page.getByRole("heading", { name: /scope and delimitations/i })).toBeVisible();
+  await expect(page.getByText(/pork samples only/i)).toBeVisible();
+  await expect(page.getByText(/field screening support only/i)).toBeVisible();
+  await expect(page.getByText(/not a legal certification tool/i)).toBeVisible();
+  await expect(page.getByText(/final decision stays with the inspector/i)).toBeVisible();
+
+  await page.getByRole("link", { name: /view full scope and delimitations/i }).click();
+
+  await expect(page).toHaveURL(/\/profile\/help\/scope$/);
+});

@@ -9,7 +9,7 @@ export interface ScopeReferenceSection {
 
 export const inspectScopeReminder = {
   title: "Scope and Delimitations",
-  description: "Use MeatLens as pork-only field screening support only during inspection work.",
+  description: "Use MeatLens only for pork screening during active inspection work.",
   bullets: [
     "Pork samples only",
     "Field screening support only",
