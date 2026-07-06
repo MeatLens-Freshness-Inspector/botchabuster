@@ -26,6 +26,7 @@ import DesktopAdminDashboard from "./pages/DesktopAdminDashboard";
 import AdminDashboardWrapper from "./pages/AdminDashboardWrapper";
 import ProfilePage from "./pages/ProfilePage";
 import ProfileHelpPage from "./pages/ProfileHelpPage";
+import ProfileHelpScopePage from "./pages/ProfileHelpScopePage";
 import ProfileTutorialPage from "./pages/ProfileTutorialPage";
 import MessagesPage from "./pages/MessagesPage";
 import OnboardingPage from "./pages/OnboardingPage";
@@ -116,6 +117,7 @@ const App = () => {
               <Route path="/profile" element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
               <Route path="/profile/tutorial" element={<ProtectedRoute><AppLayout><ProfileTutorialPage /></AppLayout></ProtectedRoute>} />
               <Route path="/profile/help" element={<ProtectedRoute><AppLayout><ProfileHelpPage /></AppLayout></ProtectedRoute>} />
+              <Route path="/profile/help/scope" element={<ProtectedRoute><AppLayout><ProfileHelpScopePage /></AppLayout></ProtectedRoute>} />
 
               {/* Admin routes */}
               <Route path="/admin" element={<AdminRoute><AdminDashboardWrapper /></AdminRoute>} />

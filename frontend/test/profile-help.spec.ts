@@ -134,3 +134,20 @@ test("lets admins open the full tutorial replay route", async ({ page }) => {
   await page.goto("/profile/tutorial");
   await expect(page.getByRole("button", { name: /i understand the reminder/i })).toBeVisible();
 });
+
+test("renders the scope and delimitations reference page for signed-in inspectors", async ({ page }) => {
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, { userId: "user-1" });
+
+  await page.goto("/profile/help/scope");
+
+  await expect(page.getByRole("heading", { name: /scope and delimitations/i })).toBeVisible();
+  await expect(page.getByText(/pork inspection support only/i)).toBeVisible();
+  await expect(page.getByText(/field screening support only/i)).toBeVisible();
+  await expect(page.getByText(/not a lab diagnosis/i)).toBeVisible();
+  await expect(page.getByText(/not a legal certification tool/i)).toBeVisible();
+  await expect(page.getByText(/beef, poultry, fish/i)).toBeVisible();
+  await expect(
+    page.getByText(/final inspection judgment remains with the inspector/i),
+  ).toBeVisible();
+});
