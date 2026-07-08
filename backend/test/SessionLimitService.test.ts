@@ -54,6 +54,15 @@ test("hasSession returns true only for active tracked tokens", async () => {
   assert.equal(await svc.hasSession("token-new"), true);
 });
 
+test("registering the same token twice is idempotent", async () => {
+  const svc = makeService(2);
+  await svc.registerSession("user-1", "token-a", futureExpiry());
+  await svc.registerSession("user-1", "token-a", futureExpiry());
+
+  assert.equal(await svc.countActiveSessions("user-1"), 1);
+  assert.equal(await svc.hasSession("token-a"), true);
+});
+
 test("removeSession is a no-op for unknown tokens", async () => {
   const svc = makeService(2);
   // Should not throw

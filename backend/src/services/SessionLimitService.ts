@@ -36,10 +36,12 @@ export class SessionLimitService {
 
     if (this.useDb) {
       const { supabase } = await import("../integrations/supabase");
-      const { error } = await (supabase.from("user_sessions") as any).insert({
+      const { error } = await (supabase.from("user_sessions") as any).upsert({
         user_id: userId,
         session_token_hash: hash,
         expires_at: new Date(expiresAt * 1000).toISOString(),
+      }, {
+        onConflict: "session_token_hash",
       });
       if (error) throw new Error(`Failed to register session: ${error.message}`);
       return;
