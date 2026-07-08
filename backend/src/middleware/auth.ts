@@ -1,5 +1,9 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
+import { Config } from "../config";
+import { isOriginAllowed } from "../config/cors";
 import { authService } from "../services/AuthService";
+import { getAppSessionService } from "../services/AppSessionService";
+import { CsrfTokenService } from "../services/CsrfTokenService";
 import { profileService } from "../services/ProfileService";
 
 export interface RequestAuthContext {
@@ -12,6 +16,41 @@ export class RequestAuthError extends Error {
   constructor(public readonly status: number, message: string) {
     super(message);
   }
+}
+
+type AccessTokenSource = "bearer" | "cookie";
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
+let csrfTokenService: CsrfTokenService | null = null;
+
+function parseCookieHeader(cookieHeader: string): Record<string, string> {
+  return cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .reduce<Record<string, string>>((cookies, part) => {
+      const separatorIndex = part.indexOf("=");
+      if (separatorIndex <= 0) {
+        return cookies;
+      }
+
+      const name = part.slice(0, separatorIndex).trim();
+      const value = part.slice(separatorIndex + 1).trim();
+      if (name && value) {
+        cookies[name] = value;
+      }
+
+      return cookies;
+    }, {});
+}
+
+export function isSafeMethod(method: string | undefined): boolean {
+  return SAFE_METHODS.has((method ?? "GET").toUpperCase());
+}
+
+export function getSessionCookie(req: Request): string | null {
+  const cookieHeader = req.header("cookie") ?? "";
+  return parseCookieHeader(cookieHeader)[Config.getInstance().appSessionCookieName] ?? null;
 }
 
 function getBearerToken(req: Request): string {
@@ -28,6 +67,31 @@ function getBearerToken(req: Request): string {
   return accessToken;
 }
 
+export function getRequestAccessToken(req: Request): { accessToken: string; source: AccessTokenSource } {
+  const sessionCookie = getSessionCookie(req);
+  if (sessionCookie) {
+    return {
+      accessToken: sessionCookie,
+      source: "cookie",
+    };
+  }
+
+  return {
+    accessToken: getBearerToken(req),
+    source: "bearer",
+  };
+}
+
+export function getCsrfTokenService(): CsrfTokenService {
+  if (csrfTokenService) {
+    return csrfTokenService;
+  }
+
+  const config = Config.getInstance();
+  csrfTokenService = new CsrfTokenService(config.csrfTokenSecret, config.csrfTokenTtlSeconds);
+  return csrfTokenService;
+}
+
 function writeAuthError(res: Response, error: unknown): void {
   if (error instanceof RequestAuthError) {
     res.status(error.status).json({ error: error.message });
@@ -40,12 +104,16 @@ function writeAuthError(res: Response, error: unknown): void {
 
 async function resolveAndAttachAuthContext(req: Request): Promise<RequestAuthContext> {
   const authContext = await resolveRequestAuthContext(req);
+  enforceCookieCsrf(req, authContext);
+  const { accessToken, source } = getRequestAccessToken(req);
   req.auth = authContext;
+  req.authAccessToken = accessToken;
+  req.authAccessTokenSource = source;
   return authContext;
 }
 
 export async function resolveRequestAuthContext(req: Request): Promise<RequestAuthContext> {
-  const accessToken = getBearerToken(req);
+  const { accessToken } = getRequestAccessToken(req);
 
   let userId: string;
   let email: string | null;
@@ -60,6 +128,39 @@ export async function resolveRequestAuthContext(req: Request): Promise<RequestAu
 
   const isAdmin = await profileService.hasRole(userId, "admin");
   return { userId, email, isAdmin };
+}
+
+function enforceCookieCsrf(req: Request, authContext: RequestAuthContext): void {
+  if (isSafeMethod(req.method)) {
+    return;
+  }
+
+  const sessionCookie = getSessionCookie(req);
+  if (!sessionCookie) {
+    return;
+  }
+
+  if (!isOriginAllowed(req.header("origin"), Config.getInstance().allowedOrigins)) {
+    throw new RequestAuthError(403, "Origin not allowed");
+  }
+
+  const csrfToken = req.header("x-csrf-token")?.trim();
+  if (!csrfToken) {
+    throw new RequestAuthError(403, "CSRF token required");
+  }
+
+  const sessionId = getAppSessionService().getSessionId(sessionCookie);
+  if (!sessionId) {
+    throw new RequestAuthError(401, "Invalid or expired access token");
+  }
+
+  const isValid = getCsrfTokenService().verifyToken(csrfToken, {
+    sessionId,
+    userId: authContext.userId,
+  });
+  if (!isValid) {
+    throw new RequestAuthError(403, "Invalid CSRF token");
+  }
 }
 
 export function getRequestAuthContext(req: Request): RequestAuthContext {

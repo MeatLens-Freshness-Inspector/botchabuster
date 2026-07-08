@@ -11,6 +11,16 @@ export interface AppSession {
   token_type: "bearer";
   expires_in: number;
   expires_at: number;
+  authenticated_at: number;
+  offline_expires_at: number;
+}
+
+export interface AppSessionMetadata {
+  sessionId: string;
+  user: AppSessionUser;
+  authenticatedAt: number;
+  offlineExpiresAt: number;
+  expiresAt: number;
 }
 
 interface AppSessionPayload {
@@ -19,8 +29,13 @@ interface AppSessionPayload {
   email: string | null;
   type: "app-session";
   jti: string;
+  authenticatedAt: number;
   iat: number;
   exp: number;
+}
+
+interface CreateAppSessionOptions {
+  authenticatedAt?: number;
 }
 
 function encodeBase64Url(input: Buffer | string): string {
@@ -43,9 +58,13 @@ export class AppSessionService {
     }
   }
 
-  createSession(user: AppSessionUser): AppSession {
+  createSession(user: AppSessionUser, options: CreateAppSessionOptions = {}): AppSession {
     const issuedAtSeconds = Math.floor(this.nowMs() / 1000);
     const expiresAtSeconds = issuedAtSeconds + this.ttlSeconds;
+    const authenticatedAtSeconds = Number.isFinite(options.authenticatedAt)
+      ? Math.floor(options.authenticatedAt!)
+      : issuedAtSeconds;
+    const offlineExpiresAtSeconds = authenticatedAtSeconds + (24 * 60 * 60);
     const header = encodeBase64Url(JSON.stringify({ alg: "HS256", typ: "JWT" }));
     const payload = encodeBase64Url(JSON.stringify({
       iss: "meatlens-app",
@@ -53,6 +72,7 @@ export class AppSessionService {
       email: user.email,
       type: "app-session",
       jti: crypto.randomUUID(),
+      authenticatedAt: authenticatedAtSeconds,
       iat: issuedAtSeconds,
       exp: expiresAtSeconds,
     } satisfies AppSessionPayload));
@@ -64,6 +84,8 @@ export class AppSessionService {
       token_type: "bearer",
       expires_in: this.ttlSeconds,
       expires_at: expiresAtSeconds,
+      authenticated_at: authenticatedAtSeconds,
+      offline_expires_at: offlineExpiresAtSeconds,
     };
   }
 
@@ -87,6 +109,52 @@ export class AppSessionService {
   }
 
   async getUserFromAccessToken(accessToken: string): Promise<AppSessionUser> {
+    const parsedPayload = this.parseVerifiedPayload(accessToken);
+
+    return {
+      id: parsedPayload.sub,
+      email: parsedPayload.email ?? null,
+    };
+  }
+
+  getSession(accessToken: string): AppSessionMetadata {
+    const parsedPayload = this.parseVerifiedPayload(accessToken);
+    const authenticatedAt = parsedPayload.authenticatedAt ?? parsedPayload.iat;
+
+    return {
+      sessionId: parsedPayload.jti,
+      user: {
+        id: parsedPayload.sub,
+        email: parsedPayload.email ?? null,
+      },
+      authenticatedAt,
+      offlineExpiresAt: authenticatedAt + (24 * 60 * 60),
+      expiresAt: parsedPayload.exp,
+    };
+  }
+
+  looksLikeAppSessionToken(accessToken: string): boolean {
+    const parts = accessToken.trim().split(".");
+    if (parts.length !== 3) {
+      return false;
+    }
+
+    try {
+      const parsedPayload = JSON.parse(decodeBase64Url(parts[1])) as Partial<AppSessionPayload>;
+      return parsedPayload.iss === "meatlens-app" && parsedPayload.type === "app-session";
+    } catch {
+      return false;
+    }
+  }
+
+  private sign(input: string): string {
+    return crypto
+      .createHmac("sha256", this.secret)
+      .update(input)
+      .digest("base64url");
+  }
+
+  private parseVerifiedPayload(accessToken: string): AppSessionPayload {
     const trimmedToken = accessToken.trim();
     const parts = trimmedToken.split(".");
 
@@ -117,7 +185,8 @@ export class AppSessionService {
     if (
       parsedPayload.iss !== "meatlens-app" ||
       parsedPayload.type !== "app-session" ||
-      !parsedPayload.sub
+      !parsedPayload.sub ||
+      !parsedPayload.jti
     ) {
       throw new Error("Invalid or expired access token");
     }
@@ -127,31 +196,7 @@ export class AppSessionService {
       throw new Error("Invalid or expired access token");
     }
 
-    return {
-      id: parsedPayload.sub,
-      email: parsedPayload.email ?? null,
-    };
-  }
-
-  looksLikeAppSessionToken(accessToken: string): boolean {
-    const parts = accessToken.trim().split(".");
-    if (parts.length !== 3) {
-      return false;
-    }
-
-    try {
-      const parsedPayload = JSON.parse(decodeBase64Url(parts[1])) as Partial<AppSessionPayload>;
-      return parsedPayload.iss === "meatlens-app" && parsedPayload.type === "app-session";
-    } catch {
-      return false;
-    }
-  }
-
-  private sign(input: string): string {
-    return crypto
-      .createHmac("sha256", this.secret)
-      .update(input)
-      .digest("base64url");
+    return parsedPayload;
   }
 }
 

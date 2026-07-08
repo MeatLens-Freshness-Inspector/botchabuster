@@ -1,8 +1,10 @@
-import { clearCachedAuth, createAuthHeaders } from "@/lib/authCache";
+import { createAuthHeaders } from "@/lib/authCache";
+import { notifyApiAuthExpired } from "./apiRequest";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
-const AUTH_EXPIRED_EVENT = "meatlens:auth-expired";
+const API_BASE_URL =
+  ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
+  "http://localhost:3001/api";
 
 export type AuditLogEvent = {
   client_event_id: string;
@@ -37,9 +39,7 @@ export class AuditLogClient {
   }
 
   private notifyAuthExpired(): void {
-    if (typeof window === "undefined") return;
-    clearCachedAuth();
-    window.dispatchEvent(new CustomEvent(AUTH_EXPIRED_EVENT));
+    notifyApiAuthExpired();
   }
 
   async createBatch(events: AuditLogEvent[]): Promise<number> {

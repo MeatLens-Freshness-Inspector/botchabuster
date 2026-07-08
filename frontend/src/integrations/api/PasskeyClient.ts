@@ -1,7 +1,10 @@
 import { createAuthHeaders } from "@/lib/authCache";
+import type { AuthBootstrapPayload } from "./AuthClient";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
+const API_BASE_URL =
+  ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
+  "http://localhost:3001/api";
 
 async function readApiError(response: Response, fallback: string): Promise<string> {
   try {
@@ -88,19 +91,6 @@ export interface AuthenticationResponseJSON {
   };
 }
 
-export interface AuthUser {
-  id: string;
-  email: string | null;
-}
-
-export interface AuthSession {
-  access_token: string | null;
-  refresh_token: string | null;
-  token_type: string | null;
-  expires_in: number | null;
-  expires_at: number | null;
-}
-
 export interface RegisteredPasskey {
   credentialId: string;
   deviceLabel: string;
@@ -164,7 +154,7 @@ export class PasskeyClient {
   async verifyAuthentication(payload: {
     challengeId: string;
     credential: AuthenticationResponseJSON;
-  }): Promise<{ user: AuthUser; session: AuthSession | null }> {
+  }): Promise<AuthBootstrapPayload> {
     const res = await fetchWithTimeout(`${API_BASE_URL}/auth/passkeys/authenticate/verify`, {
       method: "POST",
       headers: this.createHeaders({ "Content-Type": "application/json" }),

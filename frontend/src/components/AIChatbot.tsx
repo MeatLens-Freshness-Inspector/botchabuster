@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getCachedAccessToken } from "@/lib/authCache";
+import { useAuth } from "@/contexts/AuthContext";
+import { getApiCsrfToken } from "@/integrations/api/apiRequest";
 import { MessageCircle, X, Send, Loader2, Bot, User } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -16,15 +17,16 @@ export function getChatRequestHeaders(): Record<string, string> {
     "Content-Type": "application/json",
   };
 
-  const accessToken = getCachedAccessToken();
-  if (accessToken) {
-    headers.Authorization = `Bearer ${accessToken}`;
+  const csrfToken = getApiCsrfToken();
+  if (csrfToken) {
+    headers["X-CSRF-Token"] = csrfToken;
   }
 
   return headers;
 }
 
 export function AIChatbot() {
+  const { isOnlineAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
     { role: "assistant", content: "Hi! I'm MeatLens AI. Ask me about meat freshness, food safety, or how to use the app." },
@@ -52,6 +54,7 @@ export function AIChatbot() {
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: getChatRequestHeaders(),
+        credentials: "include",
         body: JSON.stringify({ messages: allMessages.map((m) => ({ role: m.role, content: m.content })) }),
       });
 
@@ -106,6 +109,10 @@ export function AIChatbot() {
       setLoading(false);
     }
   };
+
+  if (!isOnlineAuthenticated) {
+    return null;
+  }
 
   if (!open) {
     return (

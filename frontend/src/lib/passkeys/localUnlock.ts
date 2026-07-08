@@ -2,6 +2,10 @@ import type {
   AuthenticationOptionsJSON,
   AuthenticationResponseJSON,
 } from "@/integrations/api/PasskeyClient";
+import {
+  getOfflineAuthEnvelopeSnapshot,
+  updateOfflineAuthEnvelope,
+} from "@/lib/offlineAuthEnvelope";
 
 export const LOCAL_PASSKEY_STORAGE_KEY = "meatlens-local-passkey";
 export const OFFLINE_UNLOCK_REQUIRED_STORAGE_KEY = "meatlens-auth-offline-lock-required";
@@ -27,6 +31,10 @@ interface VerifyLocalPasskeyAssertionInput {
 interface VerifyLocalPasskeyAssertionResult {
   verified: boolean;
   newCounter: number;
+}
+
+function clonePasskey(passkey: StoredLocalPasskey): StoredLocalPasskey {
+  return JSON.parse(JSON.stringify(passkey)) as StoredLocalPasskey;
 }
 
 function encodeBase64Url(input: ArrayBuffer | Uint8Array): string {
@@ -82,6 +90,11 @@ function getWebCrypto(): Crypto {
 }
 
 export function getStoredLocalPasskey(): StoredLocalPasskey | null {
+  const snapshot = getOfflineAuthEnvelopeSnapshot();
+  return snapshot?.localPasskey ? clonePasskey(snapshot.localPasskey) : null;
+}
+
+export function getLegacyStoredLocalPasskey(): StoredLocalPasskey | null {
   if (typeof window === "undefined") return null;
 
   try {
@@ -114,12 +127,41 @@ export function getStoredLocalPasskey(): StoredLocalPasskey | null {
   }
 }
 
-export function storeLocalPasskey(passkey: StoredLocalPasskey): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(LOCAL_PASSKEY_STORAGE_KEY, JSON.stringify(passkey));
+export async function storeLocalPasskey(passkey: StoredLocalPasskey): Promise<void> {
+  await updateOfflineAuthEnvelope((currentEnvelope) => {
+    if (!currentEnvelope) {
+      return currentEnvelope;
+    }
+
+    return {
+      ...currentEnvelope,
+      localPasskey: clonePasskey(passkey),
+    };
+  });
+
+  clearLegacyStoredLocalPasskey();
 }
 
-export function clearStoredLocalPasskey(credentialId?: string): void {
+export async function clearStoredLocalPasskey(credentialId?: string): Promise<void> {
+  await updateOfflineAuthEnvelope((currentEnvelope) => {
+    if (!currentEnvelope?.localPasskey) {
+      return currentEnvelope;
+    }
+
+    if (credentialId && currentEnvelope.localPasskey.credentialId !== credentialId) {
+      return currentEnvelope;
+    }
+
+    return {
+      ...currentEnvelope,
+      localPasskey: null,
+    };
+  });
+
+  clearLegacyStoredLocalPasskey(credentialId);
+}
+
+export function clearLegacyStoredLocalPasskey(credentialId?: string): void {
   if (typeof window === "undefined") return;
 
   if (!credentialId) {
@@ -127,25 +169,38 @@ export function clearStoredLocalPasskey(credentialId?: string): void {
     return;
   }
 
-  const storedPasskey = getStoredLocalPasskey();
+  const storedPasskey = getLegacyStoredLocalPasskey();
   if (storedPasskey?.credentialId === credentialId) {
     window.localStorage.removeItem(LOCAL_PASSKEY_STORAGE_KEY);
   }
 }
 
 export function isOfflineUnlockRequired(): boolean {
+  return Boolean(getOfflineAuthEnvelopeSnapshot()?.offlineUnlockRequired);
+}
+
+export function setOfflineUnlockRequired(required: boolean): void {
+  void updateOfflineAuthEnvelope((currentEnvelope) => {
+    if (!currentEnvelope) {
+      return currentEnvelope;
+    }
+
+    return {
+      ...currentEnvelope,
+      offlineUnlockRequired: required,
+    };
+  });
+
+  clearLegacyOfflineUnlockRequired();
+}
+
+export function getLegacyOfflineUnlockRequired(): boolean {
   if (typeof window === "undefined") return false;
   return window.localStorage.getItem(OFFLINE_UNLOCK_REQUIRED_STORAGE_KEY) === "true";
 }
 
-export function setOfflineUnlockRequired(required: boolean): void {
+export function clearLegacyOfflineUnlockRequired(): void {
   if (typeof window === "undefined") return;
-
-  if (required) {
-    window.localStorage.setItem(OFFLINE_UNLOCK_REQUIRED_STORAGE_KEY, "true");
-    return;
-  }
-
   window.localStorage.removeItem(OFFLINE_UNLOCK_REQUIRED_STORAGE_KEY);
 }
 

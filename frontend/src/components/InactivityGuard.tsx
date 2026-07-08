@@ -1,16 +1,15 @@
 /**
  * InactivityGuard
  *
- * Signs the user out automatically after 15 minutes of no interaction.
+ * Locks the app automatically after 15 minutes of no interaction.
  * Must be mounted inside both <BrowserRouter> and <AuthProvider>.
  *
  * Activity events that reset the timer:
  *   mousemove, mousedown, keydown, touchstart, scroll, click
  *
  * Offline behaviour:
- *   The sign-out is purely local (clears in-memory state; localStorage is
- *   preserved when offline so the user can re-authenticate via cached
- *   credentials). The backend sign-out call is attempted but never blocks.
+ *   The lock is purely local. Durable offline unlock artifacts remain so the
+ *   user can re-authenticate locally within the approved 24-hour window.
  */
 
 import { useEffect, useRef, useCallback } from "react";
@@ -30,7 +29,7 @@ const ACTIVITY_EVENTS = [
 ] as const;
 
 function useInactivitySignOut() {
-  const { user, signOut } = useAuth();
+  const { user, lock } = useAuth();
   const navigate = useNavigate();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -44,11 +43,11 @@ function useInactivitySignOut() {
   const resetTimer = useCallback(() => {
     clearTimer();
     timerRef.current = setTimeout(async () => {
-      await signOut();
+      await lock();
       navigate("/login");
-      toast.info("You were signed out due to inactivity.", { duration: 6000 });
+      toast.info("Your session was locked due to inactivity.", { duration: 6000 });
     }, TIMEOUT_MS);
-  }, [clearTimer, signOut, navigate]);
+  }, [clearTimer, lock, navigate]);
 
   useEffect(() => {
     if (!user) {

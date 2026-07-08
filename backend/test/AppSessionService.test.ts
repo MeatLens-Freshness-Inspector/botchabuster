@@ -14,6 +14,8 @@ test("creates a MeatLens app session and resolves the user from its access token
   assert.equal(session.refresh_token, null);
   assert.equal(session.token_type, "bearer");
   assert.equal(session.expires_in, 3600);
+  assert.equal(session.authenticated_at, Math.floor(issuedAt / 1000));
+  assert.equal(session.offline_expires_at, Math.floor(issuedAt / 1000) + 24 * 60 * 60);
   assert.ok(session.access_token);
 
   const resolvedUser = await sessionService.getUserFromAccessToken(session.access_token!);
@@ -21,6 +23,25 @@ test("creates a MeatLens app session and resolves the user from its access token
     id: "user-1",
     email: "inspector@example.com",
   });
+});
+
+test("preserves an existing authenticatedAt when issuing a refreshed app session", () => {
+  const originalAuthenticatedAt = Date.UTC(2026, 5, 20, 9, 30, 0);
+  const laterIssuedAt = Date.UTC(2026, 5, 20, 12, 0, 0);
+  const sessionService = new AppSessionService("top-secret", 3600, () => laterIssuedAt);
+
+  const session = sessionService.createSession(
+    {
+      id: "user-5",
+      email: "offline@example.com",
+    },
+    {
+      authenticatedAt: Math.floor(originalAuthenticatedAt / 1000),
+    },
+  );
+
+  assert.equal(session.authenticated_at, Math.floor(originalAuthenticatedAt / 1000));
+  assert.equal(session.offline_expires_at, Math.floor(originalAuthenticatedAt / 1000) + 24 * 60 * 60);
 });
 
 test("rejects expired or tampered app sessions", async () => {

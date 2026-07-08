@@ -1,5 +1,6 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
 import { createAuthHeaders } from "@/lib/authCache";
+import type { Profile } from "./ProfileClient";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
 const API_BASE_URL =
@@ -19,6 +20,15 @@ export interface AuthSession {
   expires_at: number | null;
 }
 
+export interface AuthBootstrapPayload {
+  user: AuthUser;
+  profile: Profile;
+  isAdmin: boolean;
+  csrfToken: string;
+  authenticatedAt: string;
+  offlineExpiresAt: string;
+}
+
 export class AuthClient {
   private static instance: AuthClient;
 
@@ -35,7 +45,7 @@ export class AuthClient {
     return createAuthHeaders(initialHeaders);
   }
 
-  async signIn(email: string, password: string): Promise<{ user: AuthUser; session: AuthSession | null }> {
+  async signIn(email: string, password: string): Promise<AuthBootstrapPayload> {
     const res = await fetchWithTimeout(`${API_BASE_URL}/auth/sign-in`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -45,6 +55,20 @@ export class AuthClient {
     if (!res.ok) {
       const data = await res.json().catch(() => ({ error: "Sign in failed" }));
       throw new Error(data.error || "Sign in failed");
+    }
+
+    return res.json();
+  }
+
+  async getSession(): Promise<AuthBootstrapPayload> {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/session`, {
+      method: "GET",
+      headers: this.createHeaders(),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({ error: "Authentication required" }));
+      throw new Error(data.error || "Authentication required");
     }
 
     return res.json();
@@ -72,10 +96,15 @@ export class AuthClient {
     return res.json();
   }
 
-  async signOut(): Promise<void> {
+  async signOut(csrfToken?: string | null): Promise<void> {
+    const headers = this.createHeaders();
+    if (csrfToken?.trim()) {
+      headers.set("X-CSRF-Token", csrfToken.trim());
+    }
+
     await fetchWithTimeout(`${API_BASE_URL}/auth/sign-out`, {
       method: "POST",
-      headers: this.createHeaders(),
+      headers,
     });
   }
 

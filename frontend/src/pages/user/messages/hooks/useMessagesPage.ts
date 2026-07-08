@@ -18,7 +18,7 @@ type LoadOptions = {
 };
 
 export function useMessagesPage() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isOnlineAuthenticated } = useAuth();
   const isDesktop = useIsDesktop();
   const [contacts, setContacts] = useState<UserChatContact[]>([]);
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null);
@@ -78,6 +78,12 @@ export function useMessagesPage() {
   const showThreadPanel = isDesktop || mobilePanel === "thread";
 
   const loadMessages = useCallback(async (counterpartyId: string, options?: LoadOptions) => {
+    if (!isOnlineAuthenticated) {
+      setMessages([]);
+      setIsLoadingMessages(false);
+      return;
+    }
+
     if (!options?.silent) {
       setIsLoadingMessages(true);
     }
@@ -95,9 +101,15 @@ export function useMessagesPage() {
         setIsLoadingMessages(false);
       }
     }
-  }, []);
+  }, [isOnlineAuthenticated]);
 
   const loadContacts = useCallback(async (options?: LoadOptions) => {
+    if (!isOnlineAuthenticated) {
+      setContacts([]);
+      setIsLoadingContacts(false);
+      return;
+    }
+
     if (!options?.silent) {
       setIsLoadingContacts(true);
     }
@@ -115,11 +127,19 @@ export function useMessagesPage() {
         setIsLoadingContacts(false);
       }
     }
-  }, []);
+  }, [isOnlineAuthenticated]);
 
   useEffect(() => {
+    if (!isOnlineAuthenticated) {
+      setContacts([]);
+      setMessages([]);
+      setIsLoadingContacts(false);
+      setIsLoadingMessages(false);
+      return;
+    }
+
     void loadContacts();
-  }, [loadContacts]);
+  }, [isOnlineAuthenticated, loadContacts]);
 
   useEffect(() => {
     setSelectedContactId((currentId) =>
@@ -128,16 +148,20 @@ export function useMessagesPage() {
   }, [contacts, isDesktop]);
 
   useEffect(() => {
+    if (!isOnlineAuthenticated) {
+      return;
+    }
+
     if (!selectedContactId) {
       setMessages([]);
       return;
     }
 
     void loadMessages(selectedContactId);
-  }, [loadMessages, selectedContactId]);
+  }, [isOnlineAuthenticated, loadMessages, selectedContactId]);
 
   useEffect(() => {
-    if (!selectedContactId) return;
+    if (!isOnlineAuthenticated || !selectedContactId) return;
 
     const intervalId = window.setInterval(() => {
       void loadContacts({ silent: true });
@@ -147,7 +171,7 @@ export function useMessagesPage() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [loadContacts, loadMessages, selectedContactId]);
+  }, [isOnlineAuthenticated, loadContacts, loadMessages, selectedContactId]);
 
   useEffect(() => {
     if (isDesktop) return;
@@ -162,10 +186,20 @@ export function useMessagesPage() {
   }, [messages]);
 
   const handleRefreshContacts = useCallback(async () => {
+    if (!isOnlineAuthenticated) {
+      toast.error("Messages require an active online session.");
+      return;
+    }
+
     await loadContacts();
-  }, [loadContacts]);
+  }, [isOnlineAuthenticated, loadContacts]);
 
   const handleSendMessage = useCallback(async () => {
+    if (!isOnlineAuthenticated) {
+      toast.error("Reconnect and sign in online before sending messages.");
+      return;
+    }
+
     const content = draftMessage.trim();
     if (!selectedContactId || !content || isSendingMessage) return;
 
@@ -185,7 +219,7 @@ export function useMessagesPage() {
     } finally {
       setIsSendingMessage(false);
     }
-  }, [draftMessage, isSendingMessage, loadContacts, loadMessages, selectedContactId]);
+  }, [draftMessage, isOnlineAuthenticated, isSendingMessage, loadContacts, loadMessages, selectedContactId]);
 
   const handleSelectContact = useCallback(
     (contactId: string) => {
@@ -200,6 +234,7 @@ export function useMessagesPage() {
   return {
     currentUserId: user?.id ?? null,
     isAdmin,
+    isOnlineAuthenticated,
     isDesktop,
     contacts,
     filteredContacts,

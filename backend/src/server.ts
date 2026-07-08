@@ -2,8 +2,9 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import type { Server } from "http";
+import type { NextFunction, Request, Response } from "express";
 import { Config } from "./config";
-import { createCorsOptions } from "./config/cors";
+import { createCorsOptions, isOriginAllowed } from "./config/cors";
 import { globalErrorHandler } from "./middleware/errorHandler";
 import { applySecurityHeaders } from "./middleware/securityHeaders";
 import analysisRoutes from "./routes/analysis";
@@ -51,6 +52,19 @@ function installFatalHandlers(): void {
 
 installFatalHandlers();
 
+function isSafeMethod(method: string): boolean {
+  return method === "GET" || method === "HEAD" || method === "OPTIONS";
+}
+
+function rejectDisallowedOrigins(req: Request, res: Response, next: NextFunction): void {
+  if (isSafeMethod(req.method) || isOriginAllowed(req.header("origin"), config.allowedOrigins)) {
+    next();
+    return;
+  }
+
+  res.status(403).json({ error: "Origin not allowed" });
+}
+
 // Ensure upload directory exists
 if (!fs.existsSync(config.uploadDir)) {
   fs.mkdirSync(config.uploadDir, { recursive: true });
@@ -58,6 +72,7 @@ if (!fs.existsSync(config.uploadDir)) {
 
 // Middleware
 app.use(applySecurityHeaders);
+app.use(rejectDisallowedOrigins);
 app.use(cors(createCorsOptions(config.allowedOrigins)));
 app.use(express.json());
 

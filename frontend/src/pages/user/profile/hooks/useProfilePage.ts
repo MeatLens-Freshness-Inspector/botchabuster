@@ -31,6 +31,7 @@ export function useProfilePage() {
     profile,
     profileStatus,
     isAdmin,
+    isOnlineAuthenticated,
     updateEmail,
     updatePassword,
     signOut,
@@ -62,6 +63,11 @@ export function useProfilePage() {
   const isLoading = profileStatus === "loading" || (Boolean(user) && !profile);
 
   const loadPasskeys = useCallback(async () => {
+    if (!isOnlineAuthenticated) {
+      setPasskeys([]);
+      return;
+    }
+
     setIsLoadingPasskeys(true);
 
     try {
@@ -73,7 +79,7 @@ export function useProfilePage() {
     } finally {
       setIsLoadingPasskeys(false);
     }
-  }, []);
+  }, [isOnlineAuthenticated]);
 
   useEffect(() => {
     setEmail(user?.email ?? "");
@@ -107,8 +113,12 @@ export function useProfilePage() {
 
   useEffect(() => {
     if (!user) return;
+    if (!isOnlineAuthenticated) {
+      setPasskeys([]);
+      return;
+    }
     void loadPasskeys();
-  }, [loadPasskeys, user]);
+  }, [isOnlineAuthenticated, loadPasskeys, user]);
 
   const setDialogOpen = useCallback((key: ProfileDialogKey, open: boolean) => {
     setDialogs((current) => ({
@@ -264,6 +274,11 @@ export function useProfilePage() {
   }, [setProfileState, user]);
 
   const handleRegisterPasskey = useCallback(async () => {
+    if (!isOnlineAuthenticated) {
+      toast.error("Reconnect and sign in online before enrolling a passkey.");
+      return;
+    }
+
     setIsRegisteringPasskey(true);
     try {
       const { challengeId, options } = await passkeyClient.getRegistrationOptions();
@@ -278,7 +293,7 @@ export function useProfilePage() {
         credential.response.publicKey &&
         typeof credential.response.publicKeyAlgorithm === "number"
       ) {
-        storeLocalPasskey({
+        await storeLocalPasskey({
           credentialId: createdPasskey.credentialId,
           publicKey: credential.response.publicKey,
           publicKeyAlgorithm: credential.response.publicKeyAlgorithm,
@@ -305,13 +320,18 @@ export function useProfilePage() {
     } finally {
       setIsRegisteringPasskey(false);
     }
-  }, [isAdmin]);
+  }, [isAdmin, isOnlineAuthenticated]);
 
   const handleRemovePasskey = useCallback(async (credentialId: string) => {
+    if (!isOnlineAuthenticated) {
+      toast.error("Reconnect and sign in online before removing a passkey.");
+      return;
+    }
+
     setRemovingCredentialId(credentialId);
     try {
       await passkeyClient.deletePasskey(credentialId);
-      clearStoredLocalPasskey(credentialId);
+      await clearStoredLocalPasskey(credentialId);
       setPasskeys((currentPasskeys) =>
         currentPasskeys.filter((entry) => entry.credentialId !== credentialId),
       );
@@ -322,7 +342,7 @@ export function useProfilePage() {
     } finally {
       setRemovingCredentialId(null);
     }
-  }, []);
+  }, [isOnlineAuthenticated]);
 
   return {
     user,

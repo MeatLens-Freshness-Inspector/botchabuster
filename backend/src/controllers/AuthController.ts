@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import type { AuthenticationResponseJSON, RegistrationResponseJSON } from "@simplewebauthn/server";
+import { Config } from "../config";
+import { getRequestAccessToken, getRequestAuthContext, getSessionCookie, getCsrfTokenService } from "../middleware/auth";
 import { authService } from "../services/AuthService";
+import { getAppSessionService, type AppSession } from "../services/AppSessionService";
 import { profileService } from "../services/ProfileService";
 import { auditLogService, type AuditLogWriteInput } from "../services/AuditLogService";
 import { passkeyService } from "../services/PasskeyService";
@@ -8,24 +11,21 @@ import { getSessionLimitService } from "../services/SessionLimitService";
 import { isReportOrganization } from "../types/reportOrganization";
 
 export class AuthController {
+  private readonly config = Config.getInstance();
+
   private resolveOrigin(req: Request): string {
     return req.header("origin") || process.env.WEBAUTHN_ORIGIN || "http://localhost:8080";
   }
 
   private async resolveAuthenticatedUser(req: Request): Promise<{ user: { id: string; email: string | null }; isAdmin: boolean }> {
-    const authorizationHeader = req.header("authorization");
-    if (!authorizationHeader?.startsWith("Bearer ")) {
-      throw new Error("Authentication required");
-    }
-
-    const accessToken = authorizationHeader.slice("Bearer ".length).trim();
-    if (!accessToken) {
-      throw new Error("Authentication required");
-    }
-
-    const user = await authService.getUserByAccessToken(accessToken);
-    const isAdmin = await profileService.hasRole(user.id, "admin");
-    return { user, isAdmin };
+    const authContext = getRequestAuthContext(req);
+    return {
+      user: {
+        id: authContext.userId,
+        email: authContext.email,
+      },
+      isAdmin: authContext.isAdmin,
+    };
   }
 
   private async writeAuditLogSafely(input: AuditLogWriteInput): Promise<void> {
@@ -34,6 +34,76 @@ export class AuthController {
     } catch (error) {
       console.error("Audit log write error:", error);
     }
+  }
+
+  private createSessionCookieOptions(maxAgeMs: number) {
+    return {
+      httpOnly: true,
+      secure: this.config.appSessionCookieSecure,
+      sameSite: "none" as const,
+      path: "/",
+      maxAge: maxAgeMs,
+    };
+  }
+
+  private async loadProfileOrThrow(userId: string) {
+    const profile = await profileService.getProfile(userId);
+    if (!profile) {
+      throw new Error("Signed-in user profile is missing");
+    }
+
+    return profile;
+  }
+
+  private toIsoString(unixSeconds: number): string {
+    return new Date(unixSeconds * 1000).toISOString();
+  }
+
+  private async buildBootstrapPayload(input: {
+    user: { id: string; email: string | null };
+    isAdmin: boolean;
+    accessToken: string;
+  }) {
+    const session = getAppSessionService().getSession(input.accessToken);
+    const profile = await this.loadProfileOrThrow(input.user.id);
+    const csrfToken = getCsrfTokenService().issueToken({
+      sessionId: session.sessionId,
+      userId: input.user.id,
+    });
+
+    return {
+      user: input.user,
+      profile,
+      isAdmin: input.isAdmin,
+      csrfToken,
+      authenticatedAt: this.toIsoString(session.authenticatedAt),
+      offlineExpiresAt: this.toIsoString(session.offlineExpiresAt),
+    };
+  }
+
+  private async issueSessionResponse(res: Response, input: {
+    user: { id: string; email: string | null };
+    isAdmin: boolean;
+    session: AppSession;
+  }): Promise<void> {
+    res.cookie(
+      this.config.appSessionCookieName,
+      input.session.access_token,
+      this.createSessionCookieOptions(input.session.expires_in * 1000),
+    );
+
+    res.json(await this.buildBootstrapPayload({
+      user: input.user,
+      isAdmin: input.isAdmin,
+      accessToken: input.session.access_token,
+    }));
+  }
+
+  private clearSessionCookie(res: Response): void {
+    res.cookie(this.config.appSessionCookieName, "", {
+      ...this.createSessionCookieOptions(0),
+      expires: new Date(0),
+    });
   }
 
   async signIn(req: Request, res: Response): Promise<void> {
@@ -47,6 +117,7 @@ export class AuthController {
 
       const result = await authService.signIn({ email, password });
       const isAdmin = await profileService.hasRole(result.user.id, "admin");
+      const appSession = authService.createAppSession(result.user);
 
       const sessionLimit = getSessionLimitService();
       await sessionLimit.pruneExpiredSessions(result.user.id);
@@ -57,13 +128,11 @@ export class AuthController {
         return;
       }
 
-      if (result.session?.access_token && result.session.expires_at) {
-        await sessionLimit.registerSession(
-          result.user.id,
-          result.session.access_token,
-          result.session.expires_at,
-        );
-      }
+      await sessionLimit.registerSession(
+        result.user.id,
+        appSession.access_token,
+        appSession.expires_at,
+      );
 
       await this.writeAuditLogSafely({
         payload: {
@@ -83,7 +152,11 @@ export class AuthController {
         },
       });
 
-      res.json(result);
+      await this.issueSessionResponse(res, {
+        user: result.user,
+        isAdmin,
+        session: appSession,
+      });
     } catch (error) {
       console.error("Sign in error:", error);
       res.status(401).json({ error: error instanceof Error ? error.message : "Sign in failed" });
@@ -138,22 +211,34 @@ export class AuthController {
     }
   }
 
+  async getSession(req: Request, res: Response): Promise<void> {
+    try {
+      const authContext = getRequestAuthContext(req);
+      const sessionCookie = getSessionCookie(req);
+
+      if (!sessionCookie) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+
+      res.json(await this.buildBootstrapPayload({
+        user: {
+          id: authContext.userId,
+          email: authContext.email,
+        },
+        isAdmin: authContext.isAdmin,
+        accessToken: sessionCookie,
+      }));
+    } catch (error) {
+      console.error("Get session error:", error);
+      res.status(401).json({ error: error instanceof Error ? error.message : "Authentication required" });
+    }
+  }
+
   async signOut(req: Request, res: Response): Promise<void> {
     try {
-      const authorizationHeader = req.header("authorization");
-      if (!authorizationHeader?.startsWith("Bearer ")) {
-        res.status(401).json({ error: "Authentication required" });
-        return;
-      }
-
-      const accessToken = authorizationHeader.slice("Bearer ".length).trim();
-      if (!accessToken) {
-        res.status(401).json({ error: "Authentication required" });
-        return;
-      }
-
-      const user = await authService.getUserByAccessToken(accessToken);
-      const isAdmin = await profileService.hasRole(user.id, "admin");
+      const authContext = getRequestAuthContext(req);
+      const { accessToken } = getRequestAccessToken(req);
 
       await authService.signOut();
       await getSessionLimitService().removeSession(accessToken);
@@ -163,8 +248,8 @@ export class AuthController {
           event_type: "auth.sign_out",
           event_time: new Date().toISOString(),
           actor: {
-            id: user.id,
-            role: isAdmin ? "admin" : "inspector",
+            id: authContext.userId,
+            role: authContext.isAdmin ? "admin" : "inspector",
           },
           source: {
             ip: req.ip || null,
@@ -173,6 +258,7 @@ export class AuthController {
         },
       });
 
+      this.clearSessionCookie(res);
       res.status(204).send();
     } catch (error) {
       console.error("Sign out error:", error);
@@ -381,7 +467,11 @@ export class AuthController {
         },
       });
 
-      res.json(result);
+      await this.issueSessionResponse(res, {
+        user: result.user,
+        isAdmin,
+        session: result.session,
+      });
     } catch (error) {
       console.error("Verify passkey sign-in error:", error);
       res.status(401).json({ error: error instanceof Error ? error.message : "Failed to verify passkey sign-in" });

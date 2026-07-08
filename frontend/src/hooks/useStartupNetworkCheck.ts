@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
+const API_BASE_URL =
+  ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
+  "http://localhost:3001/api";
 const ENABLE_BACKEND_STARTUP_CHECK = import.meta.env.VITE_ENABLE_BACKEND_STARTUP_CHECK === "true";
 
 export type StartupNetworkStatus = "checking" | "ready" | "offline" | "server_unreachable";

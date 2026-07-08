@@ -17,6 +17,10 @@ export class Config {
   readonly developerOptionsTokenSecret: string;
   readonly developerOptionsTokenTtlSeconds: number;
   readonly allowedOrigins: string[];
+  readonly appSessionCookieName: string;
+  readonly appSessionCookieSecure: boolean;
+  readonly csrfTokenSecret: string;
+  readonly csrfTokenTtlSeconds: number;
 
   private constructor() {
     this.port = parseInt(process.env.PORT || "3001", 10);
@@ -33,6 +37,16 @@ export class Config {
       parseInt(process.env.DEVELOPER_OPTIONS_TOKEN_TTL_SECONDS || "21600", 10),
     );
     this.allowedOrigins = getAllowedOrigins(process.env);
+    this.appSessionCookieName = process.env.APP_SESSION_COOKIE_NAME?.trim() || "meatlens_session";
+    this.appSessionCookieSecure = parseBooleanEnv(
+      process.env.APP_SESSION_COOKIE_SECURE,
+      process.env.NODE_ENV === "production",
+    );
+    this.csrfTokenSecret = process.env.CSRF_TOKEN_SECRET?.trim() || process.env.APP_SESSION_SECRET?.trim() || "";
+    this.csrfTokenTtlSeconds = Math.max(
+      60,
+      parseInt(process.env.CSRF_TOKEN_TTL_SECONDS || "900", 10),
+    );
   }
 
   static getInstance(): Config {
@@ -41,4 +55,21 @@ export class Config {
     }
     return Config.instance;
   }
+}
+
+function parseBooleanEnv(value: string | undefined, fallback: boolean): boolean {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized) {
+    return fallback;
+  }
+
+  if (normalized === "true") {
+    return true;
+  }
+
+  if (normalized === "false") {
+    return false;
+  }
+
+  return fallback;
 }

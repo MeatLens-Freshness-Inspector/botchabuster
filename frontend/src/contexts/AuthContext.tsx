@@ -1,66 +1,73 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import { authClient, type AuthSession, type AuthUser } from "@/integrations/api/AuthClient";
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  authClient,
+  type AuthBootstrapPayload,
+  type AuthSession,
+  type AuthUser,
+} from "@/integrations/api/AuthClient";
 import { passkeyClient } from "@/integrations/api/PasskeyClient";
 import { profileClient, type Profile } from "@/integrations/api/ProfileClient";
+import {
+  AUTH_EXPIRED_EVENT,
+  clearApiCsrfToken,
+  getApiCsrfToken,
+  setApiCsrfToken,
+} from "@/integrations/api/apiRequest";
 import {
   clearCachedAdmin,
   clearCachedAuth,
   clearCachedProfile,
-  getCachedAdmin,
-  getCachedAuthSession,
-  getCachedAuthUser,
-  getCachedProfile,
-  setCachedAdmin,
-  setCachedAuth,
-  setCachedProfile,
 } from "@/lib/authCache";
 import {
-  clearOfflineCredential,
-  storeOfflineCredential,
-  verifyOfflineCredential,
+  clearLegacyOfflineCredential,
+  createPasswordVerifier,
+  readLegacyOfflineCredential,
+  verifyPasswordVerifier,
 } from "@/lib/offlineCredentials";
 import { queueAuditLog } from "@/lib/offlineAuditQueue";
+import {
+  clearOfflineAuthEnvelope,
+  isOfflineAuthExpired,
+  loadOfflineAuthEnvelope,
+  saveOfflineAuthEnvelope,
+  updateOfflineAuthEnvelope,
+  type OfflineAuthEnvelope,
+} from "@/lib/offlineAuthEnvelope";
 import { startPasskeyAuthentication } from "@/lib/passkeys/browser";
 import {
+  clearLegacyOfflineUnlockRequired,
+  clearLegacyStoredLocalPasskey,
   createLocalPasskeyAuthenticationOptions,
   createLocalPasskeyChallenge,
+  getLegacyOfflineUnlockRequired,
+  getLegacyStoredLocalPasskey,
   getStoredLocalPasskey,
-  isOfflineUnlockRequired as getStoredOfflineUnlockRequired,
-  setOfflineUnlockRequired as setStoredOfflineUnlockRequired,
-  storeLocalPasskey,
   verifyLocalPasskeyAssertion,
 } from "@/lib/passkeys/localUnlock";
 import type { ReportOrganization } from "@/lib/reportOrganizations";
 
-const AUTH_EXPIRED_EVENT = "meatlens:auth-expired";
-
 type ProfileStatus = "idle" | "loading" | "ready" | "error";
+type AuthMode =
+  | "anonymous"
+  | "bootstrapping"
+  | "online-authenticated"
+  | "offline-locked"
+  | "offline-authenticated"
+  | "expired";
 
 const createAuditId = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
   }
+
   return `audit-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 };
 
-function hasValidAccessToken(session: AuthSession | null): boolean {
-  if (!session?.access_token) return false;
-
-  if (typeof session.expires_at !== "number" || Number.isNaN(session.expires_at)) {
-    return true;
-  }
-
-  const expiresAtMs = session.expires_at > 1_000_000_000_000
-    ? session.expires_at
-    : session.expires_at * 1000;
-
-  return expiresAtMs > Date.now() + 30_000;
-}
-
-interface LoadUserDataOptions {
-  allowCachedFallback?: boolean;
-  skipRemote?: boolean;
-  isAdminHint?: boolean | null;
+function shouldRetainEnvelopeForUser(
+  envelope: OfflineAuthEnvelope | null,
+  user: AuthUser,
+): boolean {
+  return Boolean(envelope && envelope.user.id === user.id);
 }
 
 interface AuthContextType {
@@ -70,6 +77,8 @@ interface AuthContextType {
   isAdmin: boolean;
   isLoading: boolean;
   profileStatus: ProfileStatus;
+  authMode: AuthMode;
+  isOnlineAuthenticated: boolean;
   offlineUnlockRequired: boolean;
   canUnlockWithLocalPasskey: boolean;
   retryProfileLoad: () => Promise<void>;
@@ -84,6 +93,7 @@ interface AuthContextType {
     reportOrganization: ReportOrganization,
   ) => Promise<void>;
   signOut: () => Promise<void>;
+  lock: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePasswordWithRecoveryToken: (accessToken: string, password: string) => Promise<void>;
   updateEmail: (email: string) => Promise<void>;
@@ -100,58 +110,174 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [profileStatus, setProfileStatus] = useState<ProfileStatus>("idle");
+  const [authMode, setAuthMode] = useState<AuthMode>("bootstrapping");
   const [offlineUnlockRequired, setOfflineUnlockRequiredState] = useState(false);
+  const mountedRef = useRef(true);
 
-  const syncOfflineUnlockRequired = useCallback((required: boolean) => {
-    setStoredOfflineUnlockRequired(required);
-    setOfflineUnlockRequiredState(required);
-  }, []);
-
-  const clearStoredAuthState = useCallback(() => {
+  const clearLegacyAuthArtifacts = useCallback(() => {
     clearCachedAuth();
     clearCachedProfile();
     clearCachedAdmin();
-    syncOfflineUnlockRequired(false);
-  }, [syncOfflineUnlockRequired]);
+    clearLegacyOfflineCredential();
+    clearLegacyStoredLocalPasskey();
+    clearLegacyOfflineUnlockRequired();
+  }, []);
 
-  const clearInMemoryAuthState = useCallback(() => {
+  const clearLegacyLiveAuthArtifacts = useCallback(() => {
+    clearCachedAuth();
+    clearCachedProfile();
+    clearCachedAdmin();
+  }, []);
+
+  const clearInMemoryAuthState = useCallback((nextMode: AuthMode) => {
+    clearApiCsrfToken();
     setUser(null);
     setSession(null);
     setProfile(null);
     setIsAdmin(false);
     setProfileStatus("idle");
+    setOfflineUnlockRequiredState(false);
+    setAuthMode(nextMode);
   }, []);
 
-  const applyCachedProfileState = useCallback((currentUser: AuthUser, isAdminHint?: boolean | null): boolean => {
-    const cachedProfile = getCachedProfile(currentUser.id);
-    if (!cachedProfile) {
-      return false;
+  const applyOfflineAuthenticatedState = useCallback((envelope: OfflineAuthEnvelope) => {
+    clearApiCsrfToken();
+    setUser(envelope.user);
+    setSession(null);
+    setProfile(envelope.profile);
+    setIsAdmin(envelope.isAdmin);
+    setProfileStatus("ready");
+    setOfflineUnlockRequiredState(false);
+    setAuthMode("offline-authenticated");
+  }, []);
+
+  const applyOnlineAuthenticatedState = useCallback((payload: AuthBootstrapPayload) => {
+    setApiCsrfToken(payload.csrfToken);
+    setUser(payload.user);
+    setSession(null);
+    setProfile(payload.profile);
+    setIsAdmin(payload.isAdmin);
+    setProfileStatus("ready");
+    setOfflineUnlockRequiredState(false);
+    setAuthMode("online-authenticated");
+  }, []);
+
+  const loadValidOfflineEnvelope = useCallback(async (): Promise<OfflineAuthEnvelope | null> => {
+    const envelope = await loadOfflineAuthEnvelope();
+    if (!envelope) {
+      return null;
     }
 
-    setProfile(cachedProfile);
-    setIsAdmin(Boolean(isAdminHint ?? getCachedAdmin(currentUser.id) ?? false));
-    setProfileStatus("ready");
-    return true;
+    if (!envelope.user?.id || !envelope.profile?.id || !envelope.authenticatedAt || !envelope.offlineExpiresAt) {
+      await clearOfflineAuthEnvelope();
+      return null;
+    }
+
+    if (isOfflineAuthExpired(envelope)) {
+      await clearOfflineAuthEnvelope();
+      return null;
+    }
+
+    return envelope;
   }, []);
 
-  const loadUserData = useCallback(async (
-    currentUser: AuthUser | null,
-    options: LoadUserDataOptions = {},
-  ) => {
-    if (!currentUser) {
-      setProfile(null);
-      setIsAdmin(false);
-      setProfileStatus("idle");
+  const lockToOfflineEnvelope = useCallback(async (
+    envelope: OfflineAuthEnvelope,
+  ): Promise<OfflineAuthEnvelope> => {
+    const optimisticEnvelope: OfflineAuthEnvelope = {
+      ...envelope,
+      offlineUnlockRequired: true,
+    };
+
+    clearApiCsrfToken();
+    setUser(null);
+    setSession(null);
+    setProfile(null);
+    setIsAdmin(false);
+    setProfileStatus("idle");
+    setOfflineUnlockRequiredState(true);
+    setAuthMode("offline-locked");
+
+    const nextEnvelope = await updateOfflineAuthEnvelope((currentEnvelope) => {
+      const baseEnvelope = currentEnvelope ?? envelope;
+      return {
+        ...baseEnvelope,
+        offlineUnlockRequired: true,
+      };
+    });
+
+    return nextEnvelope ?? optimisticEnvelope;
+  }, []);
+
+  const unlockFromOfflineEnvelope = useCallback(async (
+    envelope: OfflineAuthEnvelope,
+  ): Promise<OfflineAuthEnvelope> => {
+    const optimisticEnvelope: OfflineAuthEnvelope = {
+      ...envelope,
+      offlineUnlockRequired: false,
+    };
+    applyOfflineAuthenticatedState(optimisticEnvelope);
+
+    const nextEnvelope = await updateOfflineAuthEnvelope((currentEnvelope) => {
+      const baseEnvelope = currentEnvelope ?? envelope;
+      return {
+        ...baseEnvelope,
+        offlineUnlockRequired: false,
+      };
+    });
+
+    return nextEnvelope ?? optimisticEnvelope;
+  }, [applyOfflineAuthenticatedState]);
+
+  const applyOnlineBootstrap = useCallback(async (
+    payload: AuthBootstrapPayload,
+    passwordVerifierOverride: OfflineAuthEnvelope["passwordVerifier"] = undefined,
+  ): Promise<OfflineAuthEnvelope> => {
+    const currentEnvelope = await loadOfflineAuthEnvelope();
+    const sameUserEnvelope = shouldRetainEnvelopeForUser(currentEnvelope, payload.user)
+      ? currentEnvelope
+      : null;
+    const legacyVerifier = readLegacyOfflineCredential();
+    const nextEnvelope: OfflineAuthEnvelope = {
+      user: payload.user,
+      profile: payload.profile,
+      isAdmin: payload.isAdmin,
+      authenticatedAt: payload.authenticatedAt,
+      offlineExpiresAt: payload.offlineExpiresAt,
+      offlineUnlockRequired: false,
+      passwordVerifier:
+        passwordVerifierOverride !== undefined
+          ? passwordVerifierOverride
+          : sameUserEnvelope?.passwordVerifier ??
+            (legacyVerifier && payload.user.email &&
+            legacyVerifier.email === payload.user.email.trim().toLowerCase()
+              ? legacyVerifier
+              : null),
+      localPasskey:
+        sameUserEnvelope?.localPasskey ??
+        getLegacyStoredLocalPasskey(),
+    };
+
+    applyOnlineAuthenticatedState(payload);
+    await saveOfflineAuthEnvelope(nextEnvelope);
+    clearLegacyAuthArtifacts();
+    return nextEnvelope;
+  }, [applyOnlineAuthenticatedState, clearLegacyAuthArtifacts]);
+
+  const retryProfileLoad = useCallback(async () => {
+    if (!user) {
       return;
     }
 
-    if (options.skipRemote) {
-      if (applyCachedProfileState(currentUser, options.isAdminHint)) {
+    if (!navigator.onLine || authMode !== "online-authenticated") {
+      const envelope = await loadValidOfflineEnvelope();
+      if (envelope?.user.id === user.id) {
+        setProfile(envelope.profile);
+        setIsAdmin(envelope.isAdmin);
+        setProfileStatus("ready");
         return;
       }
 
-      setProfile(null);
-      setIsAdmin(Boolean(options.isAdminHint));
       setProfileStatus("error");
       return;
     }
@@ -159,86 +285,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfileStatus("loading");
 
     try {
-      const [userProfile, admin] = await Promise.all([
-        profileClient.getProfile(currentUser.id),
-        profileClient.hasRole(currentUser.id, "admin"),
+      const [nextProfile, nextIsAdmin] = await Promise.all([
+        profileClient.getProfile(user.id),
+        profileClient.hasRole(user.id, "admin"),
       ]);
 
-      if (!userProfile) {
+      if (!nextProfile) {
         throw new Error("Profile record missing");
       }
 
-      setProfile(userProfile);
-      setIsAdmin(admin);
+      setProfile(nextProfile);
+      setIsAdmin(nextIsAdmin);
       setProfileStatus("ready");
-      setCachedProfile(userProfile);
-      setCachedAdmin(currentUser.id, admin);
-    } catch (err) {
-      console.error("Failed to load user data:", err);
 
-      if (options.allowCachedFallback && applyCachedProfileState(currentUser, options.isAdminHint)) {
-        return;
-      }
+      await updateOfflineAuthEnvelope((currentEnvelope) => {
+        if (!currentEnvelope || currentEnvelope.user.id !== user.id) {
+          return currentEnvelope;
+        }
 
-      setProfile(null);
-      setIsAdmin(Boolean(options.isAdminHint));
+        return {
+          ...currentEnvelope,
+          profile: nextProfile,
+          isAdmin: nextIsAdmin,
+        };
+      });
+    } catch (error) {
+      console.error("Failed to refresh profile:", error);
       setProfileStatus("error");
     }
-  }, [applyCachedProfileState]);
-
-  const retryProfileLoad = useCallback(async () => {
-    await loadUserData(user, {
-      allowCachedFallback: !navigator.onLine,
-      skipRemote: !navigator.onLine,
-      isAdminHint: user ? getCachedAdmin(user.id) : null,
-    });
-  }, [loadUserData, user]);
+  }, [authMode, loadValidOfflineEnvelope, user]);
 
   useEffect(() => {
-    let mounted = true;
+    mountedRef.current = true;
 
     const restoreAuth = async () => {
-      const cachedUser = getCachedAuthUser();
-      const cachedSession = getCachedAuthSession();
+      setIsLoading(true);
+      setAuthMode("bootstrapping");
+      clearLegacyLiveAuthArtifacts();
 
-      if (!cachedUser) {
-        clearStoredAuthState();
-        if (mounted) {
-          clearInMemoryAuthState();
+      const validEnvelope = await loadValidOfflineEnvelope();
+
+      if (!navigator.onLine) {
+        if (validEnvelope) {
+          await lockToOfflineEnvelope(validEnvelope);
+        } else {
+          clearInMemoryAuthState("anonymous");
+        }
+
+        if (mountedRef.current) {
           setIsLoading(false);
         }
         return;
       }
 
       try {
-        if (!hasValidAccessToken(cachedSession)) {
-          throw new Error("Cached auth session is missing or expired");
-        }
-
-        const lockRequired = getStoredOfflineUnlockRequired();
-        if (!mounted) return;
-
-        setOfflineUnlockRequiredState(lockRequired);
-        if (lockRequired) {
-          clearInMemoryAuthState();
-          return;
-        }
-
-        setUser(cachedUser);
-        setSession(cachedSession);
-        await loadUserData(cachedUser, {
-          allowCachedFallback: !navigator.onLine,
-          skipRemote: !navigator.onLine,
-          isAdminHint: getCachedAdmin(cachedUser.id),
-        });
-      } catch (err) {
-        console.error("Failed to restore auth session:", err);
-        clearStoredAuthState();
-        if (mounted) {
-          clearInMemoryAuthState();
+        const payload = await authClient.getSession();
+        await applyOnlineBootstrap(payload);
+      } catch (error) {
+        if (validEnvelope) {
+          await lockToOfflineEnvelope(validEnvelope);
+        } else {
+          console.error("Failed to bootstrap online session:", error);
+          clearInMemoryAuthState("expired");
         }
       } finally {
-        if (mounted) {
+        if (mountedRef.current) {
           setIsLoading(false);
         }
       }
@@ -247,55 +358,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void restoreAuth();
 
     return () => {
-      mounted = false;
+      mountedRef.current = false;
     };
-  }, [clearInMemoryAuthState, clearStoredAuthState, loadUserData, syncOfflineUnlockRequired]);
+  }, [applyOnlineBootstrap, clearInMemoryAuthState, clearLegacyLiveAuthArtifacts, loadValidOfflineEnvelope, lockToOfflineEnvelope]);
 
   useEffect(() => {
     const handleAuthExpired = () => {
-      clearStoredAuthState();
-      clearInMemoryAuthState();
-      setIsLoading(false);
+      void (async () => {
+        const validEnvelope = await loadValidOfflineEnvelope();
+
+        if (validEnvelope) {
+          await lockToOfflineEnvelope(validEnvelope);
+        } else {
+          clearInMemoryAuthState("expired");
+        }
+
+        if (mountedRef.current) {
+          setIsLoading(false);
+        }
+      })();
     };
 
     window.addEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
     return () => {
       window.removeEventListener(AUTH_EXPIRED_EVENT, handleAuthExpired);
     };
-  }, [clearInMemoryAuthState, clearStoredAuthState]);
+  }, [clearInMemoryAuthState, loadValidOfflineEnvelope, lockToOfflineEnvelope]);
+
+  useEffect(() => {
+    const handleOnline = () => {
+      if (authMode === "online-authenticated" || authMode === "anonymous") {
+        return;
+      }
+
+      void (async () => {
+        try {
+          const payload = await authClient.getSession();
+          await applyOnlineBootstrap(payload);
+        } catch {
+          // Stay in the nearest safe local state until a live session is confirmed.
+        }
+      })();
+    };
+
+    window.addEventListener("online", handleOnline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
+  }, [applyOnlineBootstrap, authMode]);
 
   const signIn = async (email: string, password: string): Promise<{ isAdmin: boolean }> => {
     if (!navigator.onLine) {
-      const { valid, isAdmin: cachedAdmin } = await verifyOfflineCredential(email, password);
+      const envelope = await loadValidOfflineEnvelope();
+      if (!envelope) {
+        throw new Error("Offline re-login has expired. Please connect to the internet and sign in again.");
+      }
+
+      if (!envelope.passwordVerifier) {
+        throw new Error("Offline password unlock is not available on this device.");
+      }
+
+      const valid = await verifyPasswordVerifier(envelope.passwordVerifier, email, password);
       if (!valid) {
-        throw new Error(
-          "Cannot sign in offline — credentials not recognised. " +
-          "Please connect to the internet to sign in for the first time.",
-        );
+        throw new Error("Cannot sign in offline with those credentials.");
       }
 
-      const cachedUser = getCachedAuthUser();
-      const cachedSession = getCachedAuthSession();
-
-      if (!cachedUser || !hasValidAccessToken(cachedSession)) {
-        throw new Error(
-          "No cached session found. Please sign in online at least once before going offline.",
-        );
-      }
-
-      syncOfflineUnlockRequired(false);
-      setUser(cachedUser);
-      setSession(cachedSession);
-      await loadUserData(cachedUser, {
-        allowCachedFallback: true,
-        skipRemote: true,
-        isAdminHint: cachedAdmin,
-      });
+      const unlockedEnvelope = await unlockFromOfflineEnvelope(envelope);
 
       try {
         await queueAuditLog({
           id: createAuditId(),
-          userId: cachedUser.id,
+          userId: unlockedEnvelope.user.id,
           eventType: "auth.sign_in",
           eventTime: new Date().toISOString(),
           data: { email },
@@ -303,21 +436,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           queuedAt: new Date().toISOString(),
         });
       } catch {
-        // Best-effort only; never block offline sign-in.
+        // Best-effort only.
       }
 
-      return { isAdmin: cachedAdmin };
+      return { isAdmin: unlockedEnvelope.isAdmin };
     }
 
-    const result = await authClient.signIn(email, password);
-    setUser(result.user);
-    setSession(result.session);
-    setCachedAuth(result.user, result.session);
-    syncOfflineUnlockRequired(false);
-    await loadUserData(result.user);
-    const admin = await profileClient.hasRole(result.user.id, "admin");
-    void storeOfflineCredential(email, password, admin);
-    return { isAdmin: admin };
+    const payload = await authClient.signIn(email, password);
+    const verifier = await createPasswordVerifier(email, password);
+    await applyOnlineBootstrap(payload, verifier);
+    return { isAdmin: payload.isAdmin };
   };
 
   const signInWithPasskey = async (): Promise<{ isAdmin: boolean }> => {
@@ -327,36 +455,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { challengeId, options } = await passkeyClient.getAuthenticationOptions();
     const credential = await startPasskeyAuthentication(options);
-    const result = await passkeyClient.verifyAuthentication({
+    const payload = await passkeyClient.verifyAuthentication({
       challengeId,
       credential,
     });
 
-    setUser(result.user);
-    setSession(result.session);
-    setCachedAuth(result.user, result.session);
-    syncOfflineUnlockRequired(false);
-    await loadUserData(result.user);
-    const admin = await profileClient.hasRole(result.user.id, "admin");
-    return { isAdmin: admin };
+    await applyOnlineBootstrap(payload);
+    return { isAdmin: payload.isAdmin };
   };
 
   const unlockWithLocalPasskey = async (): Promise<{ isAdmin: boolean }> => {
-    if (!offlineUnlockRequired) {
+    const envelope = await loadValidOfflineEnvelope();
+    if (!envelope || !envelope.offlineUnlockRequired) {
       throw new Error("No cached offline session is waiting for passkey unlock");
     }
 
     const storedPasskey = getStoredLocalPasskey();
     if (!storedPasskey) {
       throw new Error("This device is not enrolled for local passkey unlock");
-    }
-
-    const cachedUser = getCachedAuthUser();
-    const cachedSession = getCachedAuthSession();
-    if (!cachedUser || !hasValidAccessToken(cachedSession)) {
-      throw new Error(
-        "No cached session found. Please sign in online at least once before going offline.",
-      );
     }
 
     const challenge = createLocalPasskeyChallenge();
@@ -374,25 +490,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("Local passkey verification failed");
     }
 
+    let nextEnvelope = envelope;
     if (verification.newCounter > storedPasskey.counter) {
-      storeLocalPasskey({
-        ...storedPasskey,
-        counter: verification.newCounter,
-      });
+      nextEnvelope = {
+        ...envelope,
+        localPasskey: {
+          ...storedPasskey,
+          counter: verification.newCounter,
+        },
+      };
+      await saveOfflineAuthEnvelope(nextEnvelope);
     }
 
-    const cachedAdmin = storedPasskey.isAdmin || getCachedAdmin(cachedUser.id) || false;
-
-    syncOfflineUnlockRequired(false);
-    setUser(cachedUser);
-    setSession(cachedSession);
-    await loadUserData(cachedUser, {
-      allowCachedFallback: true,
-      skipRemote: !navigator.onLine,
-      isAdminHint: cachedAdmin,
-    });
-
-    return { isAdmin: cachedAdmin };
+    const unlockedEnvelope = await unlockFromOfflineEnvelope(nextEnvelope);
+    return { isAdmin: unlockedEnvelope.isAdmin };
   };
 
   const signUp = async (
@@ -413,43 +524,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    const currentUser = user;
+    const csrfToken = getApiCsrfToken();
 
-    clearInMemoryAuthState();
+    clearInMemoryAuthState("anonymous");
+    await clearOfflineAuthEnvelope();
+    clearLegacyAuthArtifacts();
 
-    if (navigator.onLine) {
-      try {
-        await authClient.signOut();
-      } catch {
-        // Ignore sign-out transport failures.
-      }
-
-      clearStoredAuthState();
-      clearOfflineCredential();
-      return;
-    }
-
-    if (currentUser) {
-      syncOfflineUnlockRequired(true);
-    }
-
-    if (!currentUser) {
+    if (!navigator.onLine) {
       return;
     }
 
     try {
-      await queueAuditLog({
-        id: createAuditId(),
-        userId: currentUser.id,
-        eventType: "auth.sign_out",
-        eventTime: new Date().toISOString(),
-        data: { email: currentUser.email },
-        source: { is_offline: true },
-        queuedAt: new Date().toISOString(),
-      });
+      await authClient.signOut(csrfToken);
     } catch {
-      // Best-effort only; never block offline sign-out.
+      // Best-effort cookie clearing only.
     }
+  };
+
+  const lock = async () => {
+    const envelope = await loadValidOfflineEnvelope();
+    if (!envelope) {
+      clearInMemoryAuthState("anonymous");
+      return;
+    }
+
+    await lockToOfflineEnvelope(envelope);
   };
 
   const resetPassword = async (email: string) => {
@@ -462,26 +561,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateEmail = async (email: string) => {
     if (!user) throw new Error("Not signed in");
+    if (authMode !== "online-authenticated") {
+      throw new Error("Reconnect and sign in online before updating your email.");
+    }
+
     const updatedUser = await authClient.updateEmail(user.id, email);
     setUser(updatedUser);
-    setCachedAuth(updatedUser, session);
+
+    await updateOfflineAuthEnvelope((currentEnvelope) => {
+      if (!currentEnvelope || currentEnvelope.user.id !== user.id) {
+        return currentEnvelope;
+      }
+
+      return {
+        ...currentEnvelope,
+        user: updatedUser,
+        passwordVerifier: null,
+      };
+    });
   };
 
   const updatePassword = async (password: string) => {
     if (!user) throw new Error("Not signed in");
+    if (authMode !== "online-authenticated") {
+      throw new Error("Reconnect and sign in online before updating your password.");
+    }
+
     await authClient.updatePassword(user.id, password);
+    const passwordVerifier = user.email
+      ? await createPasswordVerifier(user.email, password)
+      : null;
+
+    await updateOfflineAuthEnvelope((currentEnvelope) => {
+      if (!currentEnvelope || currentEnvelope.user.id !== user.id) {
+        return currentEnvelope;
+      }
+
+      return {
+        ...currentEnvelope,
+        passwordVerifier,
+      };
+    });
   };
 
   const setProfileState = (nextProfile: Profile | null) => {
     setProfile(nextProfile);
-    setCachedProfile(nextProfile);
+    setProfileStatus(nextProfile ? "ready" : "idle");
+
+    if (!user) {
+      return;
+    }
+
+    void updateOfflineAuthEnvelope((currentEnvelope) => {
+      if (!currentEnvelope || currentEnvelope.user.id !== user.id || !nextProfile) {
+        return currentEnvelope;
+      }
+
+      return {
+        ...currentEnvelope,
+        profile: nextProfile,
+      };
+    });
   };
 
   const canUnlockWithLocalPasskey =
     offlineUnlockRequired &&
-    Boolean(getStoredLocalPasskey()) &&
-    Boolean(getCachedAuthUser()) &&
-    hasValidAccessToken(getCachedAuthSession());
+    Boolean(getStoredLocalPasskey());
+
+  const isOnlineAuthenticated = authMode === "online-authenticated";
 
   return (
     <AuthContext.Provider
@@ -492,6 +639,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin,
         isLoading,
         profileStatus,
+        authMode,
+        isOnlineAuthenticated,
         offlineUnlockRequired,
         canUnlockWithLocalPasskey,
         retryProfileLoad,
@@ -500,6 +649,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         unlockWithLocalPasskey,
         signUp,
         signOut,
+        lock,
         resetPassword,
         updatePasswordWithRecoveryToken,
         updateEmail,

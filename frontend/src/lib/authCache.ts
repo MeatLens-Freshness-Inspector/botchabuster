@@ -79,14 +79,7 @@ export function getCachedAccessToken(): string | null {
 }
 
 export function createAuthHeaders(initialHeaders?: HeadersInit): Headers {
-  const headers = new Headers(initialHeaders);
-  const accessToken = getCachedAccessToken();
-
-  if (accessToken) {
-    headers.set("Authorization", `Bearer ${accessToken}`);
-  }
-
-  return headers;
+  return new Headers(initialHeaders);
 }
 
 export function setCachedAuth(user: AuthUser, session: AuthSession | null): void {

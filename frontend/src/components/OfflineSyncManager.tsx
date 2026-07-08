@@ -113,7 +113,7 @@ async function processAuditLogs(logs: PendingAuditLog[]): Promise<void> {
  *   offline session.
  */
 export function OfflineSyncManager() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isOnlineAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const isRunning = useRef(false);
 
@@ -142,6 +142,7 @@ export function OfflineSyncManager() {
   const drainQueue = async () => {
     if (!navigator.onLine) return;
     if (!user) return;
+    if (!isOnlineAuthenticated) return;
     if (isRunning.current) return;
 
     const developerFlags = getDeveloperOptionsFlags(user.id);
@@ -219,7 +220,7 @@ export function OfflineSyncManager() {
     window.addEventListener("online", handleOnline);
     return () => window.removeEventListener("online", handleOnline);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAdmin, user?.id]);
+  }, [isAdmin, isOnlineAuthenticated, user?.id]);
 
   return null;
 }

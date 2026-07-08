@@ -1,3 +1,5 @@
+import { applyApiRequestInit } from "./apiRequest";
+
 export const API_REQUEST_TIMEOUT_MESSAGE = "Request timed out. Please check your connection and try again.";
 export const DEFAULT_API_REQUEST_TIMEOUT_MS = 15_000;
 export const UPLOAD_REQUEST_TIMEOUT_MS = 30_000;
@@ -30,8 +32,9 @@ export async function fetchWithTimeout(
   }, timeoutMs);
 
   try {
+    const nextInit = applyApiRequestInit(init);
     return await fetch(input, {
-      ...init,
+      ...nextInit,
       signal: controller.signal,
     });
   } catch (error) {

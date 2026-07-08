@@ -42,9 +42,16 @@ export function isOriginAllowed(origin: string | undefined, allowedOrigins: read
 
 export function createCorsOptions(allowedOrigins: readonly string[]): CorsOptions {
   return {
+    allowedHeaders: ["Authorization", "Content-Type", "X-CSRF-Token"],
+    credentials: true,
     origin(origin, callback) {
-      if (isOriginAllowed(origin, allowedOrigins)) {
+      if (!origin) {
         callback(null, true);
+        return;
+      }
+
+      if (isOriginAllowed(origin, allowedOrigins)) {
+        callback(null, origin);
         return;
       }
 

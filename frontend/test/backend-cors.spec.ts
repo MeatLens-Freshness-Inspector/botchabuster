@@ -7,7 +7,7 @@ const {
   isOriginAllowed,
   parseAllowedOrigins,
 } = corsModule as {
-  createCorsOptions: (allowedOrigins: readonly string[]) => { origin?: unknown };
+  createCorsOptions: (allowedOrigins: readonly string[]) => { origin?: unknown; credentials?: boolean; allowedHeaders?: string[] };
   getAllowedOrigins: (env: NodeJS.ProcessEnv) => string[];
   isOriginAllowed: (origin: string | undefined, allowedOrigins: readonly string[]) => boolean;
   parseAllowedOrigins: (value: string | undefined) => string[];
@@ -50,6 +50,26 @@ test("createCorsOptions allows requests without an origin header", async () => {
       try {
         expect(error).toBeNull();
         expect(allow).toBeTruthy();
+        resolve();
+      } catch (assertionError) {
+        reject(assertionError);
+      }
+    });
+  });
+});
+
+test("createCorsOptions enables credentials, exposes csrf headers, and echoes allowed origins", async () => {
+  const options = createCorsOptions(["https://meatlens.netlify.app"]);
+  const originHandler = options.origin as NonNullable<typeof options.origin>;
+
+  expect(options.credentials).toBeTruthy();
+  expect(options.allowedHeaders).toEqual(expect.arrayContaining(["Authorization", "Content-Type", "X-CSRF-Token"]));
+
+  await new Promise<void>((resolve, reject) => {
+    originHandler("https://meatlens.netlify.app", (error, allow) => {
+      try {
+        expect(error).toBeNull();
+        expect(allow).toBe("https://meatlens.netlify.app");
         resolve();
       } catch (assertionError) {
         reject(assertionError);

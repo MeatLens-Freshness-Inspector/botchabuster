@@ -1,12 +1,15 @@
+import { useAuth } from "@/contexts/AuthContext";
 import { MessagesHeader } from "./user/messages/components/MessagesHeader";
 import { ContactsPanel } from "./user/messages/components/ContactsPanel";
 import { ThreadPanel } from "./user/messages/components/ThreadPanel";
 import { useMessagesPage } from "./user/messages/hooks/useMessagesPage";
 
 export default function MessagesPage() {
+  const { isOnlineAuthenticated } = useAuth();
   const {
     currentUserId,
     isAdmin,
+    isOnlineAuthenticated: messagesOnline,
     isDesktop,
     filteredContacts,
     selectedContactId,
@@ -29,6 +32,27 @@ export default function MessagesPage() {
     handleSelectContact,
     handleSendMessage,
   } = useMessagesPage();
+
+  if (!isOnlineAuthenticated || !messagesOnline) {
+    return (
+      <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] pb-24">
+        <div className="mx-auto w-full max-w-4xl px-4 pt-4">
+          <div className="rounded-[28px] border border-border/70 bg-card/95 p-6 shadow-[0_26px_80px_-36px_rgba(0,0,0,0.7)] sm:p-8">
+            <p className="font-display text-xs uppercase tracking-[0.32em] text-primary/70">
+              Online Only
+            </p>
+            <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight text-foreground">
+              Messages pause when the app is offline.
+            </h1>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+              Your cached inspections and profile basics still work offline, but direct messaging
+              requires a live backend session and reconnect will resume it automatically.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const showMessagesHeader = isDesktop || mobilePanel === "contacts";
 

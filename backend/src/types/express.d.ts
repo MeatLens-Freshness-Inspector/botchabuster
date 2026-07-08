@@ -4,6 +4,8 @@ declare global {
   namespace Express {
     interface Request {
       auth?: RequestAuthContext;
+      authAccessToken?: string;
+      authAccessTokenSource?: "bearer" | "cookie";
     }
   }
 }

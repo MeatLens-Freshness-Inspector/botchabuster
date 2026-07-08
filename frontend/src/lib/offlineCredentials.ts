@@ -1,23 +1,12 @@
-/**
- * Offline credential verification using PBKDF2-SHA-256 (WebCrypto).
- *
- * After a successful online sign-in we derive a one-way key from the
- * user's password and store it locally. When the device is offline and
- * the user needs to re-authenticate (e.g. after an auto sign-out), we
- * derive the key again from what they typed and compare — no plaintext
- * password is ever stored.
- *
- * Security properties:
- *   - 100,000 PBKDF2-SHA-256 iterations (OWASP minimum)
- *   - Salt = lowercased email (stable, user-specific)
- *   - 256-bit output, hex-encoded
- *   - Constant-time comparison to prevent timing attacks
- */
-
-const STORAGE_KEY = "meatlens-offline-cred";
+const LEGACY_STORAGE_KEY = "meatlens-offline-cred";
 const ITERATIONS = 100_000;
+const ALGORITHM = "pbkdf2-sha256";
 
-async function deriveHash(email: string, password: string): Promise<string> {
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+async function deriveHash(email: string, password: string, iterations = ITERATIONS): Promise<string> {
   const enc = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey(
     "raw",
@@ -29,68 +18,103 @@ async function deriveHash(email: string, password: string): Promise<string> {
   const bits = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
-      salt: enc.encode(email.toLowerCase()),
-      iterations: ITERATIONS,
+      salt: enc.encode(normalizeEmail(email)),
+      iterations,
       hash: "SHA-256",
     },
     keyMaterial,
     256,
   );
+
   return Array.from(new Uint8Array(bits))
-    .map((b) => b.toString(16).padStart(2, "0"))
+    .map((value) => value.toString(16).padStart(2, "0"))
     .join("");
 }
 
-/** Constant-time string comparison (prevents timing attacks). */
-function safeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
+function safeEqual(left: string, right: string): boolean {
+  if (left.length !== right.length) return false;
+
   let diff = 0;
-  for (let i = 0; i < a.length; i++) {
-    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  for (let index = 0; index < left.length; index += 1) {
+    diff |= left.charCodeAt(index) ^ right.charCodeAt(index);
   }
+
   return diff === 0;
 }
 
-export interface StoredCred {
+export interface PasswordVerifierRecord {
   email: string;
   hash: string;
-  isAdmin: boolean;
+  algorithm: typeof ALGORITHM;
+  iterations: number;
 }
 
-/**
- * Call after a successful online sign-in to enable offline re-authentication.
- */
-export async function storeOfflineCredential(
+export async function createPasswordVerifier(
   email: string,
   password: string,
-  isAdmin: boolean,
-): Promise<void> {
-  const hash = await deriveHash(email, password);
-  const entry: StoredCred = { email: email.toLowerCase(), hash, isAdmin };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
+): Promise<PasswordVerifierRecord> {
+  return {
+    email: normalizeEmail(email),
+    hash: await deriveHash(email, password),
+    algorithm: ALGORITHM,
+    iterations: ITERATIONS,
+  };
 }
 
-/**
- * Verify typed credentials against the stored offline hash.
- * Returns `{ valid: true, isAdmin }` on match, `{ valid: false }` otherwise.
- */
-export async function verifyOfflineCredential(
+export async function verifyPasswordVerifier(
+  verifier: PasswordVerifierRecord,
   email: string,
   password: string,
-): Promise<{ valid: boolean; isAdmin: boolean }> {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return { valid: false, isAdmin: false };
+): Promise<boolean> {
+  if (
+    verifier.algorithm !== ALGORITHM ||
+    !Number.isFinite(verifier.iterations) ||
+    verifier.iterations <= 0
+  ) {
+    return false;
+  }
+
+  if (normalizeEmail(email) !== normalizeEmail(verifier.email)) {
+    return false;
+  }
+
+  const inputHash = await deriveHash(email, password, verifier.iterations);
+  return safeEqual(inputHash, verifier.hash);
+}
+
+export function readLegacyOfflineCredential(): PasswordVerifierRecord | null {
+  if (typeof window === "undefined") return null;
+
   try {
-    const stored: StoredCred = JSON.parse(raw);
-    if (email.toLowerCase() !== stored.email) return { valid: false, isAdmin: false };
-    const inputHash = await deriveHash(email, password);
-    const valid = safeEqual(inputHash, stored.hash);
-    return { valid, isAdmin: valid ? (stored.isAdmin ?? false) : false };
+    const raw = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as Partial<PasswordVerifierRecord> & {
+      email?: unknown;
+      hash?: unknown;
+      iterations?: unknown;
+    };
+    if (typeof parsed.email !== "string" || typeof parsed.hash !== "string") {
+      return null;
+    }
+
+    return {
+      email: normalizeEmail(parsed.email),
+      hash: parsed.hash,
+      algorithm: ALGORITHM,
+      iterations:
+        typeof parsed.iterations === "number" &&
+        Number.isFinite(parsed.iterations) &&
+        parsed.iterations > 0
+          ? parsed.iterations
+          : ITERATIONS,
+    };
   } catch {
-    return { valid: false, isAdmin: false };
+    return null;
   }
 }
 
-export function clearOfflineCredential(): void {
-  localStorage.removeItem(STORAGE_KEY);
+export function clearLegacyOfflineCredential(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(LEGACY_STORAGE_KEY);
 }

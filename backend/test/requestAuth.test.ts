@@ -2,18 +2,22 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import type { Request } from "express";
 
-function createRequest(authorization?: string): Request {
+function createRequest(authorization?: string, cookie?: string): Request {
   return {
     header(name: string) {
-      if (name.toLowerCase() === "authorization") {
-        return authorization;
+      switch (name.toLowerCase()) {
+        case "authorization":
+          return authorization;
+        case "cookie":
+          return cookie;
+        default:
+          return undefined;
       }
-      return undefined;
     },
   } as Request;
 }
 
-test("resolveRequestAuthContext rejects requests without a bearer token", async () => {
+test("resolveRequestAuthContext rejects requests without a cookie or bearer token", async () => {
   process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
   process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
   process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
@@ -29,7 +33,46 @@ test("resolveRequestAuthContext rejects requests without a bearer token", async 
   );
 });
 
-test("resolveRequestAuthContext loads the signed-in user and admin flag", async () => {
+test("resolveRequestAuthContext prefers the app-session cookie when present", async () => {
+  process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
+  process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
+  process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
+
+  const { resolveRequestAuthContext } = await import("../src/middleware/auth");
+  const { authService } = await import("../src/services/AuthService");
+  const { profileService } = await import("../src/services/ProfileService");
+
+  const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
+  const originalHasRole = profileService.hasRole.bind(profileService);
+
+  authService.getUserByAccessToken = async (accessToken: string) => {
+    assert.equal(accessToken, "cookie-session-token");
+    return {
+      id: "user-1",
+      email: "inspector@example.com",
+    };
+  };
+  profileService.hasRole = async () => false;
+
+  try {
+    const authContext = await resolveRequestAuthContext(
+      createRequest(
+        "Bearer bearer-token",
+        "other=value; meatlens_session=cookie-session-token; something=else",
+      ),
+    );
+    assert.deepEqual(authContext, {
+      userId: "user-1",
+      email: "inspector@example.com",
+      isAdmin: false,
+    });
+  } finally {
+    authService.getUserByAccessToken = originalGetUserByAccessToken;
+    profileService.hasRole = originalHasRole;
+  }
+});
+
+test("resolveRequestAuthContext still accepts a bearer header when no cookie exists", async () => {
   process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
   process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
   process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";

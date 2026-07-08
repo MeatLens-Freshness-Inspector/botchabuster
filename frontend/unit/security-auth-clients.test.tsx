@@ -3,6 +3,7 @@ import test from "node:test";
 import { JSDOM } from "jsdom";
 import { authClient } from "../src/integrations/api/AuthClient";
 import { uploadClient } from "../src/integrations/api/UploadClient";
+import { clearApiCsrfToken, setApiCsrfToken } from "../src/integrations/api/apiRequest";
 import { getChatRequestHeaders } from "../src/components/AIChatbot";
 
 type GlobalWithDom = typeof globalThis & {
@@ -87,16 +88,22 @@ function setStoredSession(accessToken = "session-token"): void {
   );
 }
 
-test("AuthClient sends the current bearer token for self-service email and password changes", async () => {
+test("AuthClient uses cookie credentials and in-memory csrf for self-service email and password changes", async () => {
   const restoreDom = installDom();
   const originalFetch = globalThis.fetch;
 
   try {
     setStoredSession();
+    setApiCsrfToken("csrf-1");
 
-    const authorizations: string[] = [];
+    const requests: Array<{ authorization: string | null; credentials: RequestCredentials | undefined; csrf: string | null }> = [];
     globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
-      authorizations.push(new Headers(init?.headers).get("authorization") ?? "");
+      const headers = new Headers(init?.headers);
+      requests.push({
+        authorization: headers.get("authorization"),
+        credentials: init?.credentials,
+        csrf: headers.get("x-csrf-token"),
+      });
 
       if (String(_input).includes("/email")) {
         return new Response(
@@ -119,26 +126,36 @@ test("AuthClient sends the current bearer token for self-service email and passw
     await authClient.updateEmail("user-1", "updated@example.com");
     await authClient.updatePassword("user-1", "new-password-123");
 
-    assert.deepEqual(authorizations, ["Bearer session-token", "Bearer session-token"]);
+    assert.deepEqual(requests, [
+      { authorization: null, credentials: "include", csrf: "csrf-1" },
+      { authorization: null, credentials: "include", csrf: "csrf-1" },
+    ]);
   } finally {
+    clearApiCsrfToken();
     globalThis.fetch = originalFetch;
     restoreDom();
   }
 });
 
-test("UploadClient authenticates uploads and does not send a caller-controlled userId field", async () => {
+test("UploadClient uses cookie credentials, sends csrf, and does not send a caller-controlled userId field", async () => {
   const restoreDom = installDom();
   const originalFetch = globalThis.fetch;
 
   try {
     setStoredSession();
+    setApiCsrfToken("csrf-upload");
 
-    let authorization = "";
+    let authorization: string | null = null;
+    let csrf: string | null = null;
+    let credentials: RequestCredentials | undefined;
     let userIdValue: FormDataEntryValue | null = null;
     let hasImage = false;
 
     globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
-      authorization = new Headers(init?.headers).get("authorization") ?? "";
+      const headers = new Headers(init?.headers);
+      authorization = headers.get("authorization");
+      csrf = headers.get("x-csrf-token");
+      credentials = init?.credentials;
       assert.ok(init?.body instanceof FormData);
       userIdValue = init.body.get("userId");
       hasImage = init.body.has("image");
@@ -159,27 +176,32 @@ test("UploadClient authenticates uploads and does not send a caller-controlled u
     const file = new File(["image-bytes"], "inspection.jpg", { type: "image/jpeg" });
     await uploadClient.uploadInspectionImage(file as File);
 
-    assert.equal(authorization, "Bearer session-token");
+    assert.equal(authorization, null);
+    assert.equal(csrf, "csrf-upload");
+    assert.equal(credentials, "include");
     assert.equal(hasImage, true);
     assert.equal(userIdValue, null);
   } finally {
+    clearApiCsrfToken();
     globalThis.fetch = originalFetch;
     restoreDom();
   }
 });
 
-test("AIChatbot chat requests use the current bearer token", () => {
+test("AIChatbot chat requests omit bearer headers and reuse the in-memory csrf token", () => {
   const restoreDom = installDom();
 
   try {
     setStoredSession();
+    setApiCsrfToken("csrf-chat");
     assert.equal(window.localStorage.getItem("meatlens-auth-session"), null);
     assert.equal(window.sessionStorage.getItem("meatlens-auth-session") !== null, true);
     assert.deepEqual(getChatRequestHeaders(), {
       "Content-Type": "application/json",
-      Authorization: "Bearer session-token",
+      "X-CSRF-Token": "csrf-chat",
     });
   } finally {
+    clearApiCsrfToken();
     restoreDom();
   }
 });

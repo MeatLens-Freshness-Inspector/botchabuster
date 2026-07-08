@@ -9,6 +9,9 @@ process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase
 process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
 process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 process.env.AUDIT_LOG_KEY = process.env.AUDIT_LOG_KEY || "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+process.env.ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || "http://localhost:8080,https://meatlens.netlify.app";
+process.env.APP_SESSION_SECRET = process.env.APP_SESSION_SECRET || "app-session-secret";
+process.env.CSRF_TOKEN_SECRET = process.env.CSRF_TOKEN_SECRET || "csrf-token-secret";
 
 async function loadApp(): Promise<Express> {
   const serverModule = await import("../src/server.ts");
@@ -119,6 +122,70 @@ test("public auth endpoints are rate limited after repeated requests", async () 
     assert.ok(statuses.includes(429), `Expected auth rate limiting, got statuses: ${statuses.join(", ")}`);
     assert.ok(retryAfter, "Expected Retry-After header on rate-limited auth responses");
   } finally {
+    await close();
+  }
+});
+
+test("non-safe auth requests reject disallowed origins before controller logic runs", async () => {
+  const { baseUrl, close } = await startTestServer();
+
+  try {
+    const response = await fetch(`${baseUrl}/api/auth/sign-in`, {
+      method: "POST",
+      headers: {
+        Origin: "https://evil.example",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    const payload = await response.json() as { error?: string };
+    assert.equal(response.status, 403);
+    assert.match(payload.error ?? "", /origin/i);
+  } finally {
+    await close();
+  }
+});
+
+test("cookie-authenticated mutating requests reject a missing csrf token", async () => {
+  const { AppSessionService } = await import("../src/services/AppSessionService");
+  const { profileService } = await import("../src/services/ProfileService");
+  const originalHasRole = profileService.hasRole.bind(profileService);
+
+  profileService.hasRole = async () => false;
+
+  const issuedAt = Date.now();
+  const sessionService = new AppSessionService(process.env.APP_SESSION_SECRET ?? "app-session-secret", 3600, () => issuedAt);
+  const session = sessionService.createSession({
+    id: "user-1",
+    email: "inspector@example.com",
+  });
+
+  const { baseUrl, close } = await startTestServer();
+
+  try {
+    const response = await fetch(`${baseUrl}/api/chat`, {
+      method: "POST",
+      headers: {
+        Cookie: `meatlens_session=${session.access_token}`,
+        Origin: "http://localhost:8080",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: "user",
+            content: "hello",
+          },
+        ],
+      }),
+    });
+
+    const payload = await response.json() as { error?: string };
+    assert.equal(response.status, 403);
+    assert.match(payload.error ?? "", /csrf/i);
+  } finally {
+    profileService.hasRole = originalHasRole;
     await close();
   }
 });
