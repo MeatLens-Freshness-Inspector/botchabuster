@@ -5,6 +5,7 @@ import { authService } from "../services/AuthService";
 import { getAppSessionService } from "../services/AppSessionService";
 import { CsrfTokenService } from "../services/CsrfTokenService";
 import { profileService } from "../services/ProfileService";
+import { getSessionLimitService } from "../services/SessionLimitService";
 
 export interface RequestAuthContext {
   userId: string;
@@ -103,13 +104,39 @@ function writeAuthError(res: Response, error: unknown): void {
 }
 
 async function resolveAndAttachAuthContext(req: Request): Promise<RequestAuthContext> {
-  const authContext = await resolveRequestAuthContext(req);
+  const authContext = await resolveTrackedRequestAuthContext(req);
   enforceCookieCsrf(req, authContext);
   const { accessToken, source } = getRequestAccessToken(req);
   req.auth = authContext;
   req.authAccessToken = accessToken;
   req.authAccessTokenSource = source;
   return authContext;
+}
+
+async function ensureTrackedAppSession(req: Request, authContext: RequestAuthContext): Promise<void> {
+  const { accessToken } = getRequestAccessToken(req);
+  const appSessionService = getAppSessionService();
+
+  if (!appSessionService.looksLikeAppSessionToken(accessToken)) {
+    return;
+  }
+
+  const sessionLimit = getSessionLimitService();
+  if (await sessionLimit.hasSession(accessToken)) {
+    return;
+  }
+
+  const session = appSessionService.getSession(accessToken);
+  await sessionLimit.pruneExpiredSessions(authContext.userId);
+
+  if (await sessionLimit.isAtLimit(authContext.userId)) {
+    throw new RequestAuthError(
+      429,
+      "You are already signed in on the maximum number of devices. Please sign out from another device first.",
+    );
+  }
+
+  await sessionLimit.registerSession(authContext.userId, accessToken, session.expiresAt);
 }
 
 export async function resolveRequestAuthContext(req: Request): Promise<RequestAuthContext> {
@@ -128,6 +155,12 @@ export async function resolveRequestAuthContext(req: Request): Promise<RequestAu
 
   const isAdmin = await profileService.hasRole(userId, "admin");
   return { userId, email, isAdmin };
+}
+
+export async function resolveTrackedRequestAuthContext(req: Request): Promise<RequestAuthContext> {
+  const authContext = await resolveRequestAuthContext(req);
+  await ensureTrackedAppSession(req, authContext);
+  return authContext;
 }
 
 function enforceCookieCsrf(req: Request, authContext: RequestAuthContext): void {

@@ -104,7 +104,7 @@ async function createCookieFixture(userId = "user-1", email = "inspector@example
   };
 }
 
-test("sign-in sets a secure cookie and returns a bootstrap payload instead of browser-readable tokens", async () => {
+test("sign-in sets a secure cookie and returns a bootstrap payload without consuming a device slot yet", async () => {
   const { authService } = await import("../src/services/AuthService");
   const { profileService } = await import("../src/services/ProfileService");
   const { auditLogService } = await import("../src/services/AuditLogService");
@@ -155,7 +155,7 @@ test("sign-in sets a secure cookie and returns a bootstrap payload instead of br
     assert.match(setCookie, /SameSite=None/i);
     assert.match(setCookie, /Path=\//i);
     assert.match(setCookie, /(Max-Age|Expires)=/i);
-    assert.equal(registeredToken, cookieToken);
+    assert.equal(registeredToken, null);
 
     assert.equal((body.user as { id?: string }).id, user.id);
     assert.equal((body.profile as { id?: string }).id, profile.id);
@@ -189,6 +189,7 @@ test("session bootstrap preserves authenticatedAt but rotates the csrf token", a
   const originalGetProfile = profileService.getProfile.bind(profileService);
   const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
   const sessionLimit = getSessionLimitService();
+  const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
   const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
@@ -200,6 +201,7 @@ test("session bootstrap preserves authenticatedAt but rotates the csrf token", a
   profileService.hasRole = async () => false;
   profileService.getProfile = async () => profile;
   auditLogService.write = async () => undefined;
+  sessionLimit.hasSession = async () => true;
   sessionLimit.pruneExpiredSessions = async () => undefined;
   sessionLimit.isAtLimit = async () => false;
   sessionLimit.registerSession = async () => undefined;
@@ -234,6 +236,85 @@ test("session bootstrap preserves authenticatedAt but rotates the csrf token", a
     profileService.hasRole = originalHasRole;
     profileService.getProfile = originalGetProfile;
     auditLogService.write = originalWriteAuditLog;
+    sessionLimit.hasSession = originalHasSession;
+    sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
+    sessionLimit.isAtLimit = originalIsAtLimit;
+    sessionLimit.registerSession = originalRegisterSession;
+    await close();
+  }
+});
+
+test("cookie-authenticated inspection requests confirm the session slot on first successful API use", async () => {
+  const { authService } = await import("../src/services/AuthService");
+  const { profileService } = await import("../src/services/ProfileService");
+  const { auditLogService } = await import("../src/services/AuditLogService");
+  const { inspectionService } = await import("../src/services/InspectionService");
+  const { getSessionLimitService } = await import("../src/services/SessionLimitService");
+
+  const originalSignIn = authService.signIn.bind(authService);
+  const originalHasRole = profileService.hasRole.bind(profileService);
+  const originalGetProfile = profileService.getProfile.bind(profileService);
+  const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
+  const originalGetAll = inspectionService.getAll.bind(inspectionService);
+  const sessionLimit = getSessionLimitService();
+  const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
+  const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
+  const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
+  const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
+
+  const user = { id: "admin-1", email: "admin@example.com" };
+  const profile = createProfile(user.id);
+  let registeredToken: string | null = null;
+  let inspectionArgs: unknown[] | null = null;
+
+  authService.signIn = async () => ({ user, session: null });
+  profileService.hasRole = async () => true;
+  profileService.getProfile = async () => profile;
+  auditLogService.write = async () => undefined;
+  inspectionService.getAll = async (...args) => {
+    inspectionArgs = args;
+    return [];
+  };
+  sessionLimit.hasSession = async () => false;
+  sessionLimit.pruneExpiredSessions = async () => undefined;
+  sessionLimit.isAtLimit = async () => false;
+  sessionLimit.registerSession = async (_userId, accessToken) => {
+    registeredToken = accessToken;
+  };
+
+  const { baseUrl, close } = await startTestServer();
+
+  try {
+    const signInResponse = await fetch(`${baseUrl}/api/auth/sign-in`, {
+      method: "POST",
+      headers: {
+        Origin: "http://localhost:8080",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email: user.email, password: "correct-horse-battery-staple" }),
+    });
+    const issuedCookie = signInResponse.headers.get("set-cookie") ?? "";
+    const cookieToken = parseSessionCookie(issuedCookie);
+
+    assert.equal(signInResponse.status, 200);
+    assert.equal(registeredToken, null);
+
+    const inspectionResponse = await fetch(`${baseUrl}/api/inspections?limit=1&offset=0&scope=all`, {
+      headers: {
+        Cookie: issuedCookie,
+      },
+    });
+
+    assert.equal(inspectionResponse.status, 200);
+    assert.equal(registeredToken, cookieToken);
+    assert.deepEqual(inspectionArgs, [1, 0, user.id, "all", true]);
+  } finally {
+    authService.signIn = originalSignIn;
+    profileService.hasRole = originalHasRole;
+    profileService.getProfile = originalGetProfile;
+    auditLogService.write = originalWriteAuditLog;
+    inspectionService.getAll = originalGetAll;
+    sessionLimit.hasSession = originalHasSession;
     sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
     sessionLimit.isAtLimit = originalIsAtLimit;
     sessionLimit.registerSession = originalRegisterSession;
@@ -249,11 +330,13 @@ test("sign-out clears the session cookie and removes the registered app session"
   const originalHasRole = profileService.hasRole.bind(profileService);
   const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
   const sessionLimit = getSessionLimitService();
+  const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
   const originalRemoveSession = sessionLimit.removeSession.bind(sessionLimit);
   let removedToken: string | null = null;
 
   profileService.hasRole = async () => false;
   auditLogService.write = async () => undefined;
+  sessionLimit.hasSession = async () => true;
   sessionLimit.removeSession = async (accessToken) => {
     removedToken = accessToken;
   };
@@ -279,12 +362,13 @@ test("sign-out clears the session cookie and removes the registered app session"
   } finally {
     profileService.hasRole = originalHasRole;
     auditLogService.write = originalWriteAuditLog;
+    sessionLimit.hasSession = originalHasSession;
     sessionLimit.removeSession = originalRemoveSession;
     await close();
   }
 });
 
-test("passkey authenticate verify mirrors the cookie/bootstrap contract and registers the app session", async () => {
+test("passkey authenticate verify mirrors the cookie/bootstrap contract without consuming a device slot yet", async () => {
   const { passkeyService } = await import("../src/services/PasskeyService");
   const { authService } = await import("../src/services/AuthService");
   const { profileService } = await import("../src/services/ProfileService");
@@ -341,7 +425,7 @@ test("passkey authenticate verify mirrors the cookie/bootstrap contract and regi
     assert.match(setCookie, /Secure/i);
     assert.match(setCookie, /SameSite=None/i);
     assert.match(setCookie, /Path=\//i);
-    assert.equal(registeredToken, cookieToken);
+    assert.equal(registeredToken, null);
     assert.equal((body.user as { id?: string }).id, user.id);
     assert.equal((body.profile as { id?: string }).id, profile.id);
     assert.equal(body.isAdmin, true);
@@ -363,12 +447,15 @@ test("passkey register, list, and delete routes accept cookie auth without an Au
   const { passkeyService } = await import("../src/services/PasskeyService");
   const { profileService } = await import("../src/services/ProfileService");
   const { auditLogService } = await import("../src/services/AuditLogService");
+  const { getSessionLimitService } = await import("../src/services/SessionLimitService");
 
   const originalBeginRegistration = passkeyService.beginRegistration.bind(passkeyService);
   const originalListPasskeys = passkeyService.listPasskeys.bind(passkeyService);
   const originalDeletePasskey = passkeyService.deletePasskey.bind(passkeyService);
   const originalHasRole = profileService.hasRole.bind(profileService);
   const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
+  const sessionLimit = getSessionLimitService();
+  const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
   const listedPasskeys = [{ credentialId: "credential-1", deviceLabel: "Current device", transports: [], createdAt: "2026-07-01T00:00:00.000Z", lastUsedAt: null, localDeviceReady: true }];
   let deletedCredentialId: string | null = null;
 
@@ -382,6 +469,7 @@ test("passkey register, list, and delete routes accept cookie auth without an Au
   };
   profileService.hasRole = async () => false;
   auditLogService.write = async () => undefined;
+  sessionLimit.hasSession = async () => true;
 
   const { session, csrfToken } = await createCookieFixture();
   const { baseUrl, close } = await startTestServer();
@@ -422,6 +510,7 @@ test("passkey register, list, and delete routes accept cookie auth without an Au
     passkeyService.deletePasskey = originalDeletePasskey;
     profileService.hasRole = originalHasRole;
     auditLogService.write = originalWriteAuditLog;
+    sessionLimit.hasSession = originalHasSession;
     await close();
   }
 });

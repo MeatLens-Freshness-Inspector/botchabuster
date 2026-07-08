@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
-import { authService } from "../services/AuthService";
 import { inspectionService } from "../services/InspectionService";
 import type { InspectionScope } from "../services/InspectionService";
-import { profileService } from "../services/ProfileService";
 import type { InspectionInsert } from "../types/inspection";
 import { auditLogService } from "../services/AuditLogService";
 import { normalizeInspectionCoordinates } from "../types/inspectionCoordinates";
@@ -10,6 +8,7 @@ import {
   assertInspectionDecisionPayload,
   normalizeInspectionPreScan,
 } from "../types/inspectionPreScan";
+import { resolveTrackedRequestAuthContext } from "../middleware/auth";
 
 class RequestAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -23,27 +22,15 @@ export class InspectionController {
   }
 
   private async getRequestAccessContext(req: Request): Promise<{ userId: string; isAdmin: boolean }> {
-    const authorizationHeader = req.header("authorization");
-    if (!authorizationHeader?.startsWith("Bearer ")) {
-      throw new RequestAccessError(401, "Authentication required");
-    }
-
-    const accessToken = authorizationHeader.slice("Bearer ".length).trim();
-    if (!accessToken) {
-      throw new RequestAccessError(401, "Authentication required");
-    }
-
-    let userId: string;
-
     try {
-      const user = await authService.getUserByAccessToken(accessToken);
-      userId = user.id;
+      const authContext = await resolveTrackedRequestAuthContext(req);
+      return {
+        userId: authContext.userId,
+        isAdmin: authContext.isAdmin,
+      };
     } catch (error) {
       throw new RequestAccessError(401, error instanceof Error ? error.message : "Authentication required");
     }
-
-    const isAdmin = await profileService.hasRole(userId, "admin");
-    return { userId, isAdmin };
   }
 
   private handleError(action: string, res: Response, error: unknown, fallbackMessage: string): void {

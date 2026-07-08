@@ -1,25 +1,27 @@
 import { Request, Response } from "express";
 import { profileService } from "../services/ProfileService";
-import { authService } from "../services/AuthService";
 import { auditLogService } from "../services/AuditLogService";
 import { isReportOrganization } from "../types/reportOrganization";
+import { getRequestAuthContext, resolveTrackedRequestAuthContext } from "../middleware/auth";
 
 export class ProfileController {
   private async resolveActor(req: Request): Promise<{ id: string; role: string } | null> {
-    const authorizationHeader = req.header("authorization");
-    if (!authorizationHeader?.startsWith("Bearer ")) {
-      return null;
-    }
-
-    const accessToken = authorizationHeader.slice("Bearer ".length).trim();
-    if (!accessToken) return null;
-
     try {
-      const user = await authService.getUserByAccessToken(accessToken);
-      const isAdmin = await profileService.hasRole(user.id, "admin");
-      return { id: user.id, role: isAdmin ? "admin" : "inspector" };
+      const authContext = req.auth ?? getRequestAuthContext(req);
+      return {
+        id: authContext.userId,
+        role: authContext.isAdmin ? "admin" : "inspector",
+      };
     } catch {
-      return null;
+      try {
+        const authContext = await resolveTrackedRequestAuthContext(req);
+        return {
+          id: authContext.userId,
+          role: authContext.isAdmin ? "admin" : "inspector",
+        };
+      } catch {
+        return null;
+      }
     }
   }
 

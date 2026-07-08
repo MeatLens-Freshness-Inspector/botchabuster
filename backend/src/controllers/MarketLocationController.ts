@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
-import { authService } from "../services/AuthService";
-import { profileService } from "../services/ProfileService";
 import { marketLocationService } from "../services/MarketLocationService";
 import { auditLogService } from "../services/AuditLogService";
+import { resolveTrackedRequestAuthContext } from "../middleware/auth";
 
 class MarketLocationAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -12,31 +11,20 @@ class MarketLocationAccessError extends Error {
 
 export class MarketLocationController {
   private async requireAdmin(req: Request): Promise<{ userId: string }> {
-    const authorizationHeader = req.header("authorization");
-    if (!authorizationHeader?.startsWith("Bearer ")) {
-      throw new MarketLocationAccessError(401, "Authentication required");
-    }
-
-    const accessToken = authorizationHeader.slice("Bearer ".length).trim();
-    if (!accessToken) {
-      throw new MarketLocationAccessError(401, "Authentication required");
-    }
-
-    let userId: string;
-
     try {
-      const user = await authService.getUserByAccessToken(accessToken);
-      userId = user.id;
+      const authContext = await resolveTrackedRequestAuthContext(req);
+      if (!authContext.isAdmin) {
+        throw new MarketLocationAccessError(403, "Admin access required");
+      }
+
+      return { userId: authContext.userId };
     } catch (error) {
+      if (error instanceof MarketLocationAccessError) {
+        throw error;
+      }
+
       throw new MarketLocationAccessError(401, error instanceof Error ? error.message : "Authentication required");
     }
-
-    const isAdmin = await profileService.hasRole(userId, "admin");
-    if (!isAdmin) {
-      throw new MarketLocationAccessError(403, "Admin access required");
-    }
-
-    return { userId };
   }
 
   private handleError(action: string, res: Response, error: unknown, fallbackMessage: string): void {

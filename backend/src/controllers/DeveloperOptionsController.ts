@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
-import { authService } from "../services/AuthService";
-import { profileService } from "../services/ProfileService";
 import { developerOptionsService } from "../services/DeveloperOptionsService";
 import { auditLogService } from "../services/AuditLogService";
+import { resolveTrackedRequestAuthContext } from "../middleware/auth";
 
 class DeveloperOptionsAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -12,30 +11,20 @@ class DeveloperOptionsAccessError extends Error {
 
 export class DeveloperOptionsController {
   private async requireAdmin(req: Request): Promise<{ userId: string }> {
-    const authorizationHeader = req.header("authorization");
-    if (!authorizationHeader?.startsWith("Bearer ")) {
-      throw new DeveloperOptionsAccessError(401, "Authentication required");
-    }
-
-    const accessToken = authorizationHeader.slice("Bearer ".length).trim();
-    if (!accessToken) {
-      throw new DeveloperOptionsAccessError(401, "Authentication required");
-    }
-
-    let userId: string;
     try {
-      const user = await authService.getUserByAccessToken(accessToken);
-      userId = user.id;
+      const authContext = await resolveTrackedRequestAuthContext(req);
+      if (!authContext.isAdmin) {
+        throw new DeveloperOptionsAccessError(403, "Administrator access required");
+      }
+
+      return { userId: authContext.userId };
     } catch (error) {
+      if (error instanceof DeveloperOptionsAccessError) {
+        throw error;
+      }
+
       throw new DeveloperOptionsAccessError(401, error instanceof Error ? error.message : "Authentication required");
     }
-
-    const isAdmin = await profileService.hasRole(userId, "admin");
-    if (!isAdmin) {
-      throw new DeveloperOptionsAccessError(403, "Administrator access required");
-    }
-
-    return { userId };
   }
 
   private handleError(action: string, res: Response, error: unknown, fallbackMessage: string): void {

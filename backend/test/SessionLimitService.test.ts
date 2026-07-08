@@ -44,6 +44,16 @@ test("removeSession decrements the active session count", async () => {
   assert.equal(await svc.isAtLimit("user-1"), false);
 });
 
+test("hasSession returns true only for active tracked tokens", async () => {
+  const svc = makeService(2);
+  const expiredAt = Math.floor(Date.now() / 1000) - 1;
+  await svc.registerSession("user-1", "token-old", expiredAt);
+  await svc.registerSession("user-1", "token-new", futureExpiry());
+
+  assert.equal(await svc.hasSession("token-old"), false);
+  assert.equal(await svc.hasSession("token-new"), true);
+});
+
 test("removeSession is a no-op for unknown tokens", async () => {
   const svc = makeService(2);
   // Should not throw

@@ -63,6 +63,25 @@ export class SessionLimitService {
     this.memStore.delete(hash);
   }
 
+  async hasSession(accessToken: string): Promise<boolean> {
+    const hash = hashToken(accessToken);
+    const nowSeconds = Math.floor(Date.now() / 1000);
+
+    if (this.useDb) {
+      const { supabase } = await import("../integrations/supabase");
+      const { data, error } = await (supabase.from("user_sessions") as any)
+        .select("id")
+        .eq("session_token_hash", hash)
+        .gt("expires_at", new Date(nowSeconds * 1000).toISOString())
+        .maybeSingle();
+      if (error) throw new Error(`Failed to check session: ${error.message}`);
+      return Boolean(data?.id);
+    }
+
+    const entry = this.memStore.get(hash);
+    return Boolean(entry && entry.expiresAt > nowSeconds);
+  }
+
   async pruneExpiredSessions(userId: string): Promise<void> {
     const nowSeconds = Math.floor(Date.now() / 1000);
 

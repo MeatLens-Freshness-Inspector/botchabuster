@@ -1,21 +1,11 @@
 import { Request, Response } from "express";
-import { authService } from "../services/AuthService";
 import { userChatService } from "../services/UserChatService";
+import { resolveTrackedRequestAuthContext } from "../middleware/auth";
 
 export class UserChatController {
   private async resolveActorId(req: Request): Promise<string> {
-    const authorizationHeader = req.header("authorization");
-    if (!authorizationHeader?.startsWith("Bearer ")) {
-      throw new Error("Authentication required");
-    }
-
-    const accessToken = authorizationHeader.slice("Bearer ".length).trim();
-    if (!accessToken) {
-      throw new Error("Authentication required");
-    }
-
-    const user = await authService.getUserByAccessToken(accessToken);
-    return user.id;
+    const authContext = await resolveTrackedRequestAuthContext(req);
+    return authContext.userId;
   }
 
   async getContacts(req: Request, res: Response): Promise<void> {

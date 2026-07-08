@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
-import { authService } from "../services/AuthService";
-import { profileService } from "../services/ProfileService";
 import { auditLogService } from "../services/AuditLogService";
+import { resolveTrackedRequestAuthContext } from "../middleware/auth";
 
 class AuditLogAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -25,33 +24,16 @@ function normalizeEventTime(value?: string): string {
 }
 
 export class AuditLogController {
-  private getAccessToken(req: Request): string {
-    const authorizationHeader = req.header("authorization");
-    if (!authorizationHeader?.startsWith("Bearer ")) {
-      throw new AuditLogAccessError(401, "Authentication required");
-    }
-
-    const accessToken = authorizationHeader.slice("Bearer ".length).trim();
-    if (!accessToken) {
-      throw new AuditLogAccessError(401, "Authentication required");
-    }
-
-    return accessToken;
-  }
-
   private async getActorContext(req: Request): Promise<{ userId: string; role: string }> {
-    const accessToken = this.getAccessToken(req);
-    let userId: string;
-
     try {
-      const user = await authService.getUserByAccessToken(accessToken);
-      userId = user.id;
+      const authContext = await resolveTrackedRequestAuthContext(req);
+      return {
+        userId: authContext.userId,
+        role: authContext.isAdmin ? "admin" : "inspector",
+      };
     } catch (error) {
       throw new AuditLogAccessError(401, error instanceof Error ? error.message : "Authentication required");
     }
-
-    const isAdmin = await profileService.hasRole(userId, "admin");
-    return { userId, role: isAdmin ? "admin" : "inspector" };
   }
 
   private parseLimit(req: Request): number {

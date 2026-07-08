@@ -123,21 +123,6 @@ export class AuthController {
       const isAdmin = await profileService.hasRole(result.user.id, "admin");
       const appSession = authService.createAppSession(result.user);
 
-      const sessionLimit = getSessionLimitService();
-      await sessionLimit.pruneExpiredSessions(result.user.id);
-      if (await sessionLimit.isAtLimit(result.user.id)) {
-        res.status(429).json({
-          error: "You are already signed in on the maximum number of devices. Please sign out from another device first.",
-        });
-        return;
-      }
-
-      await sessionLimit.registerSession(
-        result.user.id,
-        appSession.access_token,
-        appSession.expires_at,
-      );
-
       await this.writeAuditLogSafely({
         payload: {
           event_type: "auth.sign_in",
@@ -436,21 +421,6 @@ export class AuthController {
         response: credential,
       });
       const isAdmin = await profileService.hasRole(result.user.id, "admin");
-
-      const sessionLimit = getSessionLimitService();
-      await sessionLimit.pruneExpiredSessions(result.user.id);
-      if (await sessionLimit.isAtLimit(result.user.id)) {
-        res.status(429).json({
-          error: "You are already signed in on the maximum number of devices. Please sign out from another device first.",
-        });
-        return;
-      }
-
-      await sessionLimit.registerSession(
-        result.user.id,
-        result.session.access_token,
-        result.session.expires_at,
-      );
 
       await this.writeAuditLogSafely({
         payload: {
