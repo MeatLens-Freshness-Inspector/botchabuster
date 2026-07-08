@@ -104,13 +104,7 @@ function writeAuthError(res: Response, error: unknown): void {
 }
 
 async function resolveAndAttachAuthContext(req: Request): Promise<RequestAuthContext> {
-  const authContext = await resolveTrackedRequestAuthContext(req);
-  enforceCookieCsrf(req, authContext);
-  const { accessToken, source } = getRequestAccessToken(req);
-  req.auth = authContext;
-  req.authAccessToken = accessToken;
-  req.authAccessTokenSource = source;
-  return authContext;
+  return resolveTrackedRequestAuthContext(req);
 }
 
 async function ensureTrackedAppSession(req: Request, authContext: RequestAuthContext): Promise<void> {
@@ -158,8 +152,18 @@ export async function resolveRequestAuthContext(req: Request): Promise<RequestAu
 }
 
 export async function resolveTrackedRequestAuthContext(req: Request): Promise<RequestAuthContext> {
+  if (req.auth && req.authContextResolved) {
+    return req.auth;
+  }
+
   const authContext = await resolveRequestAuthContext(req);
+  enforceCookieCsrf(req, authContext);
   await ensureTrackedAppSession(req, authContext);
+  const { accessToken, source } = getRequestAccessToken(req);
+  req.auth = authContext;
+  req.authAccessToken = accessToken;
+  req.authAccessTokenSource = source;
+  req.authContextResolved = true;
   return authContext;
 }
 

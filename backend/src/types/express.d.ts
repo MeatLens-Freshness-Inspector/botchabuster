@@ -6,6 +6,7 @@ declare global {
       auth?: RequestAuthContext;
       authAccessToken?: string;
       authAccessTokenSource?: "bearer" | "cookie";
+      authContextResolved?: boolean;
     }
   }
 }
