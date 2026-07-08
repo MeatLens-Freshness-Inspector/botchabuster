@@ -94,6 +94,9 @@ The root `render.yaml` tells Render to:
 4. Provide these environment variables when prompted:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_KEY`
+   - `SUPABASE_PUBLISHABLE_KEY`
+   - `APP_SESSION_SECRET`
+   - `CSRF_TOKEN_SECRET`
    - `ALLOWED_ORIGINS`
 5. Wait for the backend deploy to finish, then copy the Render URL.
 
@@ -104,12 +107,18 @@ Copy from `backend/.env.example`:
 ```env
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_KEY=your-supabase-service-role-key
+SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-or-anon-key
+APP_SESSION_SECRET=replace-with-a-long-random-secret
+CSRF_TOKEN_SECRET=replace-with-a-second-long-random-secret
+APP_SESSION_COOKIE_SECURE=true
 ALLOWED_ORIGINS=https://your-site.netlify.app,https://*--your-site.netlify.app
 UPLOAD_DIR=/tmp/meatlens-uploads
 ```
 
 Notes:
 
+- Do not force `NODE_ENV=production` on Render for this service. The build runs `tsc` and needs backend devDependencies available during `npm ci`.
+- `APP_SESSION_COOKIE_SECURE=true` is required for cross-site cookie auth from Netlify to Render.
 - `ALLOWED_ORIGINS` supports comma-separated values.
 - Wildcards are supported, so `https://*--your-site.netlify.app` allows Netlify preview and branch deploys for the same site.
 - Requests without an `Origin` header, such as health checks, are still allowed.

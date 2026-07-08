@@ -18,6 +18,7 @@ export class Config {
   readonly developerOptionsTokenTtlSeconds: number;
   readonly allowedOrigins: string[];
   readonly appSessionCookieName: string;
+  readonly appSessionCookieSecureConfigured: boolean;
   readonly appSessionCookieSecure: boolean;
   readonly csrfTokenSecret: string;
   readonly csrfTokenTtlSeconds: number;
@@ -38,10 +39,9 @@ export class Config {
     );
     this.allowedOrigins = getAllowedOrigins(process.env);
     this.appSessionCookieName = process.env.APP_SESSION_COOKIE_NAME?.trim() || "meatlens_session";
-    this.appSessionCookieSecure = parseBooleanEnv(
-      process.env.APP_SESSION_COOKIE_SECURE,
-      process.env.NODE_ENV === "production",
-    );
+    const appSessionCookieSecureOverride = parseOptionalBooleanEnv(process.env.APP_SESSION_COOKIE_SECURE);
+    this.appSessionCookieSecureConfigured = appSessionCookieSecureOverride !== null;
+    this.appSessionCookieSecure = appSessionCookieSecureOverride ?? (process.env.NODE_ENV === "production");
     this.csrfTokenSecret = process.env.CSRF_TOKEN_SECRET?.trim() || process.env.APP_SESSION_SECRET?.trim() || "";
     this.csrfTokenTtlSeconds = Math.max(
       60,
@@ -58,9 +58,14 @@ export class Config {
 }
 
 function parseBooleanEnv(value: string | undefined, fallback: boolean): boolean {
+  const parsed = parseOptionalBooleanEnv(value);
+  return parsed ?? fallback;
+}
+
+function parseOptionalBooleanEnv(value: string | undefined): boolean | null {
   const normalized = value?.trim().toLowerCase();
   if (!normalized) {
-    return fallback;
+    return null;
   }
 
   if (normalized === "true") {
@@ -71,5 +76,5 @@ function parseBooleanEnv(value: string | undefined, fallback: boolean): boolean 
     return false;
   }
 
-  return fallback;
+  return null;
 }

@@ -8,6 +8,7 @@ import { profileService } from "../services/ProfileService";
 import { auditLogService, type AuditLogWriteInput } from "../services/AuditLogService";
 import { passkeyService } from "../services/PasskeyService";
 import { getSessionLimitService } from "../services/SessionLimitService";
+import { shouldUseSecureSessionCookieForRequest } from "../security/sessionCookie";
 import { isReportOrganization } from "../types/reportOrganization";
 
 export class AuthController {
@@ -36,10 +37,13 @@ export class AuthController {
     }
   }
 
-  private createSessionCookieOptions(maxAgeMs: number) {
+  private createSessionCookieOptions(req: Request, maxAgeMs: number) {
     return {
       httpOnly: true,
-      secure: this.config.appSessionCookieSecure,
+      secure: shouldUseSecureSessionCookieForRequest(req, {
+        cookieSecureConfigured: this.config.appSessionCookieSecureConfigured,
+        cookieSecure: this.config.appSessionCookieSecure,
+      }),
       sameSite: "none" as const,
       path: "/",
       maxAge: maxAgeMs,
@@ -81,7 +85,7 @@ export class AuthController {
     };
   }
 
-  private async issueSessionResponse(res: Response, input: {
+  private async issueSessionResponse(req: Request, res: Response, input: {
     user: { id: string; email: string | null };
     isAdmin: boolean;
     session: AppSession;
@@ -89,7 +93,7 @@ export class AuthController {
     res.cookie(
       this.config.appSessionCookieName,
       input.session.access_token,
-      this.createSessionCookieOptions(input.session.expires_in * 1000),
+      this.createSessionCookieOptions(req, input.session.expires_in * 1000),
     );
 
     res.json(await this.buildBootstrapPayload({
@@ -99,9 +103,9 @@ export class AuthController {
     }));
   }
 
-  private clearSessionCookie(res: Response): void {
+  private clearSessionCookie(req: Request, res: Response): void {
     res.cookie(this.config.appSessionCookieName, "", {
-      ...this.createSessionCookieOptions(0),
+      ...this.createSessionCookieOptions(req, 0),
       expires: new Date(0),
     });
   }
@@ -152,7 +156,7 @@ export class AuthController {
         },
       });
 
-      await this.issueSessionResponse(res, {
+      await this.issueSessionResponse(req, res, {
         user: result.user,
         isAdmin,
         session: appSession,
@@ -258,7 +262,7 @@ export class AuthController {
         },
       });
 
-      this.clearSessionCookie(res);
+      this.clearSessionCookie(req, res);
       res.status(204).send();
     } catch (error) {
       console.error("Sign out error:", error);
@@ -467,7 +471,7 @@ export class AuthController {
         },
       });
 
-      await this.issueSessionResponse(res, {
+      await this.issueSessionResponse(req, res, {
         user: result.user,
         isAdmin,
         session: result.session,
