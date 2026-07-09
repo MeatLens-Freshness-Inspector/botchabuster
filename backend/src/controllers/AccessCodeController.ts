@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { accessCodeService } from "../services/AccessCodeService";
 import { auditLogService } from "../services/AuditLogService";
-import { resolveTrackedRequestAuthContext } from "../middleware/auth";
+import { getErrorStatus, resolveTrackedRequestAuthContext } from "../middleware/auth";
 
 class AccessCodeAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -23,7 +23,10 @@ export class AccessCodeController {
         throw error;
       }
 
-      throw new AccessCodeAccessError(401, error instanceof Error ? error.message : "Authentication required");
+      throw new AccessCodeAccessError(
+        getErrorStatus(error) ?? 401,
+        error instanceof Error ? error.message : "Authentication required",
+      );
     }
   }
 

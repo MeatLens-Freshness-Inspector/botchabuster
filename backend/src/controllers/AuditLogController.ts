@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { auditLogService } from "../services/AuditLogService";
-import { resolveTrackedRequestAuthContext } from "../middleware/auth";
+import { getErrorStatus, resolveTrackedRequestAuthContext } from "../middleware/auth";
 
 class AuditLogAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -32,7 +32,10 @@ export class AuditLogController {
         role: authContext.isAdmin ? "admin" : "inspector",
       };
     } catch (error) {
-      throw new AuditLogAccessError(401, error instanceof Error ? error.message : "Authentication required");
+      throw new AuditLogAccessError(
+        getErrorStatus(error) ?? 401,
+        error instanceof Error ? error.message : "Authentication required",
+      );
     }
   }
 

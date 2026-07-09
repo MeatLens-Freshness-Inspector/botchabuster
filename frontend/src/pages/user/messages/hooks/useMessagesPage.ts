@@ -143,7 +143,7 @@ export function useMessagesPage() {
 
   useEffect(() => {
     setSelectedContactId((currentId) =>
-      resolveSelectedContactId(contacts, currentId, isDesktop),
+      resolveSelectedContactId(contacts, currentId, Boolean(isDesktop)),
     );
   }, [contacts, isDesktop]);
 

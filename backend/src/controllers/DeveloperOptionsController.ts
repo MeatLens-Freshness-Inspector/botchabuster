@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { developerOptionsService } from "../services/DeveloperOptionsService";
 import { auditLogService } from "../services/AuditLogService";
-import { resolveTrackedRequestAuthContext } from "../middleware/auth";
+import { getErrorStatus, resolveTrackedRequestAuthContext } from "../middleware/auth";
 
 class DeveloperOptionsAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -23,7 +23,10 @@ export class DeveloperOptionsController {
         throw error;
       }
 
-      throw new DeveloperOptionsAccessError(401, error instanceof Error ? error.message : "Authentication required");
+      throw new DeveloperOptionsAccessError(
+        getErrorStatus(error) ?? 401,
+        error instanceof Error ? error.message : "Authentication required",
+      );
     }
   }
 

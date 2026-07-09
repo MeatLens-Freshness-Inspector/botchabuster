@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { marketLocationService } from "../services/MarketLocationService";
 import { auditLogService } from "../services/AuditLogService";
-import { resolveTrackedRequestAuthContext } from "../middleware/auth";
+import { getErrorStatus, resolveTrackedRequestAuthContext } from "../middleware/auth";
 
 class MarketLocationAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -23,7 +23,10 @@ export class MarketLocationController {
         throw error;
       }
 
-      throw new MarketLocationAccessError(401, error instanceof Error ? error.message : "Authentication required");
+      throw new MarketLocationAccessError(
+        getErrorStatus(error) ?? 401,
+        error instanceof Error ? error.message : "Authentication required",
+      );
     }
   }
 

@@ -8,7 +8,7 @@ import {
   assertInspectionDecisionPayload,
   normalizeInspectionPreScan,
 } from "../types/inspectionPreScan";
-import { resolveTrackedRequestAuthContext } from "../middleware/auth";
+import { getErrorStatus, resolveTrackedRequestAuthContext } from "../middleware/auth";
 
 class RequestAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -29,7 +29,10 @@ export class InspectionController {
         isAdmin: authContext.isAdmin,
       };
     } catch (error) {
-      throw new RequestAccessError(401, error instanceof Error ? error.message : "Authentication required");
+      throw new RequestAccessError(
+        getErrorStatus(error) ?? 401,
+        error instanceof Error ? error.message : "Authentication required",
+      );
     }
   }
 

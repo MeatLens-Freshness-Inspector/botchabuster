@@ -19,6 +19,19 @@ export class RequestAuthError extends Error {
   }
 }
 
+export function getErrorStatus(error: unknown): number | null {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "status" in error &&
+    typeof (error as { status?: unknown }).status === "number"
+  ) {
+    return (error as { status: number }).status;
+  }
+
+  return null;
+}
+
 type AccessTokenSource = "bearer" | "cookie";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
