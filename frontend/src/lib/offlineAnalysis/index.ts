@@ -1,8 +1,7 @@
 /**
  * Offline analysis orchestrator.
  *
- * Runs freshness analysis inside the browser using the ONNX classifier.
- * The model is the primary and only classification source.
+ * Runs freshness analysis inside the browser using the active ONNX classifier.
  *
  * Returns an AnalysisResult aligned with backend fields used by the app.
  */

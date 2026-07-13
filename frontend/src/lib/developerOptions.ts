@@ -36,7 +36,7 @@ export const DEFAULT_DEVELOPER_OPTIONS_FLAGS: DeveloperOptionsFlags = {
   skipModelPrewarm: false,
   showModelInputPreview: true,
   useSeed123Model2: true,
-  enableModelEnsemble: true,
+  enableModelEnsemble: false,
 };
 
 function resolveFlagsStorageKey(userId: string): string {

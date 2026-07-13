@@ -45,8 +45,8 @@ test("fuses MobileNetV3 and ResNet50 probabilities using the documented ordinal 
 
   expect(result).not.toBeNull();
   expect(result?.classification).toBe("fresh");
-  expect(result?.confidenceProbability).toBeCloseTo(0.863975, 6);
-  expect(result?.confidencePercent).toBe(86);
+  expect(result?.confidenceProbability).toBeCloseTo(0.871325, 6);
+  expect(result?.confidencePercent).toBe(87);
   expect(result?.freshnessScore).toBeGreaterThan(90);
   expect(result?.recommendation).toBe("Good for Consumption");
   expect(result?.analysisSource).toBe("ensemble");

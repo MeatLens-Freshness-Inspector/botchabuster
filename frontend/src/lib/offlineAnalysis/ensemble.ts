@@ -7,8 +7,8 @@ import {
   type MeatLensModelMetadata,
 } from "./meatLensPipeline";
 
-const ENSEMBLE_MOBILE_WEIGHT = 0.55;
-const ENSEMBLE_RESNET_WEIGHT = 0.45;
+const ENSEMBLE_MOBILE_WEIGHT = 0.85;
+const ENSEMBLE_RESNET_WEIGHT = 0.15;
 
 export const ENSEMBLE_LABEL_ORDER: FreshnessClassification[] = [
   "fresh",

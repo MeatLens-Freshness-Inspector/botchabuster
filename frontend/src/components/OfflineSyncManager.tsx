@@ -113,7 +113,7 @@ async function processAuditLogs(logs: PendingAuditLog[]): Promise<void> {
 /**
  * Mount this component once inside <AuthProvider>.
  * - Drains the offline scan queue when the device comes back online.
- * - Pre-warms the MobileNetV3 ONNX model in the background for the next
+ * - Pre-warms the active ONNX model path in the background for the next
  *   offline session.
  */
 export function OfflineSyncManager() {
@@ -135,18 +135,13 @@ export function OfflineSyncManager() {
     const isDeveloperUnlocked = Boolean(
       developerSession && !isDeveloperOptionsSessionExpired(developerSession)
     );
+    const useSeed123Variant = developerFlags.enableModelEnsemble || developerFlags.useSeed123Model2;
 
-    const useEnsemble = !isDeveloperUnlocked || developerFlags.enableModelEnsemble;
-
-    if (useEnsemble) {
+    if (useSeed123Variant) {
       return "seed123_model2" as const;
     }
 
-    if (!developerFlags.useSeed123Model2) {
-      return "default" as const;
-    }
-
-    return "seed123_model2" as const;
+    return isDeveloperUnlocked ? "default" as const : "seed123_model2" as const;
   };
 
   const drainQueue = async () => {
@@ -160,7 +155,7 @@ export function OfflineSyncManager() {
     const isDeveloperUnlocked = Boolean(
       developerSession && !isDeveloperOptionsSessionExpired(developerSession)
     );
-    const useEnsemble = !isDeveloperUnlocked || developerFlags.enableModelEnsemble;
+    const useEnsemble = developerFlags.enableModelEnsemble;
     setActiveAnalysisMode(useEnsemble ? "ensemble" : "mobilenetv3");
     setActiveMobileNetModelVariant(resolveActiveVariant());
 
@@ -208,7 +203,7 @@ export function OfflineSyncManager() {
   useEffect(() => {
     const maybePrewarm = () => {
       if (!user) {
-        setActiveAnalysisMode("ensemble");
+        setActiveAnalysisMode("mobilenetv3");
         setActiveMobileNetModelVariant("seed123_model2");
         prewarmModel();
         return;
@@ -219,7 +214,7 @@ export function OfflineSyncManager() {
       const isDeveloperUnlocked = Boolean(
         developerSession && !isDeveloperOptionsSessionExpired(developerSession)
       );
-      const useEnsemble = !isDeveloperUnlocked || developerFlags.enableModelEnsemble;
+      const useEnsemble = developerFlags.enableModelEnsemble;
       setActiveAnalysisMode(useEnsemble ? "ensemble" : "mobilenetv3");
       setActiveMobileNetModelVariant(resolveActiveVariant());
       if (developerFlags.skipModelPrewarm) {

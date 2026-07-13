@@ -37,7 +37,7 @@ interface AnalyzeOptions {
   guideBox?: SquareGuideBox | null;
 }
 
-let activeAnalysisMode: AnalysisMode = "ensemble";
+let activeAnalysisMode: AnalysisMode = "mobilenetv3";
 
 function toEnsembleSourcePrediction(
   result: ModelPredictionResult,

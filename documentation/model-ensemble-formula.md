@@ -27,7 +27,7 @@ The two models do not share the same label space, so the ensemble should be done
 3. Blend the two scores with fixed weights:
 
    ```text
-   S = 0.55 * s_m + 0.45 * s_r
+   S = 0.85 * s_m + 0.15 * s_r
    ```
 
 4. Map the final score back to a label:
@@ -44,10 +44,10 @@ The two models do not share the same label space, so the ensemble should be done
 
 - The models were trained with different output vocabularies, so weighted score fusion is more stable than hard voting.
 - Freshness is an ordered problem, so an ordinal score preserves the distance between classes better than a simple class vote.
-- The MobileNetV3-small seed123/model2 branch gets a slight weight advantage because the repo includes validation metrics for that model and it already matches the current ROI-focused preprocessing path.
-- ResNet50 still contributes meaningfully, so it stays close to equal weight instead of being treated as a weak fallback.
+- The MobileNetV3-small seed123/model2 branch gets the dominant weight because the ResNet50 branch is the less reliable one here.
+- ResNet50 still contributes, but only as a smaller correction signal instead of a near-equal vote.
 - The existing low-confidence warning behavior can still sit on top of this ensemble, so uncertain cases remain conservative.
 
 ## Practical Note
 
-This is a provisional ensemble for the currently available `ResNet50` and `MobileNetV3-small seed123/model2` artifacts. If a `MobileNetV2` artifact is added later, the weights and score mapping should be re-fit instead of copied over unchanged.
+This is a provisional ensemble for the currently available `ResNet50` and `MobileNetV3-small seed123/model2` artifacts. It stays off by default and should be enabled only when the ensemble path is being evaluated. If a `MobileNetV2` artifact is added later, the weights and score mapping should be re-fit instead of copied over unchanged.

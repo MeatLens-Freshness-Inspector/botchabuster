@@ -119,11 +119,9 @@ export function useInspectPage(): InspectPageViewModel {
   }, [isAdmin, user]);
 
   useEffect(() => {
-    const developerModeEnabled = Boolean(user && isAdmin && isDeveloperUnlocked);
-    const useEnsemble = !developerModeEnabled || developerFlags.enableModelEnsemble;
-    const nextVariant = useEnsemble
-      ? "seed123_model2"
-      : developerFlags.useSeed123Model2
+    const useEnsemble = developerFlags.enableModelEnsemble;
+    const nextVariant =
+      useEnsemble || developerFlags.useSeed123Model2
         ? "seed123_model2"
         : "default";
     setActiveAnalysisMode(useEnsemble ? "ensemble" : "mobilenetv3");
