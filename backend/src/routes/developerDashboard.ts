@@ -9,6 +9,9 @@ const controller = new DeveloperDashboardController();
 router.get("/overview", requireDeveloper, (req, res) => controller.getOverview(req, res));
 router.get("/datasets", requireDeveloper, (req, res) => controller.getDatasets(req, res));
 router.post("/datasets/export", requireDeveloper, (req, res) => controller.exportDatasets(req, res));
+router.patch("/datasets/:inspectionId/manual-classification", requireDeveloper, (req, res) =>
+  controller.updateDatasetManualClassification(req, res),
+);
 router.get("/training-runs", requireDeveloper, (req, res) => controller.listTrainingRuns(req, res));
 router.post(
   "/training-runs/import",

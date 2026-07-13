@@ -4,6 +4,8 @@ import { JSDOM } from "jsdom";
 import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { developerDashboardClient, DEFAULT_DEVELOPER_DATASET_FILTERS, type DeveloperDatasetListResponse } from "../src/integrations/api/DeveloperDashboardClient";
+import { DeveloperDatasetsSection } from "../src/pages/admin-dashboard/components/developer/DeveloperDatasetsSection";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -11,7 +13,9 @@ type GlobalWithDom = typeof globalThis & {
   navigator: Navigator;
   HTMLElement: typeof HTMLElement;
   HTMLButtonElement: typeof HTMLButtonElement;
+  HTMLSelectElement: typeof HTMLSelectElement;
   MouseEvent: typeof MouseEvent;
+  Event: typeof Event;
 };
 
 function installDom(): { container: HTMLDivElement; cleanup: () => void } {
@@ -24,7 +28,9 @@ function installDom(): { container: HTMLDivElement; cleanup: () => void } {
     navigator: globalThis.navigator,
     HTMLElement: globalThis.HTMLElement,
     HTMLButtonElement: globalThis.HTMLButtonElement,
+    HTMLSelectElement: globalThis.HTMLSelectElement,
     MouseEvent: globalThis.MouseEvent,
+    Event: globalThis.Event,
     getComputedStyle: globalThis.getComputedStyle,
     requestAnimationFrame: globalThis.requestAnimationFrame,
     cancelAnimationFrame: globalThis.cancelAnimationFrame,
@@ -58,9 +64,17 @@ function installDom(): { container: HTMLDivElement; cleanup: () => void } {
     configurable: true,
     value: dom.window.HTMLButtonElement,
   });
+  Object.defineProperty(globals, "HTMLSelectElement", {
+    configurable: true,
+    value: dom.window.HTMLSelectElement,
+  });
   Object.defineProperty(globals, "MouseEvent", {
     configurable: true,
     value: dom.window.MouseEvent,
+  });
+  Object.defineProperty(globals, "Event", {
+    configurable: true,
+    value: dom.window.Event,
   });
   Object.defineProperty(globalThis, "getComputedStyle", {
     configurable: true,
@@ -117,9 +131,17 @@ function installDom(): { container: HTMLDivElement; cleanup: () => void } {
         configurable: true,
         value: previousGlobals.HTMLButtonElement,
       });
+      Object.defineProperty(globals, "HTMLSelectElement", {
+        configurable: true,
+        value: previousGlobals.HTMLSelectElement,
+      });
       Object.defineProperty(globals, "MouseEvent", {
         configurable: true,
         value: previousGlobals.MouseEvent,
+      });
+      Object.defineProperty(globals, "Event", {
+        configurable: true,
+        value: previousGlobals.Event,
       });
       Object.defineProperty(globalThis, "getComputedStyle", {
         configurable: true,
@@ -179,6 +201,7 @@ const developerDatasetRows = [
     user_id: "inspector-1",
     meat_type: "beef",
     classification: "fresh",
+    manual_classification: "fresh",
     confidence_score: 100,
     flagged_deviations: [],
     explanation: null,
@@ -193,6 +216,7 @@ const developerDatasetRows = [
     user_id: "inspector-2",
     meat_type: "fish",
     classification: "warning",
+    manual_classification: "warning",
     confidence_score: 88,
     flagged_deviations: [],
     explanation: null,
@@ -204,11 +228,22 @@ const developerDatasetRows = [
   },
 ];
 
+const singleDeveloperDatasetPage: DeveloperDatasetListResponse = {
+  items: [developerDatasetRows[0]],
+  total: 1,
+  limit: 25,
+  offset: 0,
+};
+
 function createDeveloperDashboardFetch(options?: {
   onExport?: () => void;
+  onExportBody?: (body: unknown) => void;
+  onDatasetUpdateBody?: (body: unknown) => void;
   datasets?: unknown[];
 }): typeof globalThis.fetch {
   const onExport = options?.onExport;
+  const onExportBody = options?.onExportBody;
+  const onDatasetUpdateBody = options?.onDatasetUpdateBody;
   const datasets = options?.datasets ?? [];
 
   return (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -229,8 +264,43 @@ function createDeveloperDashboardFetch(options?: {
 
     if (url.includes("/developer-dashboard/datasets/export")) {
       onExport?.();
+      if (typeof init?.body === "string") {
+        onExportBody?.(JSON.parse(init.body as string) as unknown);
+      }
       return new Response(new Blob(["zip-bytes"], { type: "application/zip" }), {
         status: 200,
+      });
+    }
+
+    if (url.includes("/developer-dashboard/datasets/") && url.includes("/manual-classification") && init?.method === "PATCH") {
+      const pathParts = new URL(url).pathname.split("/").filter(Boolean);
+      const inspectionId = pathParts[pathParts.length - 2] ?? "inspection-unknown";
+      let manualClassification = "fresh";
+      if (typeof init?.body === "string") {
+        const parsed = JSON.parse(init.body as string) as { manualClassification?: unknown };
+        onDatasetUpdateBody?.(parsed);
+        if (typeof parsed.manualClassification === "string") {
+          manualClassification = parsed.manualClassification;
+        }
+      }
+
+      return new Response(JSON.stringify({
+        id: inspectionId,
+        user_id: "inspector-1",
+        meat_type: "beef",
+        classification: "fresh",
+        manual_classification: manualClassification,
+        confidence_score: 100,
+        flagged_deviations: [],
+        explanation: null,
+        image_url: null,
+        location: "North Market",
+        inspector_notes: null,
+        created_at: "2026-07-13T00:00:00.000Z",
+        updated_at: "2026-07-13T00:00:00.000Z",
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -361,6 +431,138 @@ test("developer datasets show confidence scores as raw percentages", async () =>
     await act(async () => {
       root.unmount();
     });
+    cleanup();
+  }
+});
+
+test("developer dataset manual classification can be changed and cleared locally", async () => {
+  const { container, cleanup } = installDom();
+  const root: Root = createRoot(container);
+
+  try {
+    function Harness() {
+      const [datasets, setDatasets] = React.useState<DeveloperDatasetListResponse>(singleDeveloperDatasetPage);
+
+      return (
+        <DeveloperDatasetsSection
+          datasets={datasets}
+          filters={DEFAULT_DEVELOPER_DATASET_FILTERS}
+          onFiltersChange={() => undefined}
+          onManualClassificationChange={(inspectionId, classification) => {
+            setDatasets((current) => ({
+              ...current,
+              items: current.items.map((item) => (
+                item.id === inspectionId
+                  ? { ...item, manual_classification: classification }
+                  : item
+              )),
+            }));
+          }}
+          onPageChange={() => undefined}
+          onExport={async () => undefined}
+          isExporting={false}
+          isLoading={false}
+        />
+      );
+    }
+
+    await act(async () => {
+      root.render(<Harness />);
+    });
+    await flushEffects();
+
+    const select = document.querySelector(
+      'select[aria-label="Manual classification for inspection dataset-1"]',
+    ) as HTMLSelectElement | null;
+    assert.ok(select, "Expected manual classification select for dataset-1");
+    assert.equal(select?.value, "fresh");
+
+    await act(async () => {
+      (select as HTMLSelectElement).value = "spoiled";
+      (select as HTMLSelectElement).dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await flushEffects();
+
+    const updatedSelect = document.querySelector(
+      'select[aria-label="Manual classification for inspection dataset-1"]',
+    ) as HTMLSelectElement | null;
+    assert.equal(updatedSelect?.value, "spoiled");
+    assert.ok(
+      document.querySelector('button[aria-label="Reset manual classification for inspection dataset-1"]'),
+      "Expected reset control after changing the manual classification",
+    );
+
+    const resetButton = document.querySelector(
+      'button[aria-label="Reset manual classification for inspection dataset-1"]',
+    ) as HTMLButtonElement | null;
+    assert.ok(resetButton, "Expected reset manual classification button for dataset-1");
+
+    await act(async () => {
+      resetButton?.click();
+    });
+    await flushEffects();
+
+    const resetSelect = document.querySelector(
+      'select[aria-label="Manual classification for inspection dataset-1"]',
+    ) as HTMLSelectElement | null;
+    assert.equal(resetSelect?.value, "fresh");
+    assert.equal(
+      document.querySelector('button[aria-label="Reset manual classification for inspection dataset-1"]'),
+      null,
+    );
+  } finally {
+    await act(async () => {
+      root.unmount();
+    });
+    cleanup();
+  }
+});
+
+test("developer dataset manual classification updates through the client", async () => {
+  const { cleanup } = installDom();
+  const originalFetch = globalThis.fetch;
+  let updateBody: unknown = null;
+
+  try {
+    globalThis.fetch = createDeveloperDashboardFetch({
+      onDatasetUpdateBody: (body) => {
+        updateBody = body;
+      },
+    });
+    const updatedInspection = await developerDashboardClient.updateDatasetManualClassification(
+      "inspection-1",
+      "spoiled",
+    );
+
+    assert.deepEqual(updateBody, {
+      manualClassification: "spoiled",
+    });
+    assert.equal(updatedInspection.manual_classification, "spoiled");
+  } finally {
+    globalThis.fetch = originalFetch;
+    cleanup();
+  }
+});
+
+test("developer dataset export sends filters only", async () => {
+  const { cleanup } = installDom();
+  const originalFetch = globalThis.fetch;
+  let exportBody: unknown = null;
+
+  try {
+    globalThis.fetch = createDeveloperDashboardFetch({
+      onExportBody: (body) => {
+        exportBody = body;
+      },
+    });
+    await developerDashboardClient.exportDatasets(DEFAULT_DEVELOPER_DATASET_FILTERS);
+
+    assert.deepEqual(exportBody, {
+      limit: "25",
+      offset: "0",
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
     cleanup();
   }
 });

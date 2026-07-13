@@ -7,6 +7,7 @@ export interface Inspection {
   user_id: string | null;
   meat_type: MeatType;
   classification: FreshnessClassification;
+  manual_classification?: FreshnessClassification;
   confidence_score: number;
   flagged_deviations: string[];
   explanation: string | null;
@@ -32,6 +33,7 @@ export interface Inspection {
 export interface InspectionInsert {
   meat_type: MeatType;
   classification: FreshnessClassification;
+  manual_classification?: FreshnessClassification;
   confidence_score: number;
   client_submission_id: string;
   captured_at?: string;

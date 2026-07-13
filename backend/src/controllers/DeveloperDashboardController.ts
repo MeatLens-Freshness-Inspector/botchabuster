@@ -1,7 +1,16 @@
 import { rm } from "node:fs/promises";
 import type { Request, Response } from "express";
 import { developerDashboardService } from "../services/DeveloperDashboardService";
-import type { DeveloperDatasetFilters } from "../types/developerDashboard";
+import type { DeveloperDatasetClassification, DeveloperDatasetFilters } from "../types/developerDashboard";
+import type { Inspection } from "../types/inspection";
+
+const ALLOWED_CLASSIFICATIONS = new Set<DeveloperDatasetClassification>([
+  "fresh",
+  "not fresh",
+  "spoiled",
+  "acceptable",
+  "warning",
+]);
 
 function parseBoolean(value: unknown): boolean | undefined {
   if (value === true || value === "true") return true;
@@ -23,6 +32,17 @@ function parseOffset(value: unknown): number {
 
 function parseString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
+}
+
+function parseClassification(value: unknown): Inspection["classification"] | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return ALLOWED_CLASSIFICATIONS.has(normalized as DeveloperDatasetClassification)
+    ? (normalized as Inspection["classification"])
+    : undefined;
 }
 
 export class DeveloperDashboardController {
@@ -63,14 +83,36 @@ export class DeveloperDashboardController {
 
   async exportDatasets(req: Request, res: Response): Promise<void> {
     try {
-      const exported = await developerDashboardService.exportDatasetZip(
-        this.parseFilters((req.body ?? {}) as Record<string, unknown>),
-      );
+      const body = (req.body ?? {}) as Record<string, unknown>;
+      const exported = await developerDashboardService.exportDatasetZip(this.parseFilters(body));
       res.setHeader("Content-Type", "application/zip");
       res.setHeader("Content-Disposition", `attachment; filename="${exported.filename}"`);
       res.status(200).send(exported.buffer);
     } catch (error) {
       this.handleError("Export developer datasets", res, error, "Failed to export developer datasets");
+    }
+  }
+
+  async updateDatasetManualClassification(req: Request, res: Response): Promise<void> {
+    try {
+      const inspectionId = typeof req.params.inspectionId === "string" ? req.params.inspectionId.trim() : "";
+      if (!inspectionId) {
+        res.status(400).json({ error: "Inspection ID is required" });
+        return;
+      }
+
+      const body = (req.body ?? {}) as Record<string, unknown>;
+      const manualClassification = parseClassification(body.manualClassification);
+      if (!manualClassification) {
+        res.status(400).json({ error: "manualClassification is required" });
+        return;
+      }
+
+      res.json(
+        await developerDashboardService.updateDatasetManualClassification(inspectionId, manualClassification),
+      );
+    } catch (error) {
+      this.handleError("Update developer dataset classification", res, error, "Failed to update dataset classification");
     }
   }
 

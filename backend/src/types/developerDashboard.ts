@@ -34,6 +34,8 @@ export interface DeveloperDatasetFilters {
   dateTo?: string;
 }
 
+export type DeveloperDatasetClassification = Inspection["classification"];
+
 export interface DeveloperDatasetListResponse {
   items: Inspection[];
   total: number;

@@ -1,5 +1,6 @@
 import React from "react";
-import { Download, ImageIcon, Search } from "lucide-react";
+import { Download, ImageIcon, RotateCcw, Search } from "lucide-react";
+import { FreshnessBadge } from "@/components/FreshnessBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import type {
   DeveloperDatasetFilterState,
   DeveloperDatasetListResponse,
 } from "@/integrations/api/DeveloperDashboardClient";
+import type { FreshnessClassification } from "@/types/inspection";
 
 function formatDateTime(value: string | null | undefined): string {
   if (!value) return "-";
@@ -30,10 +32,22 @@ function formatConfidencePercent(value: number | null | undefined): string {
   return `${value.toFixed(2)}%`;
 }
 
+const CLASSIFICATION_OPTIONS: Array<{
+  value: FreshnessClassification;
+  label: string;
+}> = [
+  { value: "fresh", label: "Fresh" },
+  { value: "acceptable", label: "Acceptable" },
+  { value: "warning", label: "Warning" },
+  { value: "not fresh", label: "Not fresh" },
+  { value: "spoiled", label: "Spoiled" },
+];
+
 export function DeveloperDatasetsSection({
   datasets,
   filters,
   onFiltersChange,
+  onManualClassificationChange,
   onPageChange,
   onExport,
   isExporting,
@@ -42,6 +56,7 @@ export function DeveloperDatasetsSection({
   datasets: DeveloperDatasetListResponse | null;
   filters: DeveloperDatasetFilterState;
   onFiltersChange: (next: DeveloperDatasetFilterState) => void;
+  onManualClassificationChange: (inspectionId: string, classification: FreshnessClassification) => void | Promise<void>;
   onPageChange: (offset: number) => void | Promise<void>;
   onExport: () => Promise<void>;
   isExporting: boolean;
@@ -97,7 +112,7 @@ export function DeveloperDatasetsSection({
           <Input
             value={filters.classification}
             onChange={(event) => onFiltersChange({ ...filters, classification: event.target.value, offset: 0 })}
-            placeholder="Classification"
+            placeholder="Manual classification"
           />
           <Input
             type="date"
@@ -141,7 +156,8 @@ export function DeveloperDatasetsSection({
                 <TableHead>Inspector</TableHead>
                 <TableHead>Location</TableHead>
                 <TableHead>Meat</TableHead>
-                <TableHead>Classification</TableHead>
+                <TableHead>Model Classification</TableHead>
+                <TableHead>Manual Classification</TableHead>
                 <TableHead>Confidence</TableHead>
               </TableRow>
             </TableHeader>
@@ -165,13 +181,45 @@ export function DeveloperDatasetsSection({
                   <TableCell>{inspection.user_id ?? "-"}</TableCell>
                   <TableCell>{inspection.location ?? "-"}</TableCell>
                   <TableCell>{inspection.meat_type}</TableCell>
-                  <TableCell>{inspection.classification}</TableCell>
+                  <TableCell>
+                    <FreshnessBadge classification={inspection.classification} size="sm" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={inspection.manual_classification ?? inspection.classification}
+                        onChange={(event) => {
+                          const nextClassification = event.target.value as FreshnessClassification;
+                          void onManualClassificationChange(inspection.id, nextClassification);
+                        }}
+                        className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1 text-sm"
+                        aria-label={`Manual classification for inspection ${inspection.id}`}
+                      >
+                        {CLASSIFICATION_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      {(inspection.manual_classification ?? inspection.classification) !== inspection.classification ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => void onManualClassificationChange(inspection.id, inspection.classification)}
+                          aria-label={`Reset manual classification for inspection ${inspection.id}`}
+                        >
+                          <RotateCcw className="h-4 w-4" />
+                        </Button>
+                      ) : null}
+                    </div>
+                  </TableCell>
                   <TableCell>{formatConfidencePercent(inspection.confidence_score)}</TableCell>
                 </TableRow>
               ))}
               {!isLoading && (datasets?.items.length ?? 0) === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">
                     No inspection records match the current filters.
                   </TableCell>
                 </TableRow>

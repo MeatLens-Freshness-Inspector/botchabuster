@@ -21,6 +21,7 @@ type InspectionInsertPayload = {
   client_submission_id: string;
   meat_type: InspectionInsert["meat_type"];
   classification: InspectionInsert["classification"];
+  manual_classification?: InspectionInsert["manual_classification"];
   confidence_score: number;
   captured_at?: string;
   flagged_deviations?: string[];
@@ -177,7 +178,7 @@ export class InspectionService {
     }
 
     if (filters.classification?.trim()) {
-      query = query.eq("classification", filters.classification.trim());
+      query = query.eq("manual_classification", filters.classification.trim());
     }
 
     if (filters.inspector?.trim()) {
@@ -242,6 +243,7 @@ export class InspectionService {
       client_submission_id: clientSubmissionId,
       meat_type: inspection.meat_type,
       classification: inspection.classification,
+      manual_classification: inspection.manual_classification ?? inspection.classification,
       confidence_score: inspection.confidence_score,
     };
 
@@ -268,6 +270,27 @@ export class InspectionService {
       inspection_decision_source: inspection.inspection_decision_source,
       protocol_spoiled_reason: inspection.protocol_spoiled_reason,
     });
+  }
+
+  async updateManualClassification(
+    inspectionId: string,
+    manualClassification: Inspection["classification"],
+  ): Promise<Inspection> {
+    const { data, error } = await (supabase
+      .from(this.tableName) as any)
+      .update({
+        manual_classification: manualClassification,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", inspectionId)
+      .select("*")
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update inspection: ${error.message}`);
+    }
+
+    return data as unknown as Inspection;
   }
 }
 

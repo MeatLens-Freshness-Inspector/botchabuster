@@ -13,6 +13,7 @@ function createInspection(overrides: Partial<Inspection>): Inspection {
     user_id: "user-1",
     meat_type: "pork",
     classification: "fresh",
+    manual_classification: "fresh",
     confidence_score: 0.94,
     flagged_deviations: [],
     explanation: null,
@@ -90,8 +91,9 @@ test("dataset export ZIP contains manifest, inspections.csv, images, and missing
     assert.deepEqual(manifest.rowsMissingImages, ["inspection-without-image"]);
 
     const csv = Buffer.from(zipEntries["inspections.csv"]).toString("utf-8");
-    assert.match(csv, /inspection-with-image/);
-    assert.match(csv, /inspection-without-image/);
+    assert.match(csv, /^date,meat,manual classification,confidence$/m);
+    assert.match(csv, /"2026-07-13","pork","fresh","0.94"/);
+    assert.doesNotMatch(csv, /source_classification/);
   } finally {
     if (originalGetDeveloperDatasetPage) {
       (inspectionService as unknown as {
@@ -168,5 +170,119 @@ test("dataset export downloads images concurrently", async () => {
     } else {
       delete (inspectionService as unknown as { getDeveloperDatasetPage?: unknown }).getDeveloperDatasetPage;
     }
+  }
+});
+
+test("dataset export uses stored manual classifications", async () => {
+  const { developerDashboardService } = await import("../src/services/DeveloperDashboardService");
+  const { inspectionService } = await import("../src/services/InspectionService");
+  const originalGetDeveloperDatasetPage = (inspectionService as unknown as {
+    getDeveloperDatasetPage?: typeof developerDashboardService.listDatasets;
+  }).getDeveloperDatasetPage;
+
+  (inspectionService as unknown as {
+    getDeveloperDatasetPage: typeof developerDashboardService.listDatasets;
+  }).getDeveloperDatasetPage = async (filters) => {
+    assert.equal(filters.limit, 10_000);
+    assert.equal(filters.offset, 0);
+
+    return {
+      items: [
+        createInspection({
+          id: "inspection-a",
+          classification: "fresh",
+          manual_classification: "spoiled",
+          image_url: "data:image/jpeg;base64,aW1hZ2UtYnl0ZXM=",
+        }),
+        createInspection({
+          id: "inspection-b",
+          classification: "warning",
+          manual_classification: "warning",
+        }),
+      ],
+      total: 2,
+      limit: filters.limit,
+      offset: filters.offset,
+    };
+  };
+
+  try {
+    const exported = await developerDashboardService.exportDatasetZip(
+      {
+        limit: 50,
+        offset: 0,
+        hasImage: true,
+      },
+    );
+    const zipEntries = unzipSync(new Uint8Array(exported.buffer));
+    const csv = Buffer.from(zipEntries["inspections.csv"]).toString("utf-8");
+    const overriddenRow = csv.split("\n").find((line) => line.includes("\"spoiled\""));
+
+    assert.ok(overriddenRow);
+    assert.match(csv, /^date,meat,manual classification,confidence$/m);
+    assert.doesNotMatch(csv, /source_classification/);
+
+    const manifest = JSON.parse(Buffer.from(zipEntries["manifest.json"]).toString("utf-8")) as {
+      rowsMissingImages: string[];
+    };
+    assert.deepEqual(manifest.rowsMissingImages, ["inspection-b"]);
+  } finally {
+    if (originalGetDeveloperDatasetPage) {
+      (inspectionService as unknown as {
+        getDeveloperDatasetPage: typeof developerDashboardService.listDatasets;
+      }).getDeveloperDatasetPage = originalGetDeveloperDatasetPage;
+    } else {
+      delete (inspectionService as unknown as { getDeveloperDatasetPage?: unknown }).getDeveloperDatasetPage;
+    }
+  }
+});
+
+test("inspection service persists manual classification changes", async () => {
+  const { inspectionService } = await import("../src/services/InspectionService");
+  const { supabase } = await import("../src/integrations/supabase");
+  const supabaseClient = supabase as any;
+  const originalFrom = supabaseClient.from;
+  let updatePayload: unknown = null;
+  let updateTarget: Array<[string, unknown]> = [];
+
+  supabaseClient.from = ((tableName: string) => {
+    assert.equal(tableName, "inspections");
+    const chain = {
+      update(payload: unknown) {
+        updatePayload = payload;
+        return chain;
+      },
+      eq(column: string, value: unknown) {
+        updateTarget.push([column, value]);
+        return chain;
+      },
+      select() {
+        return chain;
+      },
+      async single() {
+        return {
+          data: createInspection({
+            id: "inspection-a",
+            classification: "fresh",
+            manual_classification: "spoiled",
+          }),
+          error: null,
+        };
+      },
+    };
+
+    return chain;
+  }) as typeof supabase.from;
+
+  try {
+    const updatedInspection = await inspectionService.updateManualClassification("inspection-a", "spoiled");
+
+    assert.equal(updatedInspection.manual_classification, "spoiled");
+    assert.deepEqual(updateTarget, [["id", "inspection-a"]]);
+    const payload = updatePayload as Record<string, unknown>;
+    assert.equal(payload.manual_classification, "spoiled");
+    assert.equal(typeof payload.updated_at, "string");
+  } finally {
+    supabaseClient.from = originalFrom;
   }
 });

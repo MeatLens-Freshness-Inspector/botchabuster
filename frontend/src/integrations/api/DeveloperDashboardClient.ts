@@ -1,7 +1,7 @@
 import { createAuthHeaders } from "@/lib/authCache";
 import type { Inspection } from "@/types/inspection";
 import { readApiErrorMessage } from "./apiRequest";
-import { fetchWithTimeout, UPLOAD_REQUEST_TIMEOUT_MS } from "./fetchWithTimeout";
+import { fetchWithTimeout } from "./fetchWithTimeout";
 
 const API_BASE_URL =
   ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
@@ -98,8 +98,14 @@ function createDatasetSearchParams(filters: DeveloperDatasetFilterState, offset 
   return params;
 }
 
-function createDatasetExportPayload(filters: DeveloperDatasetFilterState): Record<string, unknown> {
+function createDatasetExportPayload(
+  filters: DeveloperDatasetFilterState,
+): Record<string, unknown> {
   return Object.fromEntries(createDatasetSearchParams(filters, 0).entries());
+}
+
+function createDatasetClassificationPayload(manualClassification: Inspection["classification"]): Record<string, unknown> {
+  return { manualClassification };
 }
 
 export class DeveloperDashboardClient {
@@ -159,6 +165,26 @@ export class DeveloperDashboardClient {
     }
 
     return response.blob();
+  }
+
+  async updateDatasetManualClassification(
+    inspectionId: string,
+    manualClassification: Inspection["classification"],
+  ): Promise<Inspection> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/developer-dashboard/datasets/${encodeURIComponent(inspectionId)}/manual-classification`,
+      {
+        method: "PATCH",
+        headers: this.createHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(createDatasetClassificationPayload(manualClassification)),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(await readApiErrorMessage(response, "Failed to update developer dataset classification"));
+    }
+
+    return response.json();
   }
 
   async listTrainingRuns(): Promise<TrainingRunRecord[]> {

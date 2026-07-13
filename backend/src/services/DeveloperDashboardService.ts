@@ -96,6 +96,13 @@ export class DeveloperDashboardService {
     return inspectionService.getDeveloperDatasetPage(filters);
   }
 
+  async updateDatasetManualClassification(
+    inspectionId: string,
+    manualClassification: Inspection["classification"],
+  ): Promise<Inspection> {
+    return inspectionService.updateManualClassification(inspectionId, manualClassification);
+  }
+
   async exportDatasetZip(filters: DeveloperDatasetFilters): Promise<{ filename: string; buffer: Buffer }> {
     const dataset = await this.listDatasets({
       ...filters,
@@ -280,24 +287,21 @@ export class DeveloperDashboardService {
   }
 
   private buildInspectionCsv(inspections: Inspection[]): string {
-    const headers: Array<keyof Inspection> = [
-      "id",
-      "user_id",
-      "meat_type",
-      "classification",
-      "confidence_score",
-      "image_url",
-      "location",
-      "location_latitude",
-      "location_longitude",
-      "stall_number",
-      "inspection_decision_source",
-      "client_submission_id",
-      "captured_at",
-      "created_at",
-      "updated_at",
-    ];
-    const rows = inspections.map((inspection) => headers.map((header) => csvEscape(inspection[header])).join(","));
+    const headers = [
+      "date",
+      "meat",
+      "manual classification",
+      "confidence",
+    ] as const;
+    const rows = inspections.map((inspection) => {
+      const manualClassification = inspection.manual_classification ?? inspection.classification;
+      return [
+        inspection.captured_at.slice(0, 10),
+        inspection.meat_type,
+        manualClassification,
+        inspection.confidence_score,
+      ].map(csvEscape).join(",");
+    });
     return [
       headers.join(","),
       ...rows,

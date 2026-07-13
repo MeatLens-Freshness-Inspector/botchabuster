@@ -5,6 +5,7 @@ export interface Inspection {
   user_id: string;
   meat_type: string;
   classification: "fresh" | "not fresh" | "spoiled" | "acceptable" | "warning";
+  manual_classification?: "fresh" | "not fresh" | "spoiled" | "acceptable" | "warning";
   confidence_score: number;
   flagged_deviations: string[];
   explanation: string | null;
@@ -32,6 +33,7 @@ export interface InspectionInsert {
   user_id: string;
   meat_type: string;
   classification: "fresh" | "not fresh" | "spoiled" | "acceptable" | "warning";
+  manual_classification?: "fresh" | "not fresh" | "spoiled" | "acceptable" | "warning";
   confidence_score: number;
   flagged_deviations?: string[];
   explanation?: string | null;

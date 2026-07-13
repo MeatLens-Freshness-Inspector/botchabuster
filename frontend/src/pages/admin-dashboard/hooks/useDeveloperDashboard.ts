@@ -8,6 +8,7 @@ import {
   type DeveloperOverviewResponse,
   type TrainingRunRecord,
 } from "@/integrations/api/DeveloperDashboardClient";
+import type { FreshnessClassification } from "@/types/inspection";
 import type { DeveloperWorkspaceTabKey } from "../types";
 
 export function useDeveloperDashboard() {
@@ -58,6 +59,32 @@ export function useDeveloperDashboard() {
       setIsLoadingTrainingRuns(false);
     }
   }, []);
+
+  const updateDatasetManualClassification = useCallback(
+    async (inspectionId: string, classification: FreshnessClassification) => {
+      try {
+        const updatedInspection = await developerDashboardClient.updateDatasetManualClassification(
+          inspectionId,
+          classification,
+        );
+
+        setDatasets((current) =>
+          current
+            ? {
+                ...current,
+                items: current.items.map((item) => (item.id === inspectionId ? updatedInspection : item)),
+              }
+            : current,
+        );
+
+        return updatedInspection;
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to update developer dataset classification");
+        throw error;
+      }
+    },
+    [],
+  );
 
   const exportDatasets = useCallback(async () => {
     setIsExportingDatasets(true);
@@ -124,6 +151,7 @@ export function useDeveloperDashboard() {
     loadOverview,
     loadDatasets,
     loadTrainingRuns,
+    updateDatasetManualClassification,
     exportDatasets,
     importTrainingRun,
   };

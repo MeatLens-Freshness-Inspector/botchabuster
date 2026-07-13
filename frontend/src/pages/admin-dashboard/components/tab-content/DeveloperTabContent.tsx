@@ -37,6 +37,7 @@ const DeveloperTabContent = () => {
             datasets={developer.datasets}
             filters={developer.datasetFilters}
             onFiltersChange={developer.setDatasetFilters}
+            onManualClassificationChange={developer.updateDatasetManualClassification}
             onPageChange={developer.loadDatasets}
             onExport={developer.exportDatasets}
             isExporting={developer.isExportingDatasets}
