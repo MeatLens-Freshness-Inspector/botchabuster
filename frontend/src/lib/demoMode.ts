@@ -9,7 +9,9 @@ import type { Profile } from "@/integrations/api/ProfileClient";
 import type { Inspection, AnalysisResult } from "@/types/inspection";
 import type { LandingPageStats } from "@/integrations/api/StatsClient";
 
-export const IS_DEMO_MODE = import.meta.env.VITE_DEMO_MODE === "true";
+const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env ?? {};
+
+export const IS_DEMO_MODE = viteEnv.VITE_DEMO_MODE === "true";
 
 /** Simulates a realistic network delay */
 export function demoDelay<T>(data: T, ms = 350): Promise<T> {
