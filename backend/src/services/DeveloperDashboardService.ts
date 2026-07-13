@@ -109,13 +109,12 @@ export class DeveloperDashboardService {
       limit: MAX_EXPORT_ROWS,
       offset: 0,
     });
+    const downloadedImages = await this.downloadInspectionImages(dataset.items);
     const files: Record<string, Uint8Array> = {
-      "inspections.csv": strToU8(this.buildInspectionCsv(dataset.items)),
+      "inspections.csv": strToU8(this.buildInspectionCsv(dataset.items, downloadedImages)),
     };
     const rowsMissingImages: string[] = [];
     let imageCount = 0;
-
-    const downloadedImages = await this.downloadInspectionImages(dataset.items);
 
     for (let index = 0; index < dataset.items.length; index += 1) {
       const inspection = dataset.items[index];
@@ -286,20 +285,24 @@ export class DeveloperDashboardService {
     }
   }
 
-  private buildInspectionCsv(inspections: Inspection[]): string {
+  private buildInspectionCsv(inspections: Inspection[], downloadedImages: Array<DownloadedExportImage | null>): string {
     const headers = [
       "date",
       "meat",
       "manual classification",
       "confidence",
+      "image file",
     ] as const;
-    const rows = inspections.map((inspection) => {
+    const rows = inspections.map((inspection, index) => {
       const manualClassification = inspection.manual_classification ?? inspection.classification;
+      const downloadedImage = downloadedImages[index] ?? null;
+      const imageFile = downloadedImage ? `${downloadedImage.id}.${downloadedImage.extension}` : "";
       return [
         inspection.captured_at.slice(0, 10),
         inspection.meat_type,
         manualClassification,
         inspection.confidence_score,
+        imageFile,
       ].map(csvEscape).join(",");
     });
     return [
