@@ -21,11 +21,17 @@ export interface AuthSession {
   expires_at: number | null;
 }
 
+export type AuthRole = "developer" | "admin" | "moderator" | "user";
+export type AuthPrimaryRole = "developer" | "admin" | "inspector";
+
 export interface AuthBootstrapPayload {
   user: AuthUser;
   profile: Profile;
   session: AuthSession;
+  roles: AuthRole[];
+  primaryRole: AuthPrimaryRole;
   isAdmin: boolean;
+  isDeveloper: boolean;
   csrfToken: string;
   authenticatedAt: string;
   offlineExpiresAt: string;

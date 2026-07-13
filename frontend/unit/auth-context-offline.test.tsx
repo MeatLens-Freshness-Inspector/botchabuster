@@ -53,7 +53,10 @@ function createBootstrapPayload() {
       expires_in: 28800,
       expires_at: 1783900800,
     },
+    roles: [],
+    primaryRole: "inspector" as const,
     isAdmin: false,
+    isDeveloper: false,
     csrfToken: "csrf-token-1",
     authenticatedAt: "2026-07-07T00:00:00.000Z",
     offlineExpiresAt: "2026-07-08T00:00:00.000Z",
@@ -185,7 +188,11 @@ test("bootstraps online auth from /api/auth/session and writes the offline auth 
     assert.equal(currentAuth?.profile?.id, "user-1");
     assert.equal(getApiCsrfToken(), "csrf-token-1");
     assert.match(window.sessionStorage.getItem("meatlens-auth-session") ?? "", /session-token-1/);
-    assert.equal((await loadOfflineAuthEnvelope())?.authenticatedAt, "2026-07-07T00:00:00.000Z");
+    const storedEnvelope = await loadOfflineAuthEnvelope();
+    assert.equal(storedEnvelope?.authenticatedAt, "2026-07-07T00:00:00.000Z");
+    assert.deepEqual(storedEnvelope?.roles, []);
+    assert.equal(storedEnvelope?.primaryRole, "inspector");
+    assert.equal(storedEnvelope?.isDeveloper, false);
   } finally {
     (authClient as { getSession?: typeof authClient.signIn }).getSession = originalGetSession;
     await act(async () => {
@@ -357,7 +364,10 @@ test("offline password unlock works only while the stored 24-hour window is stil
     await saveOfflineAuthEnvelope({
       user: bootstrapPayload.user,
       profile: bootstrapPayload.profile,
+      roles: bootstrapPayload.roles,
+      primaryRole: bootstrapPayload.primaryRole,
       isAdmin: bootstrapPayload.isAdmin,
+      isDeveloper: bootstrapPayload.isDeveloper,
       authenticatedAt: bootstrapPayload.authenticatedAt,
       offlineExpiresAt: "2099-01-01T00:00:00.000Z",
       offlineUnlockRequired: true,
@@ -387,7 +397,10 @@ test("offline password unlock works only while the stored 24-hour window is stil
     await saveOfflineAuthEnvelope({
       user: bootstrapPayload.user,
       profile: bootstrapPayload.profile,
+      roles: bootstrapPayload.roles,
+      primaryRole: bootstrapPayload.primaryRole,
       isAdmin: bootstrapPayload.isAdmin,
+      isDeveloper: bootstrapPayload.isDeveloper,
       authenticatedAt: bootstrapPayload.authenticatedAt,
       offlineExpiresAt: "2000-01-01T00:00:00.000Z",
       offlineUnlockRequired: true,

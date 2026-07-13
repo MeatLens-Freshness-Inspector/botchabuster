@@ -1,4 +1,4 @@
-import type { AuthUser } from "@/integrations/api/AuthClient";
+import type { AuthPrimaryRole, AuthRole, AuthUser } from "@/integrations/api/AuthClient";
 import type { Profile } from "@/integrations/api/ProfileClient";
 import type { PasswordVerifierRecord } from "@/lib/offlineCredentials";
 import type { StoredLocalPasskey } from "@/lib/passkeys/localUnlock";
@@ -11,7 +11,10 @@ const ENVELOPE_KEY = "current";
 export interface OfflineAuthEnvelope {
   user: AuthUser;
   profile: Profile;
+  roles: AuthRole[];
+  primaryRole: AuthPrimaryRole;
   isAdmin: boolean;
+  isDeveloper: boolean;
   authenticatedAt: string;
   offlineExpiresAt: string;
   offlineUnlockRequired: boolean;
@@ -19,9 +22,9 @@ export interface OfflineAuthEnvelope {
   localPasskey: StoredLocalPasskey | null;
 }
 
-interface StoredEnvelopeRecord extends OfflineAuthEnvelope {
+type StoredEnvelopeRecord = Partial<OfflineAuthEnvelope> & {
   key: typeof ENVELOPE_KEY;
-}
+};
 
 let offlineAuthEnvelopeSnapshot: OfflineAuthEnvelope | null = null;
 
@@ -31,6 +34,51 @@ function cloneEnvelope<T>(value: T): T {
 
 function canUseIndexedDb(): boolean {
   return typeof indexedDB !== "undefined";
+}
+
+function isAuthRole(value: unknown): value is AuthRole {
+  return value === "developer" || value === "admin" || value === "moderator" || value === "user";
+}
+
+function normalizeStoredEnvelope(record: Partial<OfflineAuthEnvelope> | undefined): OfflineAuthEnvelope | null {
+  if (!record?.user || !record.profile || !record.authenticatedAt || !record.offlineExpiresAt) {
+    return null;
+  }
+
+  const storedRoles = Array.isArray(record.roles)
+    ? record.roles.filter(isAuthRole)
+    : [];
+  const isDeveloper = Boolean(record.isDeveloper) || storedRoles.includes("developer");
+  const isAdmin = isDeveloper || Boolean(record.isAdmin) || storedRoles.includes("admin");
+  const primaryRole: AuthPrimaryRole =
+    record.primaryRole === "developer" || record.primaryRole === "admin"
+      ? record.primaryRole
+      : isDeveloper
+        ? "developer"
+        : isAdmin
+          ? "admin"
+          : "inspector";
+  const roles = storedRoles.length > 0
+    ? storedRoles
+    : isDeveloper
+      ? ["developer"]
+      : isAdmin
+        ? ["admin"]
+        : [];
+
+  return {
+    user: record.user,
+    profile: record.profile,
+    roles,
+    primaryRole,
+    isAdmin,
+    isDeveloper,
+    authenticatedAt: record.authenticatedAt,
+    offlineExpiresAt: record.offlineExpiresAt,
+    offlineUnlockRequired: Boolean(record.offlineUnlockRequired),
+    passwordVerifier: record.passwordVerifier ?? null,
+    localPasskey: record.localPasskey ?? null,
+  };
 }
 
 function openDb(): Promise<IDBDatabase | null> {
@@ -67,18 +115,8 @@ export async function loadOfflineAuthEnvelope(): Promise<OfflineAuthEnvelope | n
 
     request.onsuccess = () => {
       const record = request.result as StoredEnvelopeRecord | undefined;
-      offlineAuthEnvelopeSnapshot = record
-        ? cloneEnvelope({
-          user: record.user,
-          profile: record.profile,
-          isAdmin: record.isAdmin,
-          authenticatedAt: record.authenticatedAt,
-          offlineExpiresAt: record.offlineExpiresAt,
-          offlineUnlockRequired: record.offlineUnlockRequired,
-          passwordVerifier: record.passwordVerifier,
-          localPasskey: record.localPasskey,
-        })
-        : null;
+      const normalizedRecord = normalizeStoredEnvelope(record);
+      offlineAuthEnvelopeSnapshot = normalizedRecord ? cloneEnvelope(normalizedRecord) : null;
       resolve(getOfflineAuthEnvelopeSnapshot());
     };
     request.onerror = () => reject(request.error);
@@ -100,7 +138,7 @@ export async function saveOfflineAuthEnvelope(envelope: OfflineAuthEnvelope): Pr
     tx.objectStore(STORE_NAME).put({
       key: ENVELOPE_KEY,
       ...cloneEnvelope(envelope),
-    } satisfies StoredEnvelopeRecord);
+    } satisfies OfflineAuthEnvelope & { key: typeof ENVELOPE_KEY });
 
     tx.oncomplete = () => {
       db.close();

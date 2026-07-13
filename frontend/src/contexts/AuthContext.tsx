@@ -2,6 +2,8 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import {
   authClient,
   type AuthBootstrapPayload,
+  type AuthPrimaryRole,
+  type AuthRole,
   type AuthSession,
   type AuthUser,
 } from "@/integrations/api/AuthClient";
@@ -77,6 +79,7 @@ interface AuthContextType {
   session: AuthSession | null;
   profile: Profile | null;
   isAdmin: boolean;
+  isDeveloper: boolean;
   isLoading: boolean;
   profileStatus: ProfileStatus;
   authMode: AuthMode;
@@ -110,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isDeveloper, setIsDeveloper] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [profileStatus, setProfileStatus] = useState<ProfileStatus>("idle");
   const [authMode, setAuthMode] = useState<AuthMode>("bootstrapping");
@@ -136,6 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     setIsAdmin(false);
+    setIsDeveloper(false);
     setProfileStatus("idle");
     setOfflineUnlockRequiredState(false);
     setAuthMode(nextMode);
@@ -147,6 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(envelope.profile);
     setIsAdmin(envelope.isAdmin);
+    setIsDeveloper(envelope.isDeveloper);
     setProfileStatus("ready");
     setOfflineUnlockRequiredState(false);
     setAuthMode("offline-authenticated");
@@ -159,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(payload.session);
     setProfile(payload.profile);
     setIsAdmin(payload.isAdmin);
+    setIsDeveloper(payload.isDeveloper);
     setProfileStatus("ready");
     setOfflineUnlockRequiredState(false);
     setAuthMode("online-authenticated");
@@ -196,6 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     setIsAdmin(false);
+    setIsDeveloper(false);
     setProfileStatus("idle");
     setOfflineUnlockRequiredState(true);
     setAuthMode("offline-locked");
@@ -243,7 +251,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const nextEnvelope: OfflineAuthEnvelope = {
       user: payload.user,
       profile: payload.profile,
+      roles: payload.roles,
+      primaryRole: payload.primaryRole,
       isAdmin: payload.isAdmin,
+      isDeveloper: payload.isDeveloper,
       authenticatedAt: payload.authenticatedAt,
       offlineExpiresAt: payload.offlineExpiresAt,
       offlineUnlockRequired: false,
@@ -276,6 +287,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (envelope?.user.id === user.id) {
         setProfile(envelope.profile);
         setIsAdmin(envelope.isAdmin);
+        setIsDeveloper(envelope.isDeveloper);
         setProfileStatus("ready");
         return;
       }
@@ -287,17 +299,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfileStatus("loading");
 
     try {
-      const [nextProfile, nextIsAdmin] = await Promise.all([
+      const [nextProfile, hasAdminRole, hasDeveloperRole] = await Promise.all([
         profileClient.getProfile(user.id),
         profileClient.hasRole(user.id, "admin"),
+        profileClient.hasRole(user.id, "developer"),
       ]);
 
       if (!nextProfile) {
         throw new Error("Profile record missing");
       }
 
+      const nextIsAdmin = hasDeveloperRole || hasAdminRole;
+      const nextIsDeveloper = hasDeveloperRole;
+      const nextPrimaryRole: AuthPrimaryRole = nextIsDeveloper ? "developer" : nextIsAdmin ? "admin" : "inspector";
+      const nextRoles = [
+        nextIsDeveloper ? "developer" : null,
+        hasAdminRole ? "admin" : null,
+      ].filter(Boolean) as AuthRole[];
+
       setProfile(nextProfile);
       setIsAdmin(nextIsAdmin);
+      setIsDeveloper(nextIsDeveloper);
       setProfileStatus("ready");
 
       await updateOfflineAuthEnvelope((currentEnvelope) => {
@@ -308,7 +330,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return {
           ...currentEnvelope,
           profile: nextProfile,
+          roles: nextRoles,
+          primaryRole: nextPrimaryRole,
           isAdmin: nextIsAdmin,
+          isDeveloper: nextIsDeveloper,
         };
       });
     } catch (error) {
@@ -641,6 +666,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         profile,
         isAdmin,
+        isDeveloper,
         isLoading,
         profileStatus,
         authMode,
