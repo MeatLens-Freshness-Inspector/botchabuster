@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
 import type { AuthenticationResponseJSON, RegistrationResponseJSON } from "@simplewebauthn/server";
 import { Config } from "../config";
-import { getRequestAccessToken, getRequestAuthContext, getSessionCookie, getCsrfTokenService } from "../middleware/auth";
+import { getRequestAccessToken, getRequestAuthContext, getCsrfTokenService } from "../middleware/auth";
 import { authService } from "../services/AuthService";
 import { getAppSessionService, type AppSession } from "../services/AppSessionService";
 import { profileService } from "../services/ProfileService";
 import { auditLogService, type AuditLogWriteInput } from "../services/AuditLogService";
 import { passkeyService } from "../services/PasskeyService";
 import { getSessionLimitService } from "../services/SessionLimitService";
-import { shouldUseSecureSessionCookieForRequest } from "../security/sessionCookie";
+import { getSessionCookieSameSite, shouldUseSecureSessionCookieForRequest } from "../security/sessionCookie";
 import { isReportOrganization } from "../types/reportOrganization";
 
 export class AuthController {
@@ -38,13 +38,15 @@ export class AuthController {
   }
 
   private createSessionCookieOptions(req: Request, maxAgeMs: number) {
+    const secure = shouldUseSecureSessionCookieForRequest(req, {
+      cookieSecureConfigured: this.config.appSessionCookieSecureConfigured,
+      cookieSecure: this.config.appSessionCookieSecure,
+    });
+
     return {
       httpOnly: true,
-      secure: shouldUseSecureSessionCookieForRequest(req, {
-        cookieSecureConfigured: this.config.appSessionCookieSecureConfigured,
-        cookieSecure: this.config.appSessionCookieSecure,
-      }),
-      sameSite: "none" as const,
+      secure,
+      sameSite: getSessionCookieSameSite(secure),
       path: "/",
       maxAge: maxAgeMs,
     };
@@ -63,25 +65,41 @@ export class AuthController {
     return new Date(unixSeconds * 1000).toISOString();
   }
 
+  private buildClientSession(accessToken: string): AppSession {
+    const sessionMetadata = getAppSessionService().getSession(accessToken);
+    const nowSeconds = Math.floor(Date.now() / 1000);
+
+    return {
+      access_token: accessToken,
+      refresh_token: null,
+      token_type: "bearer",
+      expires_in: Math.max(0, sessionMetadata.expiresAt - nowSeconds),
+      expires_at: sessionMetadata.expiresAt,
+      authenticated_at: sessionMetadata.authenticatedAt,
+      offline_expires_at: sessionMetadata.offlineExpiresAt,
+    };
+  }
+
   private async buildBootstrapPayload(input: {
     user: { id: string; email: string | null };
     isAdmin: boolean;
-    accessToken: string;
+    session: AppSession;
   }) {
-    const session = getAppSessionService().getSession(input.accessToken);
+    const sessionMetadata = getAppSessionService().getSession(input.session.access_token);
     const profile = await this.loadProfileOrThrow(input.user.id);
     const csrfToken = getCsrfTokenService().issueToken({
-      sessionId: session.sessionId,
+      sessionId: sessionMetadata.sessionId,
       userId: input.user.id,
     });
 
     return {
       user: input.user,
       profile,
+      session: input.session,
       isAdmin: input.isAdmin,
       csrfToken,
-      authenticatedAt: this.toIsoString(session.authenticatedAt),
-      offlineExpiresAt: this.toIsoString(session.offlineExpiresAt),
+      authenticatedAt: this.toIsoString(sessionMetadata.authenticatedAt),
+      offlineExpiresAt: this.toIsoString(sessionMetadata.offlineExpiresAt),
     };
   }
 
@@ -99,7 +117,7 @@ export class AuthController {
     res.json(await this.buildBootstrapPayload({
       user: input.user,
       isAdmin: input.isAdmin,
-      accessToken: input.session.access_token,
+      session: input.session,
     }));
   }
 
@@ -203,12 +221,7 @@ export class AuthController {
   async getSession(req: Request, res: Response): Promise<void> {
     try {
       const authContext = getRequestAuthContext(req);
-      const sessionCookie = getSessionCookie(req);
-
-      if (!sessionCookie) {
-        res.status(401).json({ error: "Authentication required" });
-        return;
-      }
+      const { accessToken } = getRequestAccessToken(req);
 
       res.json(await this.buildBootstrapPayload({
         user: {
@@ -216,7 +229,7 @@ export class AuthController {
           email: authContext.email,
         },
         isAdmin: authContext.isAdmin,
-        accessToken: sessionCookie,
+        session: this.buildClientSession(accessToken),
       }));
     } catch (error) {
       console.error("Get session error:", error);

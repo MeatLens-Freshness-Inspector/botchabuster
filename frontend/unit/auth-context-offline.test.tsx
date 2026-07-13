@@ -46,6 +46,13 @@ function createBootstrapPayload() {
       created_at: "2026-07-01T00:00:00.000Z",
       updated_at: "2026-07-01T00:00:00.000Z",
     },
+    session: {
+      access_token: "session-token-1",
+      refresh_token: null,
+      token_type: "bearer",
+      expires_in: 28800,
+      expires_at: 1783900800,
+    },
     isAdmin: false,
     csrfToken: "csrf-token-1",
     authenticatedAt: "2026-07-07T00:00:00.000Z",
@@ -137,6 +144,16 @@ async function flushEffects(): Promise<void> {
   });
 }
 
+async function flushEffectsUntil(predicate: () => boolean, attempts = 5): Promise<void> {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (predicate()) {
+      return;
+    }
+
+    await flushEffects();
+  }
+}
+
 function AuthProbe({ onChange }: { onChange: (state: AuthProbeState) => void }) {
   const auth = useAuth();
   onChange(auth);
@@ -161,14 +178,75 @@ test("bootstraps online auth from /api/auth/session and writes the offline auth 
         </AuthProvider>,
       );
     });
-    await flushEffects();
+    await flushEffectsUntil(() => currentAuth?.user?.id === "user-1");
 
     assert.equal(currentAuth?.user?.id, "user-1");
+    assert.equal(currentAuth?.session?.access_token, "session-token-1");
     assert.equal(currentAuth?.profile?.id, "user-1");
     assert.equal(getApiCsrfToken(), "csrf-token-1");
+    assert.match(window.sessionStorage.getItem("meatlens-auth-session") ?? "", /session-token-1/);
     assert.equal((await loadOfflineAuthEnvelope())?.authenticatedAt, "2026-07-07T00:00:00.000Z");
   } finally {
     (authClient as { getSession?: typeof authClient.signIn }).getSession = originalGetSession;
+    await act(async () => {
+      root.unmount();
+    });
+    await clearOfflineAuthEnvelope();
+    clearApiCsrfToken();
+    cleanup();
+  }
+});
+
+test("bootstrapping online auth keeps the cached session token available for the /api/auth/session request", async () => {
+  const { container, cleanup } = installDom(true);
+  const root: Root = createRoot(container);
+  const originalFetch = globalThis.fetch;
+  let authorizationHeader: string | null = null;
+
+  try {
+    await clearOfflineAuthEnvelope();
+    window.localStorage.setItem(
+      "meatlens-auth-user",
+      JSON.stringify({
+        id: "user-1",
+        email: "inspector@example.com",
+      }),
+    );
+    window.sessionStorage.setItem(
+      "meatlens-auth-session",
+      JSON.stringify({
+        access_token: "cached-session-token",
+        refresh_token: null,
+        token_type: "bearer",
+        expires_in: 28800,
+        expires_at: 1783900800,
+      }),
+    );
+
+    globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
+      const headers = new Headers(init?.headers);
+      authorizationHeader = headers.get("authorization");
+
+      return new Response(JSON.stringify(createBootstrapPayload()), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+    }) as typeof globalThis.fetch;
+
+    await act(async () => {
+      root.render(
+        <AuthProvider>
+          <AuthProbe onChange={() => undefined} />
+        </AuthProvider>,
+      );
+    });
+    await flushEffects();
+
+    assert.equal(authorizationHeader, "Bearer cached-session-token");
+  } finally {
+    globalThis.fetch = originalFetch;
     await act(async () => {
       root.unmount();
     });
@@ -200,7 +278,13 @@ test("explicit sign-out clears the offline auth envelope immediately", async () 
     });
     await flushEffects();
 
-    assert.ok(await loadOfflineAuthEnvelope());
+    let storedEnvelope = await loadOfflineAuthEnvelope();
+    for (let attempt = 0; attempt < 5 && !storedEnvelope; attempt += 1) {
+      await flushEffects();
+      storedEnvelope = await loadOfflineAuthEnvelope();
+    }
+
+    assert.ok(storedEnvelope);
 
     await act(async () => {
       await currentAuth?.signOut();
@@ -211,6 +295,43 @@ test("explicit sign-out clears the offline auth envelope immediately", async () 
   } finally {
     (authClient as { getSession?: typeof authClient.signIn }).getSession = originalGetSession;
     authClient.signOut = originalSignOut;
+    await act(async () => {
+      root.unmount();
+    });
+    await clearOfflineAuthEnvelope();
+    clearApiCsrfToken();
+    cleanup();
+  }
+});
+
+test("bootstrap 401 without an offline envelope falls back to anonymous instead of expired", async () => {
+  const { container, cleanup } = installDom(true);
+  const root: Root = createRoot(container);
+  const originalGetSession = (authClient as { getSession?: typeof authClient.signIn }).getSession;
+  let currentAuth: AuthProbeState | null = null;
+
+  try {
+    await clearOfflineAuthEnvelope();
+    (authClient as { getSession: () => Promise<never> }).getSession = async () => {
+      const error = new Error("Authentication required") as Error & { status?: number };
+      error.status = 401;
+      throw error;
+    };
+
+    await act(async () => {
+      root.render(
+        <AuthProvider>
+          <AuthProbe onChange={(state) => { currentAuth = state; }} />
+        </AuthProvider>,
+      );
+    });
+    await flushEffects();
+
+    assert.equal(currentAuth?.user, null);
+    assert.equal(currentAuth?.authMode, "anonymous");
+    assert.equal(currentAuth?.isLoading, false);
+  } finally {
+    (authClient as { getSession?: typeof authClient.signIn }).getSession = originalGetSession;
     await act(async () => {
       root.unmount();
     });

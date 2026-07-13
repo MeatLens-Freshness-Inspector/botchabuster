@@ -11,12 +11,14 @@ import {
   AUTH_EXPIRED_EVENT,
   clearApiCsrfToken,
   getApiCsrfToken,
+  getHttpApiErrorStatus,
   setApiCsrfToken,
 } from "@/integrations/api/apiRequest";
 import {
   clearCachedAdmin,
   clearCachedAuth,
   clearCachedProfile,
+  setCachedAuth,
 } from "@/lib/authCache";
 import {
   clearLegacyOfflineCredential,
@@ -115,22 +117,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const mountedRef = useRef(true);
 
   const clearLegacyAuthArtifacts = useCallback(() => {
-    clearCachedAuth();
-    clearCachedProfile();
-    clearCachedAdmin();
     clearLegacyOfflineCredential();
     clearLegacyStoredLocalPasskey();
     clearLegacyOfflineUnlockRequired();
   }, []);
 
   const clearLegacyLiveAuthArtifacts = useCallback(() => {
-    clearCachedAuth();
     clearCachedProfile();
     clearCachedAdmin();
   }, []);
 
   const clearInMemoryAuthState = useCallback((nextMode: AuthMode) => {
     clearApiCsrfToken();
+    clearCachedAuth();
+    clearCachedProfile();
+    clearCachedAdmin();
     setUser(null);
     setSession(null);
     setProfile(null);
@@ -153,8 +154,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const applyOnlineAuthenticatedState = useCallback((payload: AuthBootstrapPayload) => {
     setApiCsrfToken(payload.csrfToken);
+    setCachedAuth(payload.user, payload.session);
     setUser(payload.user);
-    setSession(null);
+    setSession(payload.session);
     setProfile(payload.profile);
     setIsAdmin(payload.isAdmin);
     setProfileStatus("ready");
@@ -344,6 +346,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         if (validEnvelope) {
           await lockToOfflineEnvelope(validEnvelope);
+        } else if (getHttpApiErrorStatus(error) === 401) {
+          clearInMemoryAuthState("anonymous");
         } else {
           console.error("Failed to bootstrap online session:", error);
           clearInMemoryAuthState("expired");

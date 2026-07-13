@@ -22,7 +22,7 @@ function isTransportFailure(error: unknown): boolean {
 }
 
 export function useInspections(limit = 50) {
-  const { user } = useAuth();
+  const { user, isOnlineAuthenticated } = useAuth();
 
   return useQuery({
     queryKey: ["inspections", user?.id ?? "anonymous", limit],
@@ -32,7 +32,7 @@ export function useInspections(limit = 50) {
         return [];
       }
 
-      if (!navigator.onLine) {
+      if (!isOnlineAuthenticated) {
         const cachedInspections = await getCachedInspectionList(user.id);
         return cachedInspections?.slice(0, limit) ?? [];
       }
@@ -56,7 +56,7 @@ export function useInspections(limit = 50) {
 }
 
 export function useInspection(id: string) {
-  const { user } = useAuth();
+  const { user, isOnlineAuthenticated } = useAuth();
 
   return useQuery({
     queryKey: ["inspection", user?.id ?? "anonymous", id],
@@ -66,7 +66,7 @@ export function useInspection(id: string) {
         return null;
       }
 
-      if (!navigator.onLine) {
+      if (!isOnlineAuthenticated) {
         return getCachedInspection(user.id, id);
       }
 
@@ -111,7 +111,7 @@ export function useDeleteInspection() {
 }
 
 export function useInspectionStats() {
-  const { user } = useAuth();
+  const { user, isOnlineAuthenticated } = useAuth();
 
   return useQuery({
     queryKey: ["inspection-stats", user?.id ?? "anonymous"],
@@ -124,7 +124,7 @@ export function useInspectionStats() {
         };
       }
 
-      if (!navigator.onLine) {
+      if (!isOnlineAuthenticated) {
         const cachedStats = await getCachedInspectionStats(user.id);
         if (cachedStats) {
           return cachedStats;

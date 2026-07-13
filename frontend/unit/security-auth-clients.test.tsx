@@ -88,7 +88,7 @@ function setStoredSession(accessToken = "session-token"): void {
   );
 }
 
-test("AuthClient uses cookie credentials and in-memory csrf for self-service email and password changes", async () => {
+test("AuthClient reuses the cached bearer token alongside cookie credentials and in-memory csrf for self-service email and password changes", async () => {
   const restoreDom = installDom();
   const originalFetch = globalThis.fetch;
 
@@ -127,8 +127,8 @@ test("AuthClient uses cookie credentials and in-memory csrf for self-service ema
     await authClient.updatePassword("user-1", "new-password-123");
 
     assert.deepEqual(requests, [
-      { authorization: null, credentials: "include", csrf: "csrf-1" },
-      { authorization: null, credentials: "include", csrf: "csrf-1" },
+      { authorization: "Bearer session-token", credentials: "include", csrf: "csrf-1" },
+      { authorization: "Bearer session-token", credentials: "include", csrf: "csrf-1" },
     ]);
   } finally {
     clearApiCsrfToken();
@@ -137,7 +137,7 @@ test("AuthClient uses cookie credentials and in-memory csrf for self-service ema
   }
 });
 
-test("UploadClient uses cookie credentials, sends csrf, and does not send a caller-controlled userId field", async () => {
+test("UploadClient reuses the cached bearer token, sends csrf, and does not send a caller-controlled userId field", async () => {
   const restoreDom = installDom();
   const originalFetch = globalThis.fetch;
 
@@ -176,7 +176,7 @@ test("UploadClient uses cookie credentials, sends csrf, and does not send a call
     const file = new File(["image-bytes"], "inspection.jpg", { type: "image/jpeg" });
     await uploadClient.uploadInspectionImage(file as File);
 
-    assert.equal(authorization, null);
+    assert.equal(authorization, "Bearer session-token");
     assert.equal(csrf, "csrf-upload");
     assert.equal(credentials, "include");
     assert.equal(hasImage, true);

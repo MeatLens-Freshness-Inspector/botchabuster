@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { shouldUseSecureSessionCookie } from "../src/security/sessionCookie";
+import { getSessionCookieSameSite, shouldUseSecureSessionCookie } from "../src/security/sessionCookie";
 
 test("defaults to secure cookies for https origins when no override is configured", () => {
   assert.equal(
@@ -37,4 +37,9 @@ test("honors an explicit secure-cookie override", () => {
     }),
     true,
   );
+});
+
+test("uses SameSite=None only for secure cookies and falls back to Lax for insecure localhost cookies", () => {
+  assert.equal(getSessionCookieSameSite(true), "none");
+  assert.equal(getSessionCookieSameSite(false), "lax");
 });

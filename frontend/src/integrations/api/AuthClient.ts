@@ -1,5 +1,6 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
 import { createAuthHeaders } from "@/lib/authCache";
+import { createHttpApiError, readApiErrorMessage } from "./apiRequest";
 import type { Profile } from "./ProfileClient";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
@@ -23,6 +24,7 @@ export interface AuthSession {
 export interface AuthBootstrapPayload {
   user: AuthUser;
   profile: Profile;
+  session: AuthSession;
   isAdmin: boolean;
   csrfToken: string;
   authenticatedAt: string;
@@ -67,8 +69,10 @@ export class AuthClient {
     });
 
     if (!res.ok) {
-      const data = await res.json().catch(() => ({ error: "Authentication required" }));
-      throw new Error(data.error || "Authentication required");
+      throw createHttpApiError(
+        await readApiErrorMessage(res, "Authentication required"),
+        res.status,
+      );
     }
 
     return res.json();

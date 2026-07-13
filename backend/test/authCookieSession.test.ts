@@ -104,7 +104,7 @@ async function createCookieFixture(userId = "user-1", email = "inspector@example
   };
 }
 
-test("sign-in sets a secure cookie and returns a bootstrap payload without consuming a device slot yet", async () => {
+test("sign-in sets a secure cookie and returns a bootstrap payload with the app session without consuming a device slot yet", async () => {
   const { authService } = await import("../src/services/AuthService");
   const { profileService } = await import("../src/services/ProfileService");
   const { auditLogService } = await import("../src/services/AuditLogService");
@@ -163,7 +163,8 @@ test("sign-in sets a secure cookie and returns a bootstrap payload without consu
     assert.equal(typeof body.csrfToken, "string");
     assert.equal(typeof body.authenticatedAt, "string");
     assert.equal(typeof body.offlineExpiresAt, "string");
-    assert.equal("session" in body, false);
+    assert.equal((body.session as { access_token?: string }).access_token, cookieToken);
+    assert.equal((body.session as { token_type?: string }).token_type, "bearer");
     assert.equal("access_token" in body, false);
     assert.equal("refresh_token" in body, false);
   } finally {
@@ -178,7 +179,7 @@ test("sign-in sets a secure cookie and returns a bootstrap payload without consu
   }
 });
 
-test("session bootstrap preserves authenticatedAt but rotates the csrf token", async () => {
+test("session bootstrap accepts a bearer-backed app session, preserves authenticatedAt, and rotates the csrf token", async () => {
   const { authService } = await import("../src/services/AuthService");
   const { profileService } = await import("../src/services/ProfileService");
   const { auditLogService } = await import("../src/services/AuditLogService");
@@ -218,11 +219,11 @@ test("session bootstrap preserves authenticatedAt but rotates the csrf token", a
       body: JSON.stringify({ email: user.email, password: "correct-horse-battery-staple" }),
     });
     const signInBody = await signInResponse.json() as Record<string, unknown>;
-    const issuedCookie = signInResponse.headers.get("set-cookie") ?? "";
+    const issuedSession = signInBody.session as { access_token?: string };
 
     const bootstrapResponse = await fetch(`${baseUrl}/api/auth/session`, {
       headers: {
-        Cookie: issuedCookie,
+        Authorization: `Bearer ${issuedSession.access_token ?? ""}`,
       },
     });
     const bootstrapBody = await bootstrapResponse.json() as Record<string, unknown>;
@@ -231,6 +232,7 @@ test("session bootstrap preserves authenticatedAt but rotates the csrf token", a
     assert.equal(bootstrapBody.authenticatedAt, signInBody.authenticatedAt);
     assert.equal(bootstrapBody.offlineExpiresAt, signInBody.offlineExpiresAt);
     assert.notEqual(bootstrapBody.csrfToken, signInBody.csrfToken);
+    assert.equal((bootstrapBody.session as { access_token?: string }).access_token, issuedSession.access_token);
   } finally {
     authService.signIn = originalSignIn;
     profileService.hasRole = originalHasRole;
@@ -368,7 +370,7 @@ test("sign-out clears the session cookie and removes the registered app session"
   }
 });
 
-test("passkey authenticate verify mirrors the cookie/bootstrap contract without consuming a device slot yet", async () => {
+test("passkey authenticate verify mirrors the cookie/bootstrap contract and returns the app session without consuming a device slot yet", async () => {
   const { passkeyService } = await import("../src/services/PasskeyService");
   const { authService } = await import("../src/services/AuthService");
   const { profileService } = await import("../src/services/ProfileService");
@@ -430,6 +432,8 @@ test("passkey authenticate verify mirrors the cookie/bootstrap contract without 
     assert.equal((body.profile as { id?: string }).id, profile.id);
     assert.equal(body.isAdmin, true);
     assert.equal(typeof body.csrfToken, "string");
+    assert.equal((body.session as { access_token?: string }).access_token, cookieToken);
+    assert.equal((body.session as { token_type?: string }).token_type, "bearer");
     assert.equal("access_token" in body, false);
   } finally {
     passkeyService.verifyAuthentication = originalVerifyAuthentication;

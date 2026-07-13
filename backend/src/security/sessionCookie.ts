@@ -84,6 +84,10 @@ export function shouldUseSecureSessionCookie(input: SecureCookieInput): boolean 
   return input.cookieSecure;
 }
 
+export function getSessionCookieSameSite(secure: boolean): "none" | "lax" {
+  return secure ? "none" : "lax";
+}
+
 export function shouldUseSecureSessionCookieForRequest(
   req: Request,
   input: Pick<SecureCookieInput, "cookieSecureConfigured" | "cookieSecure">,
