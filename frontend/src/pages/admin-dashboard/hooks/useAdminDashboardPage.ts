@@ -23,7 +23,6 @@ import {
   ADMIN_DASHBOARD_CHART_CONFIG,
   ADMIN_DASHBOARD_MOBILE_CATEGORY_AXIS_PROPS,
   ADMIN_DASHBOARD_MOBILE_TIME_AXIS_PROPS,
-  ADMIN_DASHBOARD_TABS,
   ANALYTICS_DAYS,
   MAX_ANALYTICS_ITEMS,
   MEAT_TYPE_LABELS,
@@ -32,8 +31,10 @@ import {
   REPORT_DEFAULT_RANGE_DAYS,
   REPORT_PDF_DETAIL_ROW_LIMIT,
   buildPreScanReportFields,
+  coerceAdminDashboardTab,
   escapeHtml,
   formatReportDateTime,
+  getAdminDashboardTabs,
   getInspectorLabel,
   getLocationLabel,
   getOptionalText,
@@ -45,8 +46,9 @@ import {
 } from "../utils/adminDashboard";
 
 export function useAdminDashboardPage() {
-  const { user } = useAuth();
+  const { user, isDeveloper } = useAuth();
   const isMobile = useIsMobile();
+  const tabs = useMemo(() => getAdminDashboardTabs(isDeveloper), [isDeveloper]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [accessCodes, setAccessCodes] = useState<AccessCode[]>([]);
@@ -82,6 +84,10 @@ export function useAdminDashboardPage() {
   useEffect(() => {
     void loadData();
   }, []);
+
+  useEffect(() => {
+    setActiveTab((currentTab) => coerceAdminDashboardTab(currentTab, isDeveloper));
+  }, [isDeveloper]);
 
   const resetUserForm = () => {
     setUserForm({
@@ -1207,8 +1213,8 @@ export function useAdminDashboardPage() {
   };
 
   const activeTabConfig =
-    ADMIN_DASHBOARD_TABS.find((tab) => tab.key === activeTab) ??
-    ADMIN_DASHBOARD_TABS[0];
+    tabs.find((tab) => tab.key === activeTab) ??
+    tabs[0];
   const auditLogsPerPage = 5;
   const paginatedAuditLogs = auditLogs.slice(
     (auditLogPage - 1) * auditLogsPerPage,
@@ -1228,7 +1234,8 @@ export function useAdminDashboardPage() {
   return {
     user,
     isMobile,
-    tabs: ADMIN_DASHBOARD_TABS,
+    isDeveloper,
+    tabs,
     chartConfig,
     mobileCategoryAxisProps,
     mobileTimeAxisProps,

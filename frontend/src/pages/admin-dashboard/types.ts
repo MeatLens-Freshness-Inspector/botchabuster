@@ -11,6 +11,12 @@ export type AdminDashboardTabKey =
   | "logs"
   | "developer";
 
+export type DeveloperWorkspaceTabKey =
+  | "overview"
+  | "settings"
+  | "datasets"
+  | "training";
+
 export type RoleStat = {
   role: string;
   count: number;

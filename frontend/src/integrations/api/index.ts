@@ -16,4 +16,14 @@ export {
 } from "./PasskeyClient";
 export { AuditLogClient, auditLogClient, type AuditLogEvent } from "./AuditLogClient";
 export { DeveloperOptionsClient, developerOptionsClient, type DeveloperUnlockResponse } from "./DeveloperOptionsClient";
+export {
+  DeveloperDashboardClient,
+  developerDashboardClient,
+  DEFAULT_DEVELOPER_DATASET_FILTERS,
+  type DeveloperDatasetFilterState,
+  type DeveloperDatasetListResponse,
+  type DeveloperOverviewMetricPoint,
+  type DeveloperOverviewResponse,
+  type TrainingRunRecord,
+} from "./DeveloperDashboardClient";
 export { UserChatClient, userChatClient, type UserChatContact, type UserChatMessage } from "./UserChatClient";

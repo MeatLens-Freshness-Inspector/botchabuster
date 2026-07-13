@@ -63,8 +63,24 @@ export const ADMIN_DASHBOARD_TABS: Array<{
   { key: "markets", label: "Markets", icon: MapPin },
   { key: "reports", label: "Reports", icon: FileBarChart2 },
   { key: "logs", label: "Logs", icon: ScrollText },
-  { key: "developer", label: "Developer Options", icon: Bug },
 ];
+
+export function getAdminDashboardTabs(isDeveloper: boolean): Array<{
+  key: AdminDashboardTabKey;
+  label: string;
+  icon: typeof LayoutGrid;
+}> {
+  return isDeveloper
+    ? [...ADMIN_DASHBOARD_TABS, { key: "developer", label: "Developer Settings", icon: Bug }]
+    : ADMIN_DASHBOARD_TABS;
+}
+
+export function coerceAdminDashboardTab(
+  activeTab: AdminDashboardTabKey,
+  isDeveloper: boolean,
+): AdminDashboardTabKey {
+  return activeTab === "developer" && !isDeveloper ? "overview" : activeTab;
+}
 
 export const ADMIN_DASHBOARD_CHART_CONFIG = {
   count: { label: "Inspections", color: "hsl(var(--primary))" },
