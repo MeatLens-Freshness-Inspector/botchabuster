@@ -11,7 +11,11 @@ import {
   PROTOCOL_SPOILED_REASON,
   buildProtocolSpoiledAnalysisResult,
 } from "@/lib/inspectionPreScan";
-import { analyzeOffline, prewarmModel } from "@/lib/offlineAnalysis";
+import {
+  analyzeOffline,
+  prewarmModel,
+  setActiveAnalysisMode,
+} from "@/lib/offlineAnalysis";
 import { setActiveMobileNetModelVariant } from "@/lib/offlineAnalysis/mobileNetV3";
 import {
   getDeveloperOptionsFlags,
@@ -132,7 +136,13 @@ export function OfflineSyncManager() {
       developerSession && !isDeveloperOptionsSessionExpired(developerSession)
     );
 
-    if (isDeveloperUnlocked && !developerFlags.useSeed123Model2) {
+    const useEnsemble = !isDeveloperUnlocked || developerFlags.enableModelEnsemble;
+
+    if (useEnsemble) {
+      return "seed123_model2" as const;
+    }
+
+    if (!developerFlags.useSeed123Model2) {
       return "default" as const;
     }
 
@@ -146,6 +156,12 @@ export function OfflineSyncManager() {
     if (isRunning.current) return;
 
     const developerFlags = getDeveloperOptionsFlags(user.id);
+    const developerSession = getDeveloperOptionsSession(user.id);
+    const isDeveloperUnlocked = Boolean(
+      developerSession && !isDeveloperOptionsSessionExpired(developerSession)
+    );
+    const useEnsemble = !isDeveloperUnlocked || developerFlags.enableModelEnsemble;
+    setActiveAnalysisMode(useEnsemble ? "ensemble" : "mobilenetv3");
     setActiveMobileNetModelVariant(resolveActiveVariant());
 
     isRunning.current = true;
@@ -192,12 +208,19 @@ export function OfflineSyncManager() {
   useEffect(() => {
     const maybePrewarm = () => {
       if (!user) {
+        setActiveAnalysisMode("ensemble");
         setActiveMobileNetModelVariant("seed123_model2");
         prewarmModel();
         return;
       }
 
       const developerFlags = getDeveloperOptionsFlags(user.id);
+      const developerSession = getDeveloperOptionsSession(user.id);
+      const isDeveloperUnlocked = Boolean(
+        developerSession && !isDeveloperOptionsSessionExpired(developerSession)
+      );
+      const useEnsemble = !isDeveloperUnlocked || developerFlags.enableModelEnsemble;
+      setActiveAnalysisMode(useEnsemble ? "ensemble" : "mobilenetv3");
       setActiveMobileNetModelVariant(resolveActiveVariant());
       if (developerFlags.skipModelPrewarm) {
         if (developerFlags.verboseOfflineSyncLogs) {

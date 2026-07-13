@@ -14,7 +14,9 @@ export function AnalysisResultCard({ result, showDetailedResults = true, classNa
   const sourceLabel =
     result.analysis_source === "backend"
       ? "Backend"
-      : "MobileNetV3 ONNX";
+      : result.analysis_source === "ensemble"
+        ? "Ensemble"
+        : "MobileNetV3 ONNX";
   const confidenceFillClass = getConfidenceFillClass(result.confidence_score);
   const confidenceTextClass = getConfidenceTextClass(result.confidence_score);
   const modelConfidenceClass =

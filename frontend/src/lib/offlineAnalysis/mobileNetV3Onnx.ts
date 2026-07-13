@@ -165,6 +165,7 @@ export interface ModelPredictionResult {
   recommendation: FreshnessRecommendation;
   labelOrder: FreshnessClassification[];
   metadata: MeatLensModelMetadata;
+  modelPath?: string | null;
 }
 
 interface LoadModelOptions {
@@ -651,6 +652,7 @@ export async function classifyWithMobileNetV3(
       recommendation: classifyRecommendation(freshnessScore),
       labelOrder: classLabels,
       metadata,
+      modelPath: loadedModelPath,
     };
   } catch (error) {
     console.warn("[Model][ONNX] Inference failed:", error);

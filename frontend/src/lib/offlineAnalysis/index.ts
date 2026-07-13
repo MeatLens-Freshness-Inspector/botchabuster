@@ -9,27 +9,28 @@
 
 import type { AnalysisResult, FreshnessClassification } from "@/types/inspection";
 import {
-  classifyWithMobileNetV3,
-  loadMobileNetV3,
-  isModelReady,
-  getLoadedModelPath,
-  getActiveModelPreprocessContract,
-} from "./mobileNetV3";
-import {
-  classifyRecommendation,
-  computeFreshnessScore,
-  createModelInputImageFile,
-  DEFAULT_MEATLENS_INPUT_SIZE,
-  type SquareGuideBox,
-} from "./meatLensPipeline";
+  getActiveAnalysisMode,
+  isAnalysisReady,
+  loadActiveAnalysisModel,
+  prewarmAnalysisModel,
+  runActiveAnalysis,
+  setActiveAnalysisMode,
+} from "./analysisRuntime";
+import { type SquareGuideBox } from "./meatLensPipeline";
 import { validateImageQuality, type ImageQualityResult } from "@/lib/imageQuality";
 
-export { prewarmModel } from "./mobileNetV3";
+export {
+  getActiveAnalysisMode,
+  isAnalysisReady as isModelReady,
+  loadActiveAnalysisModel,
+  prewarmAnalysisModel as prewarmModel,
+  runActiveAnalysis,
+  setActiveAnalysisMode,
+};
 
 const MODEL_LOAD_WAIT_ONLINE_MS = 45_000;
 const MODEL_LOAD_WAIT_OFFLINE_MS = 2_500;
 const MODEL_LOAD_ATTEMPT_INTERVAL_MS = 1_200;
-const ANALYSIS_INPUT_SIZE = DEFAULT_MEATLENS_INPUT_SIZE;
 const LOW_CONFIDENCE_WARNING_THRESHOLD = 90;
 const RETAKE_RECOMMEND_THRESHOLD = 80;
 
@@ -243,6 +244,7 @@ function buildAnalysisExplanation({
   recommendation,
   probabilities,
   labelOrder,
+  analysisSourceLabel,
 }: {
   meatType: string;
   classification: FreshnessClassification;
@@ -251,6 +253,7 @@ function buildAnalysisExplanation({
   recommendation: "Good for Consumption" | "Consume Immediately" | "Not Suitable";
   probabilities?: Partial<Record<FreshnessClassification, number>>;
   labelOrder?: FreshnessClassification[];
+  analysisSourceLabel: string;
 }): string {
   const probabilitySummary = buildProbabilitySummary(probabilities, labelOrder);
   const probabilityDiagnostics = buildProbabilityDiagnostics(probabilities, labelOrder);
@@ -259,7 +262,7 @@ function buildAnalysisExplanation({
   const formattedClass = formatClassificationLabel(classification);
 
   const sentences = [
-    `The ${meatType} sample is classified as ${formattedClass} by MobileNetV3 ONNX with ${confidenceScore}% confidence (${confidenceBand}).`,
+    `The ${meatType} sample is classified as ${formattedClass} by ${analysisSourceLabel} with ${confidenceScore}% confidence (${confidenceBand}).`,
     probabilitySummary ? `Class probabilities: ${probabilitySummary}.` : null,
     probabilityDiagnostics,
     buildBranchNarrative(classification, confidenceTier),
@@ -277,12 +280,12 @@ function buildAnalysisExplanation({
   return sentences.filter(Boolean).join(" ");
 }
 
-async function waitForModelLoad(timeoutMs: number): Promise<boolean> {
+async function waitForAnalysisLoad(timeoutMs: number): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
 
   while (Date.now() < deadline) {
-    const loaded = await loadMobileNetV3({ forceRetry: true });
-    if (loaded || isModelReady()) {
+    const loaded = await loadActiveAnalysisModel({ forceRetry: true });
+    if (loaded || isAnalysisReady()) {
       return true;
     }
 
@@ -296,7 +299,7 @@ async function waitForModelLoad(timeoutMs: number): Promise<boolean> {
     );
   }
 
-  return isModelReady();
+  return isAnalysisReady();
 }
 
 /**
@@ -373,75 +376,50 @@ export async function analyzeOffline(
     return mockResult;
   }
 
-  const preprocessContract = getActiveModelPreprocessContract();
-  const requiresSegmentedCenterRoi = preprocessContract === "segmented_center_roi";
-
-  // Model2 contract:
-  // - center square crop
-  // - resize to 224x224
-  // - HSV/LAB-based ROI segmentation
-  // - gray background replacement
-  // If segmentation fails, fallback to center-cropped ROI image.
-  const preparedInput = await createModelInputImageFile(imageFile, {
-    guideBox: requiresSegmentedCenterRoi ? null : (options.guideBox ?? null),
-    forceCenterCrop: requiresSegmentedCenterRoi,
-    applySegmentation: requiresSegmentedCenterRoi,
-    size: ANALYSIS_INPUT_SIZE,
-    mimeType: "image/png",
-  });
-  const processedImageFile = preparedInput.file;
-
-  if (requiresSegmentedCenterRoi && !preparedInput.segmentationApplied) {
-    console.info("[Model][ONNX] Segmentation fallback applied: using center-cropped 224x224 ROI.");
-  }
-
-  // Try to use the ONNX model if it has already been loaded.
-  let modelResult = null;
-  if (isModelReady()) {
-    modelResult = await classifyWithMobileNetV3(processedImageFile, { guideBox: null });
-  } else {
-    // Give the model a short chance to load so first-use scans can benefit.
-    const loadWaitMs = navigator.onLine ? MODEL_LOAD_WAIT_ONLINE_MS : MODEL_LOAD_WAIT_OFFLINE_MS;
-    const loadedInTime = await waitForModelLoad(loadWaitMs);
-    if (loadedInTime && isModelReady()) {
-      modelResult = await classifyWithMobileNetV3(processedImageFile, { guideBox: null });
-    }
-  }
-
-  if (navigator.onLine && !modelResult) {
+  const loadWaitMs = navigator.onLine ? MODEL_LOAD_WAIT_ONLINE_MS : MODEL_LOAD_WAIT_OFFLINE_MS;
+  const loadedInTime = isAnalysisReady() || await waitForAnalysisLoad(loadWaitMs);
+  if (navigator.onLine && !loadedInTime) {
     throw new Error("Model inference is required for online analysis.");
   }
+  if (!loadedInTime && !navigator.onLine) {
+    throw new Error("Model inference is unavailable. Please retry after model warmup completes.");
+  }
+
+  const modelResult = await runActiveAnalysis(imageFile, { guideBox: options.guideBox ?? null });
   if (!modelResult) {
     throw new Error("Model inference is unavailable. Please retry after model warmup completes.");
   }
 
-  const finalClassification: FreshnessClassification = modelResult.classification;
-  const finalConfidenceScore = modelResult.confidence;
-  const finalConfidenceProbability = Math.max(0, Math.min(1, finalConfidenceScore / 100));
-  const finalFreshnessScore = computeFreshnessScore(finalClassification, finalConfidenceProbability);
-  const finalRecommendation = classifyRecommendation(finalFreshnessScore);
+  const analysisSourceLabel =
+    modelResult.analysisSource === "ensemble"
+      ? modelResult.modelPath && modelResult.modelPath.includes(" + ")
+        ? `Ensemble (${modelResult.modelPath})`
+        : "Ensemble"
+      : "MobileNetV3 ONNX";
+
   const explanation = buildAnalysisExplanation({
     meatType,
-    classification: finalClassification,
-    confidenceScore: finalConfidenceScore,
-    freshnessScore: finalFreshnessScore,
-    recommendation: finalRecommendation,
+    classification: modelResult.classification,
+    confidenceScore: modelResult.confidencePercent,
+    freshnessScore: modelResult.freshnessScore,
+    recommendation: modelResult.recommendation,
     probabilities: modelResult.probabilities,
     labelOrder: modelResult.labelOrder,
+    analysisSourceLabel,
   });
 
   return {
-    classification: finalClassification,
-    confidence_score: finalConfidenceScore,
-    model_confidence_score: modelResult.confidence,
+    classification: modelResult.classification,
+    confidence_score: modelResult.confidencePercent,
+    model_confidence_score: modelResult.confidencePercent,
     rule_confidence_score: null,
-    freshness_score: Math.round(finalFreshnessScore),
-    recommendation: finalRecommendation,
+    freshness_score: Math.round(modelResult.freshnessScore),
+    recommendation: modelResult.recommendation,
     probabilities: modelResult.probabilities,
     label_order: modelResult.labelOrder,
     flagged_deviations: [],
     explanation,
-    analysis_source: "mobilenetv3",
-    model_path: getLoadedModelPath(),
+    analysis_source: modelResult.analysisSource,
+    model_path: modelResult.modelPath,
   };
 }

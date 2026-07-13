@@ -30,6 +30,51 @@ function jsonResponse(body: unknown, status = 200) {
   };
 }
 
+function buildBootstrapSessionResponse(
+  userId: string,
+  email: string,
+  isAdmin: boolean,
+) {
+  const authenticatedAt = new Date().toISOString();
+  const offlineExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+  return {
+    user: {
+      id: userId,
+      email,
+    },
+    profile: {
+      id: userId,
+      full_name: "Inspector",
+      avatar_url: null,
+      inspector_code: "INSP-001",
+      report_organization: "gordon_college_ccs",
+      is_dark_mode: false,
+      show_detailed_results: true,
+      onboarding_completed_at: "2026-05-31T03:00:00.000Z",
+      onboarding_version: 1,
+      email,
+      location: "North Market",
+      created_at: "2026-04-01T00:00:00.000Z",
+      updated_at: "2026-04-01T00:00:00.000Z",
+    },
+    session: {
+      access_token: "session-token",
+      refresh_token: "refresh-token",
+      token_type: "bearer",
+      expires_in: 3600,
+      expires_at: Date.now() + 3600_000,
+    },
+    roles: isAdmin ? ["admin"] : [],
+    primaryRole: isAdmin ? "admin" : "inspector",
+    isAdmin,
+    isDeveloper: false,
+    csrfToken: "mock-csrf-token",
+    authenticatedAt,
+    offlineExpiresAt,
+  };
+}
+
 export async function seedSignedInSession(page: Page, options: MockedSessionOptions = {}): Promise<void> {
   const userId = options.userId ?? "user-1";
   const email = options.email ?? "inspector@example.com";
@@ -151,6 +196,16 @@ export async function mockCommonApi(
 
     if (path === "/api/analysis/health") {
       await route.fulfill(jsonResponse({ status: "ok" }));
+      return;
+    }
+
+    if (path === "/api/auth/session" && method === "GET") {
+      if (!request.headers().authorization?.startsWith("Bearer ")) {
+        await route.fallback();
+        return;
+      }
+
+      await route.fulfill(jsonResponse(buildBootstrapSessionResponse(userId, email, isAdmin)));
       return;
     }
 

@@ -29,12 +29,12 @@ import {
   analyzeOffline,
   getMockOfflineAnalysisResult,
   hasMockOfflineAnalysisResult,
+  isModelReady as getAnalysisReady,
+  loadActiveAnalysisModel,
+  prewarmModel,
+  setActiveAnalysisMode,
 } from "@/lib/offlineAnalysis";
-import {
-  isModelReady as getMobileNetModelReady,
-  loadMobileNetV3,
-  setActiveMobileNetModelVariant,
-} from "@/lib/offlineAnalysis/mobileNetV3";
+import { setActiveMobileNetModelVariant } from "@/lib/offlineAnalysis/mobileNetV3";
 import { queueScan, removeScan } from "@/lib/offlineQueue";
 import {
   formatInspectionLocationLabel,
@@ -69,7 +69,7 @@ export function useInspectPage(): InspectPageViewModel {
   const [marketLocations, setMarketLocations] = useState<string[]>(FALLBACK_MARKET_LOCATIONS);
   const [selectedLocation, setSelectedLocation] = useState<string>(FALLBACK_MARKET_LOCATIONS[0] ?? "");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isModelReady, setIsModelReady] = useState<boolean>(() => !navigator.onLine || getMobileNetModelReady());
+  const [isModelReady, setIsModelReady] = useState<boolean>(() => !navigator.onLine || getAnalysisReady());
   const [saveStatus, setSaveStatus] = useState<InspectionSaveStatus>("idle");
   const [clientSubmissionId, setClientSubmissionId] = useState<string | null>(null);
   const [coordinates, setCoordinates] = useState<InspectionCoordinates | null>(null);
@@ -119,20 +119,24 @@ export function useInspectPage(): InspectPageViewModel {
   }, [isAdmin, user]);
 
   useEffect(() => {
-    const useLegacyOverride =
-      Boolean(user && isAdmin && isDeveloperUnlocked) && !developerFlags.useSeed123Model2;
-    const nextVariant = useLegacyOverride ? "default" : "seed123_model2";
+    const developerModeEnabled = Boolean(user && isAdmin && isDeveloperUnlocked);
+    const useEnsemble = !developerModeEnabled || developerFlags.enableModelEnsemble;
+    const nextVariant = useEnsemble
+      ? "seed123_model2"
+      : developerFlags.useSeed123Model2
+        ? "seed123_model2"
+        : "default";
+    setActiveAnalysisMode(useEnsemble ? "ensemble" : "mobilenetv3");
     setActiveMobileNetModelVariant(nextVariant);
-    setIsModelReady(!navigator.onLine || getMobileNetModelReady());
+    setIsModelReady(!navigator.onLine || getAnalysisReady());
 
     if (!navigator.onLine) {
       return;
     }
 
-    void loadMobileNetV3({ forceRetry: true }).then((loaded) => {
-      setIsModelReady(loaded || getMobileNetModelReady());
-    });
-  }, [developerFlags.useSeed123Model2, isAdmin, isDeveloperUnlocked, user]);
+    prewarmModel();
+    setIsModelReady(getAnalysisReady());
+  }, [developerFlags.enableModelEnsemble, developerFlags.useSeed123Model2, isAdmin, isDeveloperUnlocked, user]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -149,16 +153,16 @@ export function useInspectPage(): InspectPageViewModel {
         return;
       }
 
-      if (getMobileNetModelReady()) {
+      if (getAnalysisReady()) {
         updateReadiness(true);
         return;
       }
 
       updateReadiness(false);
-      const loaded = await loadMobileNetV3({ forceRetry: true });
+      const loaded = await loadActiveAnalysisModel({ forceRetry: true });
       if (isCancelled) return;
 
-      if (loaded || getMobileNetModelReady()) {
+      if (loaded || getAnalysisReady()) {
         updateReadiness(true);
         return;
       }
