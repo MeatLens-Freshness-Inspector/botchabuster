@@ -22,6 +22,14 @@ function formatDateTime(value: string | null | undefined): string {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
 
+function formatConfidencePercent(value: number | null | undefined): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "-";
+  }
+
+  return `${value.toFixed(2)}%`;
+}
+
 export function DeveloperDatasetsSection({
   datasets,
   filters,
@@ -158,7 +166,7 @@ export function DeveloperDatasetsSection({
                   <TableCell>{inspection.location ?? "-"}</TableCell>
                   <TableCell>{inspection.meat_type}</TableCell>
                   <TableCell>{inspection.classification}</TableCell>
-                  <TableCell>{Math.round(inspection.confidence_score * 1000) / 10}%</TableCell>
+                  <TableCell>{formatConfidencePercent(inspection.confidence_score)}</TableCell>
                 </TableRow>
               ))}
               {!isLoading && (datasets?.items.length ?? 0) === 0 ? (

@@ -173,7 +173,44 @@ function activateRadixTab(name: string): void {
   }));
 }
 
-function createDeveloperDashboardFetch(onExport?: () => void): typeof globalThis.fetch {
+const developerDatasetRows = [
+  {
+    id: "dataset-1",
+    user_id: "inspector-1",
+    meat_type: "beef",
+    classification: "fresh",
+    confidence_score: 100,
+    flagged_deviations: [],
+    explanation: null,
+    image_url: null,
+    location: "North Market",
+    inspector_notes: null,
+    created_at: "2026-07-13T00:00:00.000Z",
+    updated_at: "2026-07-13T00:00:00.000Z",
+  },
+  {
+    id: "dataset-2",
+    user_id: "inspector-2",
+    meat_type: "fish",
+    classification: "warning",
+    confidence_score: 88,
+    flagged_deviations: [],
+    explanation: null,
+    image_url: null,
+    location: "South Market",
+    inspector_notes: null,
+    created_at: "2026-07-12T00:00:00.000Z",
+    updated_at: "2026-07-12T00:00:00.000Z",
+  },
+];
+
+function createDeveloperDashboardFetch(options?: {
+  onExport?: () => void;
+  datasets?: unknown[];
+}): typeof globalThis.fetch {
+  const onExport = options?.onExport;
+  const datasets = options?.datasets ?? [];
+
   return (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
 
@@ -199,8 +236,8 @@ function createDeveloperDashboardFetch(onExport?: () => void): typeof globalThis
 
     if (url.includes("/developer-dashboard/datasets")) {
       return new Response(JSON.stringify({
-        items: [],
-        total: 0,
+        items: datasets,
+        total: datasets.length,
         limit: 25,
         offset: 0,
       }), {
@@ -259,8 +296,10 @@ test("dataset export button calls the developer dashboard export endpoint", asyn
   let exportCalls = 0;
 
   try {
-    globalThis.fetch = createDeveloperDashboardFetch(() => {
-      exportCalls += 1;
+    globalThis.fetch = createDeveloperDashboardFetch({
+      onExport: () => {
+        exportCalls += 1;
+      },
     });
     const { default: DeveloperTabContent } = await import("../src/pages/admin-dashboard/components/tab-content/DeveloperTabContent");
 
@@ -280,6 +319,43 @@ test("dataset export button calls the developer dashboard export endpoint", asyn
     await flushEffects();
 
     assert.equal(exportCalls, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+    await act(async () => {
+      root.unmount();
+    });
+    cleanup();
+  }
+});
+
+test("developer datasets show confidence scores as raw percentages", async () => {
+  const { container, cleanup } = installDom();
+  const originalFetch = globalThis.fetch;
+  const root: Root = createRoot(container);
+
+  try {
+    globalThis.fetch = createDeveloperDashboardFetch({ datasets: developerDatasetRows });
+    const { default: DeveloperTabContent } = await import("../src/pages/admin-dashboard/components/tab-content/DeveloperTabContent");
+
+    await act(async () => {
+      root.render(<DeveloperTabContent />);
+    });
+    await flushEffects();
+
+    await act(async () => {
+      activateRadixTab("Datasets");
+    });
+    await flushEffects();
+    await flushEffects();
+
+    const confidenceCells = Array.from(document.querySelectorAll("td"))
+      .map((cell) => cell.textContent?.trim())
+      .filter((value): value is string => Boolean(value));
+
+    assert.ok(confidenceCells.includes("100.00%"));
+    assert.ok(confidenceCells.includes("88.00%"));
+    assert.ok(!confidenceCells.includes("10000%"));
+    assert.ok(!confidenceCells.includes("8800%"));
   } finally {
     globalThis.fetch = originalFetch;
     await act(async () => {
