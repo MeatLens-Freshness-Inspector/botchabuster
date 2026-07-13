@@ -1,7 +1,14 @@
 import { Request, Response } from "express";
 import type { AuthenticationResponseJSON, RegistrationResponseJSON } from "@simplewebauthn/server";
 import { Config } from "../config";
-import { getRequestAccessToken, getRequestAuthContext, getCsrfTokenService, toAuditActor } from "../middleware/auth";
+import {
+  getRequestAccessToken,
+  getRequestAuthContext,
+  getCsrfTokenService,
+  RequestAuthError,
+  SESSION_LIMIT_REACHED_MESSAGE,
+  toAuditActor,
+} from "../middleware/auth";
 import { authService } from "../services/AuthService";
 import { getAppSessionService, type AppSession } from "../services/AppSessionService";
 import { profileService, type AppRole, type PrimaryRole } from "../services/ProfileService";
@@ -118,28 +125,39 @@ export class AuthController {
     };
   }
 
-  private async issueSessionResponse(req: Request, res: Response, input: {
-    user: { id: string; email: string | null };
-    roles: AppRole[];
-    primaryRole: PrimaryRole;
-    isAdmin: boolean;
-    isDeveloper: boolean;
-    session: AppSession;
-  }): Promise<void> {
+  private async reserveSessionSlot(userId: string, session: AppSession): Promise<void> {
+    const sessionLimit = getSessionLimitService();
+
+    if (await sessionLimit.hasSession(session.access_token)) {
+      return;
+    }
+
+    await sessionLimit.pruneExpiredSessions(userId);
+
+    if (await sessionLimit.hasSession(session.access_token)) {
+      return;
+    }
+
+    if (await sessionLimit.isAtLimit(userId)) {
+      throw new RequestAuthError(429, SESSION_LIMIT_REACHED_MESSAGE);
+    }
+
+    await sessionLimit.registerSession(userId, session.access_token, session.expires_at);
+  }
+
+  private writeSessionResponse(
+    req: Request,
+    res: Response,
+    session: AppSession,
+    payload: unknown,
+  ): void {
     res.cookie(
       this.config.appSessionCookieName,
-      input.session.access_token,
-      this.createSessionCookieOptions(req, input.session.expires_in * 1000),
+      session.access_token,
+      this.createSessionCookieOptions(req, session.expires_in * 1000),
     );
 
-    res.json(await this.buildBootstrapPayload({
-      user: input.user,
-      roles: input.roles,
-      primaryRole: input.primaryRole,
-      isAdmin: input.isAdmin,
-      isDeveloper: input.isDeveloper,
-      session: input.session,
-    }));
+    res.json(payload);
   }
 
   private clearSessionCookie(req: Request, res: Response): void {
@@ -161,6 +179,16 @@ export class AuthController {
       const result = await authService.signIn({ email, password });
       const privilege = await profileService.getPrivilegeSummary(result.user.id);
       const appSession = authService.createAppSession(result.user);
+      const payload = await this.buildBootstrapPayload({
+        user: result.user,
+        roles: privilege.roles,
+        primaryRole: privilege.primaryRole,
+        isAdmin: privilege.isAdmin,
+        isDeveloper: privilege.isDeveloper,
+        session: appSession,
+      });
+
+      await this.reserveSessionSlot(result.user.id, appSession);
 
       await this.writeAuditLogSafely({
         payload: {
@@ -180,15 +208,13 @@ export class AuthController {
         },
       });
 
-      await this.issueSessionResponse(req, res, {
-        user: result.user,
-        roles: privilege.roles,
-        primaryRole: privilege.primaryRole,
-        isAdmin: privilege.isAdmin,
-        isDeveloper: privilege.isDeveloper,
-        session: appSession,
-      });
+      this.writeSessionResponse(req, res, appSession, payload);
     } catch (error) {
+      if (error instanceof RequestAuthError) {
+        res.status(error.status).json({ error: error.message });
+        return;
+      }
+
       console.error("Sign in error:", error);
       res.status(401).json({ error: error instanceof Error ? error.message : "Sign in failed" });
     }
@@ -458,6 +484,16 @@ export class AuthController {
         response: credential,
       });
       const privilege = await profileService.getPrivilegeSummary(result.user.id);
+      const payload = await this.buildBootstrapPayload({
+        user: result.user,
+        roles: privilege.roles,
+        primaryRole: privilege.primaryRole,
+        isAdmin: privilege.isAdmin,
+        isDeveloper: privilege.isDeveloper,
+        session: result.session,
+      });
+
+      await this.reserveSessionSlot(result.user.id, result.session);
 
       await this.writeAuditLogSafely({
         payload: {
@@ -478,15 +514,13 @@ export class AuthController {
         },
       });
 
-      await this.issueSessionResponse(req, res, {
-        user: result.user,
-        roles: privilege.roles,
-        primaryRole: privilege.primaryRole,
-        isAdmin: privilege.isAdmin,
-        isDeveloper: privilege.isDeveloper,
-        session: result.session,
-      });
+      this.writeSessionResponse(req, res, result.session, payload);
     } catch (error) {
+      if (error instanceof RequestAuthError) {
+        res.status(error.status).json({ error: error.message });
+        return;
+      }
+
       console.error("Verify passkey sign-in error:", error);
       res.status(401).json({ error: error instanceof Error ? error.message : "Failed to verify passkey sign-in" });
     }

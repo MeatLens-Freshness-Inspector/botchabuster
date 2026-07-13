@@ -16,6 +16,9 @@ export interface RequestAuthContext {
   isDeveloper: boolean;
 }
 
+export const SESSION_LIMIT_REACHED_MESSAGE =
+  "You are already signed in on the maximum number of devices. Please sign out from another device first.";
+
 export class RequestAuthError extends Error {
   constructor(public readonly status: number, message: string) {
     super(message);
@@ -149,10 +152,7 @@ async function ensureTrackedAppSession(req: Request, authContext: RequestAuthCon
   await sessionLimit.pruneExpiredSessions(authContext.userId);
 
   if (await sessionLimit.isAtLimit(authContext.userId)) {
-    throw new RequestAuthError(
-      429,
-      "You are already signed in on the maximum number of devices. Please sign out from another device first.",
-    );
+    throw new RequestAuthError(429, SESSION_LIMIT_REACHED_MESSAGE);
   }
 
   await sessionLimit.registerSession(authContext.userId, accessToken, session.expiresAt);
