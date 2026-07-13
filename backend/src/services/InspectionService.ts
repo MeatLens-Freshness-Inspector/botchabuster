@@ -1,5 +1,6 @@
 import { supabase } from "../integrations/supabase";
 import type { Inspection, InspectionInsert } from "../types/inspection";
+import type { DeveloperDatasetFilters, DeveloperDatasetListResponse } from "../types/developerDashboard";
 import { mergeInspectionCoordinates } from "../types/inspectionCoordinates";
 import { mergeInspectionPreScanFields } from "../types/inspectionPreScan";
 
@@ -161,6 +162,58 @@ export class InspectionService {
     }
 
     return { total: records.length, byClassification };
+  }
+
+  async getDeveloperDatasetPage(filters: DeveloperDatasetFilters): Promise<DeveloperDatasetListResponse> {
+    const limit = Math.min(Math.max(Math.trunc(filters.limit || 50), 1), 10_000);
+    const offset = Math.max(Math.trunc(filters.offset || 0), 0);
+
+    let query = (supabase
+      .from(this.tableName) as any)
+      .select("*", { count: "exact" });
+
+    if (filters.meatType?.trim()) {
+      query = query.eq("meat_type", filters.meatType.trim());
+    }
+
+    if (filters.classification?.trim()) {
+      query = query.eq("classification", filters.classification.trim());
+    }
+
+    if (filters.inspector?.trim()) {
+      query = query.eq("user_id", filters.inspector.trim());
+    }
+
+    if (filters.location?.trim()) {
+      query = query.ilike("location", `%${filters.location.trim()}%`);
+    }
+
+    if (filters.hasImage === true) {
+      query = query.not("image_url", "is", null);
+    } else if (filters.hasImage === false) {
+      query = query.is("image_url", null);
+    }
+
+    if (filters.dateFrom?.trim()) {
+      query = query.gte("created_at", filters.dateFrom.trim());
+    }
+
+    if (filters.dateTo?.trim()) {
+      query = query.lte("created_at", filters.dateTo.trim());
+    }
+
+    const { data, error, count } = await query
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) throw new Error(`Failed to fetch developer dataset: ${error.message}`);
+
+    return {
+      items: (data as unknown as Inspection[]) ?? [],
+      total: count ?? 0,
+      limit,
+      offset,
+    };
   }
 
   private async getByClientSubmissionId(clientSubmissionId: string, userId: string): Promise<Inspection | null> {

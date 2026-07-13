@@ -18,6 +18,7 @@ import chatRoutes from "./routes/chat";
 import marketLocationRoutes from "./routes/marketLocations";
 import auditLogRoutes from "./routes/auditLogs";
 import developerOptionsRoutes from "./routes/developerOptions";
+import developerDashboardRoutes from "./routes/developerDashboard";
 import userChatRoutes from "./routes/userChat";
 
 const config = Config.getInstance();
@@ -88,6 +89,7 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/market-locations", marketLocationRoutes);
 app.use("/api/audit-logs", auditLogRoutes);
 app.use("/api/developer-options", developerOptionsRoutes);
+app.use("/api/developer-dashboard", developerDashboardRoutes);
 app.use("/api/user-chat", userChatRoutes);
 app.use(globalErrorHandler);
 
