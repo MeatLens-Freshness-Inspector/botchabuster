@@ -12,6 +12,7 @@ export interface DeveloperOptionsFlags {
   skipModelPrewarm: boolean;
   showModelInputPreview: boolean;
   useSeed123Model2: boolean;
+  enableModelEnsemble: boolean;
 }
 
 export interface DeveloperOptionsSession {
@@ -35,6 +36,7 @@ export const DEFAULT_DEVELOPER_OPTIONS_FLAGS: DeveloperOptionsFlags = {
   skipModelPrewarm: false,
   showModelInputPreview: true,
   useSeed123Model2: true,
+  enableModelEnsemble: false,
 };
 
 function resolveFlagsStorageKey(userId: string): string {

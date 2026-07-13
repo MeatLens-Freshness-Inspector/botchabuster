@@ -65,6 +65,11 @@ const FLAG_DEFINITIONS: FlagDefinition[] = [
     label: "Use seed123 primary model",
     description: "When off, fallback to legacy MobileNetV3-small seed42 model for developer comparison.",
   },
+  {
+    key: "enableModelEnsemble",
+    label: "Enable Model Ensembles",
+    description: "Use multiple models to make a final prediction via ensemble technique.",
+  },
 ];
 
 function downloadJson(filename: string, payload: unknown): void {
