@@ -102,3 +102,71 @@ test("dataset export ZIP contains manifest, inspections.csv, images, and missing
     }
   }
 });
+
+test("dataset export downloads images concurrently", async () => {
+  const { developerDashboardService } = await import("../src/services/DeveloperDashboardService");
+  const { inspectionService } = await import("../src/services/InspectionService");
+  const originalGetDeveloperDatasetPage = (inspectionService as unknown as {
+    getDeveloperDatasetPage?: typeof developerDashboardService.listDatasets;
+  }).getDeveloperDatasetPage;
+  const originalFetch = globalThis.fetch;
+
+  (inspectionService as unknown as {
+    getDeveloperDatasetPage: typeof developerDashboardService.listDatasets;
+  }).getDeveloperDatasetPage = async (filters) => {
+    assert.equal(filters.limit, 10_000);
+    assert.equal(filters.offset, 0);
+
+    return {
+      items: [
+        createInspection({
+          id: "inspection-a",
+          image_url: "https://example.com/a.jpg",
+        }),
+        createInspection({
+          id: "inspection-b",
+          image_url: "https://example.com/b.jpg",
+        }),
+        createInspection({
+          id: "inspection-c",
+          image_url: "https://example.com/c.jpg",
+        }),
+      ],
+      total: 3,
+      limit: filters.limit,
+      offset: filters.offset,
+    };
+  };
+
+  let activeFetches = 0;
+  let maxActiveFetches = 0;
+  globalThis.fetch = async () => {
+    activeFetches += 1;
+    maxActiveFetches = Math.max(maxActiveFetches, activeFetches);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    activeFetches -= 1;
+    return new Response(new Uint8Array([1, 2, 3]), {
+      status: 200,
+      headers: { "Content-Type": "image/jpeg" },
+    });
+  };
+
+  try {
+    await developerDashboardService.exportDatasetZip({
+      limit: 50,
+      offset: 0,
+      hasImage: true,
+    });
+
+    assert.ok(maxActiveFetches > 1, `expected concurrent image downloads, got ${maxActiveFetches}`);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalGetDeveloperDatasetPage) {
+      (inspectionService as unknown as {
+        getDeveloperDatasetPage: typeof developerDashboardService.listDatasets;
+      }).getDeveloperDatasetPage = originalGetDeveloperDatasetPage;
+    } else {
+      delete (inspectionService as unknown as { getDeveloperDatasetPage?: unknown }).getDeveloperDatasetPage;
+    }
+  }
+});

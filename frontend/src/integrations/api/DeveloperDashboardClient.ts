@@ -6,6 +6,7 @@ import { fetchWithTimeout, UPLOAD_REQUEST_TIMEOUT_MS } from "./fetchWithTimeout"
 const API_BASE_URL =
   ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
   "http://localhost:3001/api";
+const LONG_RUNNING_REQUEST_TIMEOUT_MS = 120_000;
 
 export interface DeveloperOverviewMetricPoint {
   runId: string;
@@ -150,7 +151,7 @@ export class DeveloperDashboardClient {
         headers: this.createHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(createDatasetExportPayload(filters)),
       },
-      UPLOAD_REQUEST_TIMEOUT_MS,
+      LONG_RUNNING_REQUEST_TIMEOUT_MS,
     );
 
     if (!response.ok) {
@@ -183,7 +184,7 @@ export class DeveloperDashboardClient {
         headers: this.createHeaders(),
         body: formData,
       },
-      UPLOAD_REQUEST_TIMEOUT_MS,
+      LONG_RUNNING_REQUEST_TIMEOUT_MS,
     );
 
     if (!response.ok) {

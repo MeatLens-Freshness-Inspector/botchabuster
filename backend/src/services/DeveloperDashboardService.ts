@@ -15,6 +15,13 @@ import type {
 } from "../types/developerDashboard";
 
 const MAX_EXPORT_ROWS = 10_000;
+const IMAGE_DOWNLOAD_CONCURRENCY = 6;
+
+interface DownloadedExportImage {
+  id: string;
+  extension: "jpg" | "png" | "webp";
+  bytes: Uint8Array;
+}
 
 function normalizeFamily(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -101,26 +108,19 @@ export class DeveloperDashboardService {
     const rowsMissingImages: string[] = [];
     let imageCount = 0;
 
-    for (const inspection of dataset.items) {
-      if (!inspection.image_url) {
+    const downloadedImages = await this.downloadInspectionImages(dataset.items);
+
+    for (let index = 0; index < dataset.items.length; index += 1) {
+      const inspection = dataset.items[index];
+      const downloadedImage = downloadedImages[index];
+
+      if (!downloadedImage) {
         rowsMissingImages.push(inspection.id);
         continue;
       }
 
-      try {
-        const imageResponse = await fetch(inspection.image_url);
-        if (!imageResponse.ok) {
-          rowsMissingImages.push(inspection.id);
-          continue;
-        }
-
-        const imageBytes = new Uint8Array(await imageResponse.arrayBuffer());
-        const extension = this.resolveImageExtension(inspection.image_url, imageResponse.headers.get("content-type"));
-        files[`images/${inspection.id}.${extension}`] = imageBytes;
-        imageCount += 1;
-      } catch {
-        rowsMissingImages.push(inspection.id);
-      }
+      files[`images/${downloadedImage.id}.${downloadedImage.extension}`] = downloadedImage.bytes;
+      imageCount += 1;
     }
 
     const manifest: DatasetExportManifest = {
@@ -137,6 +137,49 @@ export class DeveloperDashboardService {
       filename: `developer-dataset-${Date.now()}.zip`,
       buffer: Buffer.from(zipSync(files)),
     };
+  }
+
+  private async downloadInspectionImages(inspections: Inspection[]): Promise<Array<DownloadedExportImage | null>> {
+    const results: Array<DownloadedExportImage | null> = Array.from({ length: inspections.length }, () => null);
+    const workerCount = Math.min(IMAGE_DOWNLOAD_CONCURRENCY, inspections.length);
+    let nextIndex = 0;
+
+    const workers = Array.from({ length: workerCount }, async () => {
+      while (true) {
+        const currentIndex = nextIndex;
+        nextIndex += 1;
+
+        if (currentIndex >= inspections.length) {
+          return;
+        }
+
+        results[currentIndex] = await this.downloadInspectionImage(inspections[currentIndex]);
+      }
+    });
+
+    await Promise.all(workers);
+    return results;
+  }
+
+  private async downloadInspectionImage(inspection: Inspection): Promise<DownloadedExportImage | null> {
+    if (!inspection.image_url) {
+      return null;
+    }
+
+    try {
+      const imageResponse = await fetch(inspection.image_url);
+      if (!imageResponse.ok) {
+        return null;
+      }
+
+      return {
+        id: inspection.id,
+        extension: this.resolveImageExtension(inspection.image_url, imageResponse.headers.get("content-type")),
+        bytes: new Uint8Array(await imageResponse.arrayBuffer()),
+      };
+    } catch {
+      return null;
+    }
   }
 
   async listTrainingRuns(): Promise<TrainingRunRecord[]> {
