@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { marketLocationService } from "../services/MarketLocationService";
 import { auditLogService } from "../services/AuditLogService";
-import { getErrorStatus, resolveTrackedRequestAuthContext } from "../middleware/auth";
+import { getErrorStatus, resolveTrackedRequestAuthContext, toAuditActor, type RequestAuthContext } from "../middleware/auth";
 
 class MarketLocationAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -10,14 +10,14 @@ class MarketLocationAccessError extends Error {
 }
 
 export class MarketLocationController {
-  private async requireAdmin(req: Request): Promise<{ userId: string }> {
+  private async requireAdmin(req: Request): Promise<RequestAuthContext> {
     try {
       const authContext = await resolveTrackedRequestAuthContext(req);
       if (!authContext.isAdmin) {
         throw new MarketLocationAccessError(403, "Admin access required");
       }
 
-      return { userId: authContext.userId };
+      return authContext;
     } catch (error) {
       if (error instanceof MarketLocationAccessError) {
         throw error;
@@ -66,10 +66,7 @@ export class MarketLocationController {
         payload: {
           event_type: "admin.market_location.create",
           event_time: new Date().toISOString(),
-          actor: {
-            id: actor.userId,
-            role: "admin",
-          },
+          actor: toAuditActor(actor),
           source: {
             ip: req.ip || null,
             user_agent: req.header("user-agent") || null,
@@ -103,10 +100,7 @@ export class MarketLocationController {
         payload: {
           event_type: "admin.market_location.delete",
           event_time: new Date().toISOString(),
-          actor: {
-            id: actor.userId,
-            role: "admin",
-          },
+          actor: toAuditActor(actor),
           source: {
             ip: req.ip || null,
             user_agent: req.header("user-agent") || null,

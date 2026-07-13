@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { auditLogService } from "../services/AuditLogService";
-import { getErrorStatus, resolveTrackedRequestAuthContext } from "../middleware/auth";
+import { getErrorStatus, resolveTrackedRequestAuthContext, toAuditActor, type RequestAuthContext } from "../middleware/auth";
 
 class AuditLogAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -24,13 +24,9 @@ function normalizeEventTime(value?: string): string {
 }
 
 export class AuditLogController {
-  private async getActorContext(req: Request): Promise<{ userId: string; role: string }> {
+  private async getActorContext(req: Request): Promise<RequestAuthContext> {
     try {
-      const authContext = await resolveTrackedRequestAuthContext(req);
-      return {
-        userId: authContext.userId,
-        role: authContext.isAdmin ? "admin" : "inspector",
-      };
+      return await resolveTrackedRequestAuthContext(req);
     } catch (error) {
       throw new AuditLogAccessError(
         getErrorStatus(error) ?? 401,
@@ -56,7 +52,7 @@ export class AuditLogController {
   async list(req: Request, res: Response): Promise<void> {
     try {
       const actor = await this.getActorContext(req);
-      if (actor.role !== "admin") {
+      if (!actor.isAdmin) {
         res.status(403).json({ error: "Admin access is required" });
         return;
       }
@@ -98,10 +94,7 @@ export class AuditLogController {
           payload: {
             event_type: event.event_type,
             event_time: normalizeEventTime(event.event_time),
-            actor: {
-              id: actor.userId,
-              role: actor.role,
-            },
+            actor: toAuditActor(actor),
             source: {
               ...requestSource,
               ...(event.source ?? {}),

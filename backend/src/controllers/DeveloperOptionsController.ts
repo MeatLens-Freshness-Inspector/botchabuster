@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { developerOptionsService } from "../services/DeveloperOptionsService";
 import { auditLogService } from "../services/AuditLogService";
-import { getErrorStatus, resolveTrackedRequestAuthContext } from "../middleware/auth";
+import { getErrorStatus, resolveTrackedRequestAuthContext, toAuditActor, type RequestAuthContext } from "../middleware/auth";
 
 class DeveloperOptionsAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -10,14 +10,14 @@ class DeveloperOptionsAccessError extends Error {
 }
 
 export class DeveloperOptionsController {
-  private async requireAdmin(req: Request): Promise<{ userId: string }> {
+  private async requireAdmin(req: Request): Promise<RequestAuthContext> {
     try {
       const authContext = await resolveTrackedRequestAuthContext(req);
       if (!authContext.isAdmin) {
         throw new DeveloperOptionsAccessError(403, "Administrator access required");
       }
 
-      return { userId: authContext.userId };
+      return authContext;
     } catch (error) {
       if (error instanceof DeveloperOptionsAccessError) {
         throw error;
@@ -67,10 +67,7 @@ export class DeveloperOptionsController {
         payload: {
           event_type: "admin.developer_options.unlock",
           event_time: new Date().toISOString(),
-          actor: {
-            id: actor.userId,
-            role: "admin",
-          },
+          actor: toAuditActor(actor),
           source: {
             ip: req.ip || null,
             user_agent: req.header("user-agent") || null,

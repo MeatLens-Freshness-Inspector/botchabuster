@@ -2,23 +2,17 @@ import { Request, Response } from "express";
 import { profileService } from "../services/ProfileService";
 import { auditLogService } from "../services/AuditLogService";
 import { isReportOrganization } from "../types/reportOrganization";
-import { getRequestAuthContext, resolveTrackedRequestAuthContext } from "../middleware/auth";
+import { getRequestAuthContext, resolveTrackedRequestAuthContext, toAuditActor } from "../middleware/auth";
 
 export class ProfileController {
   private async resolveActor(req: Request): Promise<{ id: string; role: string } | null> {
     try {
       const authContext = req.auth ?? getRequestAuthContext(req);
-      return {
-        id: authContext.userId,
-        role: authContext.isAdmin ? "admin" : "inspector",
-      };
+      return toAuditActor(authContext);
     } catch {
       try {
         const authContext = await resolveTrackedRequestAuthContext(req);
-        return {
-          id: authContext.userId,
-          role: authContext.isAdmin ? "admin" : "inspector",
-        };
+        return toAuditActor(authContext);
       } catch {
         return null;
       }

@@ -20,10 +20,20 @@ export interface AdminProfile extends Profile {
   email: string | null;
 }
 
+export type AppRole = "developer" | "admin" | "moderator" | "user";
+export type PrimaryRole = "developer" | "admin" | "inspector";
+
 export interface UserRole {
   id: string;
   user_id: string;
-  role: "admin" | "moderator" | "user";
+  role: AppRole;
+}
+
+export interface PrivilegeSummary {
+  roles: AppRole[];
+  primaryRole: PrimaryRole;
+  isAdmin: boolean;
+  isDeveloper: boolean;
 }
 
 export interface AdminCreateUserInput {
@@ -34,6 +44,12 @@ export interface AdminCreateUserInput {
   inspector_code?: string | null;
   report_organization?: ReportOrganization | null;
   location?: string | null;
+}
+
+const ROLE_PRIORITY: AppRole[] = ["developer", "admin", "moderator", "user"];
+
+function isAppRole(value: string): value is AppRole {
+  return ROLE_PRIORITY.includes(value as AppRole);
 }
 
 export interface AdminUpdateUserInput {
@@ -312,8 +328,31 @@ export class ProfileService {
   }
 
   async hasRole(userId: string, role: string): Promise<boolean> {
+    if (!isAppRole(role)) {
+      return false;
+    }
+
     const roles = await this.getUserRoles(userId);
     return roles.some((r) => r.role === role);
+  }
+
+  async getPrivilegeSummary(userId: string): Promise<PrivilegeSummary> {
+    const roles = (await this.getUserRoles(userId))
+      .map((entry) => entry.role)
+      .filter((role): role is AppRole => isAppRole(role))
+      .filter((role, index, list) => list.indexOf(role) === index)
+      .sort((left, right) => ROLE_PRIORITY.indexOf(left) - ROLE_PRIORITY.indexOf(right));
+
+    const isDeveloper = roles.includes("developer");
+    const isAdmin = isDeveloper || roles.includes("admin");
+    const primaryRole: PrimaryRole = isDeveloper ? "developer" : isAdmin ? "admin" : "inspector";
+
+    return {
+      roles,
+      primaryRole,
+      isAdmin,
+      isDeveloper,
+    };
   }
 
   async getUserStats(): Promise<{

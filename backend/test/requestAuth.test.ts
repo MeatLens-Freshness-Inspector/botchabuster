@@ -35,6 +35,24 @@ async function createAppSessionCookie(userId = "user-1", email = "inspector@exam
   return sessionService.createSession({ id: userId, email }).access_token;
 }
 
+function createAuthContext(overrides: {
+  userId?: string;
+  email?: string | null;
+  roles?: Array<"admin" | "moderator" | "user" | "developer">;
+  primaryRole?: "admin" | "inspector" | "developer";
+  isAdmin?: boolean;
+  isDeveloper?: boolean;
+} = {}) {
+  return {
+    userId: overrides.userId ?? "user-1",
+    email: overrides.email ?? "inspector@example.com",
+    roles: overrides.roles ?? [],
+    primaryRole: overrides.primaryRole ?? "inspector",
+    isAdmin: overrides.isAdmin ?? false,
+    isDeveloper: overrides.isDeveloper ?? false,
+  };
+}
+
 test("resolveRequestAuthContext rejects requests without a cookie or bearer token", async () => {
   process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
   process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
@@ -61,7 +79,7 @@ test("resolveRequestAuthContext prefers the app-session cookie when present", as
   const { profileService } = await import("../src/services/ProfileService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
-  const originalHasRole = profileService.hasRole.bind(profileService);
+  const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
 
   authService.getUserByAccessToken = async (accessToken: string) => {
     assert.equal(accessToken, "cookie-session-token");
@@ -70,7 +88,7 @@ test("resolveRequestAuthContext prefers the app-session cookie when present", as
       email: "inspector@example.com",
     };
   };
-  profileService.hasRole = async () => false;
+  profileService.getUserRoles = async () => [];
 
   try {
     const authContext = await resolveRequestAuthContext(
@@ -84,11 +102,14 @@ test("resolveRequestAuthContext prefers the app-session cookie when present", as
     assert.deepEqual(authContext, {
       userId: "user-1",
       email: "inspector@example.com",
+      roles: [],
+      primaryRole: "inspector",
       isAdmin: false,
+      isDeveloper: false,
     });
   } finally {
     authService.getUserByAccessToken = originalGetUserByAccessToken;
-    profileService.hasRole = originalHasRole;
+    profileService.getUserRoles = originalGetUserRoles;
   }
 });
 
@@ -102,7 +123,7 @@ test("resolveRequestAuthContext still accepts a bearer header when no cookie exi
   const { profileService } = await import("../src/services/ProfileService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
-  const originalHasRole = profileService.hasRole.bind(profileService);
+  const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
 
   authService.getUserByAccessToken = async (accessToken: string) => {
     assert.equal(accessToken, "session-token");
@@ -111,10 +132,9 @@ test("resolveRequestAuthContext still accepts a bearer header when no cookie exi
       email: "inspector@example.com",
     };
   };
-  profileService.hasRole = async (userId: string, role: string) => {
+  profileService.getUserRoles = async (userId: string) => {
     assert.equal(userId, "user-1");
-    assert.equal(role, "admin");
-    return true;
+    return [{ id: "role-1", user_id: "user-1", role: "admin" }];
   };
 
   try {
@@ -122,11 +142,14 @@ test("resolveRequestAuthContext still accepts a bearer header when no cookie exi
     assert.deepEqual(authContext, {
       userId: "user-1",
       email: "inspector@example.com",
+      roles: ["admin"],
+      primaryRole: "admin",
       isAdmin: true,
+      isDeveloper: false,
     });
   } finally {
     authService.getUserByAccessToken = originalGetUserByAccessToken;
-    profileService.hasRole = originalHasRole;
+    profileService.getUserRoles = originalGetUserRoles;
   }
 });
 
@@ -138,7 +161,7 @@ test("assertSelf rejects attempts to mutate another user's account", async () =>
   const { RequestAuthError, assertSelf } = await import("../src/middleware/auth");
 
   assert.throws(
-    () => assertSelf({ userId: "user-1", email: "inspector@example.com", isAdmin: false }, "user-2"),
+    () => assertSelf(createAuthContext(), "user-2"),
     (error: unknown) =>
       error instanceof RequestAuthError &&
       error.status === 403 &&
@@ -154,7 +177,16 @@ test("assertSelfOrAdmin allows administrators to access another user's record", 
   const { assertSelfOrAdmin } = await import("../src/middleware/auth");
 
   assert.doesNotThrow(() =>
-    assertSelfOrAdmin({ userId: "admin-1", email: "admin@example.com", isAdmin: true }, "user-2"),
+    assertSelfOrAdmin(
+      createAuthContext({
+        userId: "admin-1",
+        email: "admin@example.com",
+        roles: ["admin"],
+        primaryRole: "admin",
+        isAdmin: true,
+      }),
+      "user-2",
+    ),
   );
 });
 
@@ -174,7 +206,7 @@ test("resolveTrackedRequestAuthContext only performs session tracking once per r
   const { getSessionLimitService } = await import("../src/services/SessionLimitService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
-  const originalHasRole = profileService.hasRole.bind(profileService);
+  const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
   const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
@@ -190,7 +222,7 @@ test("resolveTrackedRequestAuthContext only performs session tracking once per r
       email: "inspector@example.com",
     };
   };
-  profileService.hasRole = async () => false;
+  profileService.getUserRoles = async () => [];
   sessionLimit.hasSession = async () => false;
   sessionLimit.pruneExpiredSessions = async () => undefined;
   sessionLimit.isAtLimit = async () => false;
@@ -205,13 +237,16 @@ test("resolveTrackedRequestAuthContext only performs session tracking once per r
     assert.deepEqual(first, {
       userId: "user-1",
       email: "inspector@example.com",
+      roles: [],
+      primaryRole: "inspector",
       isAdmin: false,
+      isDeveloper: false,
     });
     assert.deepEqual(second, first);
     assert.equal(registerCalls, 1);
   } finally {
     authService.getUserByAccessToken = originalGetUserByAccessToken;
-    profileService.hasRole = originalHasRole;
+    profileService.getUserRoles = originalGetUserRoles;
     sessionLimit.hasSession = originalHasSession;
     sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
     sessionLimit.isAtLimit = originalIsAtLimit;
@@ -238,7 +273,7 @@ test("resolveTrackedRequestAuthContext rejects unsafe cookie requests without a 
   const { getSessionLimitService } = await import("../src/services/SessionLimitService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
-  const originalHasRole = profileService.hasRole.bind(profileService);
+  const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
 
@@ -246,7 +281,7 @@ test("resolveTrackedRequestAuthContext rejects unsafe cookie requests without a 
     id: "user-1",
     email: "inspector@example.com",
   });
-  profileService.hasRole = async () => false;
+  profileService.getUserRoles = async () => [];
   sessionLimit.hasSession = async () => true;
 
   try {
@@ -259,7 +294,7 @@ test("resolveTrackedRequestAuthContext rejects unsafe cookie requests without a 
     );
   } finally {
     authService.getUserByAccessToken = originalGetUserByAccessToken;
-    profileService.hasRole = originalHasRole;
+    profileService.getUserRoles = originalGetUserRoles;
     sessionLimit.hasSession = originalHasSession;
   }
 });

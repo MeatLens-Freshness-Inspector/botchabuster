@@ -4,13 +4,16 @@ import { isOriginAllowed } from "../config/cors";
 import { authService } from "../services/AuthService";
 import { getAppSessionService } from "../services/AppSessionService";
 import { CsrfTokenService } from "../services/CsrfTokenService";
-import { profileService } from "../services/ProfileService";
+import { profileService, type AppRole, type PrimaryRole } from "../services/ProfileService";
 import { getSessionLimitService } from "../services/SessionLimitService";
 
 export interface RequestAuthContext {
   userId: string;
   email: string | null;
+  roles: AppRole[];
+  primaryRole: PrimaryRole;
   isAdmin: boolean;
+  isDeveloper: boolean;
 }
 
 export class RequestAuthError extends Error {
@@ -30,6 +33,15 @@ export function getErrorStatus(error: unknown): number | null {
   }
 
   return null;
+}
+
+export function toAuditActor(
+  authContext: Pick<RequestAuthContext, "userId" | "primaryRole">,
+): { id: string; role: PrimaryRole } {
+  return {
+    id: authContext.userId,
+    role: authContext.primaryRole,
+  };
 }
 
 type AccessTokenSource = "bearer" | "cookie";
@@ -160,8 +172,12 @@ export async function resolveRequestAuthContext(req: Request): Promise<RequestAu
     throw new RequestAuthError(401, error instanceof Error ? error.message : "Authentication required");
   }
 
-  const isAdmin = await profileService.hasRole(userId, "admin");
-  return { userId, email, isAdmin };
+  const privilege = await profileService.getPrivilegeSummary(userId);
+  return {
+    userId,
+    email,
+    ...privilege,
+  };
 }
 
 export async function resolveTrackedRequestAuthContext(req: Request): Promise<RequestAuthContext> {
@@ -248,6 +264,18 @@ export const requireAdmin: RequestHandler = (req, res, next) => {
     .then((authContext) => {
       if (!authContext.isAdmin) {
         throw new RequestAuthError(403, "Admin access required");
+      }
+
+      next();
+    })
+    .catch((error) => writeAuthError(res, error));
+};
+
+export const requireDeveloper: RequestHandler = (req, res, next) => {
+  return resolveAndAttachAuthContext(req)
+    .then((authContext) => {
+      if (!authContext.isDeveloper) {
+        throw new RequestAuthError(403, "Developer access required");
       }
 
       next();

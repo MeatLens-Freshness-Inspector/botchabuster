@@ -8,7 +8,7 @@ import {
   assertInspectionDecisionPayload,
   normalizeInspectionPreScan,
 } from "../types/inspectionPreScan";
-import { getErrorStatus, resolveTrackedRequestAuthContext } from "../middleware/auth";
+import { getErrorStatus, resolveTrackedRequestAuthContext, toAuditActor, type RequestAuthContext } from "../middleware/auth";
 
 class RequestAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -21,13 +21,9 @@ export class InspectionController {
     return req.query.scope === "all" ? "all" : "mine";
   }
 
-  private async getRequestAccessContext(req: Request): Promise<{ userId: string; isAdmin: boolean }> {
+  private async getRequestAccessContext(req: Request): Promise<RequestAuthContext> {
     try {
-      const authContext = await resolveTrackedRequestAuthContext(req);
-      return {
-        userId: authContext.userId,
-        isAdmin: authContext.isAdmin,
-      };
+      return await resolveTrackedRequestAuthContext(req);
     } catch (error) {
       throw new RequestAccessError(
         getErrorStatus(error) ?? 401,
@@ -181,10 +177,7 @@ export class InspectionController {
           payload: {
             event_type: "inspection.capture",
             event_time: this.normalizeEventTime(captured_at, inspection.created_at),
-            actor: {
-              id: accessContext.userId,
-              role: accessContext.isAdmin ? "admin" : "inspector",
-            },
+            actor: toAuditActor(accessContext),
             source: {
               ip: req.ip || null,
               user_agent: req.header("user-agent") || null,
@@ -234,10 +227,7 @@ export class InspectionController {
           payload: {
             event_type: "admin.inspection.delete",
             event_time: new Date().toISOString(),
-            actor: {
-              id: accessContext.userId,
-              role: "admin",
-            },
+            actor: toAuditActor(accessContext),
             source: {
               ip: req.ip || null,
               user_agent: req.header("user-agent") || null,

@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import type { AuthenticationResponseJSON, RegistrationResponseJSON } from "@simplewebauthn/server";
 import { Config } from "../config";
-import { getRequestAccessToken, getRequestAuthContext, getCsrfTokenService } from "../middleware/auth";
+import { getRequestAccessToken, getRequestAuthContext, getCsrfTokenService, toAuditActor } from "../middleware/auth";
 import { authService } from "../services/AuthService";
 import { getAppSessionService, type AppSession } from "../services/AppSessionService";
-import { profileService } from "../services/ProfileService";
+import { profileService, type AppRole, type PrimaryRole } from "../services/ProfileService";
 import { auditLogService, type AuditLogWriteInput } from "../services/AuditLogService";
 import { passkeyService } from "../services/PasskeyService";
 import { getSessionLimitService } from "../services/SessionLimitService";
@@ -18,14 +18,23 @@ export class AuthController {
     return req.header("origin") || process.env.WEBAUTHN_ORIGIN || "http://localhost:8080";
   }
 
-  private async resolveAuthenticatedUser(req: Request): Promise<{ user: { id: string; email: string | null }; isAdmin: boolean }> {
+  private async resolveAuthenticatedUser(req: Request): Promise<{
+    user: { id: string; email: string | null };
+    roles: AppRole[];
+    primaryRole: PrimaryRole;
+    isAdmin: boolean;
+    isDeveloper: boolean;
+  }> {
     const authContext = getRequestAuthContext(req);
     return {
       user: {
         id: authContext.userId,
         email: authContext.email,
       },
+      roles: authContext.roles,
+      primaryRole: authContext.primaryRole,
       isAdmin: authContext.isAdmin,
+      isDeveloper: authContext.isDeveloper,
     };
   }
 
@@ -82,7 +91,10 @@ export class AuthController {
 
   private async buildBootstrapPayload(input: {
     user: { id: string; email: string | null };
+    roles: AppRole[];
+    primaryRole: PrimaryRole;
     isAdmin: boolean;
+    isDeveloper: boolean;
     session: AppSession;
   }) {
     const sessionMetadata = getAppSessionService().getSession(input.session.access_token);
@@ -96,7 +108,10 @@ export class AuthController {
       user: input.user,
       profile,
       session: input.session,
+      roles: input.roles,
+      primaryRole: input.primaryRole,
       isAdmin: input.isAdmin,
+      isDeveloper: input.isDeveloper,
       csrfToken,
       authenticatedAt: this.toIsoString(sessionMetadata.authenticatedAt),
       offlineExpiresAt: this.toIsoString(sessionMetadata.offlineExpiresAt),
@@ -105,7 +120,10 @@ export class AuthController {
 
   private async issueSessionResponse(req: Request, res: Response, input: {
     user: { id: string; email: string | null };
+    roles: AppRole[];
+    primaryRole: PrimaryRole;
     isAdmin: boolean;
+    isDeveloper: boolean;
     session: AppSession;
   }): Promise<void> {
     res.cookie(
@@ -116,7 +134,10 @@ export class AuthController {
 
     res.json(await this.buildBootstrapPayload({
       user: input.user,
+      roles: input.roles,
+      primaryRole: input.primaryRole,
       isAdmin: input.isAdmin,
+      isDeveloper: input.isDeveloper,
       session: input.session,
     }));
   }
@@ -138,7 +159,7 @@ export class AuthController {
       }
 
       const result = await authService.signIn({ email, password });
-      const isAdmin = await profileService.hasRole(result.user.id, "admin");
+      const privilege = await profileService.getPrivilegeSummary(result.user.id);
       const appSession = authService.createAppSession(result.user);
 
       await this.writeAuditLogSafely({
@@ -147,7 +168,7 @@ export class AuthController {
           event_time: new Date().toISOString(),
           actor: {
             id: result.user.id,
-            role: isAdmin ? "admin" : "inspector",
+            role: privilege.primaryRole,
           },
           source: {
             ip: req.ip || null,
@@ -161,7 +182,10 @@ export class AuthController {
 
       await this.issueSessionResponse(req, res, {
         user: result.user,
-        isAdmin,
+        roles: privilege.roles,
+        primaryRole: privilege.primaryRole,
+        isAdmin: privilege.isAdmin,
+        isDeveloper: privilege.isDeveloper,
         session: appSession,
       });
     } catch (error) {
@@ -228,7 +252,10 @@ export class AuthController {
           id: authContext.userId,
           email: authContext.email,
         },
+        roles: authContext.roles,
+        primaryRole: authContext.primaryRole,
         isAdmin: authContext.isAdmin,
+        isDeveloper: authContext.isDeveloper,
         session: this.buildClientSession(accessToken),
       }));
     } catch (error) {
@@ -249,10 +276,7 @@ export class AuthController {
         payload: {
           event_type: "auth.sign_out",
           event_time: new Date().toISOString(),
-          actor: {
-            id: authContext.userId,
-            role: authContext.isAdmin ? "admin" : "inspector",
-          },
+          actor: toAuditActor(authContext),
           source: {
             ip: req.ip || null,
             user_agent: req.header("user-agent") || null,
@@ -360,7 +384,7 @@ export class AuthController {
 
   async verifyPasskeyRegistration(req: Request, res: Response): Promise<void> {
     try {
-      const { user, isAdmin } = await this.resolveAuthenticatedUser(req);
+      const { user, primaryRole } = await this.resolveAuthenticatedUser(req);
       const { challengeId, credential, deviceLabel } = req.body as {
         challengeId?: string;
         credential?: RegistrationResponseJSON;
@@ -386,7 +410,7 @@ export class AuthController {
           event_time: new Date().toISOString(),
           actor: {
             id: user.id,
-            role: isAdmin ? "admin" : "inspector",
+            role: primaryRole,
           },
           source: {
             ip: req.ip || null,
@@ -433,7 +457,7 @@ export class AuthController {
         origin: this.resolveOrigin(req),
         response: credential,
       });
-      const isAdmin = await profileService.hasRole(result.user.id, "admin");
+      const privilege = await profileService.getPrivilegeSummary(result.user.id);
 
       await this.writeAuditLogSafely({
         payload: {
@@ -441,7 +465,7 @@ export class AuthController {
           event_time: new Date().toISOString(),
           actor: {
             id: result.user.id,
-            role: isAdmin ? "admin" : "inspector",
+            role: privilege.primaryRole,
           },
           source: {
             ip: req.ip || null,
@@ -456,7 +480,10 @@ export class AuthController {
 
       await this.issueSessionResponse(req, res, {
         user: result.user,
-        isAdmin,
+        roles: privilege.roles,
+        primaryRole: privilege.primaryRole,
+        isAdmin: privilege.isAdmin,
+        isDeveloper: privilege.isDeveloper,
         session: result.session,
       });
     } catch (error) {
@@ -478,7 +505,7 @@ export class AuthController {
 
   async deletePasskey(req: Request, res: Response): Promise<void> {
     try {
-      const { user, isAdmin } = await this.resolveAuthenticatedUser(req);
+      const { user, primaryRole } = await this.resolveAuthenticatedUser(req);
       const credentialId = decodeURIComponent(req.params.credentialId || "");
       if (!credentialId) {
         res.status(400).json({ error: "credentialId is required" });
@@ -493,7 +520,7 @@ export class AuthController {
           event_time: new Date().toISOString(),
           actor: {
             id: user.id,
-            role: isAdmin ? "admin" : "inspector",
+            role: primaryRole,
           },
           source: {
             ip: req.ip || null,

@@ -43,38 +43,38 @@ export class UserChatService {
     }
   }
 
-  private async getAdminUserIdSet(): Promise<Set<string>> {
+  private async getPrivilegedUserIdSet(): Promise<Set<string>> {
     const { data, error } = await supabase.from("user_roles").select("user_id, role");
     if (error) throw new Error(`Failed to fetch user roles: ${error.message}`);
 
-    const adminIds = new Set<string>();
+    const privilegedIds = new Set<string>();
     for (const row of data ?? []) {
-      if (row.role === "admin" && typeof row.user_id === "string") {
-        adminIds.add(row.user_id);
+      if ((row.role === "admin" || row.role === "developer") && typeof row.user_id === "string") {
+        privilegedIds.add(row.user_id);
       }
     }
 
-    return adminIds;
+    return privilegedIds;
   }
 
   async getActorRole(userId: string): Promise<ChatRole> {
     this.assertUuid(userId, "userId");
-    const isAdmin = await profileService.hasRole(userId, "admin");
-    return isAdmin ? "admin" : "user";
+    const privilege = await profileService.getPrivilegeSummary(userId);
+    return privilege.isAdmin ? "admin" : "user";
   }
 
   async listContactsForActor(actorId: string): Promise<UserChatContact[]> {
     this.assertUuid(actorId, "actorId");
 
     const actorRole = await this.getActorRole(actorId);
-    const adminIds = await this.getAdminUserIdSet();
+    const privilegedIds = await this.getPrivilegedUserIdSet();
     const allProfiles = await profileService.getAllProfiles();
 
     const allowedContacts = allProfiles
       .filter((profile) => profile.id !== actorId)
       .filter((profile) => {
-        const profileIsAdmin = adminIds.has(profile.id);
-        return actorRole === "admin" ? !profileIsAdmin : profileIsAdmin;
+        const profileIsPrivileged = privilegedIds.has(profile.id);
+        return actorRole === "admin" ? !profileIsPrivileged : profileIsPrivileged;
       });
 
     if (allowedContacts.length === 0) {
@@ -121,7 +121,7 @@ export class UserChatService {
           email: profile.email ?? null,
           inspector_code: profile.inspector_code,
           location: profile.location,
-          role: adminIds.has(profile.id) ? "admin" : "user",
+          role: privilegedIds.has(profile.id) ? "admin" : "user",
           last_message_preview: latest?.content ?? null,
           last_message_at: latest?.createdAt ?? null,
         } satisfies UserChatContact;
@@ -145,21 +145,21 @@ export class UserChatService {
       throw new Error("Self-chat is not allowed");
     }
 
-    const [actorRole, counterpartProfile, counterpartIsAdmin] = await Promise.all([
+    const [actorRole, counterpartProfile, counterpartPrivilege] = await Promise.all([
       this.getActorRole(actorId),
       profileService.getProfile(counterpartId),
-      profileService.hasRole(counterpartId, "admin"),
+      profileService.getPrivilegeSummary(counterpartId),
     ]);
 
     if (!counterpartProfile) {
       throw new Error("Counterparty account was not found");
     }
 
-    if (actorRole === "admin" && counterpartIsAdmin) {
+    if (actorRole === "admin" && counterpartPrivilege.isAdmin) {
       throw new Error("Admins can only chat with users");
     }
 
-    if (actorRole === "user" && !counterpartIsAdmin) {
+    if (actorRole === "user" && !counterpartPrivilege.isAdmin) {
       throw new Error("Users can only chat with admins");
     }
   }

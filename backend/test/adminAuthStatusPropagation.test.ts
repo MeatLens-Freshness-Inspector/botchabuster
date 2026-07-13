@@ -72,7 +72,7 @@ test("protected admin data endpoints preserve session-limit 429 responses instea
   const { getSessionLimitService } = await import("../src/services/SessionLimitService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
-  const originalHasRole = profileService.hasRole.bind(profileService);
+  const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
   const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
@@ -83,7 +83,7 @@ test("protected admin data endpoints preserve session-limit 429 responses instea
     id: "admin-1",
     email: "admin@example.com",
   });
-  profileService.hasRole = async () => true;
+  profileService.getUserRoles = async () => [{ id: "role-1", user_id: "admin-1", role: "admin" }];
   sessionLimit.hasSession = async () => false;
   sessionLimit.pruneExpiredSessions = async () => undefined;
   sessionLimit.isAtLimit = async () => true;
@@ -112,7 +112,7 @@ test("protected admin data endpoints preserve session-limit 429 responses instea
     }
   } finally {
     authService.getUserByAccessToken = originalGetUserByAccessToken;
-    profileService.hasRole = originalHasRole;
+    profileService.getUserRoles = originalGetUserRoles;
     sessionLimit.hasSession = originalHasSession;
     sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
     sessionLimit.isAtLimit = originalIsAtLimit;
