@@ -112,10 +112,17 @@ export class AuthClient {
       headers.set("X-CSRF-Token", csrfToken.trim());
     }
 
-    await fetchWithTimeout(`${API_BASE_URL}/auth/sign-out`, {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/auth/sign-out`, {
       method: "POST",
       headers,
     });
+
+    if (!res.ok) {
+      throw createHttpApiError(
+        await readApiErrorMessage(res, "Failed to sign out"),
+        res.status,
+      );
+    }
   }
 
   async resetPassword(email: string, redirectTo?: string): Promise<void> {

@@ -555,19 +555,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     const csrfToken = getApiCsrfToken();
 
-    clearInMemoryAuthState("anonymous");
-    await clearOfflineAuthEnvelope();
-    clearLegacyAuthArtifacts();
-
     if (!navigator.onLine) {
-      return;
+      throw new Error("Sign out requires an internet connection.");
     }
 
     try {
       await authClient.signOut(csrfToken);
-    } catch {
-      // Best-effort cookie clearing only.
+    } catch (error) {
+      const status = getHttpApiErrorStatus(error);
+      if (status !== 401 && status !== 404) {
+        throw error;
+      }
     }
+
+    clearInMemoryAuthState("anonymous");
+    await clearOfflineAuthEnvelope();
+    clearLegacyAuthArtifacts();
   };
 
   const lock = async () => {

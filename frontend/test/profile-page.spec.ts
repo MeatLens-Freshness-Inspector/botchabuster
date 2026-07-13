@@ -47,6 +47,52 @@ test("does not render a back button on the main profile page", async ({ page }) 
   await expect(page.getByRole("button", { name: /go back/i })).toHaveCount(0);
 });
 
+test("keeps the signed-in session intact when server-side sign-out fails", async ({ page }) => {
+  const spies: ApiSpy[] = [];
+
+  await seedSignedInSession(page, { userId: "user-1" });
+  await mockCommonApi(page, { userId: "user-1" }, spies);
+
+  await page.route("**/api/auth/sign-out", async (route) => {
+    const request = route.request();
+    spies.push({
+      method: request.method(),
+      url: request.url(),
+      headers: request.headers(),
+      postData: request.postData() ?? "",
+    });
+
+    await route.fulfill({
+      status: 500,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "Sign-out failed" }),
+    });
+  });
+
+  await page.goto("/profile");
+  await expect(page.getByRole("heading", { name: /my profile/i })).toBeVisible();
+
+  await page.getByRole("button", { name: /^sign out$/i }).first().click();
+  await expect(page.getByRole("alertdialog")).toBeVisible();
+  await page.getByRole("alertdialog").getByRole("button", { name: /^sign out$/i }).click();
+
+  await expect.poll(() => spies.filter((spy) => spy.url.endsWith("/api/auth/sign-out")).length).toBe(1);
+
+  const signOutRequest = spies.find((spy) => spy.url.endsWith("/api/auth/sign-out"));
+  expect(signOutRequest?.headers["x-csrf-token"]).toBe("mock-csrf-token");
+  expect(signOutRequest?.headers.authorization).toBe("Bearer session-token");
+
+  await expect(page).toHaveURL(/\/profile$/);
+  await expect(page.getByText(/failed to sign out/i)).toBeVisible();
+
+  const authState = await page.evaluate(() => ({
+    user: window.localStorage.getItem("meatlens-auth-user"),
+    session: window.sessionStorage.getItem("meatlens-auth-session"),
+  }));
+  expect(authState.user).toContain("user-1");
+  expect(authState.session).toContain("session-token");
+});
+
 test("saves profile name and email from the Detailed Information card", async ({ page }) => {
   const spies: ApiSpy[] = [];
 
