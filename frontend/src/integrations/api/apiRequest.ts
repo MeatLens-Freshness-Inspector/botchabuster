@@ -1,3 +1,5 @@
+import { Capacitor } from "@capacitor/core";
+
 export const AUTH_EXPIRED_EVENT = "meatlens:auth-expired";
 
 let apiCsrfToken: string | null = null;
@@ -76,9 +78,14 @@ export function applyApiRequestInit(init: RequestInit = {}): RequestInit {
     headers.set("X-CSRF-Token", apiCsrfToken);
   }
 
+  // On native Android/iOS (Capacitor), cookies don't travel cross-origin and
+  // a credentialed preflight causes the server to reject the request.
+  // Use "omit" so only the Bearer token (set via createAuthHeaders) is used.
+  const isNative = Capacitor.isNativePlatform();
+
   return {
     ...init,
     headers,
-    credentials: init.credentials ?? "include",
+    credentials: isNative ? "omit" : (init.credentials ?? "include"),
   };
 }

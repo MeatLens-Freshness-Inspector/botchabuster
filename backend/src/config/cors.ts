@@ -5,6 +5,10 @@ const DEFAULT_DEV_ALLOWED_ORIGINS = [
   "http://127.0.0.1:8080",
   "http://localhost:4173",
   "http://127.0.0.1:4173",
+  // Capacitor Android/iOS WebViews use these origins.
+  // Also add these to ALLOWED_ORIGINS in the Render environment for production.
+  "capacitor://localhost",
+  "http://localhost",
 ];
 
 export function parseAllowedOrigins(value: string | undefined): string[] {
