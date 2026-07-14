@@ -1,8 +1,12 @@
+import { Capacitor } from "@capacitor/core";
 import type {
   AnalysisResult,
   InspectionDecisionSource,
   MeatType,
 } from "@/types/inspection";
+import * as sqliteImpl from "@/lib/sqlite/sqliteOfflineQueue";
+
+const isNative = () => Capacitor.isNativePlatform();
 
 const DB_NAME = "meatlens-offline";
 const DB_VERSION = 1;
@@ -54,6 +58,8 @@ function openDb(): Promise<IDBDatabase> {
 }
 
 export async function queueScan(scan: PendingScan): Promise<void> {
+  if (isNative()) return sqliteImpl.queueScan(scan);
+
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readwrite");
@@ -64,6 +70,8 @@ export async function queueScan(scan: PendingScan): Promise<void> {
 }
 
 export async function getPendingScans(): Promise<PendingScan[]> {
+  if (isNative()) return sqliteImpl.getPendingScans();
+
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readonly");
@@ -74,6 +82,8 @@ export async function getPendingScans(): Promise<PendingScan[]> {
 }
 
 export async function removeScan(id: string): Promise<void> {
+  if (isNative()) return sqliteImpl.removeScan(id);
+
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readwrite");
@@ -84,6 +94,8 @@ export async function removeScan(id: string): Promise<void> {
 }
 
 export async function getPendingCount(): Promise<number> {
+  if (isNative()) return sqliteImpl.getPendingCount();
+
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readonly");
@@ -94,6 +106,8 @@ export async function getPendingCount(): Promise<number> {
 }
 
 export async function clearPendingScans(): Promise<void> {
+  if (isNative()) return sqliteImpl.clearPendingScans();
+
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readwrite");

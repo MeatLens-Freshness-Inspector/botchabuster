@@ -1,4 +1,8 @@
+import { Capacitor } from "@capacitor/core";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
+import * as sqliteImpl from "@/lib/sqlite/sqliteInspectionCache";
+
+const isNative = () => Capacitor.isNativePlatform();
 
 const DB_NAME = "meatlens-inspection-history";
 const DB_VERSION = 1;
@@ -80,6 +84,8 @@ export async function getCachedInspectionList(
   userId: string,
   scope: InspectionHistoryScope = "mine",
 ): Promise<Inspection[] | null> {
+  if (isNative()) return sqliteImpl.getCachedInspectionList(userId, scope);
+
   const db = await openDb();
   if (!db) {
     return null;
@@ -104,6 +110,8 @@ export async function setCachedInspectionList(
   inspections: Inspection[],
   scope: InspectionHistoryScope = "mine",
 ): Promise<void> {
+  if (isNative()) return sqliteImpl.setCachedInspectionList(userId, inspections, scope);
+
   const db = await openDb();
   if (!db) {
     return;
@@ -132,6 +140,8 @@ export async function upsertCachedInspection(
   inspection: Inspection,
   scope: InspectionHistoryScope = "mine",
 ): Promise<void> {
+  if (isNative()) return sqliteImpl.upsertCachedInspection(userId, inspection, scope);
+
   const cachedInspections = (await getCachedInspectionList(userId, scope)) ?? [];
   const nextInspections = [inspection, ...cachedInspections.filter((item) => item.id !== inspection.id)];
   await setCachedInspectionList(userId, nextInspections, scope);
@@ -142,6 +152,8 @@ export async function getCachedInspection(
   inspectionId: string,
   scope: InspectionHistoryScope = "mine",
 ): Promise<Inspection | null> {
+  if (isNative()) return sqliteImpl.getCachedInspection(userId, inspectionId, scope);
+
   const inspections = await getCachedInspectionList(userId, scope);
   return inspections?.find((inspection) => inspection.id === inspectionId) ?? null;
 }
@@ -150,6 +162,8 @@ export async function getCachedInspectionStats(
   userId: string,
   scope: InspectionHistoryScope = "mine",
 ): Promise<InspectionHistoryStats | null> {
+  if (isNative()) return sqliteImpl.getCachedInspectionStats(userId, scope);
+
   const db = await openDb();
   if (!db) {
     return null;
@@ -174,6 +188,8 @@ export async function setCachedInspectionStats(
   stats: InspectionHistoryStats,
   scope: InspectionHistoryScope = "mine",
 ): Promise<void> {
+  if (isNative()) return sqliteImpl.setCachedInspectionStats(userId, stats, scope);
+
   const db = await openDb();
   if (!db) {
     return;

@@ -1,3 +1,8 @@
+import { Capacitor } from "@capacitor/core";
+import * as sqliteImpl from "@/lib/sqlite/sqliteAuditQueue";
+
+const isNative = () => Capacitor.isNativePlatform();
+
 const DB_NAME = "meatlens-audit-offline";
 const DB_VERSION = 1;
 const STORE_NAME = "pending-audit-logs";
@@ -27,6 +32,8 @@ function openDb(): Promise<IDBDatabase> {
 }
 
 export async function queueAuditLog(log: PendingAuditLog): Promise<void> {
+  if (isNative()) return sqliteImpl.queueAuditLog(log);
+
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readwrite");
@@ -37,6 +44,8 @@ export async function queueAuditLog(log: PendingAuditLog): Promise<void> {
 }
 
 export async function getPendingAuditLogs(): Promise<PendingAuditLog[]> {
+  if (isNative()) return sqliteImpl.getPendingAuditLogs();
+
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readonly");
@@ -47,6 +56,8 @@ export async function getPendingAuditLogs(): Promise<PendingAuditLog[]> {
 }
 
 export async function removeAuditLog(id: string): Promise<void> {
+  if (isNative()) return sqliteImpl.removeAuditLog(id);
+
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readwrite");
@@ -57,6 +68,8 @@ export async function removeAuditLog(id: string): Promise<void> {
 }
 
 export async function getPendingAuditCount(): Promise<number> {
+  if (isNative()) return sqliteImpl.getPendingAuditCount();
+
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readonly");
@@ -67,6 +80,8 @@ export async function getPendingAuditCount(): Promise<number> {
 }
 
 export async function clearPendingAuditLogs(): Promise<void> {
+  if (isNative()) return sqliteImpl.clearPendingAuditLogs();
+
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, "readwrite");

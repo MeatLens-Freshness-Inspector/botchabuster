@@ -1,7 +1,11 @@
+import { Capacitor } from "@capacitor/core";
 import type { AuthPrimaryRole, AuthRole, AuthUser } from "@/integrations/api/AuthClient";
 import type { Profile } from "@/integrations/api/ProfileClient";
 import type { PasswordVerifierRecord } from "@/lib/offlineCredentials";
 import type { StoredLocalPasskey } from "@/lib/passkeys/localUnlock";
+import * as sqliteImpl from "@/lib/sqlite/sqliteAuthEnvelope";
+
+const isNative = () => Capacitor.isNativePlatform();
 
 const DB_NAME = "meatlens-offline-auth";
 const DB_VERSION = 1;
@@ -104,6 +108,8 @@ export function getOfflineAuthEnvelopeSnapshot(): OfflineAuthEnvelope | null {
 }
 
 export async function loadOfflineAuthEnvelope(): Promise<OfflineAuthEnvelope | null> {
+  if (isNative()) return sqliteImpl.loadOfflineAuthEnvelope();
+
   const db = await openDb();
   if (!db) {
     return getOfflineAuthEnvelopeSnapshot();
@@ -126,6 +132,8 @@ export async function loadOfflineAuthEnvelope(): Promise<OfflineAuthEnvelope | n
 }
 
 export async function saveOfflineAuthEnvelope(envelope: OfflineAuthEnvelope): Promise<void> {
+  if (isNative()) return sqliteImpl.saveOfflineAuthEnvelope(envelope);
+
   offlineAuthEnvelopeSnapshot = cloneEnvelope(envelope);
 
   const db = await openDb();
@@ -149,6 +157,8 @@ export async function saveOfflineAuthEnvelope(envelope: OfflineAuthEnvelope): Pr
 }
 
 export async function clearOfflineAuthEnvelope(): Promise<void> {
+  if (isNative()) return sqliteImpl.clearOfflineAuthEnvelope();
+
   offlineAuthEnvelopeSnapshot = null;
 
   const db = await openDb();
@@ -170,6 +180,8 @@ export async function clearOfflineAuthEnvelope(): Promise<void> {
 export async function updateOfflineAuthEnvelope(
   update: (currentEnvelope: OfflineAuthEnvelope | null) => OfflineAuthEnvelope | null,
 ): Promise<OfflineAuthEnvelope | null> {
+  if (isNative()) return sqliteImpl.updateOfflineAuthEnvelope(update);
+
   const currentEnvelope = await loadOfflineAuthEnvelope();
   const nextEnvelope = update(currentEnvelope);
 
