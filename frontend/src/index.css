@@ -129,6 +129,11 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  body.capacitor-android {
+    padding-top: 25px;
+    padding-bottom: 35px;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
   }

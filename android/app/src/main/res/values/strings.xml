@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">botchabuster</string>
+    <string name="title_activity_main">botchabuster</string>
+    <string name="package_name">com.school.botchabuster</string>
+    <string name="custom_url_scheme">com.school.botchabuster</string>
+</resources>
