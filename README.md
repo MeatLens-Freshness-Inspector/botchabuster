@@ -122,6 +122,9 @@ npm run build:frontend  # Build frontend only
 npm run build:backend   # Build backend only
 npm run lint            # Lint all workspaces
 npm run test            # Test all workspaces
+npm run test:unit       # Run frontend and backend unit tests
+npm run test:integration # Run backend integration tests
+npm run test:e2e        # Run frontend Playwright tests
 npm run test:watch      # Watch tests
 ```
 

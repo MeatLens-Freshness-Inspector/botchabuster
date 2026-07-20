@@ -10,6 +10,19 @@ npm install
 npm run dev
 ```
 
+## Testing
+
+```bash
+# Run the full backend suite
+npm test
+
+# Run isolated service, config, type, and utility tests
+npm run test:unit
+
+# Run Express and HTTP behavior tests
+npm run test:integration
+```
+
 ## Environment Variables
 
 ```env

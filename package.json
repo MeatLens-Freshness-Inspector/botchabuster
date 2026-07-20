@@ -18,8 +18,11 @@
     "build:backend": "npm run build -w backend",
     "start": "npm run start -w backend",
     "lint": "npm run lint --workspaces",
-    "test": "npm run test -w frontend",
-    "test:watch": "npm run test:watch -w frontend",
+    "test": "npm run test -w frontend && npm run test -w backend",
+    "test:unit": "npm run test:unit -w frontend && npm run test:unit -w backend",
+    "test:integration": "npm run test:integration -w backend",
+    "test:e2e": "npm run test:e2e -w frontend",
+    "test:watch": "npm run test:e2e:ui -w frontend",
     "build:android": "npm run build:frontend && npx cap sync android && npx cap open android"
   },
   "dependencies": {

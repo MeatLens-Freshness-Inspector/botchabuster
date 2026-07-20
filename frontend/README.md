@@ -44,10 +44,16 @@ npm run preview
 ### Testing
 
 ```sh
-# Run tests once
+# Run all frontend tests
 npm run test
 
-# Run tests in watch mode
+# Run Node/TSX unit tests
+npm run test:unit
+
+# Run Playwright E2E tests
+npm run test:e2e
+
+# Open the Playwright UI
 npm run test:watch
 ```
 
@@ -69,4 +75,4 @@ This project is built with:
 - **Tailwind CSS** - Utility-first CSS framework
 - **Supabase** - Backend and authentication
 - **Playwright** - E2E testing
-- **Vitest** - Unit testing
+- **Node test runner with tsx** - Unit testing
