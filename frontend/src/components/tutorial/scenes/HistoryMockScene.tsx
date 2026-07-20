@@ -10,9 +10,9 @@ interface HistoryMockSceneProps {
 function MockFreshBadge({ size = "sm" }: { size?: "sm" | "xs" }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-md border border-fresh/40 bg-fresh/20 font-display font-semibold uppercase tracking-wider text-fresh ${size === "xs" ? "px-1.5 py-0.5 text-[8px]" : "px-2 py-0.5 text-[9px]"}`}
+      className={`inline-flex items-center gap-1 rounded-md border border-fresh/40 bg-fresh/20 font-display font-semibold tracking-wider text-fresh ${size === "xs" ? "px-1.5 py-0.5 text-[8px]" : "px-2 py-0.5 text-[9px]"}`}
     >
-      <span>OK</span> Fresh
+      Fresh
     </span>
   );
 }

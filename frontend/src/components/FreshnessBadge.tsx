@@ -2,8 +2,8 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import type { FreshnessClassification } from "@/types/inspection";
 
-const classificationConfig: Record<FreshnessClassification, { label: string; className: string; icon: string }> = {
-  fresh: { label: "FRESH", className: "bg-fresh/20 text-fresh border-fresh/40", icon: "OK" },
+const classificationConfig: Record<FreshnessClassification, { label: string; className: string; icon?: string }> = {
+  fresh: { label: "Fresh", className: "bg-fresh/20 text-fresh border-fresh/40" },
   "not fresh": { label: "NOT FRESH", className: "bg-warning/20 text-warning border-warning/40", icon: "!" },
   acceptable: { label: "ACCEPTABLE", className: "bg-acceptable/20 text-acceptable border-acceptable/40", icon: "~" },
   warning: { label: "WARNING", className: "bg-warning/20 text-warning border-warning/40", icon: "!" },
@@ -27,13 +27,14 @@ export function FreshnessBadge({ classification, className, size = "md" }: Fresh
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border font-display font-semibold uppercase tracking-wider",
+        "inline-flex items-center gap-1.5 rounded-md border font-display font-semibold tracking-wider",
+        classification !== "fresh" && "uppercase",
         config.className,
         sizeClasses[size],
         className
       )}
     >
-      <span>{config.icon}</span>
+      {config.icon && <span>{config.icon}</span>}
       {config.label}
     </span>
   );

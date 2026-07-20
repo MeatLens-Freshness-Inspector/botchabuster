@@ -9,8 +9,8 @@ interface InspectMockSceneProps {
 
 function MockFreshnessBadge() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-fresh/40 bg-fresh/20 px-1.5 py-0.5 font-display text-[9px] font-semibold uppercase tracking-wider text-fresh">
-      <span>OK</span> Fresh
+    <span className="inline-flex items-center gap-1 rounded-md border border-fresh/40 bg-fresh/20 px-1.5 py-0.5 font-display text-[9px] font-semibold tracking-wider text-fresh">
+      Fresh
     </span>
   );
 }
