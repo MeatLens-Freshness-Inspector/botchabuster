@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
+import { getReportLetterheadAssetUrl } from "@/lib/reportLetterheads";
 import { getReportOrganizationLabel } from "@/lib/reportOrganizations";
 import type {
   FreshnessClassification,
@@ -64,6 +65,7 @@ export function buildDetailedHistoryReportHtml({
   reportOrganization,
 }: DetailedHistoryReportInput): string {
   const organizationLabel = getReportOrganizationLabel(reportOrganization);
+  const letterheadUrl = getReportLetterheadAssetUrl(reportOrganization);
   const inspectionCards = inspections
     .map((inspection, index) => {
       const locationLabel =
@@ -135,6 +137,15 @@ export function buildDetailedHistoryReportHtml({
         border: 1px solid #dbe3ef;
         border-radius: 14px;
         padding: 20px;
+      }
+      .letterhead-wrap {
+        margin-bottom: 12px;
+      }
+      .letterhead-object {
+        width: 100%;
+        height: 220px;
+        border: 1px solid #dbe3ef;
+        border-radius: 12px;
       }
       .org-heading {
         margin: 0;
@@ -245,6 +256,14 @@ export function buildDetailedHistoryReportHtml({
   </head>
   <body>
     <main class="sheet">
+      <div class="letterhead-wrap">
+        <object
+          class="letterhead-object"
+          data="${escapeHtml(letterheadUrl)}#toolbar=0&navpanes=0&scrollbar=0"
+          type="application/pdf"
+          aria-label="${escapeHtml(organizationLabel)} letterhead"
+        ></object>
+      </div>
       <p class="org-heading">${escapeHtml(organizationLabel)}</p>
       <h1>Inspector Daily Detailed Report</h1>
       <p class="meta">

@@ -40,6 +40,7 @@ test("renders the selected organization header for DTI reports", () => {
   });
 
   assert.match(html, /DTI/);
+  assert.match(html, /DTI%20zambales%20letterhead\.pdf/);
   assert.match(html, /Inspector Daily Detailed Report/);
   assert.match(html, /North Market \| Lat: 14.599500 \| Long: 120.984200/);
   assert.match(html, /Pre-scan protocol/i);
@@ -57,5 +58,6 @@ test("falls back to Gordon College CCS when the profile organization is missing"
   });
 
   assert.match(html, /Gordon College CCS/);
+  assert.match(html, /GCCCS%20letterhead\.pdf/);
   assert.match(html, /Inspector Daily Detailed Report/);
 });
