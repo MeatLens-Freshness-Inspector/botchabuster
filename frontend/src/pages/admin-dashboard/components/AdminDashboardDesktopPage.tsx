@@ -1,14 +1,9 @@
 import {
-  AlertTriangle,
-  CheckCircle,
   Loader2,
-  RefreshCcw,
   ShieldCheck,
-  TrendingDown,
-  TrendingUp,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import AdminDashboardDialogs from "./AdminDashboardDialogs";
+import AdminDashboardSummary from "./AdminDashboardSummary";
 import { useAdminDashboardPage } from "../hooks/useAdminDashboardPage";
 import type { AdminDashboardTabKey } from "../types";
 import AccessCodesTab from "../desktop/components/AccessCodesTab";
@@ -59,37 +54,37 @@ export default function AdminDashboardDesktopPage() {
     tabs,
     activeTab,
     activeTabConfig,
-    stats,
-    avgConfidence,
-    spoiledRate,
-    recentTrend,
     setActiveTab,
-    handleRefresh,
   } = dashboard;
   const ActiveTabIcon = activeTabConfig.icon;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))]">
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-60 flex-shrink-0 border-r border-border/70 bg-card/95">
+        <aside className="w-64 flex-shrink-0 border-r border-border/70 bg-card/95">
           <div className="flex h-16 items-center border-b border-border/70 px-4">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-border/70 bg-[hsl(var(--primary)/0.15)]">
               <ShieldCheck className="h-5 w-5 text-primary" />
             </div>
-            <span className="ml-3 font-display text-base font-semibold tracking-tight">
-              MeatLens
-            </span>
+            <div className="ml-3">
+              <span className="block font-display text-base font-semibold tracking-tight">
+                MeatLens
+              </span>
+              <span className="block text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                Admin workspace
+              </span>
+            </div>
           </div>
-          <nav className="flex flex-col gap-1 p-3">
+          <nav className="flex flex-col gap-1.5 p-3">
             {tabs.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors ${
+                className={`flex items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-all ${
                   activeTab === key
-                    ? "bg-[hsl(var(--primary)/0.16)] text-foreground"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    ? "border-primary/40 bg-[hsl(var(--primary)/0.16)] text-foreground shadow-[0_12px_32px_-20px_rgba(0,0,0,0.75)]"
+                    : "border-transparent text-muted-foreground hover:border-border/60 hover:bg-secondary/60 hover:text-foreground"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -110,111 +105,13 @@ export default function AdminDashboardDesktopPage() {
                 {activeTabConfig.label}
               </span>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              className="gap-2 rounded-xl"
-            >
-              <RefreshCcw className="h-4 w-4" />
-              Refresh
-            </Button>
           </header>
 
           <main className="flex-1 overflow-auto p-6 pb-24">
             <div className="mx-auto w-full max-w-7xl min-w-0 space-y-6">
-              <section className="rounded-3xl border border-border/70 bg-card/90 p-5 shadow-[0_24px_70px_-34px_rgba(0,0,0,0.65)]">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-[hsl(var(--primary)/0.15)]">
-                      <ShieldCheck className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h1 className="font-display text-xl font-semibold tracking-tight">
-                        Admin Dashboard
-                      </h1>
-                      <p className="text-xs text-muted-foreground">
-                        System management and analytics hub
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRefresh}
-                    className="gap-2 rounded-xl"
-                  >
-                    <RefreshCcw className="h-4 w-4" />
-                    Refresh
-                  </Button>
-                </div>
+              <AdminDashboardSummary dashboard={dashboard} />
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-2xl border border-border/70 bg-[hsl(var(--warning)/0.16)] p-3">
-                    <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                      Total Users
-                    </p>
-                    <p className="mt-1 font-display text-3xl font-semibold">
-                      {stats?.total_users || 0}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-border/70 bg-[hsl(var(--primary)/0.16)] p-3">
-                    <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                      Total Inspections
-                    </p>
-                    <p className="mt-1 font-display text-3xl font-semibold">
-                      {stats?.total_inspections || 0}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-border/70 bg-background/65 p-3">
-                    <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                      Avg Confidence
-                    </p>
-                    <div className="mt-1 flex items-center gap-2">
-                      <p className="font-display text-3xl font-semibold">
-                        {avgConfidence}%
-                      </p>
-                      <CheckCircle className="h-4 w-4 text-fresh" />
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-border/70 bg-background/65 p-3">
-                    <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                      Spoiled Rate
-                    </p>
-                    <div className="mt-1 flex items-center gap-2">
-                      <p className="font-display text-3xl font-semibold">
-                        {spoiledRate}%
-                      </p>
-                      {spoiledRate > 20 ? (
-                        <AlertTriangle className="h-4 w-4 text-spoiled" />
-                      ) : (
-                        <CheckCircle className="h-4 w-4 text-fresh" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3 rounded-2xl border border-border/70 bg-background/50 p-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-                        7-Day Movement vs Previous Week
-                      </p>
-                      <p className="font-display text-lg font-semibold">
-                        {recentTrend >= 0 ? "+" : ""}
-                        {recentTrend}% inspections
-                      </p>
-                    </div>
-                    {recentTrend >= 0 ? (
-                      <TrendingUp className="h-8 w-8 text-fresh" />
-                    ) : (
-                      <TrendingDown className="h-8 w-8 text-warning" />
-                    )}
-                  </div>
-                </div>
-              </section>
-
-              <div className="mt-4 space-y-4">
+              <div className="space-y-4">
                 {renderDesktopTab(activeTab, dashboard)}
               </div>
             </div>
