@@ -42,6 +42,23 @@ const sampleGcccsModel: ReportDocumentModel = {
   ],
 };
 
+function readBackgroundRectangles(background: unknown) {
+  assert.ok(Array.isArray(background));
+
+  return background.flatMap((entry) => {
+    if (
+      !entry ||
+      typeof entry !== "object" ||
+      !("canvas" in entry) ||
+      !Array.isArray(entry.canvas)
+    ) {
+      return [];
+    }
+
+    return entry.canvas;
+  });
+}
+
 test("buildReportDocDefinition applies the organization page frame and section ordering", async () => {
   const docDefinition = await buildReportDocDefinition(sampleGcccsModel, {
     loadBrandAsset: async (path) => `mocked:${path}`,
@@ -105,14 +122,18 @@ test("buildReportDocDefinition masks the city vet placeholder body text in the r
       : undefined,
     "mocked:/letterheads/rendered/city-vet-page.png",
   );
-  assert.ok(
-    background.some(
-      (entry) =>
-        entry &&
-        typeof entry === "object" &&
-        "canvas" in entry &&
-      Array.isArray(entry.canvas),
-    ),
+  assert.deepEqual(
+    readBackgroundRectangles(background),
+    [
+      {
+        type: "rect",
+        x: 40,
+        y: 108,
+        w: 532,
+        h: 64,
+        color: "#FFFFFF",
+      },
+    ],
   );
 });
 
@@ -139,13 +160,17 @@ test("buildReportDocDefinition masks the dti placeholder body text in the repeat
       : undefined,
     "mocked:/letterheads/rendered/dti-page.png",
   );
-  assert.ok(
-    background.some(
-      (entry) =>
-        entry &&
-        typeof entry === "object" &&
-        "canvas" in entry &&
-        Array.isArray(entry.canvas),
-    ),
+  assert.deepEqual(
+    readBackgroundRectangles(background),
+    [
+      {
+        type: "rect",
+        x: 40,
+        y: 108,
+        w: 532,
+        h: 64,
+        color: "#FFFFFF",
+      },
+    ],
   );
 });
