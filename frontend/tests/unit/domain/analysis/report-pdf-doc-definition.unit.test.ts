@@ -111,6 +111,40 @@ test("buildReportDocDefinition masks the city vet placeholder body text in the r
         entry &&
         typeof entry === "object" &&
         "canvas" in entry &&
+      Array.isArray(entry.canvas),
+    ),
+  );
+});
+
+test("buildReportDocDefinition masks the dti placeholder body text in the repeated frame", async () => {
+  const dtiModel: ReportDocumentModel = {
+    ...sampleGcccsModel,
+    organization: "dti",
+    templateKey: "dti",
+  };
+
+  const docDefinition = await buildReportDocDefinition(dtiModel, {
+    loadBrandAsset: async (path) => `mocked:${path}`,
+  });
+
+  const background =
+    typeof docDefinition.background === "function"
+      ? docDefinition.background(1, 1)
+      : docDefinition.background;
+
+  assert.ok(Array.isArray(background));
+  assert.equal(
+    background[0] && typeof background[0] === "object" && "image" in background[0]
+      ? background[0].image
+      : undefined,
+    "mocked:/letterheads/rendered/dti-page.png",
+  );
+  assert.ok(
+    background.some(
+      (entry) =>
+        entry &&
+        typeof entry === "object" &&
+        "canvas" in entry &&
         Array.isArray(entry.canvas),
     ),
   );
