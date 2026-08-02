@@ -10,6 +10,10 @@ interface SpecStatus {
   value: string;
 }
 
+type NavigatorWithDeviceMemory = Navigator & {
+  deviceMemory?: number | string;
+};
+
 export const DeviceSpecsChecker = () => {
   const [deviceInfo, setDeviceInfo] = useState<DeviceInfo | null>(null);
   const [networkStatus, setNetworkStatus] = useState<ConnectionStatus | null>(null);
@@ -46,8 +50,7 @@ export const DeviceSpecsChecker = () => {
       setOsStatus({ meetsMin: osMeetsMin, meetsRec: osMeetsRec, value: `${info.platform === 'web' ? 'Web Browser' : info.platform} ${info.osVersion}` });
 
       // 2. Get RAM (Web API fallback for now, as Capacitor core doesn't expose total RAM directly without custom plugins)
-      // @ts-ignore
-      const deviceMemory = navigator.deviceMemory; 
+      const deviceMemory = (navigator as NavigatorWithDeviceMemory).deviceMemory;
       if (deviceMemory) {
         const memGB = parseFloat(deviceMemory);
         setRamStatus({
@@ -72,7 +75,7 @@ export const DeviceSpecsChecker = () => {
         } else {
           setCameraExists(false);
         }
-      } catch (e) {
+      } catch {
         setCameraExists(false);
       }
       

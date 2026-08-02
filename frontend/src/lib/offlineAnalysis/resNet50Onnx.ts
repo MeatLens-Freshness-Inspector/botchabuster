@@ -97,7 +97,7 @@ let loadedModelPath: string | null = null;
 let loadPromise: Promise<boolean> | null = null;
 let metadataPromise: Promise<MeatLensModelMetadata> | null = null;
 let nextRetryAt = 0;
-let loadGeneration = 0;
+const loadGeneration = 0;
 
 function isPositiveNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
