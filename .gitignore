@@ -48,3 +48,14 @@ docs
 
 # hidden deliberately
 PANEL_REVIEW.md
+
+# test output
+frontend/playwright-report/
+frontend/test-results/
+test-results/
+coverage/
+.nyc_output/
+tests/fixtures/images/*
+!tests/fixtures/images/.gitkeep
+tests/fixtures/payloads/*
+!tests/fixtures/payloads/.gitkeep
