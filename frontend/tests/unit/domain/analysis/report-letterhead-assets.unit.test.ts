@@ -27,3 +27,31 @@ test("gcccs rendered frame keeps the source letter aspect ratio", async () => {
     `expected ${width}x${height} to match letter ratio ${expectedLetterRatio}, got ${actualRatio}`,
   );
 });
+
+test("dti rendered frame keeps the source letter aspect ratio", async () => {
+  const { width, height } = await readPngDimensions(
+    "../../../../public/letterheads/rendered/dti-page.png",
+  );
+
+  const actualRatio = width / height;
+  const expectedLetterRatio = 612 / 792;
+
+  assert.ok(
+    Math.abs(actualRatio - expectedLetterRatio) < 0.0001,
+    `expected ${width}x${height} to match letter ratio ${expectedLetterRatio}, got ${actualRatio}`,
+  );
+});
+
+test("city vet rendered frame keeps the source letter aspect ratio", async () => {
+  const { width, height } = await readPngDimensions(
+    "../../../../public/letterheads/rendered/city-vet-page.png",
+  );
+
+  const actualRatio = width / height;
+  const expectedLetterRatio = 612 / 792;
+
+  assert.ok(
+    Math.abs(actualRatio - expectedLetterRatio) < 0.0001,
+    `expected ${width}x${height} to match letter ratio ${expectedLetterRatio}, got ${actualRatio}`,
+  );
+});

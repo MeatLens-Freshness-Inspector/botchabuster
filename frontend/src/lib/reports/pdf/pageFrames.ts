@@ -32,7 +32,15 @@ const REPORT_PAGE_FRAMES: Record<ReportTemplateKey, Omit<ReportPageFrame, "backg
       pageNumberColor: "#334155",
     },
     dti: {
-      backgroundMaskRectangles: [],
+      backgroundMaskRectangles: [
+        {
+          x: 40,
+          y: 108,
+          w: 532,
+          h: 64,
+          color: "#FFFFFF",
+        },
+      ],
       pageMargins: [58, 142, 58, 70],
       footerMargin: [0, 0, 46, 36],
       sectionColor: "#1D4ED8",
@@ -45,9 +53,9 @@ const REPORT_PAGE_FRAMES: Record<ReportTemplateKey, Omit<ReportPageFrame, "backg
       backgroundMaskRectangles: [
         {
           x: 40,
-          y: 140,
-          w: 550,
-          h: 122,
+          y: 108,
+          w: 532,
+          h: 64,
           color: "#FFFFFF",
         },
       ],
