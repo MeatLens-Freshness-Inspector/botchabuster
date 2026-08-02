@@ -16,10 +16,10 @@ import {
   validateImageQuality,
   type ImageQualityIssue,
   type ImageQualityResult,
-} from "../../src/lib/imageQuality";
+} from "../../../../src/lib/imageQuality";
 
 // ---------------------------------------------------------------------------
-// Helpers — synthetic ImageData builders
+// Helpers â€” synthetic ImageData builders
 // ---------------------------------------------------------------------------
 
 /**
@@ -39,7 +39,7 @@ function makeUniformImageData(width: number, height: number, r: number, g: numbe
 
 /**
  * Creates a checkerboard pattern (alternating black and white pixels).
- * This produces very high Laplacian variance → high sharpness score.
+ * This produces very high Laplacian variance â†’ high sharpness score.
  */
 function makeCheckerboardImageData(width: number, height: number): ImageData {
   const data = new Uint8ClampedArray(width * height * 4);
@@ -59,12 +59,12 @@ function makeCheckerboardImageData(width: number, height: number): ImageData {
 
 /**
  * Creates a nearly-uniform image (very slight noise).
- * This produces near-zero Laplacian variance → very low sharpness score.
+ * This produces near-zero Laplacian variance â†’ very low sharpness score.
  */
 function makeBlurryImageData(width: number, height: number, baseGray = 128): ImageData {
   const data = new Uint8ClampedArray(width * height * 4);
   for (let i = 0; i < data.length; i += 4) {
-    // Tiny ±1 variance — effectively flat/blurry
+    // Tiny Â±1 variance â€” effectively flat/blurry
     const v = baseGray + (i % 3 === 0 ? 1 : 0);
     data[i] = v;
     data[i + 1] = v;
@@ -80,8 +80,8 @@ function makeBlurryImageData(width: number, height: number, baseGray = 128): Ima
  * brightness of (darkValue + lightValue) / 2, so we can test brightness
  * thresholds without accidentally triggering the blur check.
  *
- * Example: darkValue=0, lightValue=90  → mean ≈ 45 (dark-warning range)
- *          darkValue=195, lightValue=255 → mean ≈ 225 (bright-warning range)
+ * Example: darkValue=0, lightValue=90  â†’ mean â‰ˆ 45 (dark-warning range)
+ *          darkValue=195, lightValue=255 â†’ mean â‰ˆ 225 (bright-warning range)
  */
 function makeTintedCheckerboardImageData(
   width: number,
@@ -163,11 +163,11 @@ test.describe("calculateBrightness", () => {
   });
 
   test("weights RGB channels using ITU-R 601 luma coefficients", () => {
-    // Pure red (255,0,0) → brightness ≈ 0.299 * 255 ≈ 76.2
+    // Pure red (255,0,0) â†’ brightness â‰ˆ 0.299 * 255 â‰ˆ 76.2
     const redImage = makeUniformImageData(16, 16, 255, 0, 0);
     expect(calculateBrightness(redImage)).toBeCloseTo(76.2, 0);
 
-    // Pure green (0,255,0) → brightness ≈ 0.587 * 255 ≈ 149.7
+    // Pure green (0,255,0) â†’ brightness â‰ˆ 0.587 * 255 â‰ˆ 149.7
     const greenImage = makeUniformImageData(16, 16, 0, 255, 0);
     expect(calculateBrightness(greenImage)).toBeCloseTo(149.7, 0);
   });
@@ -200,7 +200,7 @@ test.describe("calculateSharpness", () => {
 });
 
 // ---------------------------------------------------------------------------
-// validateImageQuality — integration-level
+// validateImageQuality â€” integration-level
 // ---------------------------------------------------------------------------
 
 test.describe("validateImageQuality", () => {
@@ -225,7 +225,7 @@ test.describe("validateImageQuality", () => {
   });
 
   test("returns status=fail and canProceed=false for a too-dark image", () => {
-    // Brightness ~5 — well below dark-fail threshold (30)
+    // Brightness ~5 â€” well below dark-fail threshold (30)
     const imageData = makeUniformImageData(640, 480, 5, 5, 5);
     const result = validateImageQuality(imageData, 640, 480);
 
@@ -236,9 +236,9 @@ test.describe("validateImageQuality", () => {
   });
 
   test("returns a warning (not fail) for a moderately dark image", () => {
-    // Brightness mean ≈ 45 (between dark-warn threshold 60 and dark-fail threshold 30).
+    // Brightness mean â‰ˆ 45 (between dark-warn threshold 60 and dark-fail threshold 30).
     // Use a tinted checkerboard so sharpness is HIGH and does not also fail.
-    // darkValue=0, lightValue=90 → mean = 45
+    // darkValue=0, lightValue=90 â†’ mean = 45
     const imageData = makeTintedCheckerboardImageData(640, 480, 0, 90);
     const result = validateImageQuality(imageData, 640, 480);
 
@@ -251,9 +251,9 @@ test.describe("validateImageQuality", () => {
   });
 
   test("returns a warning for a slightly over-bright image", () => {
-    // Brightness mean ≈ 225 (between bright-warn threshold 220 and bright-fail threshold 240).
+    // Brightness mean â‰ˆ 225 (between bright-warn threshold 220 and bright-fail threshold 240).
     // Use a tinted checkerboard so sharpness is HIGH and does not also fail.
-    // darkValue=195, lightValue=255 → mean = 225
+    // darkValue=195, lightValue=255 â†’ mean = 225
     const imageData = makeTintedCheckerboardImageData(640, 480, 195, 255);
     const result = validateImageQuality(imageData, 640, 480);
 
@@ -264,7 +264,7 @@ test.describe("validateImageQuality", () => {
   });
 
   test("returns status=fail and canProceed=false for an over-bright (blown-out) image", () => {
-    // Brightness == 255 — above bright-fail threshold (240)
+    // Brightness == 255 â€” above bright-fail threshold (240)
     const imageData = makeUniformImageData(640, 480, 255, 255, 255);
     const result = validateImageQuality(imageData, 640, 480);
 
@@ -283,7 +283,7 @@ test.describe("validateImageQuality", () => {
   });
 
   test("collects ALL detected issues, not just the first one", () => {
-    // Low resolution + too dark — should report both issues
+    // Low resolution + too dark â€” should report both issues
     const imageData = makeUniformImageData(200, 150, 5, 5, 5);
     const result = validateImageQuality(imageData, 200, 150);
 
@@ -304,7 +304,7 @@ test.describe("validateImageQuality", () => {
   });
 
   test("canProceed is true when only warning-level issues exist", () => {
-    // Brightness mean ≈ 45: dark warning only (no fail).
+    // Brightness mean â‰ˆ 45: dark warning only (no fail).
     // tinted checkerboard keeps sharpness high so blur check does NOT fail.
     // Resolution is 640x480 which passes the resolution check.
     const imageData = makeTintedCheckerboardImageData(640, 480, 0, 90);

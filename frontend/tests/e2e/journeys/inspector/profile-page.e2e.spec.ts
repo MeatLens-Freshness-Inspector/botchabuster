@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
-import type { ApiSpy } from "./support/app";
-import { mockCommonApi, seedSignedInSession } from "./support/app";
+import type { ApiSpy } from "../../../support/fixtures/app";
+import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
 async function openProfilePage(page: Page, spies: ApiSpy[] = []) {
   await seedSignedInSession(page, { userId: "user-1" });

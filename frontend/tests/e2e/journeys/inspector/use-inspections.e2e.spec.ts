@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { mockCommonApi, seedSignedInSession, type ApiSpy } from "./support/app";
+import { mockCommonApi, seedSignedInSession, type ApiSpy } from "../../../support/fixtures/app";
 
 test("signed-in history fetches inspections scoped to the current user", async ({ page }) => {
   const spies: ApiSpy[] = [];

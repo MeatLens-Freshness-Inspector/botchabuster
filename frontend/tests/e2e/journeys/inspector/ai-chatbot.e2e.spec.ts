@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { mockCommonApi, seedSignedInSession } from "./support/app";
+import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
 test.beforeEach(async ({ page }) => {
   await page.route("**/api/analysis/health", async (route) => {

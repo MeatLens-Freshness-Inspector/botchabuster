@@ -4,7 +4,7 @@ import {
   seedDeveloperOptionsFlags,
   seedDeveloperOptionsSession,
   seedSignedInSession,
-} from "./support/app";
+} from "../../../support/fixtures/app";
 
 interface MockCameraOptions {
   capabilities?: Record<string, unknown>;

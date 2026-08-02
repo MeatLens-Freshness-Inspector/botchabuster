@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
-import type { ApiSpy } from "./support/app";
-import { mockCommonApi, seedSignedInSession } from "./support/app";
+import type { ApiSpy } from "../../../support/fixtures/app";
+import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
 async function completeRequiredTutorial(page: Page): Promise<void> {
   await page.getByRole("button", { name: /i understand the reminder/i }).click();

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { mockCommonApi, seedSignedInSession } from "./support/app";
+import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
 test("signup requires accepting terms and conditions before account creation", async ({ page }) => {
   let signUpCalls = 0;

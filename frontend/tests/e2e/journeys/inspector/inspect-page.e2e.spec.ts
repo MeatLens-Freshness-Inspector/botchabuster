@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
-import { mockCommonApi, seedSignedInSession } from "./support/app";
-import { uploadSamplePhoto } from "./support/image";
+import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
+import { uploadSamplePhoto } from "../../../support/factories/image";
 
 async function completePreScanChecklist(page: Page) {
   await page.getByLabel(/stall number/i).fill("12-A");

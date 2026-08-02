@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { mockCommonApi, seedSignedInSession } from "./support/app";
+import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
 function createBuffer(values: number[]): ArrayBuffer {
   return Uint8Array.from(values).buffer;

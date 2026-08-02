@@ -10,9 +10,9 @@
  * needing a real camera or specific pixel values.
  *
  * Invariants under test:
- *   1. Good image → "Use Photo" is enabled, no quality banner shown.
- *   2. FAIL quality → "Use Photo" is disabled, error banner shown, retake only.
- *   3. WARNING quality → amber warning banner shown, both "Retake" and
+ *   1. Good image â†’ "Use Photo" is enabled, no quality banner shown.
+ *   2. FAIL quality â†’ "Use Photo" is disabled, error banner shown, retake only.
+ *   3. WARNING quality â†’ amber warning banner shown, both "Retake" and
  *      "Use Photo" remain available.
  *   4. Warning: clicking "Use Photo" still calls onCapture (proceeds to analyze).
  *   5. Fail: clicking "Use Photo" is blocked; only retake resets the flow.
@@ -23,7 +23,7 @@ import {
   mockCommonApi,
   seedDeveloperOptionsSession,
   seedSignedInSession,
-} from "./support/app";
+} from "../../../support/fixtures/app";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -76,7 +76,7 @@ type QualityScenario = "pass" | "warning" | "fail";
 
 /**
  * Patches window.__mockImageQualityResult so that CameraCapture reads the
- * controlled outcome (test seam — only active in test environments).
+ * controlled outcome (test seam â€” only active in test environments).
  *
  * Also patches window.__mockLegacyQualityAccepted to bypass the legacy
  * assessFileQuality meat-detection gate so the PNG test fixture is accepted.

@@ -1,6 +1,6 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
 
-import { mockCommonApi, seedSignedInSession } from "./support/app";
+import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
 const contacts = [
   {
