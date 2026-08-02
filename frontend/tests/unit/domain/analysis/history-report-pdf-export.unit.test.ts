@@ -1,0 +1,59 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { buildDetailedHistoryReportPdfModel } from "../../../../src/pages/user/history/utils/historyPage";
+
+const sampleInspection = {
+  id: "inspection-1",
+  user_id: "user-1",
+  meat_type: "pork",
+  classification: "fresh",
+  confidence_score: 92,
+  flagged_deviations: [],
+  explanation: "Looks good",
+  image_url: null,
+  location: "East Tapinac",
+  location_latitude: 14.8386,
+  location_longitude: 120.2842,
+  stall_number: "12-A",
+  meat_inspection_certificate_proof: "CERT-001",
+  meat_expiry_date: "2026-08-03",
+  storage_correct: true,
+  light_color_correct: true,
+  light_color_observed: null,
+  area_clean: true,
+  inspection_decision_source: "ai",
+  protocol_spoiled_reason: null,
+  inspector_notes: "Daily sample",
+  created_at: "2026-08-01T08:00:00.000Z",
+  updated_at: "2026-08-01T08:00:00.000Z",
+};
+
+test("buildDetailedHistoryReportPdfModel produces an inspector pdf model with the selected day in the subtitle", () => {
+  const model = buildDetailedHistoryReportPdfModel({
+    reportOrganization: "gordon_college_ccs",
+    selectedReportDay: "2026-08-01",
+    generatedAt: "Aug 2, 2026 5:00 PM",
+    averageConfidence: 92,
+    inspections: [sampleInspection as any],
+  });
+
+  assert.equal(model.kind, "inspector_daily");
+  assert.equal(model.templateKey, "gcccs");
+  assert.match(model.subtitle, /2026-08-01/);
+  assert.ok(model.sections.some((section) => section.id === "meat-summary"));
+  assert.ok(model.sections.some((section) => section.id === "meat-detail"));
+});
+
+test("buildDetailedHistoryReportPdfModel falls back to gcccs when the report organization is missing", () => {
+  const model = buildDetailedHistoryReportPdfModel({
+    reportOrganization: null,
+    selectedReportDay: "2026-08-01",
+    generatedAt: "Aug 2, 2026 5:00 PM",
+    averageConfidence: 92,
+    inspections: [sampleInspection as any],
+  });
+
+  assert.equal(model.organization, "gordon_college_ccs");
+  assert.equal(model.templateKey, "gcccs");
+});

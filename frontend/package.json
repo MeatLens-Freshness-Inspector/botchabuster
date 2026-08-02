@@ -17,6 +17,8 @@
     "pretest": "npm --prefix .. run build:backend",
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "tsx --test \"tests/unit/**/*.test.ts\" \"tests/unit/**/*.test.tsx\"",
+    "test:component": "tsx --test \"tests/component/**/*.test.ts\" \"tests/component/**/*.test.tsx\"",
+    "test:integration": "tsx --test \"tests/integration/**/*.test.ts\" \"tests/integration/**/*.test.tsx\"",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:watch": "npm run test:e2e:ui"
