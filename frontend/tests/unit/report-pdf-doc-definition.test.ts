@@ -68,3 +68,37 @@ test("buildReportDocDefinition applies the organization page frame and section o
   assert.match(contentJson, /Technical and System Overview/);
   assert.match(contentJson, /Meat Inspection Summary/);
 });
+
+test("buildReportDocDefinition masks the city vet placeholder body text in the repeated frame", async () => {
+  const cityVetModel: ReportDocumentModel = {
+    ...sampleGcccsModel,
+    organization: "city_veterinary_office_olongapo",
+    templateKey: "city_vet",
+  };
+
+  const docDefinition = await buildReportDocDefinition(cityVetModel, {
+    loadBrandAsset: async (path) => `mocked:${path}`,
+  });
+
+  const background =
+    typeof docDefinition.background === "function"
+      ? docDefinition.background(1, 1)
+      : docDefinition.background;
+
+  assert.ok(Array.isArray(background));
+  assert.equal(
+    background[0] && typeof background[0] === "object" && "image" in background[0]
+      ? background[0].image
+      : undefined,
+    "mocked:/letterheads/rendered/city-vet-page.png",
+  );
+  assert.ok(
+    background.some(
+      (entry) =>
+        entry &&
+        typeof entry === "object" &&
+        "canvas" in entry &&
+        Array.isArray(entry.canvas),
+    ),
+  );
+});

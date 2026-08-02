@@ -3,6 +3,13 @@ import type { ReportTemplateKey } from "@/lib/reports/types";
 
 export interface ReportPageFrame {
   backgroundAssetPath: string;
+  backgroundMaskRectangles?: Array<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    color: string;
+  }>;
   pageMargins: [number, number, number, number];
   sectionColor: string;
   bodyColor: string;
@@ -14,6 +21,7 @@ export interface ReportPageFrame {
 const REPORT_PAGE_FRAMES: Record<ReportTemplateKey, Omit<ReportPageFrame, "backgroundAssetPath">> =
   {
     gcccs: {
+      backgroundMaskRectangles: [],
       pageMargins: [52, 172, 52, 78],
       sectionColor: "#111827",
       bodyColor: "#334155",
@@ -22,6 +30,7 @@ const REPORT_PAGE_FRAMES: Record<ReportTemplateKey, Omit<ReportPageFrame, "backg
       pageNumberColor: "#334155",
     },
     dti: {
+      backgroundMaskRectangles: [],
       pageMargins: [58, 142, 58, 70],
       sectionColor: "#1D4ED8",
       bodyColor: "#334155",
@@ -30,6 +39,15 @@ const REPORT_PAGE_FRAMES: Record<ReportTemplateKey, Omit<ReportPageFrame, "backg
       pageNumberColor: "#1E3A8A",
     },
     city_vet: {
+      backgroundMaskRectangles: [
+        {
+          x: 40,
+          y: 140,
+          w: 550,
+          h: 122,
+          color: "#FFFFFF",
+        },
+      ],
       pageMargins: [58, 148, 58, 70],
       sectionColor: "#166534",
       bodyColor: "#334155",

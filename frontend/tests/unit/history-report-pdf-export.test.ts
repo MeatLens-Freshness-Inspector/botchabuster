@@ -44,3 +44,16 @@ test("buildDetailedHistoryReportPdfModel produces an inspector pdf model with th
   assert.ok(model.sections.some((section) => section.id === "meat-summary"));
   assert.ok(model.sections.some((section) => section.id === "meat-detail"));
 });
+
+test("buildDetailedHistoryReportPdfModel falls back to gcccs when the report organization is missing", () => {
+  const model = buildDetailedHistoryReportPdfModel({
+    reportOrganization: null,
+    selectedReportDay: "2026-08-01",
+    generatedAt: "Aug 2, 2026 5:00 PM",
+    averageConfidence: 92,
+    inspections: [sampleInspection as any],
+  });
+
+  assert.equal(model.organization, "gordon_college_ccs");
+  assert.equal(model.templateKey, "gcccs");
+});

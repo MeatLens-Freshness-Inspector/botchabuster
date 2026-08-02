@@ -32,16 +32,39 @@ export async function buildReportDocDefinition(
   const loadBrandAsset =
     dependencies.loadBrandAsset ?? loadReportBrandAsset;
   const frameImage = await loadBrandAsset(frame.backgroundAssetPath);
+  const backgroundContent =
+    (frame.backgroundMaskRectangles?.length ?? 0) > 0
+      ? [
+          {
+            image: frameImage,
+            width: 612,
+            height: 792,
+            absolutePosition: { x: 0, y: 0 },
+          },
+          ...frame.backgroundMaskRectangles!.map((rectangle) => ({
+            canvas: [
+              {
+                type: "rect" as const,
+                x: rectangle.x,
+                y: rectangle.y,
+                w: rectangle.w,
+                h: rectangle.h,
+                color: rectangle.color,
+              },
+            ],
+          })),
+        ]
+      : {
+          image: frameImage,
+          width: 612,
+          height: 792,
+          absolutePosition: { x: 0, y: 0 },
+        };
 
   return {
     pageSize: "LETTER",
     pageMargins: frame.pageMargins,
-    background: (() => ({
-      image: frameImage,
-      width: 612,
-      height: 792,
-      absolutePosition: { x: 0, y: 0 },
-    })) as DynamicContent,
+    background: (() => backgroundContent) as DynamicContent,
     footer: ((currentPage, pageCount) => ({
       margin: [0, 0, 46, 36],
       alignment: "right",
