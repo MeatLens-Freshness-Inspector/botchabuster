@@ -34,9 +34,15 @@ function buildBootstrapSessionResponse(
   userId: string,
   email: string,
   isAdmin: boolean,
+  options: MockedSessionOptions = {},
 ) {
   const authenticatedAt = new Date().toISOString();
   const offlineExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  const showDetailedResults = options.showDetailedResults ?? true;
+  const onboardingCompletedAt =
+    options.onboardingCompletedAt === undefined
+      ? "2026-05-31T03:00:00.000Z"
+      : options.onboardingCompletedAt;
 
   return {
     user: {
@@ -50,8 +56,8 @@ function buildBootstrapSessionResponse(
       inspector_code: "INSP-001",
       report_organization: "gordon_college_ccs",
       is_dark_mode: false,
-      show_detailed_results: true,
-      onboarding_completed_at: "2026-05-31T03:00:00.000Z",
+      show_detailed_results: showDetailedResults,
+      onboarding_completed_at: onboardingCompletedAt,
       onboarding_version: 1,
       email,
       location: "North Market",
@@ -98,6 +104,131 @@ export async function seedSignedInSession(page: Page, options: MockedSessionOpti
       })
     );
   }, { userId: userId, initEmail: email });
+}
+
+export async function seedOfflineAuthEnvelope(
+  page: Page,
+  options: MockedSessionOptions & {
+    roles?: string[];
+    primaryRole?: "developer" | "admin" | "inspector";
+    offlineUnlockRequired?: boolean;
+    localPasskey?: Record<string, unknown> | null;
+  } = {},
+): Promise<void> {
+  const userId = options.userId ?? "user-1";
+  const email = options.email ?? "inspector@example.com";
+  const isAdmin = options.isAdmin ?? false;
+  const onboardingCompletedAt =
+    options.onboardingCompletedAt === undefined
+      ? "2026-05-31T03:00:00.000Z"
+      : options.onboardingCompletedAt;
+  const roles = options.roles ?? (isAdmin ? ["admin"] : []);
+  const primaryRole = options.primaryRole ?? (isAdmin ? "admin" : "inspector");
+  const envelope = {
+    key: "current",
+    user: {
+      id: userId,
+      email,
+    },
+    profile: {
+      id: userId,
+      full_name: "Inspector",
+      avatar_url: null,
+      inspector_code: "INSP-001",
+      report_organization: "gordon_college_ccs",
+      is_dark_mode: false,
+      show_detailed_results: options.showDetailedResults ?? true,
+      onboarding_completed_at: onboardingCompletedAt,
+      onboarding_version: 1,
+      email,
+      location: "North Market",
+      created_at: "2026-04-01T00:00:00.000Z",
+      updated_at: "2026-04-01T00:00:00.000Z",
+    },
+    roles,
+    primaryRole,
+    isAdmin,
+    isDeveloper: roles.includes("developer"),
+    authenticatedAt: "2026-08-02T12:00:00.000Z",
+    offlineExpiresAt: "2026-08-03T12:00:00.000Z",
+    offlineUnlockRequired: options.offlineUnlockRequired ?? false,
+    passwordVerifier: null,
+    localPasskey: options.localPasskey ?? null,
+  };
+
+  await page.addInitScript(({ nextEnvelope }) => {
+    window.localStorage.setItem("meatlens-auth-user", JSON.stringify(nextEnvelope.user));
+    window.sessionStorage.setItem(
+      "meatlens-auth-session",
+      JSON.stringify({
+        access_token: "session-token",
+        refresh_token: "refresh-token",
+        token_type: "bearer",
+        expires_in: 3600,
+        expires_at: Date.now() + 3600_000,
+      }),
+    );
+
+    const request = indexedDB.open("meatlens-offline-auth", 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains("auth-envelope")) {
+        db.createObjectStore("auth-envelope", { keyPath: "key" });
+      }
+    };
+    request.onsuccess = () => {
+      const db = request.result;
+      const tx = db.transaction("auth-envelope", "readwrite");
+      tx.objectStore("auth-envelope").put(nextEnvelope);
+      tx.oncomplete = () => db.close();
+    };
+  }, { nextEnvelope: envelope });
+}
+
+export async function seedInspectionHistoryCache(
+  page: Page,
+  input: {
+    userId: string;
+    scope?: "mine" | "all";
+    inspections: Record<string, unknown>[];
+    stats?: Record<string, unknown>;
+  },
+): Promise<void> {
+  await page.addInitScript(({ cacheInput }) => {
+    const scope = cacheInput.scope ?? "mine";
+    const key = `${cacheInput.userId}:${scope}`;
+    const request = indexedDB.open("meatlens-inspection-history", 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains("inspection-lists")) {
+        db.createObjectStore("inspection-lists", { keyPath: "key" });
+      }
+      if (!db.objectStoreNames.contains("inspection-stats")) {
+        db.createObjectStore("inspection-stats", { keyPath: "key" });
+      }
+    };
+    request.onsuccess = () => {
+      const db = request.result;
+      const tx = db.transaction(["inspection-lists", "inspection-stats"], "readwrite");
+      tx.objectStore("inspection-lists").put({
+        key,
+        userId: cacheInput.userId,
+        scope,
+        updatedAt: new Date().toISOString(),
+        inspections: cacheInput.inspections,
+      });
+      if (cacheInput.stats) {
+        tx.objectStore("inspection-stats").put({
+          key,
+          userId: cacheInput.userId,
+          scope,
+          updatedAt: new Date().toISOString(),
+          stats: cacheInput.stats,
+        });
+      }
+      tx.oncomplete = () => db.close();
+    };
+  }, { cacheInput: input });
 }
 
 export async function seedDeveloperOptionsSession(page: Page, userId: string): Promise<void> {
@@ -205,7 +336,7 @@ export async function mockCommonApi(
         return;
       }
 
-      await route.fulfill(jsonResponse(buildBootstrapSessionResponse(userId, email, isAdmin)));
+      await route.fulfill(jsonResponse(buildBootstrapSessionResponse(userId, email, isAdmin, options)));
       return;
     }
 
