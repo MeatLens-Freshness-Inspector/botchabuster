@@ -1,7 +1,10 @@
 import { format } from "date-fns";
+import { resolveReportOrganization } from "@/lib/reportOrganizations";
 import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
+import { buildInspectorDailyReportModel } from "@/lib/reports/adapters/inspectorDailyReport";
 import { getReportLetterheadAssetUrl } from "@/lib/reportLetterheads";
 import { getReportOrganizationLabel } from "@/lib/reportOrganizations";
+import type { ReportDocumentModel } from "@/lib/reports/types";
 import type {
   FreshnessClassification,
   Inspection,
@@ -55,6 +58,30 @@ export function triggerDownload(blob: Blob, fileName: string) {
     URL.revokeObjectURL(url);
     anchor.remove();
   }, 1000);
+}
+
+export function buildDetailedHistoryReportPdfModel(
+  input: DetailedHistoryReportInput,
+): ReportDocumentModel {
+  return buildInspectorDailyReportModel({
+    reportOrganization: resolveReportOrganization(input.reportOrganization),
+    selectedReportDay: input.selectedReportDay,
+    generatedAt: input.generatedAt,
+    averageConfidence: input.averageConfidence,
+    inspections: input.inspections.map((inspection) => ({
+      id: inspection.id,
+      created_at: inspection.created_at,
+      meat_type: inspection.meat_type,
+      classification: inspection.classification,
+      confidence_score: inspection.confidence_score,
+      location:
+        formatInspectionLocationLabel(
+          inspection.location,
+          inspection.location_latitude,
+          inspection.location_longitude,
+        ) ?? inspection.location,
+    })),
+  });
 }
 
 export function buildDetailedHistoryReportHtml({
