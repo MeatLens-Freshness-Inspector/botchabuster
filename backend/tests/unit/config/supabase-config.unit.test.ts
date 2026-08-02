@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveSupabaseClientConfig } from "../../src/integrations/supabaseConfig";
+import { resolveSupabaseClientConfig } from "../../../src/integrations/supabaseConfig";
 
 test("resolveSupabaseClientConfig requires a publishable auth key and never falls back to the service key", () => {
   assert.throws(

@@ -6,7 +6,7 @@ import {
   isReportOrganization,
   requireReportOrganization,
   resolveReportOrganization,
-} from "../../src/types/reportOrganization";
+} from "../../../src/types/reportOrganization";
 
 test("accepts only the supported report organization values", () => {
   assert.equal(isReportOrganization("dti"), true);

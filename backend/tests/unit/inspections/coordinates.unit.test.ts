@@ -3,7 +3,7 @@ import test from "node:test";
 import {
   mergeInspectionCoordinates,
   normalizeInspectionCoordinates,
-} from "../../src/types/inspectionCoordinates";
+} from "../../../src/types/inspectionCoordinates";
 
 test("normalizeInspectionCoordinates preserves valid numbers and explicit nulls", () => {
   assert.deepEqual(

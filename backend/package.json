@@ -10,7 +10,8 @@
     "start": "node dist/server.js",
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "tsx --test \"tests/unit/**/*.test.ts\"",
-    "test:integration": "tsx --test \"tests/integration/**/*.test.ts\""
+    "test:integration": "tsx --test \"tests/integration/**/*.test.ts\"",
+    "test:infrastructure": "tsx --test \"tests/infrastructure/**/*.test.ts\""
   },
   "dependencies": {
     "@simplewebauthn/server": "^13.3.1",

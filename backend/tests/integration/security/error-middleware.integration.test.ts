@@ -5,7 +5,7 @@ import type { AddressInfo } from "node:net";
 import test from "node:test";
 import express from "express";
 import type { Express, NextFunction, Request, Response } from "express";
-import { globalErrorHandler } from "../../src/middleware/errorHandler";
+import { globalErrorHandler } from "../../../src/middleware/errorHandler";
 
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
 process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
@@ -13,7 +13,7 @@ process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "
 process.env.AUDIT_LOG_KEY = process.env.AUDIT_LOG_KEY || "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
 
 async function loadApp(): Promise<Express> {
-  const serverModule = await import("../../src/server.ts");
+  const serverModule = await import("../../../src/server.ts");
   const exportedValue = serverModule.default as unknown;
 
   if (typeof exportedValue === "function" && "listen" in exportedValue) {

@@ -14,7 +14,7 @@ process.env.APP_SESSION_SECRET = process.env.APP_SESSION_SECRET || "app-session-
 process.env.CSRF_TOKEN_SECRET = process.env.CSRF_TOKEN_SECRET || "csrf-token-secret";
 
 async function startTestServer(): Promise<{ baseUrl: string; close: () => Promise<void> }> {
-  const serverModule = await import("../../src/server.ts");
+  const serverModule = await import("../../../src/server.ts");
   const app = serverModule.default as Express;
   const server = app.listen(0) as Server;
   await once(server, "listening");
@@ -37,9 +37,9 @@ async function startTestServer(): Promise<{ baseUrl: string; close: () => Promis
 }
 
 test("developer dashboard overview denies plain admins and allows developers", async () => {
-  const { authService } = await import("../../src/services/AuthService");
-  const { profileService } = await import("../../src/services/ProfileService");
-  const { developerDashboardService } = await import("../../src/services/DeveloperDashboardService");
+  const { authService } = await import("../../../src/services/AuthService");
+  const { profileService } = await import("../../../src/services/ProfileService");
+  const { developerDashboardService } = await import("../../../src/services/DeveloperDashboardService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);

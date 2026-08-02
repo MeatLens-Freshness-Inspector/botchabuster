@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveAppSessionConfig } from "../../src/services/AppSessionService";
+import { resolveAppSessionConfig } from "../../../src/services/AppSessionService";
 
 test("resolveAppSessionConfig requires APP_SESSION_SECRET and never falls back to the Supabase service key", () => {
   assert.throws(

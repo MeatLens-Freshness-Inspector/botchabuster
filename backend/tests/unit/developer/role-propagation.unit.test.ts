@@ -16,9 +16,9 @@ test("resolveRequestAuthContext treats developers as admin and exposes developer
   process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
   process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 
-  const { resolveRequestAuthContext } = await import("../../src/middleware/auth");
-  const { authService } = await import("../../src/services/AuthService");
-  const { profileService } = await import("../../src/services/ProfileService");
+  const { resolveRequestAuthContext } = await import("../../../src/middleware/auth");
+  const { authService } = await import("../../../src/services/AuthService");
+  const { profileService } = await import("../../../src/services/ProfileService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -49,7 +49,7 @@ test("resolveRequestAuthContext treats developers as admin and exposes developer
 });
 
 test("toAuditActor records developer as the actor role", async () => {
-  const { toAuditActor } = await import("../../src/middleware/auth");
+  const { toAuditActor } = await import("../../../src/middleware/auth");
 
   assert.deepEqual(
     toAuditActor({

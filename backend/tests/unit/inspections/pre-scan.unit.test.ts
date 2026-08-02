@@ -4,7 +4,7 @@ import {
   assertInspectionDecisionPayload,
   mergeInspectionPreScanFields,
   normalizeInspectionPreScan,
-} from "../../src/types/inspectionPreScan";
+} from "../../../src/types/inspectionPreScan";
 
 test("normalizeInspectionPreScan trims text fields, preserves booleans, and clears light_color_observed unless light_color_correct is false", () => {
   assert.deepEqual(

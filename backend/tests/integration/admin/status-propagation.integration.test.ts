@@ -15,7 +15,7 @@ process.env.CSRF_TOKEN_SECRET = process.env.CSRF_TOKEN_SECRET || "csrf-token-sec
 process.env.APP_SESSION_COOKIE_SECURE = process.env.APP_SESSION_COOKIE_SECURE || "true";
 
 async function loadApp(): Promise<Express> {
-  const serverModule = await import("../../src/server.ts");
+  const serverModule = await import("../../../src/server.ts");
   const exportedValue = serverModule.default as unknown;
 
   if (typeof exportedValue === "function" && "listen" in exportedValue) {
@@ -61,15 +61,15 @@ async function startTestServer(): Promise<{ baseUrl: string; close: () => Promis
 }
 
 async function createCookieFixture(userId = "admin-1", email = "admin@example.com"): Promise<string> {
-  const { AppSessionService } = await import("../../src/services/AppSessionService");
+  const { AppSessionService } = await import("../../../src/services/AppSessionService");
   const sessionService = new AppSessionService(process.env.APP_SESSION_SECRET ?? "app-session-secret", 3600, () => Date.now());
   return sessionService.createSession({ id: userId, email }).access_token;
 }
 
 test("protected admin data endpoints preserve session-limit 429 responses instead of downgrading them to 401", async () => {
-  const { authService } = await import("../../src/services/AuthService");
-  const { profileService } = await import("../../src/services/ProfileService");
-  const { getSessionLimitService } = await import("../../src/services/SessionLimitService");
+  const { authService } = await import("../../../src/services/AuthService");
+  const { profileService } = await import("../../../src/services/ProfileService");
+  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);

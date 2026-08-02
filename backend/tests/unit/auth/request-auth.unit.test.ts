@@ -33,7 +33,7 @@ function createRequest(options: {
 
 async function createAppSessionCookie(userId = "user-1", email = "inspector@example.com"): Promise<string> {
   process.env.APP_SESSION_SECRET = process.env.APP_SESSION_SECRET || "app-session-secret";
-  const { AppSessionService } = await import("../../src/services/AppSessionService");
+  const { AppSessionService } = await import("../../../src/services/AppSessionService");
   const sessionService = new AppSessionService(process.env.APP_SESSION_SECRET, 3600, () => Date.now());
   return sessionService.createSession({ id: userId, email }).access_token;
 }
@@ -61,7 +61,7 @@ test("resolveRequestAuthContext rejects requests without a cookie or bearer toke
   process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
   process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 
-  const { RequestAuthError, resolveRequestAuthContext } = await import("../../src/middleware/auth");
+  const { RequestAuthError, resolveRequestAuthContext } = await import("../../../src/middleware/auth");
 
   await assert.rejects(
     async () => resolveRequestAuthContext(createRequest()),
@@ -77,9 +77,9 @@ test("resolveRequestAuthContext prefers the app-session cookie when present", as
   process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
   process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 
-  const { resolveRequestAuthContext } = await import("../../src/middleware/auth");
-  const { authService } = await import("../../src/services/AuthService");
-  const { profileService } = await import("../../src/services/ProfileService");
+  const { resolveRequestAuthContext } = await import("../../../src/middleware/auth");
+  const { authService } = await import("../../../src/services/AuthService");
+  const { profileService } = await import("../../../src/services/ProfileService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -121,9 +121,9 @@ test("resolveRequestAuthContext still accepts a bearer header when no cookie exi
   process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
   process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 
-  const { resolveRequestAuthContext } = await import("../../src/middleware/auth");
-  const { authService } = await import("../../src/services/AuthService");
-  const { profileService } = await import("../../src/services/ProfileService");
+  const { resolveRequestAuthContext } = await import("../../../src/middleware/auth");
+  const { authService } = await import("../../../src/services/AuthService");
+  const { profileService } = await import("../../../src/services/ProfileService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -161,7 +161,7 @@ test("assertSelf rejects attempts to mutate another user's account", async () =>
   process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
   process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 
-  const { RequestAuthError, assertSelf } = await import("../../src/middleware/auth");
+  const { RequestAuthError, assertSelf } = await import("../../../src/middleware/auth");
 
   assert.throws(
     () => assertSelf(createAuthContext(), "user-2"),
@@ -177,7 +177,7 @@ test("assertSelfOrAdmin allows administrators to access another user's record", 
   process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
   process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 
-  const { assertSelfOrAdmin } = await import("../../src/middleware/auth");
+  const { assertSelfOrAdmin } = await import("../../../src/middleware/auth");
 
   assert.doesNotThrow(() =>
     assertSelfOrAdmin(
@@ -203,10 +203,10 @@ test("resolveTrackedRequestAuthContext only performs session tracking once per r
     cookie: `meatlens_session=${token}`,
   });
 
-  const { resolveTrackedRequestAuthContext } = await import("../../src/middleware/auth");
-  const { authService } = await import("../../src/services/AuthService");
-  const { profileService } = await import("../../src/services/ProfileService");
-  const { getSessionLimitService } = await import("../../src/services/SessionLimitService");
+  const { resolveTrackedRequestAuthContext } = await import("../../../src/middleware/auth");
+  const { authService } = await import("../../../src/services/AuthService");
+  const { profileService } = await import("../../../src/services/ProfileService");
+  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -270,10 +270,10 @@ test("resolveTrackedRequestAuthContext rejects unsafe cookie requests without a 
     origin: "http://localhost:8080",
   });
 
-  const { RequestAuthError, resolveTrackedRequestAuthContext } = await import("../../src/middleware/auth");
-  const { authService } = await import("../../src/services/AuthService");
-  const { profileService } = await import("../../src/services/ProfileService");
-  const { getSessionLimitService } = await import("../../src/services/SessionLimitService");
+  const { RequestAuthError, resolveTrackedRequestAuthContext } = await import("../../../src/middleware/auth");
+  const { authService } = await import("../../../src/services/AuthService");
+  const { profileService } = await import("../../../src/services/ProfileService");
+  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
