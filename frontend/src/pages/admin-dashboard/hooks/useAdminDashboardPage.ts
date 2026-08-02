@@ -10,6 +10,7 @@ import { marketLocationClient, type MarketLocation } from "@/integrations/api/Ma
 import { profileClient, type Profile } from "@/integrations/api/ProfileClient";
 import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
 import { isReportOrganization } from "@/lib/reportOrganizations";
+import { composeReportPdf } from "@/lib/reports/pdf/composeReportPdf";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
 import type {
   AdminDashboardTabKey,
@@ -29,11 +30,9 @@ import {
   PIE_COLORS,
   REPORT_CLASSIFICATIONS,
   REPORT_DEFAULT_RANGE_DAYS,
-  REPORT_PDF_DETAIL_ROW_LIMIT,
   buildPreScanReportFields,
-  buildAdminReportHeaderHtml,
+  buildAdminDashboardReportPdfModel,
   coerceAdminDashboardTab,
-  escapeHtml,
   formatReportDateTime,
   getAdminDashboardTabs,
   getInspectorLabel,
@@ -806,344 +805,31 @@ export function useAdminDashboardPage() {
     toast.success("JSON snapshot report exported");
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!validateReportRange()) return;
 
-    const generatedAt = format(new Date(), "MMM d, yyyy h:mm a");
-    const generatedBy = user?.email ?? user?.id ?? "admin";
-    const reportHeaderHtml = buildAdminReportHeaderHtml({
-      reportOrganization: profile?.report_organization ?? null,
-      reportStartDate,
-      reportEndDate,
-      generatedAt,
-      generatedBy,
-      origin: window.location.origin,
-    });
-    const classRows = reportClassShare
-      .map((entry) => {
-        return `<tr><td>${escapeHtml(entry.classification)}</td><td>${entry.count}</td><td>${entry.share}%</td></tr>`;
-      })
-      .join("");
-    const classChartRows = reportClassShare
-      .map((entry) => `
-        <div class="bar-row">
-          <div class="bar-label"><span>${escapeHtml(entry.classification)}</span><span>${entry.count} (${entry.share}%)</span></div>
-          <div class="bar-track"><div class="bar-fill" style="width:${entry.share}%; background:${PIE_COLORS[entry.classification]};"></div></div>
-        </div>`)
-      .join("");
+    try {
+      const generatedAt = format(new Date(), "MMM d, yyyy h:mm a");
+      const generatedBy = user?.email ?? user?.id ?? "admin";
+      const model = buildAdminDashboardReportPdfModel({
+        reportOrganization: profile?.report_organization ?? null,
+        reportStartDate,
+        reportEndDate,
+        generatedAt,
+        generatedBy,
+        reportSummary,
+        reportRows,
+      });
 
-    const inspectorRows = reportTopInspectors.length > 0
-      ? reportTopInspectors
-        .map((entry) => `<tr><td>${escapeHtml(entry.inspector)}</td><td>${entry.count}</td><td>${entry.averageConfidence}%</td></tr>`)
-        .join("")
-      : '<tr><td colspan="3">No inspector data in this range.</td></tr>';
-
-    const locationRows = reportTopLocations.length > 0
-      ? reportTopLocations
-        .map((entry) => `<tr><td>${escapeHtml(entry.location)}</td><td>${entry.count}</td><td>${entry.spoiledCount}</td><td>${entry.spoiledRate}%</td><td>${entry.averageConfidence}%</td></tr>`)
-        .join("")
-      : '<tr><td colspan="5">No location data in this range.</td></tr>';
-
-    const meatTypeRows = reportByMeatType.length > 0
-      ? reportByMeatType
-        .map((entry) => `<tr><td>${escapeHtml(entry.meatType)}</td><td>${entry.count}</td></tr>`)
-        .join("")
-      : '<tr><td colspan="2">No meat type data in this range.</td></tr>';
-
-    const dailyRows = reportDailyTrend.length > 0
-      ? reportDailyTrend
-        .map((entry) => `<tr><td>${escapeHtml(entry.date)}</td><td>${entry.count}</td><td>${entry.spoiledCount}</td><td>${entry.averageConfidence}%</td></tr>`)
-        .join("")
-      : '<tr><td colspan="4">No daily trend data in this range.</td></tr>';
-
-    const maxLocationCount = reportTopLocations.reduce((max, entry) => Math.max(max, entry.count), 0);
-    const locationChartRows = reportTopLocations.length > 0
-      ? reportTopLocations
-        .map((entry) => {
-          const width = maxLocationCount > 0 ? Math.round((entry.count / maxLocationCount) * 100) : 0;
-          return `
-          <div class="bar-row">
-            <div class="bar-label"><span>${escapeHtml(entry.location)}</span><span>${entry.count} inspections</span></div>
-            <div class="bar-track"><div class="bar-fill" style="width:${width}%; background:#2563eb;"></div></div>
-          </div>`;
-        })
-        .join("")
-      : '<p class="note">No location chart data in this range.</p>';
-
-    const maxDailyCount = reportDailyTrend.reduce((max, entry) => Math.max(max, entry.count), 0);
-    const dailyChartRows = reportDailyTrend.length > 0
-      ? reportDailyTrend
-        .map((entry) => {
-          const width = maxDailyCount > 0 ? Math.round((entry.count / maxDailyCount) * 100) : 0;
-          return `
-          <div class="bar-row">
-            <div class="bar-label"><span>${escapeHtml(entry.date)}</span><span>${entry.count} inspections</span></div>
-            <div class="bar-track"><div class="bar-fill" style="width:${width}%; background:#0891b2;"></div></div>
-          </div>`;
-        })
-        .join("")
-      : '<p class="note">No daily chart data in this range.</p>';
-
-    const detailRows = reportRows
-      .slice(0, REPORT_PDF_DETAIL_ROW_LIMIT)
-      .map((row) => `
-        <tr>
-          <td>${escapeHtml(formatReportDateTime(row.createdAt))}</td>
-          <td>${escapeHtml(row.inspector)}</td>
-          <td>${escapeHtml(row.location)}</td>
-          <td>${escapeHtml(row.meatType)}</td>
-          <td>${escapeHtml(row.classification)}</td>
-          <td>${escapeHtml(row.decisionSource)}</td>
-          <td>${escapeHtml(row.stallNumber)}</td>
-          <td>${row.confidenceScore}%</td>
-          <td>${escapeHtml(row.flaggedDeviations)}</td>
-          <td>${escapeHtml(row.inspectorNotes)}</td>
-        </tr>`)
-      .join("");
-    const detailRowsNotice = reportRows.length > REPORT_PDF_DETAIL_ROW_LIMIT
-      ? `<p class="note">Showing first ${REPORT_PDF_DETAIL_ROW_LIMIT} of ${reportRows.length} inspection records in this PDF. Use CSV or JSON for full raw detail.</p>`
-      : "";
-
-    const html = `
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>MeatLens Report ${escapeHtml(reportStartDate)} to ${escapeHtml(reportEndDate)}</title>
-    <style>
-      :root {
-        color-scheme: light;
-      }
-      body {
-        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-        color: #0f172a;
-        margin: 0;
-        padding: 24px;
-        background: #f8fafc;
-      }
-      .sheet {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 24px;
-      }
-      .report-letterhead {
-        margin-bottom: 12px;
-      }
-      .report-letterhead-object {
-        width: 100%;
-        height: 220px;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-      }
-      .org-heading {
-        margin: 0;
-        color: #0f766e;
-        font-size: 13px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.14em;
-      }
-      h1 {
-        margin: 6px 0 0;
-        font-size: 26px;
-        letter-spacing: 0.01em;
-      }
-      .meta {
-        margin-top: 8px;
-        color: #475569;
-        font-size: 12px;
-      }
-      .summary-grid {
-        margin-top: 18px;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 12px;
-      }
-      .summary-card {
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 12px;
-      }
-      .summary-card span {
-        display: block;
-        color: #64748b;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-      .summary-card strong {
-        display: block;
-        margin-top: 6px;
-        font-size: 24px;
-      }
-      section {
-        margin-top: 18px;
-      }
-      h2 {
-        margin: 0 0 8px;
-        font-size: 16px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-      .note {
-        margin: 8px 0 0;
-        color: #64748b;
-        font-size: 11px;
-      }
-      .two-column {
-        display: grid;
-        gap: 16px;
-      }
-      .bar-row {
-        margin-bottom: 10px;
-      }
-      .bar-label {
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-        margin-bottom: 4px;
-        font-size: 11px;
-        color: #334155;
-      }
-      .bar-track {
-        height: 8px;
-        border-radius: 999px;
-        background: #e2e8f0;
-        overflow: hidden;
-      }
-      .bar-fill {
-        height: 8px;
-        border-radius: 999px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        border: 1px solid #e2e8f0;
-        font-size: 12px;
-      }
-      th, td {
-        border: 1px solid #e2e8f0;
-        padding: 8px;
-        text-align: left;
-      }
-      th {
-        background: #f1f5f9;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-      }
-      @media (min-width: 960px) {
-        .two-column {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-      }
-      @media print {
-        body {
-          background: white;
-          padding: 0;
-        }
-        .sheet {
-          border: none;
-          border-radius: 0;
-          padding: 0;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <article class="sheet">
-      ${reportHeaderHtml}
-      <div class="summary-grid">
-        <div class="summary-card"><span>Total Inspections</span><strong>${reportSummary.total}</strong></div>
-        <div class="summary-card"><span>Average Confidence</span><strong>${reportSummary.averageConfidence}%</strong></div>
-        <div class="summary-card"><span>Spoiled Rate</span><strong>${reportSummary.spoiledRate}%</strong></div>
-        <div class="summary-card"><span>Unique Inspectors</span><strong>${reportSummary.uniqueInspectors}</strong></div>
-        <div class="summary-card"><span>Unique Locations</span><strong>${reportSummary.uniqueLocations}</strong></div>
-        <div class="summary-card"><span>Records With Deviations</span><strong>${reportSummary.flaggedRecords}</strong></div>
-      </div>
-      <section>
-        <h2>Classification Breakdown (Chart + Table)</h2>
-        <div>${classChartRows}</div>
-        <table>
-          <thead><tr><th>Classification</th><th>Count</th><th>Share</th></tr></thead>
-          <tbody>${classRows}</tbody>
-        </table>
-      </section>
-      <section>
-        <div class="two-column">
-          <div>
-            <h2>Top Inspectors</h2>
-            <table>
-              <thead><tr><th>Inspector</th><th>Inspections</th><th>Avg Confidence</th></tr></thead>
-              <tbody>${inspectorRows}</tbody>
-            </table>
-          </div>
-          <div>
-            <h2>Top Locations</h2>
-            <div>${locationChartRows}</div>
-            <table>
-              <thead><tr><th>Location</th><th>Inspections</th><th>Spoiled</th><th>Spoiled Rate</th><th>Avg Confidence</th></tr></thead>
-              <tbody>${locationRows}</tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-      <section>
-        <div class="two-column">
-          <div>
-            <h2>Meat Type Distribution</h2>
-            <table>
-              <thead><tr><th>Meat Type</th><th>Inspections</th></tr></thead>
-              <tbody>${meatTypeRows}</tbody>
-            </table>
-          </div>
-          <div>
-            <h2>Daily Inspection Trend</h2>
-            <div>${dailyChartRows}</div>
-            <table>
-              <thead><tr><th>Date</th><th>Inspections</th><th>Spoiled</th><th>Avg Confidence</th></tr></thead>
-              <tbody>${dailyRows}</tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-      <section>
-        <h2>Inspection Detail</h2>
-        ${detailRowsNotice}
-        <table>
-          <thead><tr><th>Created At</th><th>Inspector</th><th>Location</th><th>Meat Type</th><th>Class</th><th>Decision Source</th><th>Stall Number</th><th>Confidence</th><th>Flagged Deviations</th><th>Inspector Notes</th></tr></thead>
-          <tbody>${detailRows}</tbody>
-        </table>
-      </section>
-    </article>
-  </body>
-</html>`;
-
-    const reportBlob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const reportUrl = URL.createObjectURL(reportBlob);
-    const reportWindow = window.open(reportUrl, "_blank");
-
-    if (!reportWindow) {
-      URL.revokeObjectURL(reportUrl);
-      triggerDownload(reportBlob, `MeatLens-report-summary-${getReportFileSuffix()}.html`);
-      toast.success("Report downloaded. Open it and choose Print to save as PDF.");
-      return;
+      await composeReportPdf(
+        model,
+        `MeatLens-report-summary-${getReportFileSuffix()}.pdf`,
+      );
+      toast.success("PDF summary exported");
+    } catch (error) {
+      console.error("Failed to export admin PDF report", error);
+      toast.error("Failed to export admin PDF report");
     }
-
-    const cleanup = () => URL.revokeObjectURL(reportUrl);
-    reportWindow.addEventListener("afterprint", cleanup, { once: true });
-    reportWindow.addEventListener(
-      "load",
-      () => {
-        reportWindow.focus();
-        reportWindow.print();
-      },
-      { once: true },
-    );
-    window.setTimeout(cleanup, 60_000);
-
-    toast.success("PDF summary opened. Use Save as PDF in the print dialog.");
   };
 
   const handleCreateCode = async () => {
