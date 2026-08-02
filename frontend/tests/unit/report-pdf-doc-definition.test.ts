@@ -48,6 +48,7 @@ test("buildReportDocDefinition applies the organization page frame and section o
   });
 
   assert.equal(docDefinition.pageSize, "LETTER");
+  assert.deepEqual(docDefinition.pageMargins, [52, 120, 52, 92]);
   assert.equal(typeof docDefinition.background, "function");
   assert.equal(typeof docDefinition.footer, "function");
   assert.ok(Array.isArray(docDefinition.content));
@@ -62,6 +63,18 @@ test("buildReportDocDefinition applies the organization page frame and section o
       ? background.image
       : undefined,
     "mocked:/letterheads/rendered/gcccs-page.png",
+  );
+
+  const footer =
+    typeof docDefinition.footer === "function"
+      ? docDefinition.footer(1, 2)
+      : docDefinition.footer;
+
+  assert.deepEqual(
+    footer && typeof footer === "object" && "margin" in footer
+      ? footer.margin
+      : undefined,
+    [0, 0, 52, 54],
   );
 
   const contentJson = JSON.stringify(docDefinition.content);

@@ -16,7 +16,7 @@ test("maps each report organization to the correct letterhead asset", () => {
   );
   assert.equal(
     getReportLetterheadAssetPath("gordon_college_ccs"),
-    "/letterheads/GCCCS letterhead.pdf",
+    "/letterheads/gcccs letterhead new.pdf",
   );
 });
 

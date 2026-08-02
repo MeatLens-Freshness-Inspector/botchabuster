@@ -6,7 +6,7 @@ import {
 const REPORT_LETTERHEAD_FILES: Record<ReportOrganization, string> = {
   dti: "DTI zambales letterhead.pdf",
   city_veterinary_office_olongapo: "City Vet letterhead.pdf",
-  gordon_college_ccs: "GCCCS letterhead.pdf",
+  gordon_college_ccs: "gcccs letterhead new.pdf",
 };
 
 export function getReportLetterheadAssetPath(value: unknown): string {
