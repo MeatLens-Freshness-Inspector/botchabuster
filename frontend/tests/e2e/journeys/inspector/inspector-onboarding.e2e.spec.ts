@@ -165,20 +165,22 @@ test("lets admins bypass inspector onboarding", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Inspect" })).toBeVisible();
 });
 
-test("shows a blocking retry screen when onboarding status cannot be loaded", async ({ page }) => {
+test("derives onboarding gating from the bootstrap payload without a separate profile read", async ({ page }) => {
+  const spies: ApiSpy[] = [];
+
   await seedSignedInSession(page, { userId: "user-1" });
   await mockCommonApi(page, {
     userId: "user-1",
     onboardingCompletedAt: null,
     failProfileLoad: true,
-  });
+  }, spies);
 
   await page.goto("/inspect");
 
-  await expect(
-    page.getByRole("heading", { name: /couldn't load your onboarding status/i }),
-  ).toBeVisible();
-  await expect(page.getByRole("button", { name: /try again/i })).toBeVisible();
+  await expect(page).toHaveURL(/\/onboarding$/);
+  expect(
+    spies.some((spy) => spy.method === "GET" && spy.url.endsWith("/api/profiles/user-1")),
+  ).toBe(false);
 });
 
 test("shows an Open Help action on the onboarding completion screen", async ({ page }) => {
