@@ -1,5 +1,6 @@
 import { webcrypto } from "node:crypto";
 import { expect, test } from "@playwright/test";
+import { seedOfflineAuthEnvelope } from "../../support/fixtures/app";
 
 function encodeBase64Url(input: ArrayBuffer | Uint8Array): string {
   const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
@@ -21,6 +22,24 @@ async function exportKeyPair() {
 
 test("unlocks a cached offline session with a local passkey", async ({ page }) => {
   const keyPair = await exportKeyPair();
+  const localPasskey = {
+    credentialId: "credential-local-1",
+    publicKey: keyPair.publicKey,
+    publicKeyAlgorithm: -7,
+    transports: ["internal"],
+    deviceLabel: "Current device",
+    rpId: "localhost",
+    counter: 0,
+    isAdmin: false,
+  };
+
+  await seedOfflineAuthEnvelope(page, {
+    userId: "user-1",
+    email: "inspector@example.com",
+    onboardingCompletedAt: "2026-05-31T03:00:00.000Z",
+    offlineUnlockRequired: true,
+    localPasskey,
+  });
 
   await page.addInitScript((keys) => {
     const encoder = new TextEncoder();
@@ -59,29 +78,6 @@ test("unlocks a cached offline session with a local passkey", async ({ page }) =
       configurable: true,
       value: async () => true,
     });
-
-    window.localStorage.setItem("meatlens-auth-user", JSON.stringify({
-      id: "user-1",
-      email: "inspector@example.com",
-    }));
-    window.localStorage.setItem("meatlens-auth-session", JSON.stringify({
-      access_token: "cached-offline-token",
-      refresh_token: null,
-      token_type: "bearer",
-      expires_in: 28800,
-      expires_at: Date.now() + 28_800_000,
-    }));
-    window.localStorage.setItem("meatlens-auth-offline-lock-required", "true");
-    window.localStorage.setItem("meatlens-local-passkey", JSON.stringify({
-      credentialId: "credential-local-1",
-      publicKey: keys.publicKey,
-      publicKeyAlgorithm: -7,
-      transports: ["internal"],
-      deviceLabel: "Current device",
-      rpId: "localhost",
-      counter: 0,
-      isAdmin: false,
-    }));
 
     Object.defineProperty(navigator, "credentials", {
       configurable: true,
