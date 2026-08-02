@@ -66,7 +66,7 @@ export async function buildReportDocDefinition(
     pageMargins: frame.pageMargins,
     background: (() => backgroundContent) as DynamicContent,
     footer: ((currentPage, pageCount) => ({
-      margin: [0, 0, 46, 36],
+      margin: frame.footerMargin,
       alignment: "right",
       text: `Page ${currentPage} of ${pageCount}`,
       fontSize: 8,

@@ -11,6 +11,7 @@ export interface ReportPageFrame {
     color: string;
   }>;
   pageMargins: [number, number, number, number];
+  footerMargin: [number, number, number, number];
   sectionColor: string;
   bodyColor: string;
   tableHeaderFillColor: string;
@@ -22,7 +23,8 @@ const REPORT_PAGE_FRAMES: Record<ReportTemplateKey, Omit<ReportPageFrame, "backg
   {
     gcccs: {
       backgroundMaskRectangles: [],
-      pageMargins: [52, 172, 52, 78],
+      pageMargins: [52, 120, 52, 92],
+      footerMargin: [0, 0, 52, 54],
       sectionColor: "#111827",
       bodyColor: "#334155",
       tableHeaderFillColor: "#E5E7EB",
@@ -32,6 +34,7 @@ const REPORT_PAGE_FRAMES: Record<ReportTemplateKey, Omit<ReportPageFrame, "backg
     dti: {
       backgroundMaskRectangles: [],
       pageMargins: [58, 142, 58, 70],
+      footerMargin: [0, 0, 46, 36],
       sectionColor: "#1D4ED8",
       bodyColor: "#334155",
       tableHeaderFillColor: "#DBEAFE",
@@ -49,6 +52,7 @@ const REPORT_PAGE_FRAMES: Record<ReportTemplateKey, Omit<ReportPageFrame, "backg
         },
       ],
       pageMargins: [58, 148, 58, 70],
+      footerMargin: [0, 0, 46, 36],
       sectionColor: "#166534",
       bodyColor: "#334155",
       tableHeaderFillColor: "#DCFCE7",
