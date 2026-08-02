@@ -104,6 +104,9 @@ test("signs in with a passkey from the login page", async ({ page }) => {
 
   await page.route("**/api/auth/passkeys/authenticate/verify", async (route) => {
     verificationPayload = route.request().postData() ?? "";
+    const authenticatedAt = new Date().toISOString();
+    const offlineExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -112,6 +115,21 @@ test("signs in with a passkey from the login page", async ({ page }) => {
           id: "user-1",
           email: "inspector@example.com",
         },
+        profile: {
+          id: "user-1",
+          full_name: "Inspector",
+          avatar_url: null,
+          inspector_code: "INSP-001",
+          report_organization: "gordon_college_ccs",
+          is_dark_mode: false,
+          show_detailed_results: true,
+          onboarding_completed_at: "2026-05-31T03:00:00.000Z",
+          onboarding_version: 1,
+          email: "inspector@example.com",
+          location: "North Market",
+          created_at: "2026-04-01T00:00:00.000Z",
+          updated_at: "2026-04-01T00:00:00.000Z",
+        },
         session: {
           access_token: "passkey-token",
           refresh_token: null,
@@ -119,6 +137,13 @@ test("signs in with a passkey from the login page", async ({ page }) => {
           expires_in: 28800,
           expires_at: Date.now() + 28_800_000,
         },
+        roles: [],
+        primaryRole: "inspector",
+        isAdmin: false,
+        isDeveloper: false,
+        csrfToken: "mock-csrf-token",
+        authenticatedAt,
+        offlineExpiresAt,
       }),
     });
   });
