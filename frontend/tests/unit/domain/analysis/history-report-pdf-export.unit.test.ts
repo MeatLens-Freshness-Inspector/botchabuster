@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildDetailedHistoryReportPdfModel } from "../../../../src/pages/user/history/utils/historyPage";
+import type { Inspection } from "../../../../src/types/inspection";
 
-const sampleInspection = {
+const sampleInspection: Inspection = {
   id: "inspection-1",
   user_id: "user-1",
   meat_type: "pork",
@@ -25,6 +26,7 @@ const sampleInspection = {
   inspection_decision_source: "ai",
   protocol_spoiled_reason: null,
   inspector_notes: "Daily sample",
+  manual_classification: undefined,
   created_at: "2026-08-01T08:00:00.000Z",
   updated_at: "2026-08-01T08:00:00.000Z",
 };
@@ -35,7 +37,7 @@ test("buildDetailedHistoryReportPdfModel produces an inspector pdf model with th
     selectedReportDay: "2026-08-01",
     generatedAt: "Aug 2, 2026 5:00 PM",
     averageConfidence: 92,
-    inspections: [sampleInspection as any],
+    inspections: [sampleInspection],
   });
 
   assert.equal(model.kind, "inspector_daily");
@@ -51,7 +53,7 @@ test("buildDetailedHistoryReportPdfModel falls back to gcccs when the report org
     selectedReportDay: "2026-08-01",
     generatedAt: "Aug 2, 2026 5:00 PM",
     averageConfidence: 92,
-    inspections: [sampleInspection as any],
+    inspections: [sampleInspection],
   });
 
   assert.equal(model.organization, "gordon_college_ccs");
