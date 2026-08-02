@@ -1,40 +1,7 @@
 import assert from "node:assert/strict";
-import { once } from "node:events";
-import type { Server } from "node:http";
-import type { AddressInfo } from "node:net";
 import test from "node:test";
-import type { Express } from "express";
-
-process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
-process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
-process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
-process.env.AUDIT_LOG_KEY = process.env.AUDIT_LOG_KEY || "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
-process.env.ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || "http://localhost:8080";
-process.env.APP_SESSION_SECRET = process.env.APP_SESSION_SECRET || "app-session-secret";
-process.env.CSRF_TOKEN_SECRET = process.env.CSRF_TOKEN_SECRET || "csrf-token-secret";
-
-async function startTestServer(): Promise<{ baseUrl: string; close: () => Promise<void> }> {
-  const serverModule = await import("../../../src/server.ts");
-  const app = serverModule.default as Express;
-  const server = app.listen(0) as Server;
-  await once(server, "listening");
-  const address = server.address() as AddressInfo;
-
-  return {
-    baseUrl: `http://127.0.0.1:${address.port}`,
-    close: () =>
-      new Promise((resolve, reject) => {
-        server.close((error) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-
-          resolve();
-        });
-      }),
-  };
-}
+import "../../setup/env";
+import { startTestServer } from "../../support/appFactory";
 
 test("developer dashboard overview denies plain admins and allows developers", async () => {
   const { authService } = await import("../../../src/services/AuthService");

@@ -1,108 +1,9 @@
 import assert from "node:assert/strict";
-import { once } from "node:events";
-import type { Server } from "node:http";
-import type { AddressInfo } from "node:net";
 import test from "node:test";
-import type { Express } from "express";
-
-process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
-process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
-process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
-process.env.AUDIT_LOG_KEY = process.env.AUDIT_LOG_KEY || "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
-process.env.ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || "http://localhost:8080,https://meatlens.netlify.app";
-process.env.APP_SESSION_SECRET = process.env.APP_SESSION_SECRET || "app-session-secret";
-process.env.CSRF_TOKEN_SECRET = process.env.CSRF_TOKEN_SECRET || "csrf-token-secret";
-process.env.APP_SESSION_COOKIE_SECURE = process.env.APP_SESSION_COOKIE_SECURE || "true";
-
-async function loadApp(): Promise<Express> {
-  const serverModule = await import("../../../src/server.ts");
-  const exportedValue = serverModule.default as unknown;
-
-  if (typeof exportedValue === "function" && "listen" in exportedValue) {
-    return exportedValue as Express;
-  }
-
-  if (
-    exportedValue &&
-    typeof exportedValue === "object" &&
-    "default" in exportedValue &&
-    typeof (exportedValue as { default?: unknown }).default === "function"
-  ) {
-    return (exportedValue as { default: Express }).default;
-  }
-
-  throw new Error("Failed to load Express app from server module");
-}
-
-async function startTestServer(): Promise<{ baseUrl: string; close: () => Promise<void> }> {
-  const app = await loadApp();
-  const server = app.listen(0) as Server;
-  await once(server, "listening");
-
-  const address = server.address() as AddressInfo | null;
-  if (!address) {
-    throw new Error("Server did not expose a listening address");
-  }
-
-  return {
-    baseUrl: `http://127.0.0.1:${address.port}`,
-    close: () =>
-      new Promise((resolve, reject) => {
-        server.close((error) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-
-          resolve();
-        });
-      }),
-  };
-}
-
-function parseSessionCookie(setCookieHeader: string): string {
-  const match = /meatlens_session=([^;]+)/.exec(setCookieHeader);
-  assert.ok(match, `Expected meatlens_session cookie in ${setCookieHeader}`);
-  return match[1];
-}
-
-function createProfile(userId: string) {
-  return {
-    id: userId,
-    full_name: "Inspector Example",
-    avatar_url: null,
-    inspector_code: "INS-123",
-    report_organization: "dti",
-    is_dark_mode: false,
-    show_detailed_results: false,
-    onboarding_completed_at: "2026-07-01T00:00:00.000Z",
-    onboarding_version: 1,
-    location: "Olongapo",
-    created_at: "2026-07-01T00:00:00.000Z",
-    updated_at: "2026-07-01T00:00:00.000Z",
-  };
-}
-
-async function createCookieFixture(userId = "user-1", email = "inspector@example.com") {
-  const { AppSessionService } = await import("../../../src/services/AppSessionService");
-  const { CsrfTokenService } = await import("../../../src/services/CsrfTokenService");
-
-  const issuedAt = Date.now();
-  const sessionService = new AppSessionService(process.env.APP_SESSION_SECRET ?? "app-session-secret", 3600, () => issuedAt);
-  const csrfService = new CsrfTokenService(process.env.CSRF_TOKEN_SECRET ?? "csrf-token-secret", 900, () => issuedAt);
-  const session = sessionService.createSession({ id: userId, email });
-  const sessionId = sessionService.getSessionId(session.access_token);
-
-  assert.ok(sessionId, "Expected session cookie to contain a stable session ID");
-
-  return {
-    session,
-    csrfToken: csrfService.issueToken({
-      sessionId,
-      userId,
-    }),
-  };
-}
+import "../../setup/env";
+import { createCookieFixture, parseSessionCookie } from "../../support/authFactory";
+import { createProfileFixture, createUserFixture } from "../../support/fixtures";
+import { startTestServer } from "../../support/appFactory";
 
 test("sign-in sets a secure cookie, returns a bootstrap payload, and registers the device slot", async () => {
   const { authService } = await import("../../../src/services/AuthService");
@@ -120,8 +21,8 @@ test("sign-in sets a secure cookie, returns a bootstrap payload, and registers t
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
-  const user = { id: "user-1", email: "inspector@example.com" };
-  const profile = createProfile(user.id);
+  const user = createUserFixture();
+  const profile = createProfileFixture(user.id);
   let registeredToken: string | null = null;
 
   authService.signIn = async () => ({ user, session: null });
@@ -198,8 +99,8 @@ test("sign-in rejects before issuing a session cookie when the device limit is r
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
-  const user = { id: "admin-1", email: "admin@example.com" };
-  const profile = createProfile(user.id);
+  const user = createUserFixture({ id: "admin-1", email: "admin@example.com" });
+  const profile = createProfileFixture(user.id);
   let auditCalls = 0;
   let registerCalls = 0;
 
@@ -263,8 +164,8 @@ test("session bootstrap accepts a bearer-backed app session, preserves authentic
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
-  const user = { id: "user-1", email: "inspector@example.com" };
-  const profile = createProfile(user.id);
+  const user = createUserFixture();
+  const profile = createProfileFixture(user.id);
 
   authService.signIn = async () => ({ user, session: null });
   profileService.getUserRoles = async () => [];
@@ -332,8 +233,8 @@ test("cookie-authenticated inspection requests reuse the session slot registered
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
-  const user = { id: "admin-1", email: "admin@example.com" };
-  const profile = createProfile(user.id);
+  const user = createUserFixture({ id: "admin-1", email: "admin@example.com" });
+  const profile = createProfileFixture(user.id);
   let registeredToken: string | null = null;
   let registerCalls = 0;
   let inspectionArgs: unknown[] | null = null;
@@ -460,8 +361,8 @@ test("passkey authenticate verify mirrors the cookie/bootstrap contract and regi
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
-  const user = { id: "user-2", email: "passkey@example.com" };
-  const profile = createProfile(user.id);
+  const user = createUserFixture({ id: "user-2", email: "passkey@example.com" });
+  const profile = createProfileFixture(user.id);
   let registeredToken: string | null = null;
 
   passkeyService.verifyAuthentication = async () => ({

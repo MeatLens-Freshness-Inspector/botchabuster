@@ -1,70 +1,8 @@
 import assert from "node:assert/strict";
-import { once } from "node:events";
-import type { Server } from "node:http";
-import type { AddressInfo } from "node:net";
 import test from "node:test";
-import type { Express } from "express";
-
-process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
-process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
-process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
-process.env.AUDIT_LOG_KEY = process.env.AUDIT_LOG_KEY || "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
-process.env.ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || "http://localhost:8080,https://meatlens.netlify.app";
-process.env.APP_SESSION_SECRET = process.env.APP_SESSION_SECRET || "app-session-secret";
-process.env.CSRF_TOKEN_SECRET = process.env.CSRF_TOKEN_SECRET || "csrf-token-secret";
-process.env.APP_SESSION_COOKIE_SECURE = process.env.APP_SESSION_COOKIE_SECURE || "true";
-
-async function loadApp(): Promise<Express> {
-  const serverModule = await import("../../../src/server.ts");
-  const exportedValue = serverModule.default as unknown;
-
-  if (typeof exportedValue === "function" && "listen" in exportedValue) {
-    return exportedValue as Express;
-  }
-
-  if (
-    exportedValue &&
-    typeof exportedValue === "object" &&
-    "default" in exportedValue &&
-    typeof (exportedValue as { default?: unknown }).default === "function"
-  ) {
-    return (exportedValue as { default: Express }).default;
-  }
-
-  throw new Error("Failed to load Express app from server module");
-}
-
-async function startTestServer(): Promise<{ baseUrl: string; close: () => Promise<void> }> {
-  const app = await loadApp();
-  const server = app.listen(0) as Server;
-  await once(server, "listening");
-
-  const address = server.address() as AddressInfo | null;
-  if (!address) {
-    throw new Error("Server did not expose a listening address");
-  }
-
-  return {
-    baseUrl: `http://127.0.0.1:${address.port}`,
-    close: () =>
-      new Promise((resolve, reject) => {
-        server.close((error) => {
-          if (error) {
-            reject(error);
-            return;
-          }
-
-          resolve();
-        });
-      }),
-  };
-}
-
-async function createCookieFixture(userId = "admin-1", email = "admin@example.com"): Promise<string> {
-  const { AppSessionService } = await import("../../../src/services/AppSessionService");
-  const sessionService = new AppSessionService(process.env.APP_SESSION_SECRET ?? "app-session-secret", 3600, () => Date.now());
-  return sessionService.createSession({ id: userId, email }).access_token;
-}
+import "../../setup/env";
+import { createCookieFixture } from "../../support/authFactory";
+import { startTestServer } from "../../support/appFactory";
 
 test("protected admin data endpoints preserve session-limit 429 responses instead of downgrading them to 401", async () => {
   const { authService } = await import("../../../src/services/AuthService");
@@ -91,7 +29,7 @@ test("protected admin data endpoints preserve session-limit 429 responses instea
     assert.fail("device-slot registration should not happen after a limit rejection");
   };
 
-  const sessionCookie = await createCookieFixture();
+  const { session } = await createCookieFixture({ id: "admin-1", email: "admin@example.com" });
   const { baseUrl, close } = await startTestServer();
 
   try {
@@ -101,7 +39,7 @@ test("protected admin data endpoints preserve session-limit 429 responses instea
     ]) {
       const response = await fetch(`${baseUrl}${path}`, {
         headers: {
-          Cookie: `meatlens_session=${sessionCookie}`,
+          Cookie: `meatlens_session=${session.access_token}`,
           Origin: "http://localhost:8080",
         },
       });
