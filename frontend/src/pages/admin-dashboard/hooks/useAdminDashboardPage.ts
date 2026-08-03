@@ -10,6 +10,7 @@ import { marketLocationClient, type MarketLocation } from "@/integrations/api/Ma
 import { profileClient, type Profile } from "@/integrations/api/ProfileClient";
 import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
 import { isReportOrganization } from "@/lib/reportOrganizations";
+import { formatReportDateTime } from "@/lib/reports/formatting";
 import { composeReportPdf } from "@/lib/reports/pdf/composeReportPdf";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
 import type {
@@ -33,7 +34,6 @@ import {
   buildPreScanReportFields,
   buildAdminDashboardReportPdfModel,
   coerceAdminDashboardTab,
-  formatReportDateTime,
   getAdminDashboardTabs,
   getInspectorLabel,
   getLocationLabel,
