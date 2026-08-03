@@ -20,6 +20,20 @@ export interface ReportTable {
   rows: string[][];
 }
 
+export interface ReportChartPoint {
+  label: string;
+  value: number;
+  color?: string;
+}
+
+export interface ReportChart {
+  id: string;
+  title: string;
+  kind: "bar" | "line";
+  points: ReportChartPoint[];
+  emptyState: string;
+}
+
 export interface ReportInspectionEvidenceItem {
   id: string;
   imageUrl: string | null;
@@ -28,6 +42,7 @@ export interface ReportInspectionEvidenceItem {
   classification: string;
   confidenceLabel: string;
   location: string;
+  inspectorLabel?: string;
 }
 
 export interface ReportSection {
@@ -37,6 +52,7 @@ export interface ReportSection {
   metrics?: ReportMetric[];
   tables?: ReportTable[];
   detailRows?: ReportDetailRow[];
+  charts?: ReportChart[];
   inspectionEvidence?: ReportInspectionEvidenceItem[];
   evidenceLayout?: "photo-first";
 }
