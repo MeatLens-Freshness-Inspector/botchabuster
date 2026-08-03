@@ -363,3 +363,24 @@ test("buildReportDocDefinition keeps gcccs inspector exports technical-first wit
   assert.match(JSON.stringify(detailSection), /Technical Inspection Evidence Log/);
   assert.match(JSON.stringify(detailSection), /2026-08-01 08:05:30/);
 });
+
+test("buildReportDocDefinition falls back to a placeholder when an inspector image fails to load", async () => {
+  const docDefinition = await buildReportDocDefinition(sampleDtiInspectorModel, {
+    loadBrandAsset: async (path) => `mocked:${path}`,
+    loadInspectionImageAsset: async () => {
+      throw new Error("image fetch failed");
+    },
+  });
+
+  const detailSection = findSectionBlock(
+    docDefinition.content,
+    "Market Field Inspection Evidence",
+  );
+
+  assert.ok(detailSection);
+  assert.deepEqual(collectNodeImages(detailSection), []);
+  assert.match(
+    JSON.stringify(detailSection),
+    /No inspection image available/,
+  );
+});

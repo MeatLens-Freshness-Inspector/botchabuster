@@ -275,7 +275,10 @@ async function buildInspectionEvidenceContent(
 ): Promise<Content[]> {
   return Promise.all(
     inspectionEvidence.map(async (evidenceItem) => {
-      const imageAsset = await loadInspectionImageAsset(evidenceItem.imageUrl);
+      const imageAsset = await resolveInspectionImageAsset(
+        evidenceItem.imageUrl,
+        loadInspectionImageAsset,
+      );
 
       return {
         stack: [
@@ -347,6 +350,19 @@ async function buildInspectionEvidenceContent(
       } satisfies Content;
     }),
   );
+}
+
+async function resolveInspectionImageAsset(
+  path: string | null | undefined,
+  loadInspectionImageAsset: (
+    path: string | null | undefined,
+  ) => Promise<string | null>,
+): Promise<string | null> {
+  try {
+    return await loadInspectionImageAsset(path);
+  } catch {
+    return null;
+  }
 }
 
 function buildInspectionEvidenceField(
