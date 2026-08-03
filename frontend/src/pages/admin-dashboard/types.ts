@@ -58,7 +58,7 @@ export type ReportRow = {
   flaggedDeviations: string;
   explanation: string;
   inspectorNotes: string;
-  imageUrl: string;
+  imageUrl: string | null;
 };
 
 export type ReportLocationBreakdown = {
