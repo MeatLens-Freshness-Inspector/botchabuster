@@ -140,6 +140,22 @@ function collectNodeTexts(value: unknown): string[] {
   return texts;
 }
 
+function hasUnbreakableNode(value: unknown): boolean {
+  if (!value || typeof value !== "object") return false;
+
+  if ("unbreakable" in value && value.unbreakable === true) {
+    return true;
+  }
+
+  return Object.values(value).some((nestedValue) => {
+    if (Array.isArray(nestedValue)) {
+      return nestedValue.some((entry) => hasUnbreakableNode(entry));
+    }
+
+    return hasUnbreakableNode(nestedValue);
+  });
+}
+
 function findSectionBlock(content: unknown, sectionTitle: string) {
   assert.ok(Array.isArray(content));
 
@@ -297,6 +313,7 @@ test("buildReportDocDefinition renders unsegmented inspector evidence photos for
   assert.deepEqual(collectNodeImages(detailSection), [
     "data:image/png;base64,https://example.com/unsegmented-pork.jpg",
   ]);
+  assert.equal(hasUnbreakableNode(detailSection), true);
 
   const sectionTexts = collectNodeTexts(detailSection);
   assert.ok(sectionTexts.includes("2026-08-01 08:05:30"));
@@ -333,6 +350,7 @@ test("buildReportDocDefinition renders unsegmented inspector evidence photos for
   assert.deepEqual(collectNodeImages(detailSection), [
     "data:image/png;base64,https://example.com/unsegmented-pork.jpg",
   ]);
+  assert.equal(hasUnbreakableNode(detailSection), true);
 });
 
 test("buildReportDocDefinition keeps gcccs inspector exports technical-first without loading evidence photos", async () => {
@@ -381,6 +399,46 @@ test("buildReportDocDefinition falls back to a placeholder when an inspector ima
   assert.deepEqual(collectNodeImages(detailSection), []);
   assert.match(
     JSON.stringify(detailSection),
-    /No inspection image available/,
+    /Inspection image unavailable/,
+  );
+});
+
+test("buildReportDocDefinition shows a no-capture placeholder when inspector evidence has no image url", async () => {
+  const requestedImages: string[] = [];
+  const noImageModel: ReportDocumentModel = {
+    ...sampleDtiInspectorModel,
+    sections: [
+      sampleDtiInspectorModel.sections[0],
+      {
+        ...sampleDtiInspectorModel.sections[1],
+        inspectionEvidence: [
+          {
+            ...sampleDtiInspectorModel.sections[1].inspectionEvidence![0],
+            imageUrl: null,
+          },
+        ],
+      },
+    ],
+  };
+
+  const docDefinition = await buildReportDocDefinition(noImageModel, {
+    loadBrandAsset: async (path) => `mocked:${path}`,
+    loadInspectionImageAsset: async (path) => {
+      requestedImages.push(String(path));
+      return null;
+    },
+  });
+
+  const detailSection = findSectionBlock(
+    docDefinition.content,
+    "Market Field Inspection Evidence",
+  );
+
+  assert.deepEqual(requestedImages, []);
+  assert.ok(detailSection);
+  assert.deepEqual(collectNodeImages(detailSection), []);
+  assert.match(
+    JSON.stringify(detailSection),
+    /No image captured/,
   );
 });

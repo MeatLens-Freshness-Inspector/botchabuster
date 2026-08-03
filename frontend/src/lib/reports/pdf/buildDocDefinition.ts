@@ -243,7 +243,10 @@ async function buildSectionBlock(
     sectionContent.push(buildDetailRowTable(section.detailRows ?? [], frame));
   }
 
-  if ((section.inspectionEvidence?.length ?? 0) > 0) {
+  if (
+    section.evidenceLayout === "photo-first" &&
+    (section.inspectionEvidence?.length ?? 0) > 0
+  ) {
     sectionContent.push(
       ...(await buildInspectionEvidenceContent(
         section.inspectionEvidence ?? [],
@@ -275,7 +278,7 @@ async function buildInspectionEvidenceContent(
 ): Promise<Content[]> {
   return Promise.all(
     inspectionEvidence.map(async (evidenceItem) => {
-      const imageAsset = await resolveInspectionImageAsset(
+      const imageState = await resolveInspectionImageState(
         evidenceItem.imageUrl,
         loadInspectionImageAsset,
       );
@@ -287,44 +290,16 @@ async function buildInspectionEvidenceContent(
               {
                 width: 220,
                 margin: [0, 0, 14, 0],
-                stack: imageAsset
+                stack: imageState.kind === "loaded"
                   ? [
                       {
-                        image: imageAsset,
+                        image: imageState.dataUrl,
                         fit: [220, 170],
                         alignment: "center",
                         margin: [0, 0, 0, 6],
                       },
                     ]
-                  : [
-                      {
-                        canvas: [
-                          {
-                            type: "rect" as const,
-                            x: 0,
-                            y: 0,
-                            w: 220,
-                            h: 130,
-                            r: 4,
-                            lineColor: "#CBD5E1",
-                            color: "#F8FAFC",
-                          },
-                        ],
-                        margin: [0, 0, 0, 0],
-                      },
-                      {
-                        text: "No inspection image available",
-                        style: "evidencePlaceholderTitle",
-                        alignment: "center",
-                        margin: [0, -78, 0, 4],
-                      },
-                      {
-                        text: "The export kept the evidence row, but the raw capture could not be loaded.",
-                        style: "evidencePlaceholderBody",
-                        alignment: "center",
-                        margin: [20, 0, 20, 38],
-                      },
-                    ],
+                  : buildInspectionImagePlaceholder(imageState.kind),
               },
               {
                 width: "*",
@@ -347,21 +322,36 @@ async function buildInspectionEvidenceContent(
           },
         ],
         margin: [0, 0, 0, 12],
+        unbreakable: true,
       } satisfies Content;
     }),
   );
 }
 
-async function resolveInspectionImageAsset(
+async function resolveInspectionImageState(
   path: string | null | undefined,
   loadInspectionImageAsset: (
     path: string | null | undefined,
   ) => Promise<string | null>,
-): Promise<string | null> {
+): Promise<
+  | { kind: "loaded"; dataUrl: string }
+  | { kind: "missing" }
+  | { kind: "unavailable" }
+> {
+  if (!path) {
+    return { kind: "missing" };
+  }
+
   try {
-    return await loadInspectionImageAsset(path);
+    const asset = await loadInspectionImageAsset(path);
+
+    if (!asset) {
+      return { kind: "unavailable" };
+    }
+
+    return { kind: "loaded", dataUrl: asset };
   } catch {
-    return null;
+    return { kind: "unavailable" };
   }
 }
 
@@ -383,6 +373,47 @@ function buildInspectionEvidenceField(
       },
     ],
   };
+}
+
+function buildInspectionImagePlaceholder(
+  kind: "missing" | "unavailable",
+): Content[] {
+  const title =
+    kind === "missing" ? "No image captured" : "Inspection image unavailable";
+  const body =
+    kind === "missing"
+      ? "This inspection record has no raw capture attached."
+      : "The export kept the evidence row, but the raw capture could not be loaded.";
+
+  return [
+    {
+      canvas: [
+        {
+          type: "rect" as const,
+          x: 0,
+          y: 0,
+          w: 220,
+          h: 130,
+          r: 4,
+          lineColor: "#CBD5E1",
+          color: "#F8FAFC",
+        },
+      ],
+      margin: [0, 0, 0, 0],
+    },
+    {
+      text: title,
+      style: "evidencePlaceholderTitle",
+      alignment: "center",
+      margin: [0, -78, 0, 4],
+    },
+    {
+      text: body,
+      style: "evidencePlaceholderBody",
+      alignment: "center",
+      margin: [20, 0, 20, 38],
+    },
+  ];
 }
 
 function buildMetricGrid(metrics: ReportMetric[]): Content {
