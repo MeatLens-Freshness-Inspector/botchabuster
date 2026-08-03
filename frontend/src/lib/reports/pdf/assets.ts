@@ -23,7 +23,7 @@ export function getReportFrameAssetPath(
   return REPORT_TEMPLATE_FRAME_ASSET_PATHS[templateKey];
 }
 
-export async function loadReportBrandAsset(path: string): Promise<string> {
+async function readReportAssetAsDataUrl(path: string): Promise<string> {
   const response = await fetch(path);
 
   if (!response.ok) {
@@ -39,4 +39,20 @@ export async function loadReportBrandAsset(path: string): Promise<string> {
     reader.onload = () => resolve(String(reader.result));
     reader.readAsDataURL(blob);
   });
+}
+
+export async function loadReportBrandAsset(path: string): Promise<string> {
+  return readReportAssetAsDataUrl(path);
+}
+
+export async function loadOptionalReportImageAsset(
+  path: string | null | undefined,
+): Promise<string | null> {
+  if (!path) return null;
+
+  try {
+    return await readReportAssetAsDataUrl(path);
+  } catch {
+    return null;
+  }
 }

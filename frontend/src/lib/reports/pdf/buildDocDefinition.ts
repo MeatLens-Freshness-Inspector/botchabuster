@@ -1,12 +1,14 @@
 import { getReportOrganizationLabel } from "@/lib/reportOrganizations";
 import {
   loadReportBrandAsset,
+  loadOptionalReportImageAsset,
 } from "@/lib/reports/pdf/assets";
 import { getReportPageFrame } from "@/lib/reports/pdf/pageFrames";
 import { getOrganizationReportTemplate } from "@/lib/reports/templates";
 import type {
   ReportDetailRow,
   ReportDocumentModel,
+  ReportInspectionEvidenceItem,
   ReportMetric,
   ReportSection,
   ReportTable,
@@ -20,6 +22,9 @@ import type {
 
 interface BuildReportDocDefinitionDependencies {
   loadBrandAsset?: (path: string) => Promise<string>;
+  loadInspectionImageAsset?: (
+    path: string | null | undefined,
+  ) => Promise<string | null>;
 }
 
 export async function buildReportDocDefinition(
@@ -31,6 +36,8 @@ export async function buildReportDocDefinition(
   const frame = getReportPageFrame(model.templateKey);
   const loadBrandAsset =
     dependencies.loadBrandAsset ?? loadReportBrandAsset;
+  const loadInspectionImageAsset =
+    dependencies.loadInspectionImageAsset ?? loadOptionalReportImageAsset;
   const frameImage = await loadBrandAsset(frame.backgroundAssetPath);
   const backgroundContent =
     (frame.backgroundMaskRectangles?.length ?? 0) > 0
@@ -81,7 +88,13 @@ export async function buildReportDocDefinition(
       fontSize: 10,
       color: frame.bodyColor,
     },
-    content: buildDocumentContent(model, sections, frame.sectionColor, frame),
+    content: await buildDocumentContent(
+      model,
+      sections,
+      frame.sectionColor,
+      frame,
+      loadInspectionImageAsset,
+    ),
     styles: {
       reportTitle: {
         fontSize: 20,
@@ -138,16 +151,28 @@ export async function buildReportDocDefinition(
         fontSize: 9,
         color: frame.bodyColor,
       },
+      evidencePlaceholderTitle: {
+        fontSize: 10,
+        bold: true,
+        color: frame.sectionColor,
+      },
+      evidencePlaceholderBody: {
+        fontSize: 9,
+        color: frame.bodyColor,
+      },
     },
   };
 }
 
-function buildDocumentContent(
+async function buildDocumentContent(
   model: ReportDocumentModel,
   sections: ReportSection[],
   sectionColor: string,
   frame: ReturnType<typeof getReportPageFrame>,
-): Content[] {
+  loadInspectionImageAsset: (
+    path: string | null | undefined,
+  ) => Promise<string | null>,
+): Promise<Content[]> {
   return [
     {
       text: model.title,
@@ -173,17 +198,27 @@ function buildDocumentContent(
       ],
       margin: [0, 0, 0, 18],
     },
-    ...sections.map((section) =>
-      buildSectionBlock(section, sectionColor, frame),
-    ),
+    ...(await Promise.all(
+      sections.map((section) =>
+        buildSectionBlock(
+          section,
+          sectionColor,
+          frame,
+          loadInspectionImageAsset,
+        ),
+      ),
+    )),
   ];
 }
 
-function buildSectionBlock(
+async function buildSectionBlock(
   section: ReportSection,
   sectionColor: string,
   frame: ReturnType<typeof getReportPageFrame>,
-): Content {
+  loadInspectionImageAsset: (
+    path: string | null | undefined,
+  ) => Promise<string | null>,
+): Promise<Content> {
   const sectionContent: Content[] = [
     {
       text: section.title,
@@ -208,6 +243,16 @@ function buildSectionBlock(
     sectionContent.push(buildDetailRowTable(section.detailRows ?? [], frame));
   }
 
+  if ((section.inspectionEvidence?.length ?? 0) > 0) {
+    sectionContent.push(
+      ...(await buildInspectionEvidenceContent(
+        section.inspectionEvidence ?? [],
+        frame,
+        loadInspectionImageAsset,
+      )),
+    );
+  }
+
   for (const table of section.tables ?? []) {
     sectionContent.push(buildReportTable(table, frame));
   }
@@ -218,6 +263,109 @@ function buildSectionBlock(
     unbreakable: false,
     fillColor: "#FFFFFF",
     color: sectionColor,
+  };
+}
+
+async function buildInspectionEvidenceContent(
+  inspectionEvidence: ReportInspectionEvidenceItem[],
+  frame: ReturnType<typeof getReportPageFrame>,
+  loadInspectionImageAsset: (
+    path: string | null | undefined,
+  ) => Promise<string | null>,
+): Promise<Content[]> {
+  return Promise.all(
+    inspectionEvidence.map(async (evidenceItem) => {
+      const imageAsset = await loadInspectionImageAsset(evidenceItem.imageUrl);
+
+      return {
+        stack: [
+          {
+            columns: [
+              {
+                width: 220,
+                margin: [0, 0, 14, 0],
+                stack: imageAsset
+                  ? [
+                      {
+                        image: imageAsset,
+                        fit: [220, 170],
+                        alignment: "center",
+                        margin: [0, 0, 0, 6],
+                      },
+                    ]
+                  : [
+                      {
+                        canvas: [
+                          {
+                            type: "rect" as const,
+                            x: 0,
+                            y: 0,
+                            w: 220,
+                            h: 130,
+                            r: 4,
+                            lineColor: "#CBD5E1",
+                            color: "#F8FAFC",
+                          },
+                        ],
+                        margin: [0, 0, 0, 0],
+                      },
+                      {
+                        text: "No inspection image available",
+                        style: "evidencePlaceholderTitle",
+                        alignment: "center",
+                        margin: [0, -78, 0, 4],
+                      },
+                      {
+                        text: "The export kept the evidence row, but the raw capture could not be loaded.",
+                        style: "evidencePlaceholderBody",
+                        alignment: "center",
+                        margin: [20, 0, 20, 38],
+                      },
+                    ],
+              },
+              {
+                width: "*",
+                stack: [
+                  buildInspectionEvidenceField("Captured", evidenceItem.capturedAt),
+                  buildInspectionEvidenceField("Meat", evidenceItem.meatType),
+                  buildInspectionEvidenceField(
+                    "Classification",
+                    evidenceItem.classification,
+                  ),
+                  buildInspectionEvidenceField(
+                    "Confidence",
+                    evidenceItem.confidenceLabel,
+                  ),
+                  buildInspectionEvidenceField("Location", evidenceItem.location),
+                ],
+              },
+            ],
+            columnGap: 12,
+          },
+        ],
+        margin: [0, 0, 0, 12],
+      } satisfies Content;
+    }),
+  );
+}
+
+function buildInspectionEvidenceField(
+  label: string,
+  value: string,
+): Content {
+  return {
+    stack: [
+      {
+        text: label,
+        style: "detailLabel",
+        margin: [0, 0, 0, 2],
+      },
+      {
+        text: value,
+        style: "detailValue",
+        margin: [0, 0, 0, 8],
+      },
+    ],
   };
 }
 

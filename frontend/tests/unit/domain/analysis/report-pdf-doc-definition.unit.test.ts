@@ -42,6 +42,41 @@ const sampleGcccsModel: ReportDocumentModel = {
   ],
 };
 
+const sampleDtiInspectorModel: ReportDocumentModel = {
+  organization: "dti",
+  templateKey: "dti",
+  kind: "inspector_daily",
+  title: "Inspector Daily Report",
+  subtitle: "Inspection Day: 2026-08-01",
+  generatedAt: "Aug 2, 2026 4:00 PM",
+  sections: [
+    {
+      id: "meat-summary",
+      title: "Meat Inspection Summary",
+      metrics: [
+        { label: "Total Inspections", value: "1" },
+        { label: "Average Confidence", value: "88%" },
+      ],
+    },
+    {
+      id: "meat-detail",
+      title: "Daily Inspection Evidence",
+      inspectionEvidence: [
+        {
+          id: "inspection-1",
+          imageUrl: "https://example.com/unsegmented-pork.jpg",
+          capturedAt: "2026-08-01 08:05:30",
+          meatType: "pork",
+          classification: "warning",
+          confidenceLabel: "88%",
+          location: "East Market",
+        },
+      ],
+      evidenceLayout: "photo-first",
+    },
+  ],
+};
+
 function readBackgroundRectangles(background: unknown) {
   assert.ok(Array.isArray(background));
 
@@ -56,6 +91,70 @@ function readBackgroundRectangles(background: unknown) {
     }
 
     return entry.canvas;
+  });
+}
+
+function collectNodeImages(value: unknown): string[] {
+  if (!value || typeof value !== "object") return [];
+
+  const images: string[] = [];
+
+  if ("image" in value && typeof value.image === "string") {
+    images.push(value.image);
+  }
+
+  for (const nestedValue of Object.values(value)) {
+    if (Array.isArray(nestedValue)) {
+      for (const item of nestedValue) {
+        images.push(...collectNodeImages(item));
+      }
+      continue;
+    }
+
+    images.push(...collectNodeImages(nestedValue));
+  }
+
+  return images;
+}
+
+function collectNodeTexts(value: unknown): string[] {
+  if (!value || typeof value !== "object") return [];
+
+  const texts: string[] = [];
+
+  if ("text" in value && typeof value.text === "string") {
+    texts.push(value.text);
+  }
+
+  for (const nestedValue of Object.values(value)) {
+    if (Array.isArray(nestedValue)) {
+      for (const item of nestedValue) {
+        texts.push(...collectNodeTexts(item));
+      }
+      continue;
+    }
+
+    texts.push(...collectNodeTexts(nestedValue));
+  }
+
+  return texts;
+}
+
+function findSectionBlock(content: unknown, sectionTitle: string) {
+  assert.ok(Array.isArray(content));
+
+  return content.find((entry) => {
+    if (!entry || typeof entry !== "object" || !("stack" in entry)) return false;
+    if (!Array.isArray(entry.stack) || entry.stack.length === 0) return false;
+
+    const [firstNode] = entry.stack;
+
+    return (
+      !!firstNode &&
+      typeof firstNode === "object" &&
+      "text" in firstNode &&
+      firstNode.text === sectionTitle
+    );
   });
 }
 
@@ -173,4 +272,94 @@ test("buildReportDocDefinition masks the dti placeholder body text in the repeat
       },
     ],
   );
+});
+
+test("buildReportDocDefinition renders unsegmented inspector evidence photos for dti exports", async () => {
+  const requestedImages: string[] = [];
+  const docDefinition = await buildReportDocDefinition(sampleDtiInspectorModel, {
+    loadBrandAsset: async (path) => `mocked:${path}`,
+    loadInspectionImageAsset: async (path) => {
+      requestedImages.push(path);
+      return `data:image/png;base64,${path}`;
+    },
+  });
+
+  assert.deepEqual(requestedImages, [
+    "https://example.com/unsegmented-pork.jpg",
+  ]);
+
+  const detailSection = findSectionBlock(
+    docDefinition.content,
+    "Market Field Inspection Evidence",
+  );
+
+  assert.ok(detailSection);
+  assert.deepEqual(collectNodeImages(detailSection), [
+    "data:image/png;base64,https://example.com/unsegmented-pork.jpg",
+  ]);
+
+  const sectionTexts = collectNodeTexts(detailSection);
+  assert.ok(sectionTexts.includes("2026-08-01 08:05:30"));
+  assert.ok(sectionTexts.includes("warning"));
+  assert.ok(sectionTexts.includes("East Market"));
+});
+
+test("buildReportDocDefinition renders unsegmented inspector evidence photos for city vet exports", async () => {
+  const requestedImages: string[] = [];
+  const cityVetModel: ReportDocumentModel = {
+    ...sampleDtiInspectorModel,
+    organization: "city_veterinary_office_olongapo",
+    templateKey: "city_vet",
+  };
+
+  const docDefinition = await buildReportDocDefinition(cityVetModel, {
+    loadBrandAsset: async (path) => `mocked:${path}`,
+    loadInspectionImageAsset: async (path) => {
+      requestedImages.push(path);
+      return `data:image/png;base64,${path}`;
+    },
+  });
+
+  assert.deepEqual(requestedImages, [
+    "https://example.com/unsegmented-pork.jpg",
+  ]);
+
+  const detailSection = findSectionBlock(
+    docDefinition.content,
+    "Veterinary Inspection Evidence",
+  );
+
+  assert.ok(detailSection);
+  assert.deepEqual(collectNodeImages(detailSection), [
+    "data:image/png;base64,https://example.com/unsegmented-pork.jpg",
+  ]);
+});
+
+test("buildReportDocDefinition keeps gcccs inspector exports technical-first without loading evidence photos", async () => {
+  const requestedImages: string[] = [];
+  const gcccsInspectorModel: ReportDocumentModel = {
+    ...sampleDtiInspectorModel,
+    organization: "gordon_college_ccs",
+    templateKey: "gcccs",
+  };
+
+  const docDefinition = await buildReportDocDefinition(gcccsInspectorModel, {
+    loadBrandAsset: async (path) => `mocked:${path}`,
+    loadInspectionImageAsset: async (path) => {
+      requestedImages.push(path);
+      return `data:image/png;base64,${path}`;
+    },
+  });
+
+  assert.deepEqual(requestedImages, []);
+
+  const detailSection = findSectionBlock(
+    docDefinition.content,
+    "Technical Inspection Evidence Log",
+  );
+
+  assert.ok(detailSection);
+  assert.deepEqual(collectNodeImages(detailSection), []);
+  assert.match(JSON.stringify(detailSection), /Technical Inspection Evidence Log/);
+  assert.match(JSON.stringify(detailSection), /2026-08-01 08:05:30/);
 });
