@@ -77,6 +77,65 @@ const sampleDtiInspectorModel: ReportDocumentModel = {
   ],
 };
 
+const sampleDtiAdminGraphModel: ReportDocumentModel = {
+  organization: "dti",
+  templateKey: "dti",
+  kind: "admin_range",
+  title: "Administrative Report",
+  subtitle: "Range: 2026-08-01 to 2026-08-03",
+  generatedAt: "Aug 3, 2026 10:40 AM",
+  sections: [
+    {
+      id: "org-overview",
+      title: "Organization Overview",
+      metrics: [{ label: "Total Inspections", value: "4" }],
+    },
+    {
+      id: "report-graphs",
+      title: "Report Graphs",
+      charts: [
+        {
+          id: "classification-breakdown",
+          title: "Classification Breakdown",
+          kind: "bar",
+          emptyState: "No data for selected range",
+          points: [
+            { label: "fresh", value: 2, color: "#16A34A" },
+            { label: "warning", value: 1, color: "#F97316" },
+            { label: "spoiled", value: 1, color: "#DC2626" },
+          ],
+        },
+        {
+          id: "daily-inspection-trend",
+          title: "Daily Inspection Trend",
+          kind: "line",
+          emptyState: "No data for selected range",
+          points: [
+            { label: "2026-08-01", value: 1 },
+            { label: "2026-08-02", value: 2 },
+            { label: "2026-08-03", value: 1 },
+          ],
+        },
+        {
+          id: "meat-type-breakdown",
+          title: "Meat Type Breakdown",
+          kind: "bar",
+          emptyState: "No data for selected range",
+          points: [
+            { label: "pork", value: 3 },
+            { label: "fish", value: 1 },
+          ],
+        },
+      ],
+    },
+    {
+      id: "meat-summary",
+      title: "Meat Inspection Summary",
+      metrics: [{ label: "Average Confidence", value: "89%" }],
+    },
+  ],
+};
+
 function readBackgroundRectangles(background: unknown) {
   assert.ok(Array.isArray(background));
 
@@ -115,6 +174,29 @@ function collectNodeImages(value: unknown): string[] {
   }
 
   return images;
+}
+
+function collectNodeSvgs(value: unknown): string[] {
+  if (!value || typeof value !== "object") return [];
+
+  const svgs: string[] = [];
+
+  if ("svg" in value && typeof value.svg === "string") {
+    svgs.push(value.svg);
+  }
+
+  for (const nestedValue of Object.values(value)) {
+    if (Array.isArray(nestedValue)) {
+      for (const item of nestedValue) {
+        svgs.push(...collectNodeSvgs(item));
+      }
+      continue;
+    }
+
+    svgs.push(...collectNodeSvgs(nestedValue));
+  }
+
+  return svgs;
 }
 
 function collectNodeTexts(value: unknown): string[] {
@@ -288,6 +370,62 @@ test("buildReportDocDefinition masks the dti placeholder body text in the repeat
       },
     ],
   );
+});
+
+test("buildReportDocDefinition renders admin graph sections as svg content in the pdf", async () => {
+  const docDefinition = await buildReportDocDefinition(sampleDtiAdminGraphModel, {
+    loadBrandAsset: async (path) => `mocked:${path}`,
+  });
+
+  const graphSection = findSectionBlock(
+    docDefinition.content,
+    "Operational Inspection Graphs",
+  );
+
+  assert.ok(graphSection);
+  const sectionTexts = collectNodeTexts(graphSection);
+  const sectionSvgs = collectNodeSvgs(graphSection);
+
+  assert.ok(sectionTexts.includes("Classification Breakdown"));
+  assert.ok(sectionTexts.includes("Daily Inspection Trend"));
+  assert.ok(sectionTexts.includes("Meat Type Breakdown"));
+  assert.equal(sectionSvgs.length, 3);
+  assert.ok(sectionSvgs.every((svg) => svg.includes("<svg")));
+});
+
+test("buildReportDocDefinition shows a no-data message when an admin graph has no points", async () => {
+  const docDefinition = await buildReportDocDefinition(
+    {
+      ...sampleDtiAdminGraphModel,
+      sections: [
+        sampleDtiAdminGraphModel.sections[0],
+        {
+          ...sampleDtiAdminGraphModel.sections[1],
+          charts: [
+            {
+              id: "classification-breakdown",
+              title: "Classification Breakdown",
+              kind: "bar",
+              emptyState: "No data for selected range",
+              points: [],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      loadBrandAsset: async (path) => `mocked:${path}`,
+    },
+  );
+
+  const graphSection = findSectionBlock(
+    docDefinition.content,
+    "Operational Inspection Graphs",
+  );
+
+  assert.ok(graphSection);
+  assert.deepEqual(collectNodeSvgs(graphSection), []);
+  assert.match(JSON.stringify(graphSection), /No data for selected range/);
 });
 
 test("buildReportDocDefinition renders unsegmented inspector evidence photos for dti exports", async () => {
