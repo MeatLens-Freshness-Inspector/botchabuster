@@ -136,6 +136,65 @@ const sampleDtiAdminGraphModel: ReportDocumentModel = {
   ],
 };
 
+const sampleDtiAdminPorkModel: ReportDocumentModel = {
+  organization: "dti",
+  templateKey: "dti",
+  kind: "admin_range",
+  title: "Administrative Report",
+  subtitle: "Range: 2026-08-01 to 2026-08-03",
+  generatedAt: "Aug 3, 2026 10:40 AM",
+  sections: [
+    {
+      id: "org-overview",
+      title: "Organization Overview",
+      metrics: [{ label: "Total Inspections", value: "3" }],
+    },
+    {
+      id: "pork-gallery",
+      title: "Pork Inspection Evidence",
+      inspectionEvidence: [
+        {
+          id: "pork-1",
+          imageUrl: "https://example.com/dti-pork-1.jpg",
+          capturedAt: "2026-08-03 10:00:00",
+          meatType: "pork",
+          classification: "warning",
+          confidenceLabel: "88%",
+          location: "East Market",
+          inspectorLabel: "Inspector One",
+        },
+        {
+          id: "pork-2",
+          imageUrl: "https://example.com/dti-pork-2.jpg",
+          capturedAt: "2026-08-02 08:00:00",
+          meatType: "pork",
+          classification: "fresh",
+          confidenceLabel: "92%",
+          location: "West Market",
+          inspectorLabel: "Inspector Two",
+        },
+      ],
+      evidenceLayout: "photo-first",
+    },
+    {
+      id: "meat-summary",
+      title: "Meat Inspection Summary",
+      metrics: [{ label: "Average Confidence", value: "90%" }],
+    },
+    {
+      id: "meat-detail",
+      title: "Inspection Detail",
+      tables: [
+        {
+          title: "Inspection Detail",
+          columns: ["Created"],
+          rows: [["2026-08-03 10:00:00"]],
+        },
+      ],
+    },
+  ],
+};
+
 function readBackgroundRectangles(background: unknown) {
   assert.ok(Array.isArray(background));
 
@@ -426,6 +485,87 @@ test("buildReportDocDefinition shows a no-data message when an admin graph has n
   assert.ok(graphSection);
   assert.deepEqual(collectNodeSvgs(graphSection), []);
   assert.match(JSON.stringify(graphSection), /No data for selected range/);
+});
+
+test("buildReportDocDefinition renders inspector labels in dti admin pork evidence cards", async () => {
+  const requestedImages: string[] = [];
+  const docDefinition = await buildReportDocDefinition(sampleDtiAdminPorkModel, {
+    loadBrandAsset: async (path) => `mocked:${path}`,
+    loadInspectionImageAsset: async (path) => {
+      requestedImages.push(String(path));
+      return `data:image/png;base64,${path}`;
+    },
+  });
+
+  assert.deepEqual(requestedImages, [
+    "https://example.com/dti-pork-1.jpg",
+    "https://example.com/dti-pork-2.jpg",
+  ]);
+
+  const porkSection = findSectionBlock(
+    docDefinition.content,
+    "Pork Meat Field Evidence",
+  );
+
+  assert.ok(porkSection);
+  assert.deepEqual(collectNodeImages(porkSection), [
+    "data:image/png;base64,https://example.com/dti-pork-1.jpg",
+    "data:image/png;base64,https://example.com/dti-pork-2.jpg",
+  ]);
+
+  const sectionTexts = collectNodeTexts(porkSection);
+  assert.ok(sectionTexts.includes("Inspector"));
+  assert.ok(sectionTexts.includes("Inspector One"));
+  assert.ok(sectionTexts.includes("Inspector Two"));
+});
+
+test("buildReportDocDefinition keeps city vet admin pork evidence cards when an image cannot be loaded", async () => {
+  const docDefinition = await buildReportDocDefinition(
+    {
+      ...sampleDtiAdminPorkModel,
+      organization: "city_veterinary_office_olongapo",
+      templateKey: "city_vet",
+    },
+    {
+      loadBrandAsset: async (path) => `mocked:${path}`,
+      loadInspectionImageAsset: async () => null,
+    },
+  );
+
+  const porkSection = findSectionBlock(
+    docDefinition.content,
+    "Pork Meat Veterinary Evidence",
+  );
+
+  assert.ok(porkSection);
+  assert.deepEqual(collectNodeImages(porkSection), []);
+  assert.match(JSON.stringify(porkSection), /Inspection image unavailable/);
+});
+
+test("buildReportDocDefinition does not load admin pork evidence images for gcccs exports", async () => {
+  const requestedImages: string[] = [];
+  const docDefinition = await buildReportDocDefinition(
+    {
+      ...sampleDtiAdminPorkModel,
+      organization: "gordon_college_ccs",
+      templateKey: "gcccs",
+    },
+    {
+      loadBrandAsset: async (path) => `mocked:${path}`,
+      loadInspectionImageAsset: async (path) => {
+        requestedImages.push(String(path));
+        return `data:image/png;base64,${path}`;
+      },
+    },
+  );
+
+  assert.deepEqual(requestedImages, []);
+  assert.ok(
+    !findSectionBlock(docDefinition.content, "Pork Meat Veterinary Evidence"),
+  );
+  assert.ok(
+    !findSectionBlock(docDefinition.content, "Pork Meat Field Evidence"),
+  );
 });
 
 test("buildReportDocDefinition renders unsegmented inspector evidence photos for dti exports", async () => {

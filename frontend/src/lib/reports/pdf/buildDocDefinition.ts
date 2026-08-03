@@ -309,6 +309,14 @@ async function buildInspectionEvidenceContent(
               {
                 width: "*",
                 stack: [
+                  ...(evidenceItem.inspectorLabel
+                    ? [
+                        buildInspectionEvidenceField(
+                          "Inspector",
+                          evidenceItem.inspectorLabel,
+                        ),
+                      ]
+                    : []),
                   buildInspectionEvidenceField("Captured", evidenceItem.capturedAt),
                   buildInspectionEvidenceField("Meat", evidenceItem.meatType),
                   buildInspectionEvidenceField(
