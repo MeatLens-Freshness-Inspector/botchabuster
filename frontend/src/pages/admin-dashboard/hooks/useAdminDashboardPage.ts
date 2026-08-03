@@ -508,7 +508,7 @@ export function useAdminDashboardPage() {
         flaggedDeviations: inspection.flagged_deviations.length > 0 ? inspection.flagged_deviations.join("; ") : "-",
         explanation: getOptionalText(inspection.explanation),
         inspectorNotes: getOptionalText(inspection.inspector_notes),
-        imageUrl: getOptionalText(inspection.image_url),
+        imageUrl: inspection.image_url ?? null,
       };
     });
   }, [reportFilteredInspections, profileById]);
