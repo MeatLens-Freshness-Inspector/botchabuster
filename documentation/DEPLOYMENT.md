@@ -10,6 +10,8 @@ The deployment config is already committed in:
 - `netlify.toml`
 - `render.yaml`
 
+The repository's canonical automated testing pipeline lives at `.github/workflows/ci.yml`.
+
 ## Recommended Order
 
 Use this order so the frontend URL and backend CORS settings line up cleanly:
@@ -128,6 +130,7 @@ Notes:
 If your Render plan idles services after inactivity, a simple scheduled ping will keep the backend from spinning down.
 
 - A GitHub Actions workflow has been added at [.github/workflows/keep-awake.yml](.github/workflows/keep-awake.yml) which pings the health endpoint every 5 minutes.
+- The main automated testing workflow lives at `.github/workflows/ci.yml` and is separate from the keep-awake job.
 - To change the schedule or endpoint, edit that workflow or create a Render Scheduled Job via the Render dashboard or `render.yaml`.
 
 #### Using cron-job.org

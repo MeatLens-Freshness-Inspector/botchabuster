@@ -1,0 +1,246 @@
+name: Automated Testing
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+  schedule:
+    - cron: "0 18 * * *"
+
+jobs:
+  changes:
+    name: Detect Changed Paths
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.classify.outputs.frontend }}
+      backend: ${{ steps.classify.outputs.backend }}
+      shared: ${{ steps.classify.outputs.shared }}
+      docs_only: ${{ steps.classify.outputs.docsOnly }}
+      workflow: ${{ steps.classify.outputs.workflow }}
+      any_relevant_changes: ${{ steps.classify.outputs.anyRelevantChanges }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - id: classify
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" || "${{ github.event_name }}" == "schedule" ]]; then
+            {
+              echo "frontend=true"
+              echo "backend=true"
+              echo "shared=true"
+              echo "docsOnly=false"
+              echo "workflow=false"
+              echo "anyRelevantChanges=true"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          head_sha="${{ github.sha }}"
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base_sha="${{ github.event.pull_request.base.sha }}"
+          else
+            base_sha="${{ github.event.before }}"
+            if [[ -z "$base_sha" || "$base_sha" == "0000000000000000000000000000000000000000" ]]; then
+              base_sha="$(git rev-parse HEAD^)"
+            fi
+          fi
+
+          mapfile -t changed_files < <(git diff --name-only "$base_sha" "$head_sha")
+
+          if (( ${#changed_files[@]} == 0 )); then
+            {
+              echo "frontend=false"
+              echo "backend=false"
+              echo "shared=false"
+              echo "docsOnly=false"
+              echo "workflow=false"
+              echo "anyRelevantChanges=false"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          node scripts/ci-paths.mjs "${changed_files[@]}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish change summary
+        shell: bash
+        run: |
+          {
+            echo "## Change Detection"
+            echo
+            echo "- Frontend: ${{ steps.classify.outputs.frontend }}"
+            echo "- Backend: ${{ steps.classify.outputs.backend }}"
+            echo "- Shared: ${{ steps.classify.outputs.shared }}"
+            echo "- Workflow: ${{ steps.classify.outputs.workflow }}"
+            echo "- Docs only: ${{ steps.classify.outputs.docsOnly }}"
+            echo "- Any relevant changes: ${{ steps.classify.outputs.anyRelevantChanges }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  docs-only:
+    name: Docs-only Skip
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only == 'true'
+    steps:
+      - name: Record docs-only result
+        run: |
+          {
+            echo "## Automated Testing"
+            echo
+            echo "Docs-only changes detected, so the expensive test lanes were skipped."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  lint-and-types:
+    name: Lint and Typecheck
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+
+  script-tests:
+    name: Script Tests
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:scripts
+
+  backend-unit:
+    name: Backend Unit Tests
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:unit -w backend
+
+  frontend-tests:
+    name: Frontend Unit, Component, and Integration Tests
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:unit -w frontend
+      - run: npm run test:component -w frontend
+      - run: npm run test:integration -w frontend
+
+  backend-integration:
+    name: Backend Integration Tests
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:backend:integration
+
+  contract-tests:
+    name: Contract Tests
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:contract
+
+  build:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+  e2e-critical:
+    name: Critical Playwright
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e:critical
+
+  infrastructure-tests:
+    name: Infrastructure Tests
+    runs-on: ubuntu-latest
+    needs: changes
+    if: github.event_name != 'pull_request' && needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:infrastructure
+
+  full-playwright:
+    name: Full Playwright
+    runs-on: ubuntu-latest
+    needs: changes
+    if: github.event_name != 'pull_request' && needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e:full

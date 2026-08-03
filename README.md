@@ -122,11 +122,21 @@ npm run build:frontend  # Build frontend only
 npm run build:backend   # Build backend only
 npm run lint            # Lint all workspaces
 npm run test            # Test all workspaces
+npm run test:scripts    # Test repository automation scripts
 npm run test:unit       # Run frontend and backend unit tests
 npm run test:integration # Run backend integration tests
 npm run test:e2e        # Run frontend Playwright tests
+npm run test:ci         # Local equivalent of the main CI test pipeline
 npm run test:watch      # Watch tests
 ```
+
+## CI
+
+GitHub Actions uses [`.github/workflows/ci.yml`](.github/workflows/ci.yml) as the canonical automated testing pipeline.
+
+- Pull requests and pushes to `master` run automated testing in GitHub Actions.
+- The pipeline is path-aware, so frontend-only and backend-only changes run only the relevant test lanes.
+- Docs-only changes record a lightweight skip instead of consuming the full test matrix.
 
 ## Technology Stack
 
