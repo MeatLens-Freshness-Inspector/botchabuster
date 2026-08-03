@@ -137,6 +137,8 @@ GitHub Actions uses [`.github/workflows/ci.yml`](.github/workflows/ci.yml) as th
 - Pull requests and pushes to `master` run automated testing in GitHub Actions.
 - The pipeline is path-aware, so frontend-only and backend-only changes run only the relevant test lanes.
 - Docs-only changes record a lightweight skip instead of consuming the full test matrix.
+- [`.github/workflows/preview.yml`](.github/workflows/preview.yml) reports preview relevance for pull requests and can optionally trigger Netlify or Render preview hooks when repository secrets are configured.
+- [`.github/workflows/deploy-refresh.yml`](.github/workflows/deploy-refresh.yml) provides a manual preview refresh without needing a no-op commit.
 
 ## Technology Stack
 

@@ -1,0 +1,107 @@
+name: Preview Refresh
+
+on:
+  workflow_dispatch:
+    inputs:
+      refresh_frontend:
+        description: "Trigger the frontend preview refresh"
+        required: true
+        default: true
+        type: boolean
+      refresh_backend:
+        description: "Trigger the backend preview refresh"
+        required: true
+        default: true
+        type: boolean
+
+jobs:
+  plan:
+    name: Build Manual Refresh Plan
+    runs-on: ubuntu-latest
+    outputs:
+      frontend_relevant: ${{ steps.plan.outputs.frontend_relevant }}
+      frontend_should_trigger: ${{ steps.plan.outputs.frontend_should_trigger }}
+      frontend_provider_managed: ${{ steps.plan.outputs.frontend_provider_managed }}
+      backend_relevant: ${{ steps.plan.outputs.backend_relevant }}
+      backend_should_trigger: ${{ steps.plan.outputs.backend_should_trigger }}
+      backend_provider_managed: ${{ steps.plan.outputs.backend_provider_managed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - id: plan
+        shell: bash
+        env:
+          REFRESH_FRONTEND: ${{ inputs.refresh_frontend }}
+          REFRESH_BACKEND: ${{ inputs.refresh_backend }}
+          NETLIFY_HOOK_CONFIGURED: ${{ secrets.NETLIFY_BUILD_HOOK_URL != '' }}
+          RENDER_HOOK_CONFIGURED: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+          NETLIFY_SITE_URL: ${{ vars.NETLIFY_SITE_URL }}
+          RENDER_SERVICE_URL: ${{ vars.RENDER_SERVICE_URL }}
+        run: |
+          node --input-type=module - <<'EOF'
+          import fs from "node:fs";
+          import { buildPreviewPlan } from "./scripts/preview-plan.mjs";
+
+          const plan = buildPreviewPlan({
+            frontendChanged: false,
+            backendChanged: false,
+            docsOnly: false,
+            netlifyHookConfigured: process.env.NETLIFY_HOOK_CONFIGURED === "true",
+            renderHookConfigured: process.env.RENDER_HOOK_CONFIGURED === "true",
+            netlifySiteUrl: process.env.NETLIFY_SITE_URL || undefined,
+            renderServiceUrl: process.env.RENDER_SERVICE_URL || undefined,
+            mode: "manual",
+            refreshFrontend: process.env.REFRESH_FRONTEND === "true",
+            refreshBackend: process.env.REFRESH_BACKEND === "true",
+          });
+
+          const lines = [
+            `frontend_relevant=${plan.surfaces.frontend.relevant}`,
+            `frontend_should_trigger=${plan.surfaces.frontend.shouldTrigger}`,
+            `frontend_provider_managed=${plan.surfaces.frontend.providerManaged}`,
+            `backend_relevant=${plan.surfaces.backend.relevant}`,
+            `backend_should_trigger=${plan.surfaces.backend.shouldTrigger}`,
+            `backend_provider_managed=${plan.surfaces.backend.providerManaged}`,
+          ];
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `${lines.join("\n")}\n`);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Manual Preview Refresh\n\n${plan.summary}\n`);
+          EOF
+
+  frontend-refresh:
+    name: Frontend Preview Refresh
+    runs-on: ubuntu-latest
+    needs: plan
+    if: needs.plan.outputs.frontend_relevant == 'true'
+    steps:
+      - name: Trigger Netlify preview hook
+        if: needs.plan.outputs.frontend_should_trigger == 'true'
+        env:
+          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
+        run: curl -fsS -X POST "$NETLIFY_BUILD_HOOK_URL"
+
+      - name: Record provider-managed frontend preview
+        if: needs.plan.outputs.frontend_provider_managed == 'true'
+        run: |
+          echo "Frontend preview remains provider-managed because NETLIFY_BUILD_HOOK_URL is not configured." >> "$GITHUB_STEP_SUMMARY"
+
+  backend-refresh:
+    name: Backend Preview Refresh
+    runs-on: ubuntu-latest
+    needs: plan
+    if: needs.plan.outputs.backend_relevant == 'true'
+    steps:
+      - name: Trigger Render deploy hook
+        if: needs.plan.outputs.backend_should_trigger == 'true'
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+
+      - name: Record provider-managed backend preview
+        if: needs.plan.outputs.backend_provider_managed == 'true'
+        run: |
+          echo "Backend preview remains provider-managed because RENDER_DEPLOY_HOOK_URL is not configured." >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,151 @@
+name: Preview CD
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  changes:
+    name: Detect Preview-Relevant Changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.classify.outputs.frontend }}
+      backend: ${{ steps.classify.outputs.backend }}
+      docs_only: ${{ steps.classify.outputs.docsOnly }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - id: classify
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            {
+              echo "frontend=true"
+              echo "backend=true"
+              echo "docsOnly=false"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.sha }}"
+
+          mapfile -t changed_files < <(git diff --name-only "$base_sha" "$head_sha")
+
+          if (( ${#changed_files[@]} == 0 )); then
+            {
+              echo "frontend=false"
+              echo "backend=false"
+              echo "docsOnly=false"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          node scripts/ci-paths.mjs "${changed_files[@]}" >> "$GITHUB_OUTPUT"
+
+  plan:
+    name: Build Preview Plan
+    runs-on: ubuntu-latest
+    needs: changes
+    outputs:
+      frontend_relevant: ${{ steps.plan.outputs.frontend_relevant }}
+      frontend_should_trigger: ${{ steps.plan.outputs.frontend_should_trigger }}
+      frontend_provider_managed: ${{ steps.plan.outputs.frontend_provider_managed }}
+      backend_relevant: ${{ steps.plan.outputs.backend_relevant }}
+      backend_should_trigger: ${{ steps.plan.outputs.backend_should_trigger }}
+      backend_provider_managed: ${{ steps.plan.outputs.backend_provider_managed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - id: plan
+        shell: bash
+        env:
+          FRONTEND_CHANGED: ${{ needs.changes.outputs.frontend }}
+          BACKEND_CHANGED: ${{ needs.changes.outputs.backend }}
+          DOCS_ONLY: ${{ needs.changes.outputs.docs_only }}
+          NETLIFY_HOOK_CONFIGURED: ${{ secrets.NETLIFY_BUILD_HOOK_URL != '' }}
+          RENDER_HOOK_CONFIGURED: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+          NETLIFY_SITE_URL: ${{ vars.NETLIFY_SITE_URL }}
+          RENDER_SERVICE_URL: ${{ vars.RENDER_SERVICE_URL }}
+        run: |
+          node --input-type=module - <<'EOF'
+          import fs from "node:fs";
+          import { buildPreviewPlan } from "./scripts/preview-plan.mjs";
+
+          const plan = buildPreviewPlan({
+            frontendChanged: process.env.FRONTEND_CHANGED === "true",
+            backendChanged: process.env.BACKEND_CHANGED === "true",
+            docsOnly: process.env.DOCS_ONLY === "true",
+            netlifyHookConfigured: process.env.NETLIFY_HOOK_CONFIGURED === "true",
+            renderHookConfigured: process.env.RENDER_HOOK_CONFIGURED === "true",
+            netlifySiteUrl: process.env.NETLIFY_SITE_URL || undefined,
+            renderServiceUrl: process.env.RENDER_SERVICE_URL || undefined,
+          });
+
+          const lines = [
+            `frontend_relevant=${plan.surfaces.frontend.relevant}`,
+            `frontend_should_trigger=${plan.surfaces.frontend.shouldTrigger}`,
+            `frontend_provider_managed=${plan.surfaces.frontend.providerManaged}`,
+            `backend_relevant=${plan.surfaces.backend.relevant}`,
+            `backend_should_trigger=${plan.surfaces.backend.shouldTrigger}`,
+            `backend_provider_managed=${plan.surfaces.backend.providerManaged}`,
+          ];
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `${lines.join("\n")}\n`);
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Preview Plan\n\n${plan.summary}\n`);
+          EOF
+
+  frontend-preview:
+    name: Frontend Preview
+    runs-on: ubuntu-latest
+    needs: plan
+    if: needs.plan.outputs.frontend_relevant == 'true'
+    steps:
+      - name: Trigger Netlify preview hook
+        if: needs.plan.outputs.frontend_should_trigger == 'true'
+        env:
+          NETLIFY_BUILD_HOOK_URL: ${{ secrets.NETLIFY_BUILD_HOOK_URL }}
+        run: curl -fsS -X POST "$NETLIFY_BUILD_HOOK_URL"
+
+      - name: Record provider-managed frontend preview
+        if: needs.plan.outputs.frontend_provider_managed == 'true'
+        run: |
+          echo "Frontend preview remains provider-managed because NETLIFY_BUILD_HOOK_URL is not configured." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Record Netlify trigger result
+        if: needs.plan.outputs.frontend_should_trigger == 'true'
+        run: |
+          echo "Frontend preview hook was triggered from GitHub Actions." >> "$GITHUB_STEP_SUMMARY"
+
+  backend-preview:
+    name: Backend Preview
+    runs-on: ubuntu-latest
+    needs: plan
+    if: needs.plan.outputs.backend_relevant == 'true'
+    steps:
+      - name: Trigger Render deploy hook
+        if: needs.plan.outputs.backend_should_trigger == 'true'
+        env:
+          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL"
+
+      - name: Record provider-managed backend preview
+        if: needs.plan.outputs.backend_provider_managed == 'true'
+        run: |
+          echo "Backend preview remains provider-managed because RENDER_DEPLOY_HOOK_URL is not configured." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Record Render trigger result
+        if: needs.plan.outputs.backend_should_trigger == 'true'
+        run: |
+          echo "Backend preview hook was triggered from GitHub Actions." >> "$GITHUB_STEP_SUMMARY"

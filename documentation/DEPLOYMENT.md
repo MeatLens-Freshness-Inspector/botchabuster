@@ -11,6 +11,7 @@ The deployment config is already committed in:
 - `render.yaml`
 
 The repository's canonical automated testing pipeline lives at `.github/workflows/ci.yml`.
+Preview-oriented CD lives in `.github/workflows/preview.yml`, and manual preview refresh lives in `.github/workflows/deploy-refresh.yml`.
 
 ## Recommended Order
 
@@ -75,6 +76,13 @@ Copy from `frontend/.env.example`:
 VITE_API_BASE_URL=https://YOUR-RENDER-SERVICE.onrender.com/api
 ```
 
+### Optional GitHub Actions Preview Hook
+
+If you want GitHub Actions to visibly trigger frontend preview refreshes in addition to Netlify's normal repository integration, add:
+
+- repository secret `NETLIFY_BUILD_HOOK_URL`
+- repository variable `NETLIFY_SITE_URL` for clearer workflow summaries
+
 ## Backend on Render
 
 ### What Render Uses
@@ -117,6 +125,13 @@ ALLOWED_ORIGINS=https://your-site.netlify.app,https://*--your-site.netlify.app
 UPLOAD_DIR=/tmp/meatlens-uploads
 ```
 
+### Optional GitHub Actions Preview Hook
+
+If you want GitHub Actions to visibly trigger backend preview or staging refreshes, add:
+
+- repository secret `RENDER_DEPLOY_HOOK_URL`
+- repository variable `RENDER_SERVICE_URL` for clearer workflow summaries
+
 Notes:
 
 - Do not force `NODE_ENV=production` on Render for this service. The build runs `tsc` and needs backend devDependencies available during `npm ci`.
@@ -131,6 +146,7 @@ If your Render plan idles services after inactivity, a simple scheduled ping wil
 
 - A GitHub Actions workflow has been added at [.github/workflows/keep-awake.yml](.github/workflows/keep-awake.yml) which pings the health endpoint every 5 minutes.
 - The main automated testing workflow lives at `.github/workflows/ci.yml` and is separate from the keep-awake job.
+- Preview signaling lives at `.github/workflows/preview.yml`, and `.github/workflows/deploy-refresh.yml` can manually re-trigger preview refreshes when the optional deploy hooks are configured.
 - To change the schedule or endpoint, edit that workflow or create a Render Scheduled Job via the Render dashboard or `render.yaml`.
 
 #### Using cron-job.org
