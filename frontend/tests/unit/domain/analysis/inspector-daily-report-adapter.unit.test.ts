@@ -1,14 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { formatReportDateTime } from "../../../../src/lib/reports/formatting";
 import { buildInspectorDailyReportModel } from "../../../../src/lib/reports/adapters/inspectorDailyReport";
 
 const sampleInspection = {
   id: "inspection-1",
   created_at: "2026-08-01T08:00:00.000Z",
+  captured_at: "2026-08-01T08:05:30.000Z",
   meat_type: "pork",
   classification: "fresh",
   confidence_score: 88,
   location: "East Market",
+  image_url: "https://example.com/unsegmented-pork.jpg",
 } as const;
 
 test("buildInspectorDailyReportModel puts the shared meat section into every organization model", () => {
@@ -24,4 +27,26 @@ test("buildInspectorDailyReportModel puts the shared meat section into every org
   assert.equal(model.kind, "inspector_daily");
   assert.ok(model.sections.some((section) => section.id === "meat-summary"));
   assert.ok(model.sections.some((section) => section.id === "meat-detail"));
+});
+
+test("buildInspectorDailyReportModel preserves formatted captured timestamps and unsegmented image urls", () => {
+  const model = buildInspectorDailyReportModel({
+    reportOrganization: "dti",
+    selectedReportDay: "2026-08-01",
+    generatedAt: "Aug 1, 2026 4:00 PM",
+    averageConfidence: 88,
+    inspections: [sampleInspection],
+  });
+
+  const detailSection = model.sections.find((section) => section.id === "meat-detail");
+
+  assert.ok(detailSection?.inspectionEvidence);
+  assert.equal(
+    detailSection?.inspectionEvidence?.[0].capturedAt,
+    formatReportDateTime("2026-08-01T08:05:30.000Z"),
+  );
+  assert.equal(
+    detailSection?.inspectionEvidence?.[0].imageUrl,
+    "https://example.com/unsegmented-pork.jpg",
+  );
 });

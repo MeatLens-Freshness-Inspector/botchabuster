@@ -11,6 +11,7 @@ import {
 import { format } from "date-fns";
 import type { Profile } from "@/integrations/api/ProfileClient";
 import { resolveReportOrganization } from "@/lib/reportOrganizations";
+import { formatReportDateTime } from "@/lib/reports/formatting";
 import { buildAdminRangeReportModel } from "@/lib/reports/adapters/adminRangeReport";
 import type { ReportDocumentModel } from "@/lib/reports/types";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
@@ -178,16 +179,6 @@ export const buildPreScanReportFields = (
         : "-",
   protocolSpoiledReason: getOptionalText(inspection.protocol_spoiled_reason),
 });
-
-export const formatReportDateTime = (
-  value: string | null | undefined,
-): string => {
-  if (!value) return "-";
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? value
-    : format(date, "yyyy-MM-dd HH:mm:ss");
-};
 
 export function buildAdminDashboardReportPdfModel(input: {
   reportOrganization: unknown;

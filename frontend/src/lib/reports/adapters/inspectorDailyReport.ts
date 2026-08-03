@@ -1,7 +1,7 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
+import { formatReportDateTime } from "@/lib/reports/formatting";
 import { getTemplateKeyForOrganization } from "@/lib/reports/pdf/assets";
 import {
-  buildSharedMeatDetailSection,
   buildSharedMeatSummarySection,
 } from "@/lib/reports/shared/meatSections";
 import type { ReportDocumentModel } from "@/lib/reports/types";
@@ -9,10 +9,12 @@ import type { ReportDocumentModel } from "@/lib/reports/types";
 type InspectorDailyInspection = {
   id: string;
   created_at: string;
+  captured_at: string | null;
   meat_type: string;
   classification: string;
   confidence_score: number;
   location: string | null;
+  image_url: string | null;
 };
 
 export interface BuildInspectorDailyReportInput {
@@ -38,23 +40,21 @@ export function buildInspectorDailyReportModel(
         totalInspections: input.inspections.length,
         averageConfidence: input.averageConfidence,
       }),
-      buildSharedMeatDetailSection({
+      {
+        id: "meat-detail",
         title: "Daily Inspection Evidence",
-        columns: [
-          "Captured",
-          "Meat",
-          "Classification",
-          "Confidence",
-          "Location",
-        ],
-        rows: input.inspections.map((inspection) => [
-          inspection.created_at,
-          inspection.meat_type,
-          inspection.classification,
-          `${inspection.confidence_score}%`,
-          inspection.location ?? "-",
-        ]),
-      }),
+        inspectionEvidence: input.inspections.map((inspection) => ({
+          id: inspection.id,
+          imageUrl: inspection.image_url,
+          capturedAt: formatReportDateTime(
+            inspection.captured_at ?? inspection.created_at,
+          ),
+          meatType: inspection.meat_type,
+          classification: inspection.classification,
+          confidenceLabel: `${inspection.confidence_score}%`,
+          location: inspection.location ?? "-",
+        })),
+      },
     ],
   };
 }

@@ -20,6 +20,16 @@ export interface ReportTable {
   rows: string[][];
 }
 
+export interface ReportInspectionEvidenceItem {
+  id: string;
+  imageUrl: string | null;
+  capturedAt: string;
+  meatType: string;
+  classification: string;
+  confidenceLabel: string;
+  location: string;
+}
+
 export interface ReportSection {
   id: string;
   title: string;
@@ -27,6 +37,8 @@ export interface ReportSection {
   metrics?: ReportMetric[];
   tables?: ReportTable[];
   detailRows?: ReportDetailRow[];
+  inspectionEvidence?: ReportInspectionEvidenceItem[];
+  evidenceLayout?: "photo-first";
 }
 
 export interface ReportDocumentModel {

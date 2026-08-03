@@ -39,6 +39,7 @@ export function buildDetailedHistoryReportPdfModel(
     inspections: input.inspections.map((inspection) => ({
       id: inspection.id,
       created_at: inspection.created_at,
+      captured_at: inspection.captured_at ?? null,
       meat_type: inspection.meat_type,
       classification: inspection.classification,
       confidence_score: inspection.confidence_score,
@@ -48,6 +49,7 @@ export function buildDetailedHistoryReportPdfModel(
           inspection.location_latitude,
           inspection.location_longitude,
         ) ?? inspection.location,
+      image_url: inspection.image_url,
     })),
   });
 }
