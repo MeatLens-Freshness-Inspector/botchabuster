@@ -205,11 +205,13 @@ export function buildAdminDashboardReportPdfModel(input: {
     summary: input.reportSummary,
     reportRows: input.reportRows.map((row) => ({
       createdAt: formatReportDateTime(row.createdAt),
+      capturedAt: row.capturedAt ? formatReportDateTime(row.capturedAt) : null,
       inspector: row.inspector,
       location: row.location,
       meatType: row.meatType,
       classification: row.classification,
       confidenceScore: row.confidenceScore,
+      imageUrl: row.imageUrl,
     })),
   });
 }
