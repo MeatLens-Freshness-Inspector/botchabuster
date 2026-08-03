@@ -2,14 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { getApiCsrfToken } from "@/integrations/api/apiRequest";
+import { API_BASE_URL } from "@/integrations/api/apiBaseUrl";
+import { applyApiRequestInit, getApiCsrfToken } from "@/integrations/api/apiRequest";
 import { MessageCircle, X, Send, Loader2, Bot, User } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const API_BASE_URL =
-  ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
-  "http://localhost:3001/api";
 const CHAT_URL = `${API_BASE_URL}/chat`;
 
 export function getChatRequestHeaders(): Record<string, string> {
@@ -51,12 +49,11 @@ export function AIChatbot() {
     const allMessages = [...messages, userMsg];
 
     try {
-      const resp = await fetch(CHAT_URL, {
+      const resp = await fetch(CHAT_URL, applyApiRequestInit({
         method: "POST",
         headers: getChatRequestHeaders(),
-        credentials: "include",
         body: JSON.stringify({ messages: allMessages.map((m) => ({ role: m.role, content: m.content })) }),
-      });
+      }));
 
       if (!resp.ok) {
         const err = await resp.json().catch(() => ({ error: "Request failed" }));

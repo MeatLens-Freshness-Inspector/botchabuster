@@ -1,10 +1,7 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
 import { createAuthHeaders } from "@/lib/authCache";
+import { API_BASE_URL } from "./apiBaseUrl";
 import { fetchWithTimeout } from "./fetchWithTimeout";
-
-const API_BASE_URL =
-  ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
-  "http://localhost:3001/api";
 
 async function readApiError(response: Response, fallback: string): Promise<string> {
   try {

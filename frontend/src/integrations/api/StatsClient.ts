@@ -1,9 +1,6 @@
 import { IS_DEMO_MODE, demoDelay, DEMO_LANDING_STATS } from "@/lib/demoMode";
+import { API_BASE_URL } from "./apiBaseUrl";
 import { fetchWithTimeout } from "./fetchWithTimeout";
-
-const API_BASE_URL =
-  ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
-  "http://localhost:3001/api";
 
 export interface LandingPageStats {
   inspectionCount: number;

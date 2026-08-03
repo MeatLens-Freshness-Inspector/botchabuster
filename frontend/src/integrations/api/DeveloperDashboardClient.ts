@@ -1,11 +1,8 @@
 import { createAuthHeaders } from "@/lib/authCache";
 import type { Inspection } from "@/types/inspection";
 import { readApiErrorMessage } from "./apiRequest";
+import { API_BASE_URL } from "./apiBaseUrl";
 import { fetchWithTimeout } from "./fetchWithTimeout";
-
-const API_BASE_URL =
-  ((import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL) ||
-  "http://localhost:3001/api";
 const LONG_RUNNING_REQUEST_TIMEOUT_MS = 120_000;
 
 export interface DeveloperOverviewMetricPoint {
