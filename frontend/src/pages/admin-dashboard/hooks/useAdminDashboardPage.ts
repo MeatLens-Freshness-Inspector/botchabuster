@@ -69,6 +69,8 @@ export function useAdminDashboardPage() {
   const [pendingDeleteCodeId, setPendingDeleteCodeId] = useState<string | null>(null);
   const [pendingDeleteMarketId, setPendingDeleteMarketId] = useState<string | null>(null);
   const [inspectorFilter, setInspectorFilter] = useState("");
+  const [inspectionPage, setInspectionPage] = useState(1);
+  const inspectionPageSize = 10;
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
   const [editUserForm, setEditUserForm] = useState<ManagedUserForm>({
@@ -104,6 +106,10 @@ export function useAdminDashboardPage() {
   useEffect(() => {
     setActiveTab((currentTab) => coerceAdminDashboardTab(currentTab, isDeveloper));
   }, [isDeveloper]);
+
+  useEffect(() => {
+    setInspectionPage(1);
+  }, [inspectorFilter]);
 
   const resetUserForm = () => {
     setUserForm({
@@ -498,6 +504,17 @@ export function useAdminDashboardPage() {
       return label.includes(query);
     });
   }, [inspections, inspectorFilter, profileById]);
+
+  const totalInspectionPages = Math.max(
+    1,
+    Math.ceil(filteredInspections.length / inspectionPageSize)
+  );
+
+  const paginatedInspections = useMemo(() => {
+    const safePage = Math.min(Math.max(1, inspectionPage), totalInspectionPages);
+    const start = (safePage - 1) * inspectionPageSize;
+    return filteredInspections.slice(start, start + inspectionPageSize);
+  }, [filteredInspections, inspectionPage, inspectionPageSize, totalInspectionPages]);
 
   const filteredProfiles = useMemo(() => {
     const query = userSearchQuery.trim().toLowerCase();
@@ -1072,6 +1089,11 @@ export function useAdminDashboardPage() {
     confidenceTrendData,
     freshnessMixData,
     filteredInspections,
+    paginatedInspections,
+    inspectionPage,
+    inspectionPageSize,
+    totalInspectionPages,
+    setInspectionPage,
     reportDateRangeInvalid,
     reportClassCounts,
     reportRows,
