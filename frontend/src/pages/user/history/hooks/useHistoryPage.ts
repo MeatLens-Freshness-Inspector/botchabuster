@@ -19,17 +19,16 @@ export function useHistoryPage() {
   const [activeFilter, setActiveFilter] = useState<FilterOption>("all");
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedReportDay, setSelectedReportDay] = useState(() =>
-    format(new Date(), "yyyy-MM-dd"),
-  );
+  const [selectedReportDay, setSelectedReportDay] = useState("");
   const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
 
   const totalInspections = inspections?.length ?? 0;
-  const reportDayDate = useMemo(
-    () => new Date(`${selectedReportDay}T00:00:00`),
-    [selectedReportDay],
-  );
-  const hasValidReportDay = !Number.isNaN(reportDayDate.getTime());
+  const reportDayDate = useMemo(() => {
+    if (!selectedReportDay) return null;
+    const parsed = new Date(`${selectedReportDay}T00:00:00`);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }, [selectedReportDay]);
+  const hasValidReportDay = reportDayDate !== null;
 
   const selectedDayRange = useMemo(() => {
     if (!hasValidReportDay) return null;

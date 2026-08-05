@@ -67,7 +67,7 @@ export function InspectionTimelineSection({
           />
         </div>
 
-        <div className="mt-2 grid gap-2 rounded-xl border border-border/70 bg-background/70 p-2 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
+        <div className="mt-2 grid gap-2 rounded-xl border border-border/70 bg-background/70 p-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <div className="space-y-1">
             <label
               htmlFor="inspection-day"
@@ -75,13 +75,26 @@ export function InspectionTimelineSection({
             >
               Inspection Day
             </label>
-            <Input
-              id="inspection-day"
-              type="date"
-              value={selectedReportDay}
-              onChange={(event) => onReportDayChange(event.target.value)}
-              className="h-9 rounded-lg bg-background/80"
-            />
+            <div className="flex gap-2">
+              <Input
+                id="inspection-day"
+                type="date"
+                value={selectedReportDay}
+                onChange={(event) => onReportDayChange(event.target.value)}
+                className="h-9 rounded-lg bg-background/80"
+              />
+              {hasValidReportDay && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 rounded-lg px-3 text-xs"
+                  onClick={() => onReportDayChange("")}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
           </div>
           <Button
             type="button"
@@ -96,7 +109,7 @@ export function InspectionTimelineSection({
         <p className="mt-2 text-[11px] text-muted-foreground">
           {hasValidReportDay
             ? `${selectedDayCount} inspection${selectedDayCount !== 1 ? "s" : ""} found for ${formattedReportDayLabel}`
-            : "Pick a valid date to generate detailed day reports"}
+            : "Pick a date to filter by day or generate detailed PDF report"}
         </p>
 
         <div className="mt-2 grid grid-cols-2 gap-2 min-[420px]:grid-cols-3 sm:grid-cols-5">

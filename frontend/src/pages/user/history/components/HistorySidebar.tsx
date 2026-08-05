@@ -9,6 +9,7 @@ import {
 
 type HistorySidebarProps = {
   classificationCounts: Record<FreshnessClassification, number>;
+  hasValidReportDay?: boolean;
   monthlyCounts: HistoryMonthlyCount[];
   selectedDayAverageConfidence: number;
   selectedDayCount: number;
@@ -17,6 +18,7 @@ type HistorySidebarProps = {
 
 export function HistorySidebar({
   classificationCounts,
+  hasValidReportDay = false,
   monthlyCounts,
   selectedDayAverageConfidence,
   selectedDayCount,
@@ -27,7 +29,7 @@ export function HistorySidebar({
       <Card className="rounded-3xl border-border/70 bg-card/95">
         <CardHeader>
           <CardTitle className="text-sm font-display uppercase tracking-wider">
-            Selected Day Summary
+            {hasValidReportDay ? "Selected Day Summary" : "Day Filter Summary"}
           </CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 sm:grid-cols-2">
@@ -35,14 +37,16 @@ export function HistorySidebar({
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
               Day Inspections
             </p>
-            <p className="mt-1 font-display text-2xl font-semibold">{selectedDayCount}</p>
+            <p className="mt-1 font-display text-2xl font-semibold">
+              {hasValidReportDay ? selectedDayCount : "-"}
+            </p>
           </div>
           <div className="rounded-xl border border-border/70 bg-background/55 p-3">
             <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
               Day Avg Confidence
             </p>
             <p className="mt-1 font-display text-2xl font-semibold">
-              {selectedDayAverageConfidence}%
+              {hasValidReportDay ? `${selectedDayAverageConfidence}%` : "-"}
             </p>
           </div>
         </CardContent>

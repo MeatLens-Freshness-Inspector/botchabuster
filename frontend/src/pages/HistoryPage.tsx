@@ -68,6 +68,7 @@ const HistoryPage = () => {
 
           <HistorySidebar
             classificationCounts={classificationCounts}
+            hasValidReportDay={hasValidReportDay}
             monthlyCounts={monthlyCounts}
             selectedDayAverageConfidence={selectedDayAverageConfidence}
             selectedDayCount={selectedDayInspections.length}
