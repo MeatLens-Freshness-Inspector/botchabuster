@@ -26,7 +26,14 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,json,bin}"],
         // SPA fallback: serve the cached shell for any navigation when offline
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
+        // Only apply the HTML fallback to real SPA navigations — never to
+        // sub-resource fetches like dynamically imported JS chunks
+        // (e.g. pdfmake-*.js, vfs_fonts-*.js).  Without the allowlist the
+        // service worker would intercept a stale/missing chunk URL and hand
+        // back the HTML shell, which the browser then rejects with
+        // "Expected a JavaScript module script but got text/html".
+        navigateFallbackAllowlist: [/^\/(?!assets\/)[^.]*$/],
+        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/assets\//],
         runtimeCaching: [
           // Google Fonts stylesheet — cache-first, 1 year
           {
