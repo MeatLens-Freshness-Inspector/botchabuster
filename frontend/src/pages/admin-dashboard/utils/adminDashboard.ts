@@ -150,6 +150,38 @@ export const getOptionalText = (
 const formatYesNo = (value: boolean | null | undefined): string =>
   value == null ? "-" : value ? "Yes" : "No";
 
+export const resolveRegulatoryComplianceStatus = (
+  inspection: Pick<
+    Inspection,
+    | "regulatory_compliance"
+    | "storage_correct"
+    | "light_color_correct"
+    | "area_clean"
+  >,
+): boolean | null => {
+  if (inspection.regulatory_compliance !== undefined && inspection.regulatory_compliance !== null) {
+    return inspection.regulatory_compliance;
+  }
+  const hasPreScan =
+    inspection.storage_correct != null ||
+    inspection.light_color_correct != null ||
+    inspection.area_clean != null;
+  if (!hasPreScan) return null;
+  return (
+    inspection.storage_correct === true &&
+    inspection.light_color_correct === true &&
+    inspection.area_clean === true
+  );
+};
+
+export const formatRegulatoryComplianceLabel = (
+  compliance: boolean | null | undefined,
+): string => {
+  if (compliance === true) return "Compliant";
+  if (compliance === false) return "Non-Compliant";
+  return "Not Recorded";
+};
+
 export const buildPreScanReportFields = (
   inspection: Pick<
     Inspection,
@@ -162,6 +194,7 @@ export const buildPreScanReportFields = (
     | "area_clean"
     | "inspection_decision_source"
     | "protocol_spoiled_reason"
+    | "regulatory_compliance"
   >,
 ) => ({
   stallNumber: getOptionalText(inspection.stall_number),
@@ -171,6 +204,9 @@ export const buildPreScanReportFields = (
   lightColorCorrect: formatYesNo(inspection.light_color_correct),
   lightColorObserved: getOptionalText(inspection.light_color_observed),
   areaClean: formatYesNo(inspection.area_clean),
+  regulatoryCompliance: formatRegulatoryComplianceLabel(
+    resolveRegulatoryComplianceStatus(inspection),
+  ),
   decisionSource:
     inspection.inspection_decision_source === "protocol_pre_scan"
       ? "Pre-scan protocol"

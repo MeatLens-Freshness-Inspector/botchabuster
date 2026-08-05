@@ -20,6 +20,7 @@ import {
   ImageOff,
   Beef,
   Clock,
+  ShieldCheck,
 } from "lucide-react";
 
 interface InspectionDetailSheetProps {
@@ -67,6 +68,19 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
     inspection.light_color_observed ||
     inspection.area_clean != null,
   );
+  const resolvedRegulatoryCompliance =
+    inspection.regulatory_compliance ??
+    (hasPreScanMetadata
+      ? inspection.storage_correct === true &&
+        inspection.light_color_correct === true &&
+        inspection.area_clean === true
+      : null);
+  const regulatoryComplianceLabel =
+    resolvedRegulatoryCompliance === true
+      ? "Compliant"
+      : resolvedRegulatoryCompliance === false
+        ? "Non-Compliant"
+        : "Not Recorded";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -192,6 +206,21 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
                 <p className="mt-1 break-words text-xs font-semibold leading-snug">{locationLabel}</p>
               </div>
             )}
+            <div className="rounded-xl border border-border/70 bg-card p-3">
+              <p className="flex items-center gap-1 text-[10px] uppercase tracking-widest text-muted-foreground">
+                <ShieldCheck className="h-3 w-3" /> Regulatory Compliance
+              </p>
+              <p className={cn(
+                "mt-1 text-xs font-semibold",
+                resolvedRegulatoryCompliance === true
+                  ? "text-[hsl(var(--fresh))]"
+                  : resolvedRegulatoryCompliance === false
+                    ? "text-[hsl(var(--warning))]"
+                    : "text-muted-foreground"
+              )}>
+                {regulatoryComplianceLabel}
+              </p>
+            </div>
           </div>
 
           {hasPreScanMetadata && (
@@ -203,6 +232,19 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
                 {inspection.protocol_spoiled_reason && (
                   <p><strong>Protocol Reason:</strong> {inspection.protocol_spoiled_reason}</p>
                 )}
+                <p>
+                  <strong>Regulatory Compliance:</strong>{" "}
+                  <span className={cn(
+                    "font-semibold",
+                    resolvedRegulatoryCompliance === true
+                      ? "text-[hsl(var(--fresh))]"
+                      : resolvedRegulatoryCompliance === false
+                        ? "text-[hsl(var(--warning))]"
+                        : "text-muted-foreground"
+                  )}>
+                    {regulatoryComplianceLabel}
+                  </span>
+                </p>
                 <p><strong>Certificate Proof:</strong> {inspection.meat_inspection_certificate_proof ?? "-"}</p>
                 <p><strong>Expiry Date:</strong> {inspection.meat_expiry_date ?? "-"}</p>
                 <p><strong>Storage Correct:</strong> {formatYesNo(inspection.storage_correct)}</p>

@@ -15,6 +15,7 @@ test("buildPreScanReportFields converts nullable protocol fields into export-fri
     | "area_clean"
     | "inspection_decision_source"
     | "protocol_spoiled_reason"
+    | "regulatory_compliance"
   > = {
     stall_number: "12-A",
     meat_inspection_certificate_proof: "CERT-77",
@@ -25,6 +26,7 @@ test("buildPreScanReportFields converts nullable protocol fields into export-fri
     area_clean: true,
     inspection_decision_source: "protocol_pre_scan",
     protocol_spoiled_reason: "failed_pre_scan_safety_protocol",
+    regulatory_compliance: false,
   };
 
   assert.deepEqual(
@@ -37,6 +39,7 @@ test("buildPreScanReportFields converts nullable protocol fields into export-fri
       lightColorCorrect: "No",
       lightColorObserved: "green",
       areaClean: "Yes",
+      regulatoryCompliance: "Non-Compliant",
       decisionSource: "Pre-scan protocol",
       protocolSpoiledReason: "failed_pre_scan_safety_protocol",
     },
