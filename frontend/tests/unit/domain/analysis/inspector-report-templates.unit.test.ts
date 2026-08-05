@@ -73,3 +73,116 @@ test("gcccs inspector template converts normalized evidence into a compact techn
   assert.equal(detailSection?.inspectionEvidence, undefined);
   assert.equal(detailSection?.tables?.[0].rows[0][0], "2026-08-01 08:05:30");
 });
+
+// commit 11
+test("dti inspector template renames report-graphs to Operational Inspection Graphs", () => {
+  const modelWithGraphs: ReportDocumentModel = {
+    ...sampleInspectorModel,
+    sections: [
+      ...sampleInspectorModel.sections,
+      {
+        id: "report-graphs",
+        title: "Report Graphs",
+        charts: [
+          {
+            id: "classification-breakdown",
+            title: "Classification Breakdown",
+            kind: "bar",
+            emptyState: "No data",
+            points: [{ label: "fresh", value: 1 }],
+          },
+        ],
+      },
+    ],
+  };
+
+  const sections = getOrganizationReportTemplate("dti").buildSections(
+    modelWithGraphs,
+  );
+  const graphSection = sections.find((s) => s.id === "report-graphs");
+
+  assert.ok(graphSection, "report-graphs section must be present in dti inspector output");
+  assert.equal(
+    graphSection.title,
+    "Operational Inspection Graphs",
+    "dti inspector should rename report-graphs to 'Operational Inspection Graphs'",
+  );
+  assert.ok(graphSection.charts, "charts must be preserved");
+});
+
+// commit 12
+test("city vet inspector template renames report-graphs to Veterinary Inspection Graphs", () => {
+  const cityVetModel: ReportDocumentModel = {
+    ...sampleInspectorModel,
+    organization: "city_veterinary_office_olongapo",
+    templateKey: "city_vet",
+    sections: [
+      ...sampleInspectorModel.sections,
+      {
+        id: "report-graphs",
+        title: "Report Graphs",
+        charts: [
+          {
+            id: "meat-type-breakdown",
+            title: "Meat Type Breakdown",
+            kind: "bar",
+            emptyState: "No data",
+            points: [{ label: "pork", value: 2 }],
+          },
+        ],
+      },
+    ],
+  };
+
+  const sections = getOrganizationReportTemplate("city_vet").buildSections(
+    cityVetModel,
+  );
+  const graphSection = sections.find((s) => s.id === "report-graphs");
+
+  assert.ok(graphSection, "report-graphs section must be present in city_vet inspector output");
+  assert.equal(
+    graphSection.title,
+    "Veterinary Inspection Graphs",
+    "city_vet inspector should rename report-graphs to 'Veterinary Inspection Graphs'",
+  );
+  assert.ok(graphSection.charts, "charts must be preserved");
+});
+
+// commit 13
+test("gcccs inspector template renames report-graphs to Technical Inspection Graphs", () => {
+  const gcccsModel: ReportDocumentModel = {
+    ...sampleInspectorModel,
+    organization: "gordon_college_ccs",
+    templateKey: "gcccs",
+    sections: [
+      ...sampleInspectorModel.sections,
+      {
+        id: "report-graphs",
+        title: "Report Graphs",
+        charts: [
+          {
+            id: "confidence-by-hour",
+            title: "Confidence by Hour",
+            kind: "line",
+            emptyState: "No data",
+            points: [{ label: "08:00", value: 80 }],
+          },
+        ],
+      },
+    ],
+  };
+
+  const sections = getOrganizationReportTemplate("gcccs").buildSections(
+    gcccsModel,
+  );
+  const graphSection = sections.find((s) => s.id === "report-graphs");
+
+  assert.ok(graphSection, "report-graphs section must be present in gcccs inspector output");
+  assert.equal(
+    graphSection.title,
+    "Technical Inspection Graphs",
+    "gcccs inspector should rename report-graphs to 'Technical Inspection Graphs'",
+  );
+  assert.ok(graphSection.charts, "charts must be preserved");
+});
+
