@@ -199,6 +199,7 @@ export class InspectionController {
               area_clean: inspection.area_clean,
               inspection_decision_source: inspection.inspection_decision_source,
               protocol_spoiled_reason: inspection.protocol_spoiled_reason,
+              regulatory_compliance: inspection.regulatory_compliance,
               classification: inspection.classification,
               confidence_score: inspection.confidence_score,
             },
