@@ -70,6 +70,15 @@ export function useAdminDashboardPage() {
   const [pendingDeleteMarketId, setPendingDeleteMarketId] = useState<string | null>(null);
   const [inspectorFilter, setInspectorFilter] = useState("");
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<Profile | null>(null);
+  const [editUserForm, setEditUserForm] = useState<ManagedUserForm>({
+    full_name: "",
+    email: "",
+    password: "",
+    inspector_code: "",
+    report_organization: "",
+    location: "",
+  });
   const [isSavingUser, setIsSavingUser] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [userPage, setUserPage] = useState(1);
@@ -105,18 +114,31 @@ export function useAdminDashboardPage() {
       report_organization: "",
       location: "",
     });
-    setEditingUserId(null);
   };
 
   const handleStartEditUser = (profile: Profile) => {
     setEditingUserId(profile.id);
-    setUserForm({
+    setEditingUser(profile);
+    setEditUserForm({
       full_name: profile.full_name || "",
       email: profile.email || "",
       password: "",
       inspector_code: profile.inspector_code || "",
       report_organization: profile.report_organization || "",
       location: profile.location || "",
+    });
+  };
+
+  const closeEditUserModal = () => {
+    setEditingUserId(null);
+    setEditingUser(null);
+    setEditUserForm({
+      full_name: "",
+      email: "",
+      password: "",
+      inspector_code: "",
+      report_organization: "",
+      location: "",
     });
   };
 
@@ -175,12 +197,51 @@ export function useAdminDashboardPage() {
       return;
     }
 
-    if (!editingUserId && password.length < 6) {
+    if (password.length < 6) {
       toast.error("Password must be at least 6 characters");
       return;
     }
 
-    if (editingUserId && password.length > 0 && password.length < 6) {
+    setIsSavingUser(true);
+
+    try {
+      const created = await profileClient.createUserByAdmin({
+        email,
+        password,
+        full_name: userForm.full_name.trim() || null,
+        inspector_code: userForm.inspector_code.trim() || null,
+        report_organization: reportOrganization,
+        location: userForm.location.trim() || null,
+      });
+
+      setProfiles((prev) => [created, ...prev]);
+      setStats((prev) => (prev ? { ...prev, total_users: prev.total_users + 1 } : prev));
+      setUserPage(1);
+      toast.success("User created");
+      resetUserForm();
+    } catch (err) {
+      console.error("Failed to create user:", err);
+      const message = err instanceof Error && err.message ? err.message : "Failed to create user";
+      toast.error(message);
+    } finally {
+      setIsSavingUser(false);
+    }
+  };
+
+  const handleSaveEditUser = async () => {
+    if (!editingUserId) return;
+    const email = editUserForm.email.trim();
+    const password = editUserForm.password.trim();
+    const reportOrganization = isReportOrganization(editUserForm.report_organization)
+      ? editUserForm.report_organization
+      : null;
+
+    if (!email) {
+      toast.error("Email is required");
+      return;
+    }
+
+    if (password.length > 0 && password.length < 6) {
       toast.error("New password must be at least 6 characters");
       return;
     }
@@ -188,37 +249,21 @@ export function useAdminDashboardPage() {
     setIsSavingUser(true);
 
     try {
-      if (editingUserId) {
-        const updated = await profileClient.updateUserByAdmin(editingUserId, {
-          email,
-          full_name: userForm.full_name.trim() || null,
-          inspector_code: userForm.inspector_code.trim() || null,
-          report_organization: reportOrganization,
-          location: userForm.location.trim() || null,
-          ...(password ? { password } : {}),
-        });
+      const updated = await profileClient.updateUserByAdmin(editingUserId, {
+        email,
+        full_name: editUserForm.full_name.trim() || null,
+        inspector_code: editUserForm.inspector_code.trim() || null,
+        report_organization: reportOrganization,
+        location: editUserForm.location.trim() || null,
+        ...(password ? { password } : {}),
+      });
 
-        setProfiles((prev) => prev.map((p) => (p.id === editingUserId ? updated : p)));
-        toast.success("User updated");
-      } else {
-        const created = await profileClient.createUserByAdmin({
-          email,
-          password,
-          full_name: userForm.full_name.trim() || null,
-          inspector_code: userForm.inspector_code.trim() || null,
-          report_organization: reportOrganization,
-          location: userForm.location.trim() || null,
-        });
-
-        setProfiles((prev) => [created, ...prev]);
-        setStats((prev) => prev ? { ...prev, total_users: prev.total_users + 1 } : prev);
-        toast.success("User created");
-      }
-
-      resetUserForm();
+      setProfiles((prev) => prev.map((p) => (p.id === editingUserId ? updated : p)));
+      toast.success("User credentials updated");
+      closeEditUserModal();
     } catch (err) {
-      console.error("Failed to save user:", err);
-      const message = err instanceof Error && err.message ? err.message : "Failed to save user";
+      console.error("Failed to update user:", err);
+      const message = err instanceof Error && err.message ? err.message : "Failed to update user";
       toast.error(message);
     } finally {
       setIsSavingUser(false);
@@ -242,8 +287,8 @@ export function useAdminDashboardPage() {
     try {
       await profileClient.deleteUserByAdmin(profileId);
       setProfiles((prev) => prev.filter((p) => p.id !== profileId));
-      setStats((prev) => prev ? { ...prev, total_users: Math.max(0, prev.total_users - 1) } : prev);
-      if (editingUserId === profileId) resetUserForm();
+      setStats((prev) => (prev ? { ...prev, total_users: Math.max(0, prev.total_users - 1) } : prev));
+      if (editingUserId === profileId) closeEditUserModal();
       toast.success("User deleted");
     } catch (err) {
       console.error("Failed to delete user:", err);
@@ -1008,6 +1053,8 @@ export function useAdminDashboardPage() {
     pendingDeleteMarketId,
     inspectorFilter,
     editingUserId,
+    editingUser,
+    editUserForm,
     isSavingUser,
     auditLogs,
     auditLogPage,
@@ -1063,6 +1110,9 @@ export function useAdminDashboardPage() {
     setReportEndDate,
     setUserForm,
     resetUserForm,
+    setEditUserForm,
+    closeEditUserModal,
+    handleSaveEditUser,
     loadData,
     loadAuditLogs,
     handleRefresh,
