@@ -27,6 +27,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -47,6 +55,8 @@ const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
     user,
     userForm,
     editingUserId,
+    editingUser,
+    editUserForm,
     isSavingUser,
     profiles,
     userSearchQuery,
@@ -59,8 +69,10 @@ const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
     setUserPage,
     setUserPageSize,
     setUserForm,
-    resetUserForm,
+    setEditUserForm,
     handleStartEditUser,
+    closeEditUserModal,
+    handleSaveEditUser,
     handleSubmitUserForm,
     handleDeleteUser,
   } = dashboard;
@@ -71,12 +83,12 @@ const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
 
   return (
     <div className="grid min-w-0 gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-      {/* Left Card: Add/Edit User */}
+      {/* Left Card: Add User */}
       <Card className="min-w-0 rounded-3xl border-border/70 bg-card/95">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-display uppercase tracking-wider">
             <UserPlus className="h-4 w-4" />
-            {editingUserId ? "Edit User" : "Add User"}
+            Add User
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -111,7 +123,7 @@ const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
 
           <div className="space-y-1">
             <Label className="text-xs uppercase tracking-widest text-muted-foreground">
-              {editingUserId ? "New Password (Optional)" : "Password"}
+              Password
             </Label>
             <Input
               type="password"
@@ -119,11 +131,7 @@ const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
               onChange={(event) =>
                 setUserForm((prev) => ({ ...prev, password: event.target.value }))
               }
-              placeholder={
-                editingUserId
-                  ? "Leave blank to keep current password"
-                  : "At least 6 characters"
-              }
+              placeholder="At least 6 characters"
               className="h-10 rounded-xl"
             />
           </div>
@@ -197,24 +205,11 @@ const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
             >
               {isSavingUser ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
-              ) : editingUserId ? (
-                <Pencil className="h-4 w-4" />
               ) : (
                 <Plus className="h-4 w-4" />
               )}
-              {editingUserId ? "Save Changes" : "Create User"}
+              Create User
             </Button>
-            {editingUserId ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={resetUserForm}
-                className="h-10 rounded-xl"
-                disabled={isSavingUser}
-              >
-                Cancel Edit
-              </Button>
-            ) : null}
           </div>
         </CardContent>
       </Card>
@@ -472,6 +467,173 @@ const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
           ) : null}
         </CardContent>
       </Card>
+
+      {/* Edit User Modal Dialog */}
+      <Dialog
+        open={Boolean(editingUserId)}
+        onOpenChange={(open) => {
+          if (!open) closeEditUserModal();
+        }}
+      >
+        <DialogContent className="max-w-lg rounded-3xl border-border/70 bg-card/95 p-6 shadow-xl backdrop-blur-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-display text-base uppercase tracking-wider text-foreground">
+              <Pencil className="h-4 w-4 text-primary" />
+              Edit User Credentials
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Update details or assign a new password for{" "}
+              <span className="font-semibold text-foreground">
+                {editingUser?.full_name || editingUser?.email || "selected user"}
+              </span>
+              .
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+                Full Name
+              </Label>
+              <Input
+                value={editUserForm.full_name}
+                onChange={(event) =>
+                  setEditUserForm((prev) => ({
+                    ...prev,
+                    full_name: event.target.value,
+                  }))
+                }
+                placeholder="Juan dela Cruz"
+                className="h-10 rounded-xl"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+                Email
+              </Label>
+              <Input
+                type="email"
+                value={editUserForm.email}
+                onChange={(event) =>
+                  setEditUserForm((prev) => ({
+                    ...prev,
+                    email: event.target.value,
+                  }))
+                }
+                placeholder="inspector@example.com"
+                className="h-10 rounded-xl"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+                New Password (Optional)
+              </Label>
+              <Input
+                type="password"
+                value={editUserForm.password}
+                onChange={(event) =>
+                  setEditUserForm((prev) => ({
+                    ...prev,
+                    password: event.target.value,
+                  }))
+                }
+                placeholder="Leave blank to keep current password"
+                className="h-10 rounded-xl"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+                Inspector Code
+              </Label>
+              <Input
+                value={editUserForm.inspector_code}
+                onChange={(event) =>
+                  setEditUserForm((prev) => ({
+                    ...prev,
+                    inspector_code: event.target.value,
+                  }))
+                }
+                placeholder="INSPECTOR-2026"
+                className="h-10 rounded-xl font-display tracking-wider"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+                Report Header Organization
+              </Label>
+              <Select
+                value={editUserForm.report_organization || undefined}
+                onValueChange={(value) =>
+                  setEditUserForm((prev) => ({
+                    ...prev,
+                    report_organization: value as ReportOrganization,
+                  }))
+                }
+              >
+                <SelectTrigger
+                  aria-label="Report header organization"
+                  className="h-10 rounded-xl bg-background/80"
+                >
+                  <SelectValue placeholder="Select report header organization" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPORT_ORGANIZATION_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+                Location
+              </Label>
+              <Input
+                value={editUserForm.location}
+                onChange={(event) =>
+                  setEditUserForm((prev) => ({
+                    ...prev,
+                    location: event.target.value,
+                  }))
+                }
+                placeholder="Quezon City"
+                className="h-10 rounded-xl"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/50">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={closeEditUserModal}
+              className="h-9 rounded-xl text-xs"
+              disabled={isSavingUser}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => void handleSaveEditUser()}
+              className="h-9 rounded-xl text-xs gap-1.5"
+              disabled={isSavingUser}
+            >
+              {isSavingUser ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Pencil className="h-3.5 w-3.5" />
+              )}
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

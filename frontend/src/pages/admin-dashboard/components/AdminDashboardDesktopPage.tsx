@@ -59,7 +59,7 @@ export default function AdminDashboardDesktopPage() {
   const ActiveTabIcon = activeTabConfig.icon;
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))]">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] pb-16">
       <div className="flex flex-1 overflow-hidden">
         <aside className="w-64 flex-shrink-0 border-r border-border/70 bg-card/95">
           <div className="flex h-16 items-center border-b border-border/70 px-4">
@@ -107,7 +107,7 @@ export default function AdminDashboardDesktopPage() {
             </div>
           </header>
 
-          <main className="flex-1 overflow-auto p-6 pb-24">
+          <main className="flex-1 overflow-auto p-6 pb-20">
             <div className="mx-auto w-full max-w-7xl min-w-0 space-y-6">
               <AdminDashboardSummary dashboard={dashboard} />
 
