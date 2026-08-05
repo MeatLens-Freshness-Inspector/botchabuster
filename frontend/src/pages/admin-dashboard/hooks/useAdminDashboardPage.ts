@@ -10,7 +10,10 @@ import { marketLocationClient, type MarketLocation } from "@/integrations/api/Ma
 import { profileClient, type Profile } from "@/integrations/api/ProfileClient";
 import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
 import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";
-import { isReportOrganization } from "@/lib/reportOrganizations";
+import {
+  getReportOrganizationLabel,
+  isReportOrganization,
+} from "@/lib/reportOrganizations";
 import { formatReportDateTime } from "@/lib/reports/formatting";
 import { composeReportPdf } from "@/lib/reports/pdf/composeReportPdf";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
@@ -68,6 +71,9 @@ export function useAdminDashboardPage() {
   const [inspectorFilter, setInspectorFilter] = useState("");
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [isSavingUser, setIsSavingUser] = useState(false);
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [userPage, setUserPage] = useState(1);
+  const [userPageSize, setUserPageSize] = useState(5);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [auditLogPage, setAuditLogPage] = useState(1);
   const [logsLoading, setLogsLoading] = useState(false);
@@ -447,6 +453,35 @@ export function useAdminDashboardPage() {
       return label.includes(query);
     });
   }, [inspections, inspectorFilter, profileById]);
+
+  const filteredProfiles = useMemo(() => {
+    const query = userSearchQuery.trim().toLowerCase();
+    if (!query) return profiles;
+    return profiles.filter((p) => {
+      const fullName = (p.full_name || "").toLowerCase();
+      const email = (p.email || "").toLowerCase();
+      const code = (p.inspector_code || "").toLowerCase();
+      const location = (p.location || "").toLowerCase();
+      const org = p.report_organization
+        ? getReportOrganizationLabel(p.report_organization).toLowerCase()
+        : "";
+      return (
+        fullName.includes(query) ||
+        email.includes(query) ||
+        code.includes(query) ||
+        location.includes(query) ||
+        org.includes(query)
+      );
+    });
+  }, [profiles, userSearchQuery]);
+
+  const totalUserPages = Math.max(1, Math.ceil(filteredProfiles.length / userPageSize));
+
+  const paginatedProfiles = useMemo(() => {
+    const safePage = Math.min(Math.max(1, userPage), totalUserPages);
+    const start = (safePage - 1) * userPageSize;
+    return filteredProfiles.slice(start, start + userPageSize);
+  }, [filteredProfiles, userPage, userPageSize, totalUserPages]);
 
   const reportDateRangeInvalid = reportStartDate > reportEndDate;
 
@@ -1002,8 +1037,17 @@ export function useAdminDashboardPage() {
     avgConfidence,
     spoiledRate,
     recentTrend,
+    userSearchQuery,
+    userPage,
+    userPageSize,
+    filteredProfiles,
+    paginatedProfiles,
+    totalUserPages,
     paginatedAuditLogs,
     totalAuditLogPages,
+    setUserSearchQuery,
+    setUserPage,
+    setUserPageSize,
     setActiveTab,
     setNewCode,
     setNewCodeDesc,

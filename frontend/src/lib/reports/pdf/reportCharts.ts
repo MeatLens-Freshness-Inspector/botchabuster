@@ -119,13 +119,16 @@ function buildLineChartSvg(
     .join(" ");
 
   const pointMarkers = plottedPoints
-    .map((point) =>
-      [
-        `<circle cx="${round(point.x)}" cy="${round(point.y)}" r="4" fill="${frame.sectionColor}" />`,
-        `<text x="${round(point.x)}" y="${round(point.y - 10)}" font-size="10" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(String(point.value))}</text>`,
-        `<text x="${round(point.x)}" y="${round(CHART_MARGIN.top + plotHeight + 16)}" font-size="9" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(truncateLabel(point.label))}</text>`,
-      ].join(""),
-    )
+    .map((point) => {
+      const labelX = round(point.x);
+      const labelY = round(CHART_MARGIN.top + plotHeight + 10);
+
+      return [
+        `<circle cx="${labelX}" cy="${round(point.y)}" r="4" fill="${frame.sectionColor}" />`,
+        `<text x="${labelX}" y="${round(point.y - 10)}" font-size="10" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(String(point.value))}</text>`,
+        `<text x="${labelX}" y="${labelY}" font-size="8.5" text-anchor="end" transform="rotate(-90 ${labelX} ${labelY})" fill="${frame.bodyColor}">${escapeXml(truncateLabel(point.label))}</text>`,
+      ].join("");
+    })
     .join("");
 
   return wrapSvg(

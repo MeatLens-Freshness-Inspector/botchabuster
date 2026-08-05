@@ -144,7 +144,7 @@ const OverviewTabContent = ({ dashboard }: OverviewTabContentProps) => {
                 <ChartTooltip content={<ChartTooltipContent />} />
               </PieChart>
             </ChartContainer>
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-5">
               {(
                 ["fresh", "not fresh", "acceptable", "warning", "spoiled"] as FreshnessClassification[]
               ).map((classification) => {
@@ -155,17 +155,26 @@ const OverviewTabContent = ({ dashboard }: OverviewTabContentProps) => {
                 return (
                   <div
                     key={classification}
-                    className="rounded-2xl border border-border/70 bg-background/50 p-3"
+                    className="group relative flex min-w-0 flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-background/50 p-2.5 transition-all hover:border-border hover:bg-background/80 sm:p-3"
+                    title={classification}
                   >
-                    <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                      {classification}
-                    </p>
-                    <p className="mt-1 font-display text-xl font-semibold">
-                      {count}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {percentage.toFixed(0)}%
-                    </p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span
+                        className="h-2 w-2 rounded-full shrink-0 shadow-sm"
+                        style={{ backgroundColor: PIE_COLORS[classification] }}
+                      />
+                      <span className="truncate text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {classification}
+                      </span>
+                    </div>
+                    <div className="mt-2 flex items-baseline justify-between gap-1">
+                      <span className="font-display text-lg font-bold tracking-tight text-foreground sm:text-xl">
+                        {count}
+                      </span>
+                      <span className="text-[11px] font-medium text-muted-foreground">
+                        {percentage.toFixed(0)}%
+                      </span>
+                    </div>
                   </div>
                 );
               })}
@@ -194,7 +203,11 @@ const OverviewTabContent = ({ dashboard }: OverviewTabContentProps) => {
             return (
               <div key={classification}>
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="font-display text-xs uppercase tracking-wider">
+                  <span className="flex items-center gap-1.5 font-display text-xs uppercase tracking-wider">
+                    <span
+                      className="h-2 w-2 rounded-full shrink-0"
+                      style={{ backgroundColor: PIE_COLORS[classification] }}
+                    />
                     {classification}
                   </span>
                   <span className="font-display text-xs text-muted-foreground">
@@ -203,8 +216,11 @@ const OverviewTabContent = ({ dashboard }: OverviewTabContentProps) => {
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
                   <div
-                    className={`h-full rounded-full transition-all ${CLASS_COLORS[classification]}`}
-                    style={{ width: `${percentage}%` }}
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${percentage}%`,
+                      backgroundColor: PIE_COLORS[classification],
+                    }}
                   />
                 </div>
               </div>
@@ -228,12 +244,12 @@ const OverviewTabContent = ({ dashboard }: OverviewTabContentProps) => {
               {stats.roles.map((roleStat) => (
                 <div
                   key={roleStat.role}
-                  className="rounded-2xl border border-border/70 bg-background/50 p-3"
+                  className="min-w-0 overflow-hidden rounded-2xl border border-border/70 bg-background/50 p-3 transition-colors hover:bg-background/80 sm:p-4"
                 >
-                  <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
+                  <p className="truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                     {roleStat.role}
                   </p>
-                  <p className="mt-1 font-display text-2xl font-semibold">
+                  <p className="mt-1.5 font-display text-2xl font-bold tracking-tight text-foreground">
                     {roleStat.count}
                   </p>
                 </div>
