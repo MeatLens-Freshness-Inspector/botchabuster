@@ -8,16 +8,13 @@ export interface ScopeReferenceSection {
 }
 
 export const inspectScopeReminder = {
-  title: "Scope and Delimitations",
-  description: "Use MeatLens only for pork screening during active inspection work.",
+  title: "Scope Reminder",
   bullets: [
     "Pork samples only",
-    "Field screening support only",
-    "Not a lab diagnosis",
-    "Not a legal certification tool",
-    "Final decision stays with the inspector",
+    "Screening support, not diagnosis",
+    "Final decision remains with the inspector",
   ],
-  ctaLabel: "View full scope and delimitations",
+  ctaLabel: "View full scope & limitations",
 };
 
 export const scopeReferencePage = {

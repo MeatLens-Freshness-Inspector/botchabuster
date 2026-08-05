@@ -1,4 +1,4 @@
-import { BookOpenText } from "lucide-react";
+import { Info, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   inspectScopeReminder,
@@ -8,36 +8,35 @@ import {
 export function InspectScopeReminder() {
   return (
     <section className="mt-4 rounded-3xl border border-border/70 bg-card/92 p-4 shadow-[0_18px_55px_-34px_rgba(0,0,0,0.55)]">
-      <div className="flex items-start gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/70 bg-[hsl(var(--primary)/0.14)]">
-          <BookOpenText className="h-5 w-5 text-primary" />
-        </div>
-        <div className="min-w-0 flex-1 space-y-2">
-          <div>
-            <h2 className="font-display text-lg font-semibold tracking-tight">
-              {inspectScopeReminder.title}
-            </h2>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              {inspectScopeReminder.description}
-            </p>
+      <div className="border-l-2 border-primary/80 pl-3.5 py-0.5">
+        {/* Header */}
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-[hsl(var(--primary)/0.16)] text-primary">
+            <Info className="h-3.5 w-3.5" />
           </div>
+          <h2 className="font-display text-base font-semibold tracking-tight text-foreground">
+            {inspectScopeReminder.title}
+          </h2>
+        </div>
 
-          <ul className="grid gap-2 text-xs text-foreground sm:grid-cols-2">
-            {inspectScopeReminder.bullets.map((bullet) => (
-              <li
-                key={bullet}
-                className="rounded-2xl border border-border/70 bg-background/55 px-3 py-2"
-              >
-                {bullet}
-              </li>
-            ))}
-          </ul>
+        {/* Bullet List */}
+        <ul className="mt-2.5 space-y-1.5 text-xs font-medium text-muted-foreground sm:text-sm">
+          {inspectScopeReminder.bullets.map((bullet) => (
+            <li key={bullet} className="flex items-center gap-2">
+              <span className="text-muted-foreground select-none">•</span>
+              <span className="text-foreground">{bullet}</span>
+            </li>
+          ))}
+        </ul>
 
+        {/* CTA Link Pill */}
+        <div className="mt-3.5">
           <Link
             to={scopeReferencePath}
-            className="inline-flex h-10 items-center rounded-xl border border-border/80 px-4 text-xs font-medium uppercase tracking-wider text-foreground transition-colors hover:bg-background"
+            className="group inline-flex h-8 items-center gap-1.5 rounded-xl border border-border/80 bg-background/60 px-3 text-xs font-medium text-foreground transition-all hover:bg-background hover:text-primary hover:border-border"
           >
-            {inspectScopeReminder.ctaLabel}
+            <span>{inspectScopeReminder.ctaLabel}</span>
+            <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
         </div>
       </div>
