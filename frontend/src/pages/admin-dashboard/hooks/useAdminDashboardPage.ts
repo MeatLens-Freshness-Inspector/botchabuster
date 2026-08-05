@@ -9,6 +9,7 @@ import { inspectionClient } from "@/integrations/api/InspectionClient";
 import { marketLocationClient, type MarketLocation } from "@/integrations/api/MarketLocationClient";
 import { profileClient, type Profile } from "@/integrations/api/ProfileClient";
 import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
+import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";
 import { isReportOrganization } from "@/lib/reportOrganizations";
 import { formatReportDateTime } from "@/lib/reports/formatting";
 import { composeReportPdf } from "@/lib/reports/pdf/composeReportPdf";
@@ -819,6 +820,10 @@ export function useAdminDashboardPage() {
         generatedBy,
         reportSummary,
         reportRows,
+        allLocations:
+          marketLocations.length > 0
+            ? marketLocations.map((m) => m.name)
+            : [...DEFAULT_MARKET_LOCATIONS],
       });
 
       await composeReportPdf(

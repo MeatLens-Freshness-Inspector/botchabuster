@@ -32,6 +32,7 @@ export interface ReportChart {
   kind: "bar" | "line";
   points: ReportChartPoint[];
   emptyState: string;
+  rotateLabels?: boolean;
 }
 
 export interface ReportInspectionEvidenceItem {

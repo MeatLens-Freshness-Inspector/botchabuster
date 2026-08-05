@@ -3,11 +3,11 @@ import type { ReportPageFrame } from "@/lib/reports/pdf/pageFrames";
 import type { Content } from "pdfmake/interfaces";
 
 const CHART_WIDTH = 460;
-const CHART_HEIGHT = 170;
+const CHART_HEIGHT = 210;
 const CHART_MARGIN = {
   top: 16,
   right: 16,
-  bottom: 40,
+  bottom: 68,
   left: 36,
 } as const;
 
@@ -65,6 +65,7 @@ function buildBarChartSvg(
   const plotHeight = CHART_HEIGHT - CHART_MARGIN.top - CHART_MARGIN.bottom;
   const barSlotWidth = plotWidth / chart.points.length;
   const barWidth = Math.min(48, barSlotWidth * 0.62);
+  const shouldRotate = chart.rotateLabels ?? (chart.points.length > 4 || chart.id === "location-breakdown");
 
   const bars = chart.points
     .map((point, index) => {
@@ -72,11 +73,17 @@ function buildBarChartSvg(
       const x = CHART_MARGIN.left + index * barSlotWidth + (barSlotWidth - barWidth) / 2;
       const y = CHART_MARGIN.top + plotHeight - barHeight;
       const fill = point.color ?? frame.sectionColor;
+      const labelX = round(x + barWidth / 2);
+      const labelY = round(shouldRotate ? CHART_MARGIN.top + plotHeight + 10 : CHART_MARGIN.top + plotHeight + 16);
+
+      const labelText = shouldRotate
+        ? `<text x="${labelX}" y="${labelY}" font-size="8.5" text-anchor="end" transform="rotate(-30 ${labelX} ${labelY})" fill="${frame.bodyColor}">${escapeXml(truncateLabel(point.label))}</text>`
+        : `<text x="${labelX}" y="${labelY}" font-size="9" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(truncateLabel(point.label))}</text>`;
 
       return [
         `<rect x="${round(x)}" y="${round(y)}" width="${round(barWidth)}" height="${round(barHeight)}" rx="4" fill="${fill}" />`,
-        `<text x="${round(x + barWidth / 2)}" y="${round(y - 6)}" font-size="10" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(String(point.value))}</text>`,
-        `<text x="${round(x + barWidth / 2)}" y="${CHART_HEIGHT - 14}" font-size="9" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(truncateLabel(point.label))}</text>`,
+        `<text x="${labelX}" y="${round(y - 6)}" font-size="10" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(String(point.value))}</text>`,
+        labelText,
       ].join("");
     })
     .join("");
@@ -116,7 +123,7 @@ function buildLineChartSvg(
       [
         `<circle cx="${round(point.x)}" cy="${round(point.y)}" r="4" fill="${frame.sectionColor}" />`,
         `<text x="${round(point.x)}" y="${round(point.y - 10)}" font-size="10" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(String(point.value))}</text>`,
-        `<text x="${round(point.x)}" y="${CHART_HEIGHT - 14}" font-size="9" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(truncateLabel(point.label))}</text>`,
+        `<text x="${round(point.x)}" y="${round(CHART_MARGIN.top + plotHeight + 16)}" font-size="9" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(truncateLabel(point.label))}</text>`,
       ].join(""),
     )
     .join("");

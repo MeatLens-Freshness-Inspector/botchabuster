@@ -195,6 +195,7 @@ export function buildAdminDashboardReportPdfModel(input: {
     flaggedRecords: number;
   };
   reportRows: ReportRow[];
+  allLocations?: string[];
 }): ReportDocumentModel {
   return buildAdminRangeReportModel({
     reportOrganization: resolveReportOrganization(input.reportOrganization),
@@ -203,6 +204,7 @@ export function buildAdminDashboardReportPdfModel(input: {
     generatedAt: input.generatedAt,
     generatedBy: input.generatedBy,
     summary: input.reportSummary,
+    allLocations: input.allLocations,
     reportRows: input.reportRows.map((row) => ({
       createdAt: formatReportDateTime(row.createdAt),
       capturedAt: row.capturedAt ? formatReportDateTime(row.capturedAt) : null,

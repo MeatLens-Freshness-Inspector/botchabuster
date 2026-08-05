@@ -1,3 +1,4 @@
+import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";
 import type { ReportOrganization } from "@/lib/reportOrganizations";
 import { formatReportDateTime } from "@/lib/reports/formatting";
 import { getTemplateKeyForOrganization } from "@/lib/reports/pdf/assets";
@@ -56,6 +57,7 @@ export interface BuildAdminRangeReportInput {
   generatedBy: string;
   summary: AdminSummary;
   reportRows: AdminReportRow[];
+  allLocations?: string[];
 }
 
 function buildClassificationChart(reportRows: AdminReportRow[]): ReportChart {
@@ -99,8 +101,21 @@ function buildDailyTrendChart(reportRows: AdminReportRow[]): ReportChart {
   };
 }
 
-function buildLocationTrendChart(reportRows: AdminReportRow[]): ReportChart {
+function buildLocationTrendChart(
+  reportRows: AdminReportRow[],
+  allLocations?: string[],
+): ReportChart {
   const counts = new Map<string, number>();
+
+  const locationsList =
+    allLocations && allLocations.length > 0
+      ? allLocations
+      : DEFAULT_MARKET_LOCATIONS;
+
+  locationsList.forEach((loc) => {
+    const cleanLoc = loc.trim();
+    if (cleanLoc) counts.set(cleanLoc, 0);
+  });
 
   reportRows.forEach((row) => {
     const rawLocation = row.location?.trim() || "";
@@ -112,6 +127,7 @@ function buildLocationTrendChart(reportRows: AdminReportRow[]): ReportChart {
     id: "location-breakdown",
     title: "Location Breakdown",
     kind: "bar",
+    rotateLabels: true,
     emptyState: "No data for selected range",
     points: Array.from(counts.entries())
       .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
@@ -178,7 +194,7 @@ export function buildAdminRangeReportModel(
     charts: [
       buildClassificationChart(input.reportRows),
       buildDailyTrendChart(input.reportRows),
-      buildLocationTrendChart(input.reportRows),
+      buildLocationTrendChart(input.reportRows, input.allLocations),
     ],
   };
 
