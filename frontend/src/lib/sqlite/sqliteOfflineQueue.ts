@@ -39,6 +39,7 @@ export interface PendingScan {
   lightColorCorrect: boolean | null;
   lightColorObserved: string | null;
   areaClean: boolean | null;
+  regulatoryCompliance: boolean | null;
   inspectionDecisionSource: InspectionDecisionSource;
   protocolSpoiledReason: string | null;
   capturedAt?: string;
@@ -95,6 +96,7 @@ function rowToScan(row: Record<string, unknown>): PendingScan {
     lightColorCorrect: row["light_color_correct"] == null ? null : Boolean(row["light_color_correct"]),
     lightColorObserved: (row["light_color_observed"] as string | null) ?? null,
     areaClean: row["area_clean"] == null ? null : Boolean(row["area_clean"]),
+    regulatoryCompliance: row["regulatory_compliance"] == null ? null : Boolean(row["regulatory_compliance"]),
     inspectionDecisionSource: row["inspection_decision_source"] as InspectionDecisionSource,
     protocolSpoiledReason: (row["protocol_spoiled_reason"] as string | null) ?? null,
     capturedAt: (row["captured_at"] as string | null) ?? undefined,
@@ -116,10 +118,11 @@ export async function queueScan(scan: PendingScan): Promise<void> {
       location, location_latitude, location_longitude,
       stall_number, meat_inspection_certificate_proof, meat_expiry_date,
       storage_correct, light_color_correct, light_color_observed, area_clean,
+      regulatory_compliance,
       inspection_decision_source, protocol_spoiled_reason,
       captured_at, queued_at, user_id, analysis_result_json,
       sync_status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
     [
       scan.id,
       arrayBufferToBase64(scan.imageData),
@@ -136,6 +139,7 @@ export async function queueScan(scan: PendingScan): Promise<void> {
       scan.lightColorCorrect == null ? null : (scan.lightColorCorrect ? 1 : 0),
       scan.lightColorObserved,
       scan.areaClean == null ? null : (scan.areaClean ? 1 : 0),
+      scan.regulatoryCompliance == null ? null : (scan.regulatoryCompliance ? 1 : 0),
       scan.inspectionDecisionSource,
       scan.protocolSpoiledReason,
       scan.capturedAt ?? null,

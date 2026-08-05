@@ -50,7 +50,7 @@ const SYNC_METADATA_SEEDS = [
   ["last_scan_sync_at",            ""],
   ["last_audit_sync_at",           ""],
   ["last_inspection_cache_sync_at",""],
-  ["db_schema_version",            "5"],
+  ["db_schema_version",            "6"],
   ["app_version",                  "1.0.0"],
 ] as const;
 
@@ -216,6 +216,12 @@ const DDL_004 = `
   END;
 `;
 
+/** Migration 006 — Add regulatory_compliance to pending_scans */
+const DDL_006 = `
+  ALTER TABLE pending_scans
+    ADD COLUMN IF NOT EXISTS regulatory_compliance INTEGER;
+`;
+
 // ---------------------------------------------------------------------------
 // Ordered migration list (version, description, DDL)
 // ---------------------------------------------------------------------------
@@ -224,6 +230,7 @@ const MIGRATIONS: Array<{ version: number; description: string; ddl: string }> =
   { version: 2, description: "Create pending_audit_logs table",                               ddl: DDL_002 },
   { version: 3, description: "Create offline_auth_envelope table",                            ddl: DDL_003 },
   { version: 4, description: "Create inspection_history_cache and inspection_stats_cache",    ddl: DDL_004 },
+  { version: 6, description: "Add regulatory_compliance to pending_scans",                    ddl: DDL_006 },
 ];
 
 // ---------------------------------------------------------------------------

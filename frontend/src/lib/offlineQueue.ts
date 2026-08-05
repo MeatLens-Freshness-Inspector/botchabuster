@@ -35,6 +35,7 @@ export interface PendingScan {
   lightColorCorrect: boolean | null;
   lightColorObserved: string | null;
   areaClean: boolean | null;
+  regulatoryCompliance: boolean | null;
   inspectionDecisionSource: InspectionDecisionSource;
   protocolSpoiledReason: string | null;
   capturedAt?: string;
