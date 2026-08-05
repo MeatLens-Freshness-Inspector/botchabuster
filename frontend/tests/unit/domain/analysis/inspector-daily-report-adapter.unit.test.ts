@@ -29,6 +29,32 @@ test("buildInspectorDailyReportModel puts the shared meat section into every org
   assert.ok(model.sections.some((section) => section.id === "meat-detail"));
 });
 
+// commit 06
+test("buildInspectorDailyReportModel includes a report-graphs section with three charts", () => {
+  const model = buildInspectorDailyReportModel({
+    reportOrganization: "dti",
+    selectedReportDay: "2026-08-01",
+    generatedAt: "Aug 1, 2026 4:00 PM",
+    averageConfidence: 88,
+    inspections: [sampleInspection],
+  });
+
+  const graphSection = model.sections.find(
+    (section) => section.id === "report-graphs",
+  );
+  assert.ok(graphSection, "report-graphs section must exist");
+  assert.ok(graphSection.charts, "report-graphs section must have charts");
+  assert.equal(
+    graphSection.charts.length,
+    3,
+    "report-graphs section must have exactly 3 charts",
+  );
+  assert.deepEqual(
+    graphSection.charts.map((c) => c.id),
+    ["classification-breakdown", "meat-type-breakdown", "confidence-by-hour"],
+  );
+});
+
 test("buildInspectorDailyReportModel preserves formatted captured timestamps and unsegmented image urls", () => {
   const model = buildInspectorDailyReportModel({
     reportOrganization: "dti",
