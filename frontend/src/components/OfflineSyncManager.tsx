@@ -49,6 +49,16 @@ async function processScan(
     // Save without image rather than blocking.
   }
 
+  // Compute regulatory_compliance from the three source boolean checks.
+  // NULL when pre-scan was skipped; TRUE only when all three pass.
+  const hasPreScan =
+    scan.storageCorrect != null ||
+    scan.lightColorCorrect != null ||
+    scan.areaClean != null;
+  const regulatoryCompliance = hasPreScan
+    ? (scan.storageCorrect === true && scan.lightColorCorrect === true && scan.areaClean === true)
+    : null;
+
   await inspectionClient.create({
     user_id: scan.userId,
     client_submission_id: scan.id,
@@ -63,6 +73,7 @@ async function processScan(
     light_color_correct: scan.lightColorCorrect ?? null,
     light_color_observed: scan.lightColorObserved ?? null,
     area_clean: scan.areaClean ?? null,
+    regulatory_compliance: regulatoryCompliance,
     inspection_decision_source: scan.inspectionDecisionSource,
     protocol_spoiled_reason:
       scan.inspectionDecisionSource === "protocol_pre_scan"

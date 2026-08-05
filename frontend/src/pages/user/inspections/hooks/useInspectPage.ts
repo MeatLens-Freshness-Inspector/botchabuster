@@ -243,6 +243,15 @@ export function useInspectPage(): InspectPageViewModel {
       const decisionSource =
         inspectionDecisionSource ??
         (isPreScanBypassed ? "ai" : getInspectionDecisionSource(preScanForm));
+      const hasPreScan =
+        preScanPayload.storage_correct != null ||
+        preScanPayload.light_color_correct != null ||
+        preScanPayload.area_clean != null;
+      const regulatoryCompliance = hasPreScan
+        ? (preScanPayload.storage_correct === true &&
+           preScanPayload.light_color_correct === true &&
+           preScanPayload.area_clean === true)
+        : null;
       const imageData = await capture.file.arrayBuffer();
       await queueScan({
         id: submissionId,
@@ -261,6 +270,7 @@ export function useInspectPage(): InspectPageViewModel {
         lightColorCorrect: preScanPayload.light_color_correct ?? null,
         lightColorObserved: preScanPayload.light_color_observed ?? null,
         areaClean: preScanPayload.area_clean ?? null,
+        regulatoryCompliance,
         inspectionDecisionSource: decisionSource,
         protocolSpoiledReason:
           decisionSource === "protocol_pre_scan" ? PROTOCOL_SPOILED_REASON : null,
