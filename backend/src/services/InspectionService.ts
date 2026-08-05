@@ -31,14 +31,6 @@ type InspectionInsertPayload = {
   location_latitude?: number | null;
   location_longitude?: number | null;
   stall_number?: string | null;
-  captured_at?: string;
-  flagged_deviations?: string[];
-  explanation?: string | null;
-  image_url?: string | null;
-  location?: string | null;
-  location_latitude?: number | null;
-  location_longitude?: number | null;
-  stall_number?: string | null;
   meat_inspection_certificate_proof?: string | null;
   meat_expiry_date?: string | null;
   storage_correct?: boolean | null;
