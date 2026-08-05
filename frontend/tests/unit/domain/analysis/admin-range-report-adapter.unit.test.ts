@@ -109,7 +109,7 @@ test("buildAdminRangeReportModel adds graph payloads and every real pork image c
     [
       "Classification Breakdown",
       "Daily Inspection Trend",
-      "Meat Type Breakdown",
+      "Location Breakdown",
     ],
   );
 

@@ -99,16 +99,18 @@ function buildDailyTrendChart(reportRows: AdminReportRow[]): ReportChart {
   };
 }
 
-function buildMeatTypeChart(reportRows: AdminReportRow[]): ReportChart {
+function buildLocationTrendChart(reportRows: AdminReportRow[]): ReportChart {
   const counts = new Map<string, number>();
 
   reportRows.forEach((row) => {
-    counts.set(row.meatType, (counts.get(row.meatType) ?? 0) + 1);
+    const rawLocation = row.location?.trim() || "";
+    const locationName = rawLocation ? rawLocation.split("|")[0].trim() : "Unspecified";
+    counts.set(locationName, (counts.get(locationName) ?? 0) + 1);
   });
 
   return {
-    id: "meat-type-breakdown",
-    title: "Meat Type Breakdown",
+    id: "location-breakdown",
+    title: "Location Breakdown",
     kind: "bar",
     emptyState: "No data for selected range",
     points: Array.from(counts.entries())
@@ -176,7 +178,7 @@ export function buildAdminRangeReportModel(
     charts: [
       buildClassificationChart(input.reportRows),
       buildDailyTrendChart(input.reportRows),
-      buildMeatTypeChart(input.reportRows),
+      buildLocationTrendChart(input.reportRows),
     ],
   };
 

@@ -117,13 +117,13 @@ const sampleDtiAdminGraphModel: ReportDocumentModel = {
           ],
         },
         {
-          id: "meat-type-breakdown",
-          title: "Meat Type Breakdown",
+          id: "location-breakdown",
+          title: "Location Breakdown",
           kind: "bar",
           emptyState: "No data for selected range",
           points: [
-            { label: "pork", value: 3 },
-            { label: "fish", value: 1 },
+            { label: "East Market", value: 3 },
+            { label: "West Market", value: 1 },
           ],
         },
       ],
@@ -447,7 +447,7 @@ test("buildReportDocDefinition renders admin graph sections as svg content in th
 
   assert.ok(sectionTexts.includes("Classification Breakdown"));
   assert.ok(sectionTexts.includes("Daily Inspection Trend"));
-  assert.ok(sectionTexts.includes("Meat Type Breakdown"));
+  assert.ok(sectionTexts.includes("Location Breakdown"));
   assert.equal(sectionSvgs.length, 3);
   assert.ok(sectionSvgs.every((svg) => svg.includes("<svg")));
 });
