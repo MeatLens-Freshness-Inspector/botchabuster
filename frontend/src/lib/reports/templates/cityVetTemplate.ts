@@ -43,15 +43,24 @@ export const cityVetTemplate = {
     }
 
     if (model.kind === "inspector_daily") {
-      return model.sections.map((section) =>
-        section.id === "meat-detail"
-          ? {
-              ...section,
-              title: "Veterinary Inspection Evidence",
-              evidenceLayout: "photo-first",
-            }
-          : section,
-      );
+      return model.sections.map((section) => {
+        if (section.id === "report-graphs") {
+          return {
+            ...section,
+            title: "Veterinary Inspection Graphs",
+          };
+        }
+
+        if (section.id === "meat-detail") {
+          return {
+            ...section,
+            title: "Veterinary Inspection Evidence",
+            evidenceLayout: "photo-first",
+          };
+        }
+
+        return section;
+      });
     }
 
     return model.sections;
