@@ -21,6 +21,7 @@ import {
   type ReportOrganization,
 } from "@/lib/reportOrganizations";
 import { Button } from "@/components/ui/button";
+import { SmartPagination } from "@/components/ui/SmartPagination";
 import {
   Card,
   CardContent,
@@ -417,54 +418,17 @@ const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
           )}
 
           {/* Pagination Controls */}
-          {totalUserPages > 1 ? (
-            <div className="flex items-center justify-between border-t border-border/70 pt-3 text-xs">
-              <p className="text-muted-foreground">
-                Page <span className="font-medium text-foreground">{userPage}</span> of{" "}
-                <span className="font-medium text-foreground">{totalUserPages}</span>
-              </p>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setUserPage((p) => Math.max(1, p - 1))}
-                  disabled={userPage === 1}
-                  className="h-8 px-2.5 rounded-lg"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                  <span className="sr-only">Previous</span>
-                </Button>
-
-                {/* Numbered Page Buttons for quick jump */}
-                <div className="hidden sm:flex items-center gap-1">
-                  {Array.from({ length: totalUserPages }, (_, i) => i + 1).map((pageNum) => (
-                    <Button
-                      key={pageNum}
-                      variant={pageNum === userPage ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setUserPage(pageNum)}
-                      className={`h-8 w-8 rounded-lg text-xs p-0 ${
-                        pageNum === userPage ? "font-bold" : "text-muted-foreground"
-                      }`}
-                    >
-                      {pageNum}
-                    </Button>
-                  ))}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setUserPage((p) => Math.min(totalUserPages, p + 1))}
-                  disabled={userPage === totalUserPages}
-                  className="h-8 px-2.5 rounded-lg"
-                >
-                  <ChevronRight className="h-3.5 w-3.5" />
-                  <span className="sr-only">Next</span>
-                </Button>
-              </div>
+          {totalUserPages > 1 && (
+            <div className="border-t border-border/70 pt-3">
+              <SmartPagination
+                currentPage={userPage}
+                totalPages={totalUserPages}
+                onPageChange={setUserPage}
+                totalItems={filteredProfiles.length}
+                pageSize={userPageSize}
+              />
             </div>
-          ) : null}
+          )}
         </CardContent>
       </Card>
 
