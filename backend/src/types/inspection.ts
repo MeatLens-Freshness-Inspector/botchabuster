@@ -22,6 +22,7 @@ export interface Inspection {
   area_clean: boolean | null;
   inspection_decision_source: InspectionDecisionSource | null;
   protocol_spoiled_reason: string | null;
+  regulatory_compliance: boolean | null;
   inspector_notes: string | null;
   client_submission_id: string | null;
   captured_at: string;
@@ -50,6 +51,7 @@ export interface InspectionInsert {
   area_clean?: boolean | null;
   inspection_decision_source?: InspectionDecisionSource | null;
   protocol_spoiled_reason?: string | null;
+  regulatory_compliance?: boolean | null;
   inspector_notes?: string | null;
   captured_at?: string;
   client_submission_id: string;
