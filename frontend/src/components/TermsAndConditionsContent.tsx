@@ -22,7 +22,78 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-display text-base font-semibold">2. Role of the User (Inspector Responsibility)</h3>
+        <h3 className="font-display text-base font-semibold">2. Scope and Limitations</h3>
+        <p>MeatLens is a decision-support tool, not a diagnostic or certification authority. Its scope and limitations are as follows:</p>
+
+        <p>
+          <strong>Product Scope</strong>
+        </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>
+            MeatLens is trained and validated specifically for <strong>pork</strong> freshness classification. It is not
+            designed or validated for other meat types (e.g., beef, poultry, seafood), and results on non-pork samples
+            should not be relied upon.
+          </li>
+          <li>
+            The system is intended for use within the context of wet market and field inspection settings, consistent
+            with the Ikot-Palengke Program of Olongapo wet markets.
+          </li>
+        </ul>
+
+        <p>
+          <strong>Functional Scope</strong>
+        </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>
+            MeatLens performs image-based classification only. It does not perform microbiological, chemical, or
+            laboratory-grade testing, and cannot detect contamination, pathogens, or chemical adulteration that is not
+            visually apparent.
+          </li>
+          <li>
+            The system produces advisory risk indicators (e.g., Fresh, Suspect, Spoiled). It does not issue
+            certifications, official findings, or regulatory rulings.
+          </li>
+        </ul>
+
+        <p>
+          <strong>Technical Limitations</strong>
+        </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>
+            Classification accuracy depends on training data coverage and may not generalize to all pork cuts, breeds,
+            handling conditions, or spoilage presentations, particularly those underrepresented in the training
+            dataset.
+          </li>
+          <li>
+            Model performance is affected by image quality, lighting conditions, camera hardware, angle, and occlusion.
+            Degraded input conditions may reduce accuracy.
+          </li>
+          <li>
+            As with any AI classification model, MeatLens is subject to a non-zero rate of false positives and false
+            negatives and should not be treated as infallible.
+          </li>
+          <li>
+            The system&apos;s underlying model and thresholds are calibrated against publicly available and peer-reviewed
+            food science references. Where region-specific or agency-issued freshness standards exist, users should
+            defer to those official standards where applicable.
+          </li>
+        </ul>
+
+        <p>
+          <strong>Out-of-Scope Use</strong>
+        </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>MeatLens is not intended for use as a standalone basis for enforcement actions, penalties, confiscation, or public health rulings.</li>
+          <li>
+            MeatLens is not intended for use outside meat inspection support (e.g., general food safety auditing,
+            unrelated product categories, or non-inspection commercial purposes).
+          </li>
+          <li>The system is not a substitute for licensed veterinary, food safety, or regulatory authority judgment.</li>
+        </ul>
+      </section>
+
+      <section className="space-y-2">
+        <h3 className="font-display text-base font-semibold">3. Role of the User (Inspector Responsibility)</h3>
         <p>MeatLens is a support tool only. All users, especially licensed inspectors, acknowledge that:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Final decisions must be based on professional judgment.</li>
@@ -32,7 +103,7 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-display text-base font-semibold">3. Proper Use in Field Conditions</h3>
+        <h3 className="font-display text-base font-semibold">4. Proper Use in Field Conditions</h3>
         <p>To ensure reliable results, users must:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Capture clear images under adequate lighting.</li>
@@ -43,7 +114,7 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-display text-base font-semibold">4. AI Output Limitations</h3>
+        <h3 className="font-display text-base font-semibold">5. AI Output Limitations</h3>
         <p>Users acknowledge that:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Results are advisory in nature (for example Fresh, Suspect, Spoiled).</li>
@@ -54,7 +125,7 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-display text-base font-semibold">5. Enforcement and Decision-Making</h3>
+        <h3 className="font-display text-base font-semibold">6. Enforcement and Decision-Making</h3>
         <p>Any enforcement action (for example confiscation, penalties, or reporting violations):</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Must be carried out by authorized personnel.</li>
@@ -64,7 +135,7 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-display text-base font-semibold">6. Data Handling</h3>
+        <h3 className="font-display text-base font-semibold">7. Data Handling</h3>
         <p>When using the system:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Captured images may be stored for inspection records and system improvement.</li>
@@ -74,7 +145,7 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-display text-base font-semibold">7. Offline Use</h3>
+        <h3 className="font-display text-base font-semibold">8. Offline Use</h3>
         <p>MeatLens may function without internet access. In such cases:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Some features may be limited.</li>
@@ -84,7 +155,7 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-display text-base font-semibold">8. Misuse of the System</h3>
+        <h3 className="font-display text-base font-semibold">9. Misuse of the System</h3>
         <p>Users must not:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Use the system to falsify inspection results.</li>
@@ -94,7 +165,7 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-display text-base font-semibold">9. Liability Disclaimer</h3>
+        <h3 className="font-display text-base font-semibold">10. Liability Disclaimer</h3>
         <p>The developers of MeatLens are not responsible for:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>Incorrect inspection outcomes resulting from misuse.</li>
@@ -105,18 +176,18 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-display text-base font-semibold">10. Updates and Improvements</h3>
+        <h3 className="font-display text-base font-semibold">11. Updates and Improvements</h3>
         <p>The system may be updated periodically to improve detection accuracy, expand scenarios, and fix issues.</p>
         <p>Users are encouraged to use the latest available version.</p>
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-display text-base font-semibold">11. Governing Law</h3>
+        <h3 className="font-display text-base font-semibold">12. Governing Law</h3>
         <p>These Terms are governed by the laws of the Republic of the Philippines.</p>
       </section>
 
       <section className="space-y-2">
-        <h3 className="font-display text-base font-semibold">12. Acknowledgment</h3>
+        <h3 className="font-display text-base font-semibold">13. Acknowledgment</h3>
         <p>By using MeatLens, you confirm that:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>You understand it is an AI-assisted tool, not a final authority.</li>

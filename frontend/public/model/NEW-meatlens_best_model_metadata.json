@@ -1,0 +1,25 @@
+{
+  "backbone": "MobileNetV3Small",
+  "preprocess_function_name": "identity",
+  "input_size": [
+    224,
+    224
+  ],
+  "image_crop_mode": "center_crop",
+  "model_input_mode": "cnn_only",
+  "split_mode": "cross_rotation",
+  "split_name": "fold1",
+  "seed": 42,
+  "label_order": [
+    "fresh",
+    "not fresh",
+    "spoiled"
+  ],
+  "class_index_mapping": {
+    "fresh": 0,
+    "not fresh": 1,
+    "spoiled": 2
+  },
+  "notes": "Uses embedded MobileNetV3 rescaling layer in ONNX graph; keep external preprocessing as identity (RGB 0-255 float32).",
+  "timestamp": "2026-05-05T00:00:00Z"
+}
