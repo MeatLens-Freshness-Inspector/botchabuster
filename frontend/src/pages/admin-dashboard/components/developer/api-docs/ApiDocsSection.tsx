@@ -1,5 +1,5 @@
 import React from "react";
-import { Braces, ShieldCheck } from "lucide-react";
+import { Braces, ListTree, ShieldCheck } from "lucide-react";
 import { API_BASE_URL } from "@/integrations/api/apiBaseUrl";
 import { ApiDocsCategoryNav } from "./ApiDocsCategoryNav";
 import { ApiDocsHistoryPanel } from "./ApiDocsHistoryPanel";
@@ -32,7 +32,14 @@ export function ApiDocsSection() {
       </div>
 
       <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(14rem,18rem)_minmax(0,1fr)]">
-        <aside className="api-docs-category-rail min-w-0 rounded-3xl border border-border/70 bg-card/35 p-2 shadow-[0_18px_50px_-40px_rgba(0,0,0,0.8)] xl:max-h-[calc(100vh-18rem)] xl:overflow-y-auto xl:pr-2">
+        <aside className="api-docs-category-rail relative min-w-0 rounded-3xl border border-border/70 bg-card/35 p-2 shadow-[0_18px_50px_-40px_rgba(0,0,0,0.8)] xl:max-h-[calc(100vh-18rem)] xl:overflow-y-auto xl:pr-2">
+          <div className="sticky top-0 z-10 -mx-2 -mt-2 mb-2 flex items-center justify-between gap-3 rounded-t-3xl border-b border-border/60 bg-card/90 px-3 py-3 backdrop-blur-md">
+            <div className="flex min-w-0 items-center gap-2">
+              <ListTree className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+              <span className="truncate font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-foreground">Endpoint index</span>
+            </div>
+            <span className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground">{apiDocs.operations.length} routes</span>
+          </div>
           <ApiDocsCategoryNav
             categories={apiDocs.categories}
             operations={apiDocs.operations}
