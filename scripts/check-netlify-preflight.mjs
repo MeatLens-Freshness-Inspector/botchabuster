@@ -36,6 +36,8 @@ const modelCandidates = [
   "model/meatlens_mobilenetv3small_cnn_only (1).onnx",
   "frontend/public/model/meatlens_mobilenetv3small_cnn_only.onnx",
   "frontend/public/models/mobilenetv3_meat/meatlens_mobilenetv3small_cnn_only.onnx",
+  "frontend/public/model/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
+  "frontend/public/model-old/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
 ];
 
 const metadataCandidates = [
@@ -54,6 +56,8 @@ const metadataCandidates = [
   "frontend/public/models/mobilenetv3_meat/meatlens_mobilenetv3small_cnn_only_metadata.json",
   "frontend/public/models/mobilenetv3_meat/meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata.json",
   "frontend/public/models/mobilenetv3_meat/meatlens_mobilenetv3small_cross_rotation_fold1_seed42_cnn_only_metadata (1).json",
+  "frontend/public/model/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
+  "frontend/public/model-old/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
 ];
 
 if (!hasAny(modelCandidates)) {

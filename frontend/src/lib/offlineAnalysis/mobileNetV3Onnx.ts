@@ -122,9 +122,15 @@ const MODEL_ASSET_PROFILES: Record<MobileNetModelVariant, ModelAssetProfile> = {
     preprocessContract: "segmented_center_roi",
     modelCandidatePaths: [
       "/model/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
+      "/model-old/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
+      "/models/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
+      "/models/mobilenetv3_meat/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx",
     ],
     metadataCandidatePaths: [
       "/model/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
+      "/model-old/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
+      "/models/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
+      "/models/mobilenetv3_meat/model2/meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json",
     ],
     defaultMetadata: {
       ...DEFAULT_MODEL_METADATA,
@@ -462,6 +468,11 @@ async function loadModelMetadata(profile: ModelAssetProfile): Promise<MeatLensMo
           continue;
         }
 
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.toLowerCase().includes("text/html")) {
+          continue;
+        }
+
         const metadataJson = await response.json();
         const parsedMetadata = sanitizeMetadata(metadataJson, profile.defaultMetadata);
         console.info(`[Model][ONNX] Loaded metadata from ${path}`);
@@ -506,6 +517,15 @@ async function tryLoadModelFromCandidates(
 
   for (const modelPath of profile.modelCandidatePaths) {
     try {
+      const checkRes = await fetch(modelPath, { method: "HEAD", cache: "no-cache" }).catch(() => null);
+      if (checkRes) {
+        if (!checkRes.ok) continue;
+        const contentType = checkRes.headers.get("content-type");
+        if (contentType && contentType.toLowerCase().includes("text/html")) {
+          continue;
+        }
+      }
+
       const createdSession = await ort.InferenceSession.create(modelPath, {
         executionProviders: ["wasm"],
         // "all" can noticeably increase first-load session build time on low-end

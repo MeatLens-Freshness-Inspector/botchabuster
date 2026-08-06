@@ -165,3 +165,33 @@ for (const runtimeFile of ortRuntimeFiles) {
     `[sync-onnx-model] Copied ${path.relative(repoRoot, runtimeSource)} -> ${path.relative(repoRoot, runtimeTarget)}`
   );
 }
+
+// Sync model2 assets if present in model-old/model2 or model/model2
+const model2OnnxSource = [
+  path.join(repoRoot, "frontend", "public", "model-old", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx"),
+  path.join(repoRoot, "model", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx"),
+].find((candidate) => existsSync(candidate));
+
+const model2MetaSource = [
+  path.join(repoRoot, "frontend", "public", "model-old", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json"),
+  path.join(repoRoot, "model", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json"),
+].find((candidate) => existsSync(candidate));
+
+if (model2OnnxSource) {
+  const target = path.join(repoRoot, "frontend", "public", "model", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123.onnx");
+  mkdirSync(path.dirname(target), { recursive: true });
+  if (!existsSync(target) || statSync(target).size !== statSync(model2OnnxSource).size) {
+    copyFileSync(model2OnnxSource, target);
+    console.info(`[sync-onnx-model] Copied model2 ONNX -> ${path.relative(repoRoot, target)}`);
+  }
+}
+
+if (model2MetaSource) {
+  const target = path.join(repoRoot, "frontend", "public", "model", "model2", "meatlens_final_8samples_cnn_only_mobilenetv3small_seed123_metadata.json");
+  mkdirSync(path.dirname(target), { recursive: true });
+  if (!existsSync(target) || statSync(target).size !== statSync(model2MetaSource).size) {
+    copyFileSync(model2MetaSource, target);
+    console.info(`[sync-onnx-model] Copied model2 metadata -> ${path.relative(repoRoot, target)}`);
+  }
+}
+
