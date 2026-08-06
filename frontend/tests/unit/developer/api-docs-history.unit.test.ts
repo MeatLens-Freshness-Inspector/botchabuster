@@ -66,8 +66,8 @@ test("builds cURL without protected authentication headers", () => {
   const curl = buildApiDocsCurl(request);
 
   assert.match(curl, /^curl -X POST /);
-  assert.match(curl, /-H 'Content-Type: application\/json'/);
-  assert.match(curl, /-H 'X-Debug: enabled'/);
+  assert.match(curl, /-H 'content-type: application\/json'/);
+  assert.match(curl, /-H 'x-debug: enabled'/);
   assert.match(curl, /--data-raw '\{"ok":true\}'$/);
   assert.doesNotMatch(curl, /Authorization|X-CSRF-Token|do-not-copy|csrf-do-not-copy/);
 });
