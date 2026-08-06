@@ -244,6 +244,14 @@ export function buildAdminDashboardReportPdfModel(input: {
     generatedBy: input.generatedBy,
     summary: input.reportSummary,
     allLocations: input.allLocations,
+    isDeveloper: input.isDeveloper,
+    developerLatestRuns: input.developerLatestRuns?.map((run) => ({
+      name: `${run.modelFamily} (${run.modelVersion})`,
+      accuracy: run.accuracy,
+      precision: run.precision,
+      recall: run.recall,
+      f1Score: run.f1Score,
+    })),
     reportRows: input.reportRows.map((row) => ({
       createdAt: formatReportDateTime(row.createdAt),
       capturedAt: row.capturedAt ? formatReportDateTime(row.capturedAt) : null,

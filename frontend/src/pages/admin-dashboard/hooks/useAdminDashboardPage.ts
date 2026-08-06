@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { accessCodeClient, type AccessCode } from "@/integrations/api/AccessCodeClient";
 import { auditLogClient, type AuditLogEntry } from "@/integrations/api/AuditLogClient";
+import { developerDashboardClient, type DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
 import { inspectionClient } from "@/integrations/api/InspectionClient";
 import { marketLocationClient, type MarketLocation } from "@/integrations/api/MarketLocationClient";
 import { profileClient, type Profile } from "@/integrations/api/ProfileClient";
@@ -17,6 +18,7 @@ import {
 import { formatReportDateTime } from "@/lib/reports/formatting";
 import { composeReportPdf } from "@/lib/reports/pdf/composeReportPdf";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
+import { buildDeveloperInAppMetrics } from "../utils/developerInAppMetrics";
 import type {
   AdminDashboardTabKey,
   ManagedUserForm,
@@ -57,6 +59,7 @@ export function useAdminDashboardPage() {
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [accessCodes, setAccessCodes] = useState<AccessCode[]>([]);
   const [marketLocations, setMarketLocations] = useState<MarketLocation[]>([]);
+  const [developerLatestRuns, setDeveloperLatestRuns] = useState<DeveloperOverviewMetricPoint[]>([]);
   const [stats, setStats] = useState<{ total_users: number; total_inspections: number; roles: RoleStat[] | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<AdminDashboardTabKey>("overview");
@@ -151,18 +154,25 @@ export function useAdminDashboardPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [profileData, inspectionData, statsData, codesData, marketsData] = await Promise.all([
+      const [profileData, inspectionData, statsData, codesData, marketsData, developerOverview] = await Promise.all([
         profileClient.getAllProfiles(),
         inspectionClient.getAll(200, 0, "all"),
         profileClient.getUserStats(),
         accessCodeClient.getAll(),
         marketLocationClient.getAll(),
+        isDeveloper
+          ? developerDashboardClient.getOverview().catch((error) => {
+              console.error("Failed to load developer report model runs:", error);
+              return null;
+            })
+          : Promise.resolve(null),
       ]);
       setProfiles(profileData);
       setInspections(inspectionData);
       setStats(statsData);
       setAccessCodes(codesData);
       setMarketLocations([...marketsData].sort((left, right) => left.name.localeCompare(right.name)));
+      setDeveloperLatestRuns(developerOverview?.latestRuns ?? []);
     } catch (err) {
       console.error("Failed to load admin data:", err);
       const message = err instanceof Error && err.message ? err.message : "Failed to load admin data";
@@ -601,6 +611,7 @@ export function useAdminDashboardPage() {
         profileLocation: getOptionalText(profile?.location),
         meatType: inspection.meat_type,
         classification: inspection.classification,
+        manualClassification: inspection.manual_classification,
         confidenceScore: inspection.confidence_score,
         ...preScanFields,
         flaggedDeviations: inspection.flagged_deviations.length > 0 ? inspection.flagged_deviations.join("; ") : "-",
@@ -728,6 +739,17 @@ export function useAdminDashboardPage() {
     });
   }, [reportClassCounts, reportSummary.total]);
 
+  const reportDeveloperMetrics = useMemo(
+    () => isDeveloper
+      ? buildDeveloperInAppMetrics(reportRows.map((row) => ({
+          classification: row.classification,
+          manual_classification: row.manualClassification,
+          meat_type: row.meatType,
+        })))
+      : null,
+    [isDeveloper, reportRows],
+  );
+
   const avgConfidence = useMemo(() => {
     if (inspections.length === 0) return 0;
     return Math.round(inspections.reduce((s, i) => s + i.confidence_score, 0) / inspections.length);
@@ -819,6 +841,7 @@ export function useAdminDashboardPage() {
       "Profile Location",
       "Meat Type",
       "Classification",
+      ...(isDeveloper ? ["Manual Classification"] : []),
       "Confidence",
       "Decision Source",
       "Protocol Spoiled Reason",
@@ -849,6 +872,7 @@ export function useAdminDashboardPage() {
       row.profileLocation,
       row.meatType,
       row.classification,
+      ...(isDeveloper ? [row.manualClassification] : []),
       row.confidenceScore,
       row.decisionSource,
       row.protocolSpoiledReason,
@@ -865,7 +889,41 @@ export function useAdminDashboardPage() {
       row.inspectorNotes,
       row.imageUrl,
     ]);
-    const csv = [headers, ...rows]
+    const developerRows = isDeveloper && reportDeveloperMetrics
+      ? [
+          [],
+          ["Developer Analytics"],
+          ["Metric", "Value"],
+          ["In-App Model Accuracy", reportDeveloperMetrics.inAppAccuracy],
+          ["In-App Precision", reportDeveloperMetrics.inAppPrecision],
+          ["In-App Recall", reportDeveloperMetrics.inAppRecall],
+          ["In-App F1-Score", reportDeveloperMetrics.inAppF1Score],
+          ["Correctly Identified", reportDeveloperMetrics.correctlyIdentified],
+          ["Incorrectly Identified", reportDeveloperMetrics.incorrectlyIdentified],
+          [],
+          ["Class", "Model Identified", "Actual", "TP", "FP", "FN", "TN", "Accuracy", "Precision", "Recall", "F1 Score"],
+          ...reportDeveloperMetrics.classBreakdown.map((item) => [
+            item.class,
+            item.modelIdentifiedCount,
+            item.actualCount,
+            item.tp,
+            item.fp,
+            item.fn,
+            item.tn,
+            item.accuracy,
+            item.precision,
+            item.recall,
+            item.f1Score,
+          ]),
+          [],
+          ["Meat Type", "Total", "Correct", "Accuracy"],
+          ...reportDeveloperMetrics.meatTypeBreakdown.map((item) => [item.meatType, item.totalCount, item.correctCount, item.accuracy]),
+          [],
+          ["Imported Model", "Accuracy", "Precision", "Recall", "F1 Score"],
+          ...developerLatestRuns.map((run) => [run.name, run.accuracy, run.precision, run.recall, run.f1Score]),
+        ]
+      : [];
+    const csv = [headers, ...rows, ...developerRows]
       .map((record) => record.map((value) => toCsvValue(value)).join(","))
       .join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -876,6 +934,9 @@ export function useAdminDashboardPage() {
   const handleExportJSON = () => {
     if (!validateReportRange()) return;
 
+    const reportExportInspections = isDeveloper
+      ? reportRows
+      : reportRows.map(({ manualClassification: _manualClassification, ...row }) => row);
     const payload = {
       generatedAt: new Date().toISOString(),
       generatedBy: user?.email ?? user?.id ?? "admin",
@@ -897,7 +958,29 @@ export function useAdminDashboardPage() {
       topLocations: reportTopLocations,
       meatTypeBreakdown: reportByMeatType,
       dailyTrend: reportDailyTrend,
-      inspections: reportRows,
+      inspections: reportExportInspections,
+      ...(isDeveloper && reportDeveloperMetrics
+        ? {
+            developerAnalytics: {
+              liveMetrics: reportDeveloperMetrics,
+              importedModelRuns: developerLatestRuns,
+              charts: {
+                classComparison: reportDeveloperMetrics.classBreakdown,
+                meatTypeAccuracy: reportDeveloperMetrics.meatTypeBreakdown,
+                modelComparison: [
+                  ...developerLatestRuns,
+                  {
+                    name: "In-App Model (Live Dataset)",
+                    accuracy: reportDeveloperMetrics.inAppAccuracy,
+                    precision: reportDeveloperMetrics.inAppPrecision,
+                    recall: reportDeveloperMetrics.inAppRecall,
+                    f1Score: reportDeveloperMetrics.inAppF1Score,
+                  },
+                ],
+              },
+            },
+          }
+        : {}),
     };
 
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
@@ -919,6 +1002,8 @@ export function useAdminDashboardPage() {
         generatedBy,
         reportSummary,
         reportRows,
+        isDeveloper,
+        developerLatestRuns,
         allLocations:
           marketLocations.length > 0
             ? marketLocations.map((m) => m.name)
