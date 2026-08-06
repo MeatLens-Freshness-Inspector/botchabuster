@@ -328,12 +328,24 @@ export class InspectionService {
       meat_type: string;
     }>;
 
+    const normalizeClassification = (val: unknown): Inspection["classification"] | null => {
+      if (!val || typeof val !== "string") return null;
+      const norm = val.trim().toLowerCase();
+      if (norm === "not fresh" || norm === "not_fresh" || norm === "notfresh") return "not fresh";
+      if (norm === "spoiled") return "spoiled";
+      if (norm === "acceptable") return "acceptable";
+      if (norm === "warning") return "warning";
+      if (norm === "fresh") return "fresh";
+      return norm as Inspection["classification"];
+    };
+
     const resolveGroundTruth = (record: {
       classification: Inspection["classification"];
       manual_classification?: Inspection["classification"] | null;
     }): Inspection["classification"] => {
-      const manual = typeof record.manual_classification === "string" ? record.manual_classification.trim() : "";
-      return manual.length > 0 ? (manual as Inspection["classification"]) : record.classification;
+      const normalizedManual = normalizeClassification(record.manual_classification);
+      if (normalizedManual) return normalizedManual;
+      return normalizeClassification(record.classification) || "fresh";
     };
 
     const totalEvaluated = records.length;
@@ -343,7 +355,7 @@ export class InspectionService {
     const meatTypeStats = new Map<string, { total: number; correct: number }>();
 
     for (const record of records) {
-      const predicted = record.classification;
+      const predicted = normalizeClassification(record.classification) || "fresh";
       const actual = resolveGroundTruth(record);
       const isCorrect = predicted === actual;
 
@@ -351,7 +363,7 @@ export class InspectionService {
         correctlyIdentified += 1;
       }
 
-      const meatType = record.meat_type || "unknown";
+      const meatType = (record.meat_type || "unknown").trim().toLowerCase();
       const existing = meatTypeStats.get(meatType) ?? { total: 0, correct: 0 };
       existing.total += 1;
       if (isCorrect) existing.correct += 1;
@@ -370,7 +382,7 @@ export class InspectionService {
       let tn = 0;
 
       for (const record of records) {
-        const predicted = record.classification;
+        const predicted = normalizeClassification(record.classification) || "fresh";
         const actual = resolveGroundTruth(record);
 
         const isPredCls = predicted === cls;

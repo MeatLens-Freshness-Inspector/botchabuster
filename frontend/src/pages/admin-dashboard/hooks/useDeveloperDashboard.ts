@@ -119,10 +119,10 @@ export function useDeveloperDashboard() {
   }, []);
 
   useEffect(() => {
-    if (activeDeveloperTab === "overview" && !overview && !isLoadingOverview) {
+    if (activeDeveloperTab === "overview") {
       void loadOverview();
     }
-  }, [activeDeveloperTab, isLoadingOverview, loadOverview, overview]);
+  }, [activeDeveloperTab, loadOverview]);
 
   useEffect(() => {
     if (activeDeveloperTab === "datasets" && !datasets && !isLoadingDatasets) {
