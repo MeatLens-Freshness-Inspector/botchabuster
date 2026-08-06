@@ -8,13 +8,6 @@ export interface DeveloperOverviewMetricPoint {
   modelVersion: string;
   datasetName: string;
   datasetRecordCount: number;
-  runId: string;
-  createdAt: string;
-  modelFamily: string;
-  modelVariant: string;
-  modelVersion: string;
-  datasetName: string;
-  datasetRecordCount: number;
   accuracy: number;
   precision: number;
   recall: number;
