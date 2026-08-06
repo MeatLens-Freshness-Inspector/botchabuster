@@ -44,9 +44,10 @@ export function buildReportChartSvg(
   chart: ReportChart,
   frame: Pick<ReportPageFrame, "sectionColor" | "bodyColor">,
 ): string | null {
+  const allPoints = chart.series?.flatMap((series) => series.points) ?? chart.points;
   if (
-    chart.points.length === 0 ||
-    chart.points.every((point) => point.value <= 0)
+    allPoints.length === 0 ||
+    allPoints.every((point) => point.value <= 0)
   ) {
     return null;
   }
@@ -60,33 +61,39 @@ function buildBarChartSvg(
   chart: ReportChart,
   frame: Pick<ReportPageFrame, "sectionColor" | "bodyColor">,
 ): string {
-  const maxValue = Math.max(...chart.points.map((point) => point.value), 1);
+  const chartSeries = chart.series && chart.series.length > 0
+    ? chart.series
+    : [{ name: "Value", points: chart.points, color: undefined }];
+  const maxValue = Math.max(...chartSeries.flatMap((series) => series.points.map((point) => point.value)), 1);
   const plotWidth = CHART_WIDTH - CHART_MARGIN.left - CHART_MARGIN.right;
   const plotHeight = CHART_HEIGHT - CHART_MARGIN.top - CHART_MARGIN.bottom;
-  const barSlotWidth = plotWidth / chart.points.length;
-  const barWidth = Math.min(48, barSlotWidth * 0.62);
-  const shouldRotate = chart.rotateLabels ?? (chart.points.length > 4 || chart.id === "location-breakdown");
+  const pointCount = Math.max(...chartSeries.map((series) => series.points.length), 0);
+  const barSlotWidth = pointCount > 0 ? plotWidth / pointCount : plotWidth;
+  const groupWidth = Math.min(64, barSlotWidth * 0.78);
+  const barWidth = Math.max(4, groupWidth / chartSeries.length - 3);
+  const shouldRotate = chart.rotateLabels ?? (pointCount > 4 || chart.id === "location-breakdown");
 
-  const bars = chart.points
-    .map((point, index) => {
+  const bars = Array.from({ length: pointCount }, (_, index) => {
+    const label = chartSeries.find((series) => series.points[index])?.points[index]?.label ?? "";
+    const labelX = round(CHART_MARGIN.left + index * barSlotWidth + barSlotWidth / 2);
+    const labelY = round(shouldRotate ? CHART_MARGIN.top + plotHeight + 10 : CHART_MARGIN.top + plotHeight + 16);
+    const labelText = shouldRotate
+      ? `<text x="${labelX}" y="${labelY}" font-size="8.5" text-anchor="end" transform="rotate(-30 ${labelX} ${labelY})" fill="${frame.bodyColor}">${escapeXml(truncateLabel(label))}</text>`
+      : `<text x="${labelX}" y="${labelY}" font-size="9" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(truncateLabel(label))}</text>`;
+    const seriesBars = chartSeries.map((series, seriesIndex) => {
+      const point = series.points[index];
+      if (!point) return "";
       const barHeight = (point.value / maxValue) * plotHeight;
-      const x = CHART_MARGIN.left + index * barSlotWidth + (barSlotWidth - barWidth) / 2;
+      const x = CHART_MARGIN.left + index * barSlotWidth + (barSlotWidth - groupWidth) / 2 + seriesIndex * (barWidth + 3);
       const y = CHART_MARGIN.top + plotHeight - barHeight;
-      const fill = point.color ?? frame.sectionColor;
-      const labelX = round(x + barWidth / 2);
-      const labelY = round(shouldRotate ? CHART_MARGIN.top + plotHeight + 10 : CHART_MARGIN.top + plotHeight + 16);
-
-      const labelText = shouldRotate
-        ? `<text x="${labelX}" y="${labelY}" font-size="8.5" text-anchor="end" transform="rotate(-30 ${labelX} ${labelY})" fill="${frame.bodyColor}">${escapeXml(truncateLabel(point.label))}</text>`
-        : `<text x="${labelX}" y="${labelY}" font-size="9" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(truncateLabel(point.label))}</text>`;
-
+      const fill = point.color ?? series.color ?? frame.sectionColor;
       return [
-        `<rect x="${round(x)}" y="${round(y)}" width="${round(barWidth)}" height="${round(barHeight)}" rx="4" fill="${fill}" />`,
-        `<text x="${labelX}" y="${round(y - 6)}" font-size="10" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(String(point.value))}</text>`,
-        labelText,
+        `<rect x="${round(x)}" y="${round(y)}" width="${round(barWidth)}" height="${round(barHeight)}" rx="3" fill="${fill}" />`,
+        `<text x="${round(x + barWidth / 2)}" y="${round(y - 6)}" font-size="8" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(String(point.value))}</text>`,
       ].join("");
-    })
-    .join("");
+    }).join("");
+    return `${seriesBars}${labelText}`;
+  }).join("");
 
   return wrapSvg(
     [

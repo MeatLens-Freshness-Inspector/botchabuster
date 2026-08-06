@@ -13,6 +13,7 @@ import type { Profile } from "@/integrations/api/ProfileClient";
 import { resolveReportOrganization } from "@/lib/reportOrganizations";
 import { formatReportDateTime } from "@/lib/reports/formatting";
 import { buildAdminRangeReportModel } from "@/lib/reports/adapters/adminRangeReport";
+import type { DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
 import type { ReportDocumentModel } from "@/lib/reports/types";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
 import type { AdminDashboardTabKey, ReportRow } from "../types";
@@ -232,6 +233,8 @@ export function buildAdminDashboardReportPdfModel(input: {
   };
   reportRows: ReportRow[];
   allLocations?: string[];
+  isDeveloper?: boolean;
+  developerLatestRuns?: DeveloperOverviewMetricPoint[];
 }): ReportDocumentModel {
   return buildAdminRangeReportModel({
     reportOrganization: resolveReportOrganization(input.reportOrganization),
@@ -248,6 +251,7 @@ export function buildAdminDashboardReportPdfModel(input: {
       location: row.location,
       meatType: row.meatType,
       classification: row.classification,
+      manualClassification: row.manualClassification,
       confidenceScore: row.confidenceScore,
       imageUrl: row.imageUrl,
     })),

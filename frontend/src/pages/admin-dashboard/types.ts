@@ -45,6 +45,7 @@ export type ReportRow = {
   profileLocation: string;
   meatType: string;
   classification: FreshnessClassification;
+  manualClassification?: FreshnessClassification;
   confidenceScore: number;
   decisionSource: string;
   protocolSpoiledReason: string;

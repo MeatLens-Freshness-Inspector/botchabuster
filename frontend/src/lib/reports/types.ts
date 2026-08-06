@@ -31,6 +31,11 @@ export interface ReportChart {
   title: string;
   kind: "bar" | "line";
   points: ReportChartPoint[];
+  series?: Array<{
+    name: string;
+    points: ReportChartPoint[];
+    color?: string;
+  }>;
   emptyState: string;
   rotateLabels?: boolean;
 }

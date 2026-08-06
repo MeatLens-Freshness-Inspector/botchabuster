@@ -12,6 +12,8 @@ import type {
   ReportInspectionEvidenceItem,
   ReportSection,
 } from "@/lib/reports/types";
+import { buildDeveloperInAppMetrics, type DeveloperMetricRecord } from "@/pages/admin-dashboard/utils/developerInAppMetrics";
+import type { DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
 
 type AdminSummary = {
   total: number;
@@ -29,9 +31,12 @@ type AdminReportRow = {
   location: string;
   meatType: string;
   classification: string;
+  manualClassification?: string;
   confidenceScore: number;
   imageUrl: string | null;
 };
+
+type DeveloperReportRun = Pick<DeveloperOverviewMetricPoint, "name" | "accuracy" | "precision" | "recall" | "f1Score">;
 
 const CLASSIFICATION_ORDER = [
   "fresh",
@@ -58,6 +63,124 @@ export interface BuildAdminRangeReportInput {
   summary: AdminSummary;
   reportRows: AdminReportRow[];
   allLocations?: string[];
+  isDeveloper?: boolean;
+  developerLatestRuns?: DeveloperReportRun[];
+}
+
+const formatMetricPercent = (value: number): string => `${Math.round(value * 1000) / 10}%`;
+
+function buildDeveloperReportRows(reportRows: AdminReportRow[]): DeveloperMetricRecord[] {
+  return reportRows.map((row) => ({
+    classification: row.classification as DeveloperMetricRecord["classification"],
+    manual_classification: row.manualClassification as DeveloperMetricRecord["manual_classification"],
+    meat_type: row.meatType,
+  }));
+}
+
+function buildDeveloperSections(
+  reportRows: AdminReportRow[],
+  latestRuns: DeveloperReportRun[],
+): ReportSection[] {
+  const metrics = buildDeveloperInAppMetrics(buildDeveloperReportRows(reportRows));
+  const classRows = metrics.classBreakdown.map((item) => [
+    item.class,
+    String(item.modelIdentifiedCount),
+    String(item.actualCount),
+    String(item.tp),
+    String(item.fp),
+    String(item.fn),
+    String(item.tn),
+    formatMetricPercent(item.accuracy),
+    formatMetricPercent(item.precision),
+    formatMetricPercent(item.recall),
+    formatMetricPercent(item.f1Score),
+  ]);
+  const meatRows = metrics.meatTypeBreakdown.map((item) => [
+    item.meatType,
+    String(item.totalCount),
+    String(item.correctCount),
+    formatMetricPercent(item.accuracy),
+  ]);
+  const runRows = latestRuns.map((run) => [
+    run.name,
+    formatMetricPercent(run.accuracy),
+    formatMetricPercent(run.precision),
+    formatMetricPercent(run.recall),
+    formatMetricPercent(run.f1Score),
+  ]);
+  const activeClasses = metrics.classBreakdown.filter((item) => item.actualCount > 0 || item.modelIdentifiedCount > 0);
+
+  return [
+    {
+      id: "developer-metrics",
+      title: "Developer Model Metrics",
+      metrics: [
+        { label: "In-App Model Accuracy", value: formatMetricPercent(metrics.inAppAccuracy) },
+        { label: "In-App Precision", value: formatMetricPercent(metrics.inAppPrecision) },
+        { label: "In-App Recall", value: formatMetricPercent(metrics.inAppRecall) },
+        { label: "In-App F1-Score", value: formatMetricPercent(metrics.inAppF1Score) },
+        { label: "Correctly Identified", value: `${metrics.correctlyIdentified} of ${metrics.totalEvaluated}` },
+        { label: "Incorrectly Identified", value: String(metrics.incorrectlyIdentified) },
+      ],
+      tables: latestRuns.length > 0 ? [{
+        title: "Imported Model Runs",
+        columns: ["Model", "Accuracy", "Precision", "Recall", "F1 Score"],
+        rows: runRows,
+      }] : [],
+    },
+    {
+      id: "developer-class-performance",
+      title: "In-App Model Class Performance",
+      tables: [{
+        title: "Class Metrics",
+        columns: ["Class", "Model Identified", "Actual", "TP", "FP", "FN", "TN", "Accuracy", "Precision", "Recall", "F1 Score"],
+        rows: classRows,
+      }, {
+        title: "Meat Type Accuracy",
+        columns: ["Meat Type", "Total", "Correct", "Accuracy"],
+        rows: meatRows,
+      }],
+    },
+    {
+      id: "developer-graphs",
+      title: "Developer Analytics Graphs",
+      charts: [
+        {
+          id: "developer-class-comparison",
+          title: "Model Identified vs Actual Ground Truth",
+          kind: "bar",
+          points: [],
+          series: [
+            { name: "Model Identified", color: "#3b82f6", points: activeClasses.map((item) => ({ label: item.class, value: item.modelIdentifiedCount })) },
+            { name: "Actual (Ground Truth)", color: "#22c55e", points: activeClasses.map((item) => ({ label: item.class, value: item.actualCount })) },
+            { name: "Correctly Identified (TP)", color: "#eab308", points: activeClasses.map((item) => ({ label: item.class, value: item.tp })) },
+          ],
+          emptyState: "No inspection dataset records available",
+        },
+        {
+          id: "developer-model-comparison",
+          title: "Developer Model Comparison",
+          kind: "bar",
+          points: [],
+          series: [
+            { name: "Accuracy", color: "#2563eb", points: latestRuns.map((run) => ({ label: run.name, value: run.accuracy })) },
+            { name: "Precision", color: "#22c55e", points: latestRuns.map((run) => ({ label: run.name, value: run.precision })) },
+            { name: "Recall", color: "#eab308", points: latestRuns.map((run) => ({ label: run.name, value: run.recall })) },
+            { name: "F1 Score", color: "#ef4444", points: latestRuns.map((run) => ({ label: run.name, value: run.f1Score })) },
+            { name: "In-App Live", color: "#7c3aed", points: [{ label: "In-App Live", value: metrics.inAppAccuracy * 100 }] },
+          ],
+          emptyState: "No model comparison metrics available",
+        },
+        {
+          id: "developer-meat-type-accuracy",
+          title: "In-App Accuracy by Meat Type",
+          kind: "bar",
+          points: metrics.meatTypeBreakdown.map((item) => ({ label: item.meatType, value: item.accuracy * 100 })),
+          emptyState: "No meat type breakdown available",
+        },
+      ],
+    },
+  ];
 }
 
 function buildClassificationChart(reportRows: AdminReportRow[]): ReportChart {
@@ -199,6 +322,9 @@ export function buildAdminRangeReportModel(
   };
 
   const porkInspectionEvidence = buildPorkInspectionEvidence(input.reportRows);
+  const developerSections = input.isDeveloper
+    ? buildDeveloperSections(input.reportRows, input.developerLatestRuns ?? [])
+    : [];
 
   return {
     organization: input.reportOrganization,
@@ -209,6 +335,7 @@ export function buildAdminRangeReportModel(
     generatedAt: input.generatedAt,
     sections: [
       overview,
+      ...developerSections,
       buildSharedMeatSummarySection({
         totalInspections: input.summary.total,
         averageConfidence: input.summary.averageConfidence,

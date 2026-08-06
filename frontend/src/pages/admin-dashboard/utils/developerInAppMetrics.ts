@@ -5,6 +5,8 @@ import type {
 } from "@/integrations/api/DeveloperDashboardClient";
 import type { Inspection, FreshnessClassification } from "@/types/inspection";
 
+export type DeveloperMetricRecord = Pick<Inspection, "classification" | "manual_classification" | "meat_type">;
+
 const ALL_CLASSES: FreshnessClassification[] = ["fresh", "acceptable", "warning", "not fresh", "spoiled"];
 
 function normalizeClassification(value: unknown): FreshnessClassification | null {
@@ -21,11 +23,11 @@ function normalizeClassification(value: unknown): FreshnessClassification | null
   return null;
 }
 
-function resolveGroundTruth(record: Inspection): FreshnessClassification {
+function resolveGroundTruth(record: DeveloperMetricRecord): FreshnessClassification {
   return normalizeClassification(record.manual_classification) ?? normalizeClassification(record.classification) ?? "fresh";
 }
 
-function buildClassBreakdown(records: Inspection[], totalEvaluated: number): InAppClassBreakdown[] {
+function buildClassBreakdown(records: DeveloperMetricRecord[], totalEvaluated: number): InAppClassBreakdown[] {
   return ALL_CLASSES.map((cls) => {
     let modelIdentifiedCount = 0;
     let actualCount = 0;
@@ -70,7 +72,7 @@ function buildClassBreakdown(records: Inspection[], totalEvaluated: number): InA
   });
 }
 
-function buildMeatTypeBreakdown(records: Inspection[]): InAppMeatTypeBreakdown[] {
+function buildMeatTypeBreakdown(records: DeveloperMetricRecord[]): InAppMeatTypeBreakdown[] {
   const meatTypeStats = new Map<string, { total: number; correct: number }>();
 
   for (const record of records) {
@@ -95,7 +97,7 @@ function buildMeatTypeBreakdown(records: Inspection[]): InAppMeatTypeBreakdown[]
   }));
 }
 
-export function buildDeveloperInAppMetrics(records: Inspection[]): InAppModelMetrics {
+export function buildDeveloperInAppMetrics(records: DeveloperMetricRecord[]): InAppModelMetrics {
   const totalEvaluated = records.length;
   const correctlyIdentified = records.reduce((count, record) => {
     const predicted = normalizeClassification(record.classification) ?? "fresh";
