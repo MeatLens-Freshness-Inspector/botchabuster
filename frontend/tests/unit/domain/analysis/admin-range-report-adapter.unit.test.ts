@@ -126,3 +126,54 @@ test("buildAdminRangeReportModel adds graph payloads and every real pork image c
     ["Inspector One", "Inspector Two"],
   );
 });
+
+test("buildAdminRangeReportModel includes developer analytics only for developers", () => {
+  const developerModel = buildAdminRangeReportModel({
+    ...sampleAdminInput,
+    isDeveloper: true,
+    developerLatestRuns: [
+      {
+        name: "mobilenetv2 (v1)",
+        accuracy: 80,
+        precision: 75,
+        recall: 70,
+        f1Score: 72,
+      },
+    ],
+    reportRows: [
+      {
+        ...sampleAdminInput.reportRows[0],
+        manualClassification: "fresh",
+        meatType: "pork",
+      },
+      {
+        ...sampleAdminInput.reportRows[0],
+        classification: "spoiled",
+        manualClassification: "fresh",
+        meatType: "pork",
+      },
+    ],
+  });
+
+  assert.ok(developerModel.sections.some((section) => section.id === "developer-metrics"));
+  assert.ok(developerModel.sections.some((section) => section.id === "developer-class-performance"));
+  assert.ok(developerModel.sections.some((section) => section.id === "developer-graphs"));
+  assert.deepEqual(
+    developerModel.sections.find((section) => section.id === "developer-metrics")?.metrics?.map((metric) => metric.label),
+    ["In-App Model Accuracy", "In-App Precision", "In-App Recall", "In-App F1-Score"],
+  );
+  assert.deepEqual(
+    developerModel.sections.find((section) => section.id === "developer-graphs")?.charts?.map((chart) => chart.title),
+    [
+      "Model Identified vs Actual Ground Truth",
+      "Developer Model Comparison",
+      "In-App Accuracy by Meat Type",
+    ],
+  );
+
+  const nonDeveloperModel = buildAdminRangeReportModel({
+    ...sampleAdminInput,
+    isDeveloper: false,
+  });
+  assert.equal(nonDeveloperModel.sections.some((section) => section.id.startsWith("developer-")), false);
+});
