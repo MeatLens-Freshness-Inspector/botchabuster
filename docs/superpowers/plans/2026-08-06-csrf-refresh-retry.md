@@ -241,4 +241,3 @@ Expected: no whitespace errors; only the intended CSRF commits are ahead of the 
 git add <only the verified refinement files>
 git commit -m "test: refine csrf refresh verification"
 ```
-
