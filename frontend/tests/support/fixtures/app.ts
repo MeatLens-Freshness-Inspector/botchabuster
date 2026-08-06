@@ -151,7 +151,8 @@ export async function seedOfflineAuthEnvelope(
     isAdmin,
     isDeveloper: roles.includes("developer"),
     authenticatedAt: "2026-08-02T12:00:00.000Z",
-    offlineExpiresAt: options.offlineExpiresAt ?? "2026-08-03T12:00:00.000Z",
+    offlineExpiresAt:
+      options.offlineExpiresAt ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
     offlineUnlockRequired: options.offlineUnlockRequired ?? false,
     passwordVerifier: null,
     localPasskey: options.localPasskey ?? null,
