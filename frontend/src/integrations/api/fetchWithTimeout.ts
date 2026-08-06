@@ -1,4 +1,4 @@
-import { applyApiRequestInit } from "./apiRequest";
+import { applyApiRequestInit, refreshApiSessionForCsrf } from "./apiRequest";
 
 export const API_REQUEST_TIMEOUT_MESSAGE = "Request timed out. Please check your connection and try again.";
 export const DEFAULT_API_REQUEST_TIMEOUT_MS = 15_000;
@@ -8,7 +8,7 @@ function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === "AbortError";
 }
 
-export async function fetchWithTimeout(
+async function fetchOnceWithTimeout(
   input: RequestInfo | URL,
   init: RequestInit = {},
   timeoutMs = DEFAULT_API_REQUEST_TIMEOUT_MS,
@@ -49,4 +49,42 @@ export async function fetchWithTimeout(
       sourceSignal.removeEventListener("abort", handleSourceAbort);
     }
   }
+}
+
+async function isInvalidCsrfResponse(response: Response): Promise<boolean> {
+  if (response.status !== 403) {
+    return false;
+  }
+
+  try {
+    const payload = await response.clone().json() as { error?: unknown };
+    return payload.error === "Invalid CSRF token";
+  } catch {
+    return false;
+  }
+}
+
+export async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+  timeoutMs = DEFAULT_API_REQUEST_TIMEOUT_MS,
+): Promise<Response> {
+  const response = await fetchOnceWithTimeout(input, init, timeoutMs);
+
+  if (!(await isInvalidCsrfResponse(response))) {
+    return response;
+  }
+
+  const refreshedToken = await refreshApiSessionForCsrf();
+  if (!refreshedToken) {
+    return response;
+  }
+
+  const retryHeaders = new Headers(init.headers);
+  retryHeaders.set("X-CSRF-Token", refreshedToken);
+
+  return fetchOnceWithTimeout(input, {
+    ...init,
+    headers: retryHeaders,
+  }, timeoutMs);
 }
