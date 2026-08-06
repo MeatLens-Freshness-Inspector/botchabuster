@@ -177,6 +177,8 @@ test("buildAdminRangeReportModel includes developer analytics only for developer
       "In-App Accuracy by Meat Type",
     ],
   );
+  const classPerformanceTables = developerModel.sections.find((section) => section.id === "developer-class-performance")?.tables ?? [];
+  assert.deepEqual(classPerformanceTables.map((table) => table.columns.length), [7, 5, 4]);
 
   const nonDeveloperModel = buildAdminRangeReportModel({
     ...sampleAdminInput,

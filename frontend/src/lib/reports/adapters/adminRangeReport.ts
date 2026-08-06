@@ -88,7 +88,7 @@ function buildDeveloperSections(
   latestRuns: DeveloperReportRun[],
 ): ReportSection[] {
   const metrics = buildDeveloperInAppMetrics(buildDeveloperReportRows(reportRows));
-  const classRows = metrics.classBreakdown.map((item) => [
+  const classCountRows = metrics.classBreakdown.map((item) => [
     item.class,
     String(item.modelIdentifiedCount),
     String(item.actualCount),
@@ -96,6 +96,9 @@ function buildDeveloperSections(
     String(item.fp),
     String(item.fn),
     String(item.tn),
+  ]);
+  const classMetricRows = metrics.classBreakdown.map((item) => [
+    item.class,
     formatMetricPercent(item.accuracy),
     formatMetricPercent(item.precision),
     formatMetricPercent(item.recall),
@@ -138,9 +141,13 @@ function buildDeveloperSections(
       id: "developer-class-performance",
       title: "In-App Model Class Performance",
       tables: [{
+        title: "Class Confusion Counts",
+        columns: ["Class", "Model Identified", "Actual", "TP", "FP", "FN", "TN"],
+        rows: classCountRows,
+      }, {
         title: "Class Metrics",
-        columns: ["Class", "Model Identified", "Actual", "TP", "FP", "FN", "TN", "Accuracy", "Precision", "Recall", "F1 Score"],
-        rows: classRows,
+        columns: ["Class", "Accuracy", "Precision", "Recall", "F1 Score"],
+        rows: classMetricRows,
       }, {
         title: "Meat Type Accuracy",
         columns: ["Meat Type", "Total", "Correct", "Accuracy"],
