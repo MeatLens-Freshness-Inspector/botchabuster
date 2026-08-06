@@ -105,7 +105,7 @@ test("admin can assign report header organizations when creating and editing use
 
   const blairCard = page.locator("div.rounded-2xl").filter({ hasText: "blair@example.com" }).first();
   await blairCard.getByRole("button", { name: /^Edit$/i }).click();
-  await page.getByLabel("Report header organization").click();
+  await page.getByRole("dialog").getByLabel("Report header organization").click();
   await page.getByRole("option", { name: "City Veterinary Office of Olongapo" }).click();
   await page.getByRole("button", { name: /Save Changes/i }).click();
 
