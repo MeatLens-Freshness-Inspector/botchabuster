@@ -50,7 +50,7 @@ test("renders response metrics, body, headers, and copy actions", async () => {
 
     assert.match(container.textContent ?? "", /200/);
     assert.match(container.textContent ?? "", /14 ms/);
-    assert.match(container.textContent ?? "", /\"ok\": true/);
+    assert.match(container.textContent ?? "", /"ok": true/);
     assert.ok(container.querySelector('button[aria-label="Copy response body"]'));
     assert.ok(container.querySelector('button[aria-label="Copy cURL"]'));
 

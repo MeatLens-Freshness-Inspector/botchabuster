@@ -341,7 +341,7 @@ function createDeveloperDashboardFetch(options?: {
   }) as typeof globalThis.fetch;
 }
 
-test("developer workspace renders the four internal tabs", async () => {
+test("developer workspace renders the five internal tabs", async () => {
   const { container, cleanup } = installDom();
   const originalFetch = globalThis.fetch;
   const root: Root = createRoot(container);
@@ -361,6 +361,7 @@ test("developer workspace renders the four internal tabs", async () => {
     assert.deepEqual(tabLabels, [
       "Overview",
       "Developer Settings",
+      "API Docs",
       "Datasets",
       "Training",
     ]);
