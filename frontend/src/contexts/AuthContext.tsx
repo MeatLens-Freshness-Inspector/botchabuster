@@ -15,6 +15,7 @@ import {
   getApiCsrfToken,
   getHttpApiErrorStatus,
   setApiCsrfToken,
+  setApiSessionRefreshHandler,
 } from "@/integrations/api/apiRequest";
 import {
   clearCachedAdmin,
@@ -341,6 +342,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfileStatus("error");
     }
   }, [authMode, loadValidOfflineEnvelope, user]);
+
+  useEffect(() => {
+    setApiSessionRefreshHandler(async () => {
+      const payload = await authClient.getSession();
+      setApiCsrfToken(payload.csrfToken);
+      return payload.csrfToken;
+    });
+
+    return () => {
+      setApiSessionRefreshHandler(null);
+    };
+  }, []);
 
   useEffect(() => {
     mountedRef.current = true;
