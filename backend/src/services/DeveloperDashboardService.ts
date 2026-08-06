@@ -80,7 +80,10 @@ export class DeveloperDashboardService {
   }
 
   async getOverview(): Promise<DeveloperOverviewResponse> {
-    const runs = await this.listTrainingRuns();
+    const [runs, inAppMetrics] = await Promise.all([
+      this.listTrainingRuns(),
+      inspectionService.getInAppModelMetrics(),
+    ]);
     const points = runs.map(metricPointFromRun);
 
     return {
@@ -89,6 +92,7 @@ export class DeveloperDashboardService {
         mobilenetv3: points.find((point) => normalizeFamily(point.modelFamily).includes("mobilenetv3")) ?? null,
       },
       latestRuns: points.slice(0, 10),
+      inAppMetrics,
     };
   }
 
