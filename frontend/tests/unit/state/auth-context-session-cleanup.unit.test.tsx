@@ -7,7 +7,10 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { AuthProvider, useAuth } from "../../../src/contexts/AuthContext";
 import { authClient } from "../../../src/integrations/api/AuthClient";
-import { clearApiCsrfToken } from "../../../src/integrations/api/apiRequest";
+import {
+  clearApiCsrfToken,
+  refreshApiSessionForCsrf,
+} from "../../../src/integrations/api/apiRequest";
 import {
   clearOfflineAuthEnvelope,
   loadOfflineAuthEnvelope,
@@ -168,11 +171,14 @@ test("online inactivity lock signs out server-side and clears the stored session
   const originalSignOut = authClient.signOut.bind(authClient);
   let currentAuth: AuthProbeState | null = null;
   let signOutCalls = 0;
+  let getSessionCalls = 0;
 
   try {
     await clearOfflineAuthEnvelope();
-    (authClient as { getSession: () => Promise<ReturnType<typeof createBootstrapPayload>> }).getSession = async () =>
-      createBootstrapPayload();
+    (authClient as { getSession: () => Promise<ReturnType<typeof createBootstrapPayload>> }).getSession = async () => {
+      getSessionCalls += 1;
+      return createBootstrapPayload();
+    };
     authClient.signOut = async () => {
       signOutCalls += 1;
     };
@@ -187,6 +193,8 @@ test("online inactivity lock signs out server-side and clears the stored session
     await flushEffectsUntil(() => currentAuth?.user?.id === "user-1");
 
     assert.ok(await loadOfflineAuthEnvelope());
+    assert.equal(await refreshApiSessionForCsrf(), "csrf-token-1");
+    assert.equal(getSessionCalls, 2);
 
     await act(async () => {
       await currentAuth?.lock();
@@ -196,12 +204,14 @@ test("online inactivity lock signs out server-side and clears the stored session
     assert.equal(currentAuth?.user, null);
     assert.equal(currentAuth?.authMode, "anonymous");
     assert.equal(await loadOfflineAuthEnvelope(), null);
-  } finally {
-    (authClient as { getSession?: typeof authClient.signIn }).getSession = originalGetSession;
-    authClient.signOut = originalSignOut;
+
     await act(async () => {
       root.unmount();
     });
+    assert.equal(await refreshApiSessionForCsrf(), null);
+  } finally {
+    (authClient as { getSession?: typeof authClient.signIn }).getSession = originalGetSession;
+    authClient.signOut = originalSignOut;
     await clearOfflineAuthEnvelope();
     clearApiCsrfToken();
     cleanup();
