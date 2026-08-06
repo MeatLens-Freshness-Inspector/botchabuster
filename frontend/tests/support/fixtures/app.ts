@@ -112,6 +112,7 @@ export async function seedOfflineAuthEnvelope(
     roles?: string[];
     primaryRole?: "developer" | "admin" | "inspector";
     offlineUnlockRequired?: boolean;
+    offlineExpiresAt?: string;
     localPasskey?: Record<string, unknown> | null;
   } = {},
 ): Promise<void> {
@@ -150,7 +151,7 @@ export async function seedOfflineAuthEnvelope(
     isAdmin,
     isDeveloper: roles.includes("developer"),
     authenticatedAt: "2026-08-02T12:00:00.000Z",
-    offlineExpiresAt: "2026-08-03T12:00:00.000Z",
+    offlineExpiresAt: options.offlineExpiresAt ?? "2026-08-03T12:00:00.000Z",
     offlineUnlockRequired: options.offlineUnlockRequired ?? false,
     passwordVerifier: null,
     localPasskey: options.localPasskey ?? null,
