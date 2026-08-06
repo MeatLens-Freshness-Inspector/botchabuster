@@ -13,7 +13,6 @@ import type {
   ReportSection,
 } from "@/lib/reports/types";
 import { buildDeveloperInAppMetrics, type DeveloperMetricRecord } from "@/pages/admin-dashboard/utils/developerInAppMetrics";
-import type { DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
 
 type AdminSummary = {
   total: number;
@@ -174,6 +173,7 @@ function buildDeveloperSections(
           id: "developer-model-comparison",
           title: "Developer Model Comparison",
           kind: "bar",
+          orientation: "horizontal",
           points: [],
           series: [
             { name: "Accuracy", color: "#2563eb", points: [...latestRuns.map((run) => ({ label: run.name, value: run.accuracy * 100 })), { label: "In-App Live", value: metrics.inAppAccuracy * 100 }] },
@@ -182,13 +182,6 @@ function buildDeveloperSections(
             { name: "F1 Score", color: "#ef4444", points: [...latestRuns.map((run) => ({ label: run.name, value: run.f1Score * 100 })), { label: "In-App Live", value: metrics.inAppF1Score * 100 }] },
           ],
           emptyState: "No model comparison metrics available",
-        },
-        {
-          id: "developer-meat-type-accuracy",
-          title: "In-App Accuracy by Meat Type",
-          kind: "bar",
-          points: metrics.meatTypeBreakdown.map((item) => ({ label: item.meatType, value: item.accuracy * 100 })),
-          emptyState: "No meat type breakdown available",
         },
       ],
     },

@@ -174,8 +174,11 @@ test("buildAdminRangeReportModel includes developer analytics only for developer
     [
       "Model Identified vs Actual Ground Truth",
       "Developer Model Comparison",
-      "In-App Accuracy by Meat Type",
     ],
+  );
+  assert.equal(
+    developerModel.sections.find((section) => section.id === "developer-graphs")?.charts?.find((chart) => chart.id === "developer-model-comparison")?.orientation,
+    "horizontal",
   );
   const classPerformanceTables = developerModel.sections.find((section) => section.id === "developer-class-performance")?.tables ?? [];
   assert.deepEqual(classPerformanceTables.map((table) => table.columns.length), [7, 5, 4]);

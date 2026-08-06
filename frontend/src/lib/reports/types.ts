@@ -30,6 +30,7 @@ export interface ReportChart {
   id: string;
   title: string;
   kind: "bar" | "line";
+  orientation?: "vertical" | "horizontal";
   points: ReportChartPoint[];
   series?: Array<{
     name: string;
