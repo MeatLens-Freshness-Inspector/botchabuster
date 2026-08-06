@@ -8,10 +8,50 @@ export interface DeveloperOverviewMetricPoint {
   modelVersion: string;
   datasetName: string;
   datasetRecordCount: number;
+  runId: string;
+  createdAt: string;
+  modelFamily: string;
+  modelVariant: string;
+  modelVersion: string;
+  datasetName: string;
+  datasetRecordCount: number;
   accuracy: number;
   precision: number;
   recall: number;
   f1Score: number;
+}
+
+export interface InAppClassBreakdown {
+  class: string;
+  modelIdentifiedCount: number;
+  actualCount: number;
+  tp: number;
+  fp: number;
+  fn: number;
+  tn: number;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1Score: number;
+}
+
+export interface InAppMeatTypeBreakdown {
+  meatType: string;
+  totalCount: number;
+  correctCount: number;
+  accuracy: number;
+}
+
+export interface InAppModelMetrics {
+  totalEvaluated: number;
+  correctlyIdentified: number;
+  incorrectlyIdentified: number;
+  inAppAccuracy: number;
+  inAppPrecision: number;
+  inAppRecall: number;
+  inAppF1Score: number;
+  classBreakdown: InAppClassBreakdown[];
+  meatTypeBreakdown: InAppMeatTypeBreakdown[];
 }
 
 export interface DeveloperOverviewResponse {
@@ -20,6 +60,7 @@ export interface DeveloperOverviewResponse {
     mobilenetv3: DeveloperOverviewMetricPoint | null;
   };
   latestRuns: DeveloperOverviewMetricPoint[];
+  inAppMetrics: InAppModelMetrics;
 }
 
 export interface DeveloperDatasetFilters {

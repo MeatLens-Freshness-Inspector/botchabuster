@@ -1,6 +1,12 @@
 import { supabase } from "../integrations/supabase";
 import type { Inspection, InspectionInsert } from "../types/inspection";
-import type { DeveloperDatasetFilters, DeveloperDatasetListResponse } from "../types/developerDashboard";
+import type {
+  DeveloperDatasetFilters,
+  DeveloperDatasetListResponse,
+  InAppClassBreakdown,
+  InAppMeatTypeBreakdown,
+  InAppModelMetrics,
+} from "../types/developerDashboard";
 import { mergeInspectionCoordinates } from "../types/inspectionCoordinates";
 import { mergeInspectionPreScanFields } from "../types/inspectionPreScan";
 
@@ -306,6 +312,123 @@ export class InspectionService {
     }
 
     return data as unknown as Inspection;
+  }
+
+  async getInAppModelMetrics(): Promise<InAppModelMetrics> {
+    const { data, error } = await supabase
+      .from(this.tableName)
+      .select("classification, manual_classification, meat_type");
+
+    if (error) throw new Error(`Failed to fetch inspection records for in-app metrics: ${error.message}`);
+
+    const records = (data ?? []) as unknown as Array<{
+      classification: Inspection["classification"];
+      manual_classification?: Inspection["classification"] | null;
+      meat_type: string;
+    }>;
+
+    const totalEvaluated = records.length;
+    let correctlyIdentified = 0;
+
+    const ALL_CLASSES: Array<Inspection["classification"]> = ["fresh", "acceptable", "warning", "not fresh", "spoiled"];
+    const meatTypeStats = new Map<string, { total: number; correct: number }>();
+
+    for (const record of records) {
+      const predicted = record.classification;
+      const actual = record.manual_classification ?? record.classification;
+      const isCorrect = predicted === actual;
+
+      if (isCorrect) {
+        correctlyIdentified += 1;
+      }
+
+      const meatType = record.meat_type || "unknown";
+      const existing = meatTypeStats.get(meatType) ?? { total: 0, correct: 0 };
+      existing.total += 1;
+      if (isCorrect) existing.correct += 1;
+      meatTypeStats.set(meatType, existing);
+    }
+
+    const incorrectlyIdentified = totalEvaluated - correctlyIdentified;
+    const inAppAccuracy = totalEvaluated > 0 ? correctlyIdentified / totalEvaluated : 0;
+
+    const classBreakdown: InAppClassBreakdown[] = ALL_CLASSES.map((cls) => {
+      let modelIdentifiedCount = 0;
+      let actualCount = 0;
+      let tp = 0;
+      let fp = 0;
+      let fn = 0;
+      let tn = 0;
+
+      for (const record of records) {
+        const predicted = record.classification;
+        const actual = record.manual_classification ?? record.classification;
+
+        const isPredCls = predicted === cls;
+        const isActualCls = actual === cls;
+
+        if (isPredCls) modelIdentifiedCount += 1;
+        if (isActualCls) actualCount += 1;
+
+        if (isPredCls && isActualCls) tp += 1;
+        else if (isPredCls && !isActualCls) fp += 1;
+        else if (!isPredCls && isActualCls) fn += 1;
+        else tn += 1;
+      }
+
+      const accuracy = totalEvaluated > 0 ? (tp + tn) / totalEvaluated : 0;
+      const precision = tp + fp > 0 ? tp / (tp + fp) : (actualCount === 0 && modelIdentifiedCount === 0 ? 1 : 0);
+      const recall = tp + fn > 0 ? tp / (tp + fn) : (actualCount === 0 ? 1 : 0);
+      const f1Score = precision + recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
+
+      return {
+        class: cls,
+        modelIdentifiedCount,
+        actualCount,
+        tp,
+        fp,
+        fn,
+        tn,
+        accuracy,
+        precision,
+        recall,
+        f1Score,
+      };
+    });
+
+    const activeClasses = classBreakdown.filter((item) => item.actualCount > 0 || item.modelIdentifiedCount > 0);
+    const classesToAverage = activeClasses.length > 0 ? activeClasses : classBreakdown;
+
+    const sumPrecision = classesToAverage.reduce((acc, item) => acc + item.precision, 0);
+    const sumRecall = classesToAverage.reduce((acc, item) => acc + item.recall, 0);
+
+    const inAppPrecision = classesToAverage.length > 0 ? sumPrecision / classesToAverage.length : 1;
+    const inAppRecall = classesToAverage.length > 0 ? sumRecall / classesToAverage.length : 1;
+    const inAppF1Score =
+      inAppPrecision + inAppRecall > 0
+        ? (2 * inAppPrecision * inAppRecall) / (inAppPrecision + inAppRecall)
+        : 0;
+
+    const meatTypeBreakdown: InAppMeatTypeBreakdown[] = Array.from(meatTypeStats.entries()).map(
+      ([meatType, stats]) => ({
+        meatType,
+        totalCount: stats.total,
+        correctCount: stats.correct,
+        accuracy: stats.total > 0 ? stats.correct / stats.total : 0,
+      }),
+    );
+
+    return {
+      totalEvaluated,
+      correctlyIdentified,
+      incorrectlyIdentified,
+      inAppAccuracy,
+      inAppPrecision,
+      inAppRecall,
+      inAppF1Score,
+      classBreakdown,
+      meatTypeBreakdown,
+    };
   }
 }
 
