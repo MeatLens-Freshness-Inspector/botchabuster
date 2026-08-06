@@ -32,7 +32,7 @@ export function ApiDocsSection() {
       </div>
 
       <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(14rem,18rem)_minmax(0,1fr)]">
-        <aside className="min-w-0 xl:max-h-[calc(100vh-18rem)] xl:overflow-y-auto xl:pr-1">
+        <aside className="api-docs-category-rail min-w-0 rounded-3xl border border-border/70 bg-card/35 p-2 shadow-[0_18px_50px_-40px_rgba(0,0,0,0.8)] xl:max-h-[calc(100vh-18rem)] xl:overflow-y-auto xl:pr-2">
           <ApiDocsCategoryNav
             categories={apiDocs.categories}
             operations={apiDocs.operations}
