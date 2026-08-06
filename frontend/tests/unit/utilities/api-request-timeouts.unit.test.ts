@@ -3,6 +3,12 @@ import test from "node:test";
 import { JSDOM } from "jsdom";
 import { authClient } from "../../../src/integrations/api/AuthClient";
 import { uploadClient } from "../../../src/integrations/api/UploadClient";
+import {
+  clearApiCsrfToken,
+  setApiCsrfToken,
+  setApiSessionRefreshHandler,
+} from "../../../src/integrations/api/apiRequest";
+import { fetchWithTimeout } from "../../../src/integrations/api/fetchWithTimeout";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -87,6 +93,90 @@ function createJsonResponse(body: unknown): Response {
 function createAbortError(): DOMException {
   return new DOMException("The operation was aborted.", "AbortError");
 }
+
+test("refreshes an expired csrf token and retries the request once", async () => {
+  const restoreDom = installDom();
+  const originalFetch = globalThis.fetch;
+
+  try {
+    setStoredSession();
+    setApiCsrfToken("csrf-expired");
+
+    const csrfHeaders: Array<string | null> = [];
+    let refreshCalls = 0;
+    setApiSessionRefreshHandler(async () => {
+      refreshCalls += 1;
+      return "csrf-fresh";
+    });
+
+    globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
+      csrfHeaders.push(new Headers(init?.headers).get("x-csrf-token"));
+
+      if (csrfHeaders.length === 1) {
+        return new Response(JSON.stringify({ error: "Invalid CSRF token" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return createJsonResponse({ updated: true });
+    }) as typeof globalThis.fetch;
+
+    const response = await fetchWithTimeout("/api/profiles/admin/users/user-2", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ full_name: "Updated User" }),
+    });
+
+    assert.equal(response.status, 200);
+    assert.equal(refreshCalls, 1);
+    assert.deepEqual(csrfHeaders, ["csrf-expired", "csrf-fresh"]);
+  } finally {
+    setApiSessionRefreshHandler(null);
+    clearApiCsrfToken();
+    globalThis.fetch = originalFetch;
+    restoreDom();
+  }
+});
+
+test("does not refresh or retry a non-CSRF forbidden response", async () => {
+  const restoreDom = installDom();
+  const originalFetch = globalThis.fetch;
+
+  try {
+    setStoredSession();
+    setApiCsrfToken("csrf-current");
+
+    let requestCount = 0;
+    let refreshCalls = 0;
+    setApiSessionRefreshHandler(async () => {
+      refreshCalls += 1;
+      return "csrf-fresh";
+    });
+
+    globalThis.fetch = (async () => {
+      requestCount += 1;
+      return new Response(JSON.stringify({ error: "Admin access required" }), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      });
+    }) as typeof globalThis.fetch;
+
+    const response = await fetchWithTimeout("/api/profiles/admin/users/user-2", {
+      method: "PUT",
+      body: JSON.stringify({ full_name: "Updated User" }),
+    });
+
+    assert.equal(response.status, 403);
+    assert.equal(requestCount, 1);
+    assert.equal(refreshCalls, 0);
+  } finally {
+    setApiSessionRefreshHandler(null);
+    clearApiCsrfToken();
+    globalThis.fetch = originalFetch;
+    restoreDom();
+  }
+});
 
 test("frontend API clients attach abort signals to representative requests", async () => {
   const restoreDom = installDom();
