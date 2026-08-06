@@ -1,4 +1,4 @@
-export type ApiDocsResponseBodyKind = "json" | "text" | "empty";
+export type ApiDocsResponseBodyKind = "json" | "text" | "blob" | "empty";
 
 export interface ApiDocsResponse {
   ok: boolean;
@@ -10,6 +10,8 @@ export interface ApiDocsResponse {
   bodyKind: ApiDocsResponseBodyKind;
   displayBody: string;
   errorMessage: string | null;
+  binaryBody: Blob | null;
+  fileName: string | null;
 }
 
 export function getApiDocsResponseSize(body: string): number {
@@ -26,15 +28,42 @@ function readErrorMessage(body: unknown, response: Response): string {
   return response.statusText?.trim() || `HTTP ${response.status}`;
 }
 
+function getFileName(headers: Record<string, string>): string | null {
+  const disposition = headers["content-disposition"] ?? "";
+  const match = disposition.match(/filename\*?=(?:UTF-8''|")?([^;"]+)/i);
+  return match?.[1]?.trim() || null;
+}
+
 export async function readApiDocsResponse(
   response: Response,
   elapsedMs: number,
 ): Promise<ApiDocsResponse> {
-  const rawBody = await response.text();
   const headers: Record<string, string> = {};
   response.headers.forEach((value, name) => {
     headers[name.toLowerCase()] = value;
   });
+
+  const contentType = headers["content-type"] ?? "";
+  const isBinary = /application\/(?:zip|octet-stream|pdf)|^image\//i.test(contentType);
+  if (isBinary) {
+    const buffer = await response.arrayBuffer();
+    const sizeBytes = buffer.byteLength;
+    return {
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText,
+      elapsedMs,
+      sizeBytes,
+      headers,
+      bodyKind: sizeBytes ? "blob" : "empty",
+      displayBody: sizeBytes ? `Binary response (${sizeBytes} bytes)` : "",
+      errorMessage: response.ok ? null : readErrorMessage(null, response),
+      binaryBody: sizeBytes ? new Blob([buffer], { type: contentType || "application/octet-stream" }) : null,
+      fileName: getFileName(headers),
+    };
+  }
+
+  const rawBody = await response.text();
 
   const trimmedBody = rawBody.trim();
   if (!trimmedBody) {
@@ -48,10 +77,11 @@ export async function readApiDocsResponse(
       bodyKind: "empty",
       displayBody: "",
       errorMessage: response.ok ? null : readErrorMessage(null, response),
+      binaryBody: null,
+      fileName: null,
     };
   }
 
-  const contentType = headers["content-type"] ?? "";
   const shouldParseJson = contentType.includes("json") || trimmedBody.startsWith("{") || trimmedBody.startsWith("[");
 
   if (shouldParseJson) {
@@ -67,6 +97,8 @@ export async function readApiDocsResponse(
         bodyKind: "json",
         displayBody: JSON.stringify(parsedBody, null, 2),
         errorMessage: response.ok ? null : readErrorMessage(parsedBody, response),
+        binaryBody: null,
+        fileName: null,
       };
     } catch {
       // A mislabeled JSON response is still useful as raw text.
@@ -83,5 +115,7 @@ export async function readApiDocsResponse(
     bodyKind: "text",
     displayBody: rawBody,
     errorMessage: response.ok ? null : readErrorMessage(rawBody, response),
+    binaryBody: null,
+    fileName: null,
   };
 }

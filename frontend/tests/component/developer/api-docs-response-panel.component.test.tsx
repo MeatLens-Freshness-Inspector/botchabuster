@@ -37,6 +37,8 @@ const response: ApiDocsResponse = {
   bodyKind: "json",
   displayBody: '{\n  "ok": true\n}',
   errorMessage: null,
+  binaryBody: null,
+  fileName: null,
 };
 
 test("renders response metrics, body, headers, and copy actions", async () => {

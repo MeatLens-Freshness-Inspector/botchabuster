@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Check, Clipboard, Clock3, Code2, Copy, FileText, HardDrive, Loader2 } from "lucide-react";
+import { Check, Clipboard, Clock3, Code2, Copy, Download, FileText, HardDrive, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,16 @@ export function ApiDocsResponsePanel({ response, isSending, executionError, curl
     await navigator.clipboard.writeText(value);
     setCopied(label);
     window.setTimeout(() => setCopied(null), 1400);
+  };
+
+  const download = () => {
+    if (!response?.binaryBody) return;
+    const href = URL.createObjectURL(response.binaryBody);
+    const anchor = document.createElement("a");
+    anchor.href = href;
+    anchor.download = response.fileName ?? "api-response.bin";
+    anchor.click();
+    URL.revokeObjectURL(href);
   };
 
   return (
@@ -75,17 +85,28 @@ export function ApiDocsResponsePanel({ response, isSending, executionError, curl
                   <Code2 className="h-3.5 w-3.5" />Headers
                 </Button>
               </div>
-              {activeView === "body" ? (
+              {activeView === "body" && response.bodyKind !== "blob" ? (
                 <Button type="button" variant="outline" size="sm" aria-label="Copy response body" onClick={() => void copy("body", response.displayBody)}>
                   {copied === "body" ? <Check className="h-3.5 w-3.5" /> : <Clipboard className="h-3.5 w-3.5" />}
                   {copied === "body" ? "Copied" : "Copy body"}
                 </Button>
               ) : null}
+              {activeView === "body" && response.bodyKind === "blob" ? (
+                <Button type="button" variant="outline" size="sm" aria-label="Download response" onClick={download}>
+                  <Download className="h-3.5 w-3.5" />Download response
+                </Button>
+              ) : null}
             </div>
             {activeView === "body" ? (
-              <pre aria-label="Response body" className="min-h-44 max-h-[28rem] overflow-auto rounded-2xl border border-border/70 bg-background/70 p-3 font-mono text-xs leading-5 text-foreground">
-                {response.displayBody || "(empty response body)"}
-              </pre>
+              response.bodyKind === "blob" ? (
+                <div aria-label="Response body" className="flex min-h-44 items-center justify-center rounded-2xl border border-border/70 bg-background/70 p-6 text-center font-mono text-xs text-muted-foreground">
+                  {response.displayBody}
+                </div>
+              ) : (
+                <pre aria-label="Response body" className="min-h-44 max-h-[28rem] overflow-auto rounded-2xl border border-border/70 bg-background/70 p-3 font-mono text-xs leading-5 text-foreground">
+                  {response.displayBody || "(empty response body)"}
+                </pre>
+              )
             ) : (
               <div aria-label="Response headers" className="max-h-[28rem] overflow-auto rounded-2xl border border-border/70 bg-background/70 p-3 font-mono text-xs">
                 {Object.entries(response.headers).map(([name, value]) => (
