@@ -77,13 +77,14 @@ export function useDeveloperDashboard() {
             : current,
         );
 
+        void loadOverview();
         return updatedInspection;
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to update developer dataset classification");
         throw error;
       }
     },
-    [],
+    [loadOverview],
   );
 
   const exportDatasets = useCallback(async () => {
