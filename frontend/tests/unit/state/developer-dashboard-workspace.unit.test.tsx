@@ -16,6 +16,7 @@ type GlobalWithDom = typeof globalThis & {
   HTMLSelectElement: typeof HTMLSelectElement;
   MouseEvent: typeof MouseEvent;
   Event: typeof Event;
+  ResizeObserver: typeof ResizeObserver;
 };
 
 function installDom(): { container: HTMLDivElement; cleanup: () => void } {
@@ -31,6 +32,7 @@ function installDom(): { container: HTMLDivElement; cleanup: () => void } {
     HTMLSelectElement: globalThis.HTMLSelectElement,
     MouseEvent: globalThis.MouseEvent,
     Event: globalThis.Event,
+    ResizeObserver: globalThis.ResizeObserver,
     getComputedStyle: globalThis.getComputedStyle,
     requestAnimationFrame: globalThis.requestAnimationFrame,
     cancelAnimationFrame: globalThis.cancelAnimationFrame,
@@ -75,6 +77,14 @@ function installDom(): { container: HTMLDivElement; cleanup: () => void } {
   Object.defineProperty(globals, "Event", {
     configurable: true,
     value: dom.window.Event,
+  });
+  Object.defineProperty(globals, "ResizeObserver", {
+    configurable: true,
+    value: class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
   });
   Object.defineProperty(globalThis, "getComputedStyle", {
     configurable: true,
@@ -142,6 +152,10 @@ function installDom(): { container: HTMLDivElement; cleanup: () => void } {
       Object.defineProperty(globals, "Event", {
         configurable: true,
         value: previousGlobals.Event,
+      });
+      Object.defineProperty(globals, "ResizeObserver", {
+        configurable: true,
+        value: previousGlobals.ResizeObserver,
       });
       Object.defineProperty(globalThis, "getComputedStyle", {
         configurable: true,
@@ -426,6 +440,67 @@ test("developer datasets show confidence scores as raw percentages", async () =>
     assert.ok(confidenceCells.includes("88.00%"));
     assert.ok(!confidenceCells.includes("10000%"));
     assert.ok(!confidenceCells.includes("8800%"));
+  } finally {
+    globalThis.fetch = originalFetch;
+    await act(async () => {
+      root.unmount();
+    });
+    cleanup();
+  }
+});
+
+test("developer overview derives in-app calculations from dataset manual classifications", async () => {
+  const { container, cleanup } = installDom();
+  const originalFetch = globalThis.fetch;
+  const root: Root = createRoot(container);
+
+  try {
+    globalThis.fetch = createDeveloperDashboardFetch({
+      datasets: [
+        {
+          id: "dataset-1",
+          user_id: "inspector-1",
+          meat_type: "beef",
+          classification: "fresh",
+          manual_classification: "fresh",
+          confidence_score: 100,
+          flagged_deviations: [],
+          explanation: null,
+          image_url: null,
+          location: "North Market",
+          inspector_notes: null,
+          created_at: "2026-07-13T00:00:00.000Z",
+          updated_at: "2026-07-13T00:00:00.000Z",
+        },
+        {
+          id: "dataset-2",
+          user_id: "inspector-2",
+          meat_type: "fish",
+          classification: "warning",
+          manual_classification: "spoiled",
+          confidence_score: 88,
+          flagged_deviations: [],
+          explanation: null,
+          image_url: null,
+          location: "South Market",
+          inspector_notes: null,
+          created_at: "2026-07-12T00:00:00.000Z",
+          updated_at: "2026-07-12T00:00:00.000Z",
+        },
+      ],
+    });
+    const { default: DeveloperTabContent } = await import("../../../src/pages/admin-dashboard/components/tab-content/DeveloperTabContent");
+
+    await act(async () => {
+      root.render(<DeveloperTabContent />);
+    });
+    await flushEffects();
+    await flushEffects();
+
+    const pageText = document.body.textContent ?? "";
+    assert.match(pageText, /In-App Model Accuracy/);
+    assert.match(pageText, /50%/);
+    assert.match(pageText, /1 of 2 records/);
   } finally {
     globalThis.fetch = originalFetch;
     await act(async () => {

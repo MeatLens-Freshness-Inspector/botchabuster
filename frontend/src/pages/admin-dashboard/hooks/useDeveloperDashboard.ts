@@ -9,12 +9,21 @@ import {
   type TrainingRunRecord,
 } from "@/integrations/api/DeveloperDashboardClient";
 import type { FreshnessClassification } from "@/types/inspection";
+import type { Inspection } from "@/types/inspection";
+import { buildDeveloperInAppMetrics } from "../utils/developerInAppMetrics";
 import type { DeveloperWorkspaceTabKey } from "../types";
+
+const OVERVIEW_DATASET_FILTERS: DeveloperDatasetFilterState = {
+  ...DEFAULT_DEVELOPER_DATASET_FILTERS,
+  limit: 10_000,
+  offset: 0,
+};
 
 export function useDeveloperDashboard() {
   const [activeDeveloperTab, setActiveDeveloperTab] = useState<DeveloperWorkspaceTabKey>("overview");
   const [overview, setOverview] = useState<DeveloperOverviewResponse | null>(null);
   const [datasets, setDatasets] = useState<DeveloperDatasetListResponse | null>(null);
+  const [overviewDatasetItems, setOverviewDatasetItems] = useState<Inspection[] | null>(null);
   const [trainingRuns, setTrainingRuns] = useState<TrainingRunRecord[]>([]);
   const [datasetFilters, setDatasetFilters] = useState<DeveloperDatasetFilterState>(
     DEFAULT_DEVELOPER_DATASET_FILTERS,
@@ -28,7 +37,15 @@ export function useDeveloperDashboard() {
   const loadOverview = useCallback(async () => {
     setIsLoadingOverview(true);
     try {
-      setOverview(await developerDashboardClient.getOverview());
+      const [overviewResponse, overviewDatasetPage] = await Promise.all([
+        developerDashboardClient.getOverview(),
+        developerDashboardClient.getDatasets(OVERVIEW_DATASET_FILTERS, 0),
+      ]);
+      setOverviewDatasetItems(overviewDatasetPage.items);
+      setOverview({
+        ...overviewResponse,
+        inAppMetrics: buildDeveloperInAppMetrics(overviewDatasetPage.items),
+      });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to load developer overview");
     } finally {
@@ -76,8 +93,23 @@ export function useDeveloperDashboard() {
               }
             : current,
         );
+        setOverviewDatasetItems((current) => {
+          if (!current) {
+            return current;
+          }
 
-        void loadOverview();
+          const nextItems = current.map((item) => (item.id === inspectionId ? updatedInspection : item));
+          setOverview((currentOverview) => (
+            currentOverview
+              ? {
+                  ...currentOverview,
+                  inAppMetrics: buildDeveloperInAppMetrics(nextItems),
+                }
+              : currentOverview
+          ));
+          return nextItems;
+        });
+
         return updatedInspection;
       } catch (error) {
         toast.error(error instanceof Error ? error.message : "Failed to update developer dataset classification");
