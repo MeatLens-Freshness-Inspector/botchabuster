@@ -402,7 +402,7 @@ const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
                               : "Gordon College CCS (fallback)"
                           }
                         >
-                          Header:{" "}
+                          Report Header:{" "}
                           <span className="font-medium text-foreground">
                             {profile.report_organization
                               ? getReportOrganizationLabel(profile.report_organization)
