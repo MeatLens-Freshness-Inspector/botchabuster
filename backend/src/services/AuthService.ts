@@ -71,6 +71,26 @@ export class AuthService {
     };
   }
 
+  private async revokeSupabaseSession(accessToken: string | null | undefined): Promise<void> {
+    const trimmedToken = accessToken?.trim();
+    if (!trimmedToken) {
+      return;
+    }
+
+    const { supabaseUrl, supabasePublishableKey } = resolveSupabaseClientConfig(process.env);
+    const response = await fetch(`${supabaseUrl}/auth/v1/logout`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${trimmedToken}`,
+        apikey: supabasePublishableKey,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to finalize sign-in session");
+    }
+  }
+
   private async ensureProfileExists(user: {
     id: string;
     user_metadata?: Record<string, unknown> | null;
@@ -147,9 +167,11 @@ export class AuthService {
       user_metadata: (data.user.user_metadata ?? null) as Record<string, unknown> | null,
     });
 
+    await this.revokeSupabaseSession(data.session?.access_token);
+
     return {
       user,
-      session: this.mapSession(data.session),
+      session: null,
     };
   }
 
@@ -188,9 +210,11 @@ export class AuthService {
       });
     }
 
+    await this.revokeSupabaseSession(data.session?.access_token);
+
     return {
       user: this.mapUser(data.user),
-      session: this.mapSession(data.session),
+      session: null,
     };
   }
 

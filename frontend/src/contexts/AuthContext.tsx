@@ -574,6 +574,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const lock = async () => {
+    if (navigator.onLine && authMode === "online-authenticated") {
+      await signOut();
+      return;
+    }
+
     const envelope = await loadValidOfflineEnvelope();
     if (!envelope) {
       clearInMemoryAuthState("anonymous");
