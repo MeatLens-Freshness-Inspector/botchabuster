@@ -270,7 +270,7 @@ test("shows a pork-only scope reminder in inspect and links to the full referenc
 
   await page.goto("/inspect");
 
-  await expect(page.getByRole("heading", { name: /scope and delimitations/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /scope reminder/i })).toBeVisible();
   await expect(page.getByText(/pork samples only/i)).toBeVisible();
   await expect(page.getByText(/field screening support only/i)).toBeVisible();
   await expect(page.getByText(/not a legal certification tool/i)).toBeVisible();
