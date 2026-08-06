@@ -275,7 +275,7 @@ test("shows a pork-only scope reminder in inspect and links to the full referenc
   await expect(page.getByText(/screening support, not diagnosis/i)).toBeVisible();
   await expect(page.getByText(/final decision remains with the inspector/i)).toBeVisible();
 
-  await page.getByRole("link", { name: /view full scope and delimitations/i }).click();
+  await page.getByRole("link", { name: /view full scope & limitations/i }).click();
 
   await expect(page).toHaveURL(/\/profile\/help\/scope$/);
 });
