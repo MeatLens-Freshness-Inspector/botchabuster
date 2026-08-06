@@ -115,3 +115,29 @@ test("default editor values come from the catalog body and parameters", () => {
   assert.deepEqual(values.query, { scope: "mine", empty: "" });
   assert.equal(values.body, "");
 });
+
+test("redacts sensitive JSON values from the cURL-safe request preview and URL", () => {
+  const sensitiveOperation: ApiDocsOperation = {
+    ...jsonOperation,
+    path: "/auth/recovery/password",
+    parameters: [{ name: "accessToken", location: "query", required: false, description: "Recovery token" }],
+    body: {
+      mode: "json",
+      contentType: "application/json",
+      defaultValue: '{"accessToken":"","password":""}',
+      sensitiveFields: ["accessToken", "password"],
+    },
+  };
+
+  const request = buildApiDocsRequest(sensitiveOperation, {
+    path: {},
+    query: { accessToken: "url-secret" },
+    headers: {},
+    body: { accessToken: "body-secret", password: "password-secret", safe: "kept" },
+    files: {},
+  });
+
+  assert.doesNotMatch(request.safeUrl, /url-secret|body-secret|password-secret/);
+  assert.doesNotMatch(request.bodyPreview, /body-secret|password-secret/);
+  assert.match(request.bodyPreview, /\[redacted\]/);
+});

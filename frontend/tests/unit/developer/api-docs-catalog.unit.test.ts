@@ -33,3 +33,15 @@ test("catalog contains every API route operation exactly once", () => {
     assert.ok(["GET", "POST", "PUT", "PATCH", "DELETE"].includes(operation.method));
   }
 });
+
+test("catalog marks credential fields and no-content auth responses", () => {
+  const signIn = API_DOCS_OPERATIONS.find((operation) => operation.id === "auth-sign-in");
+  const recovery = API_DOCS_OPERATIONS.find((operation) => operation.id === "auth-recovery-password");
+  const reset = API_DOCS_OPERATIONS.find((operation) => operation.id === "auth-reset-password");
+  const updatePassword = API_DOCS_OPERATIONS.find((operation) => operation.id === "auth-update-password");
+
+  assert.deepEqual(signIn?.body.mode === "json" ? signIn.body.sensitiveFields : [], ["password"]);
+  assert.deepEqual(recovery?.body.mode === "json" ? recovery.body.sensitiveFields : [], ["accessToken", "password"]);
+  assert.equal(reset?.responseKind, "empty");
+  assert.equal(updatePassword?.responseKind, "empty");
+});
