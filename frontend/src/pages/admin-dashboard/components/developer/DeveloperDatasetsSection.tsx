@@ -1,5 +1,5 @@
 import React from "react";
-import { Download, ImageIcon, RotateCcw, Search } from "lucide-react";
+import { Download, ImageIcon, RotateCcw, Search, Sparkles } from "lucide-react";
 import { FreshnessBadge } from "@/components/FreshnessBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -72,8 +72,10 @@ export function DeveloperDatasetsSection({
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-xl font-semibold">Datasets</h2>
-          <p className="text-sm text-muted-foreground">Inspection records and image assets prepared for local training export.</p>
+          <h2 className="font-display text-xl font-semibold">Datasets & Ground Truth Labels</h2>
+          <p className="text-sm text-muted-foreground">
+            Inspection records prepared for model evaluation and local training export. Updates to manual classification re-calculate In-App Model Accuracy live.
+          </p>
         </div>
         <Button
           type="button"
@@ -85,6 +87,17 @@ export function DeveloperDatasetsSection({
           {isExporting ? "Exporting..." : "Export Dataset"}
         </Button>
       </div>
+
+      <Card className="border-primary/30 bg-primary/5">
+        <CardContent className="p-3 text-xs text-muted-foreground flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary shrink-0" />
+            <span>
+              <strong className="text-foreground">In-App Model Accuracy Ground Truth Input:</strong> Setting manual classification on records below updates ground truth labels, driving live In-App Accuracy, Precision, Recall & F1-Score metrics in the Overview tab.
+            </span>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="border-border/70 bg-card/90">
         <CardHeader className="p-4 pb-2">
