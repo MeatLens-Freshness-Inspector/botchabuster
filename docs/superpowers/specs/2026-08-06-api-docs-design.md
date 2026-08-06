@@ -115,6 +115,7 @@ The catalog should use discriminated body modes:
 
 - `none`
 - `json`
+- `urlencoded`
 - `form-data`
 
 JSON body definitions include a default editor string and content type. Form-data definitions identify text fields and optional file fields. Parameters are represented separately from body fields.
@@ -194,4 +195,3 @@ The implementation will use these reviewable commit boundaries, each non-empty:
 14. Developer workspace integration and responsive layout.
 15. Accessibility, copy actions, and destructive-request confirmation.
 16. Documentation, lint/typecheck/build fixes, and final verification.
-
