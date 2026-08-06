@@ -1,9 +1,10 @@
 import type { ApiDocsEditorValues } from "./types";
 import type { ApiDocsRequest } from "./request";
+import type { ApiDocsOperation } from "./types";
+import { redactHeaders, redactJsonText, redactRecord } from "./redaction";
 
 export const API_DOCS_HISTORY_STORAGE_KEY = "meatlens-api-docs-history";
 const MAX_HISTORY_ENTRIES = 20;
-const PROTECTED_HEADERS = new Set(["authorization", "x-csrf-token"]);
 
 export interface ApiDocsHistoryValues {
   path: Record<string, string>;
@@ -31,9 +32,16 @@ function getStorage(storage?: Storage): Storage | null {
 }
 
 function sanitizeHeaders(headers: Record<string, string>): Record<string, string> {
-  return Object.fromEntries(
-    Object.entries(headers).filter(([name]) => !PROTECTED_HEADERS.has(name.toLowerCase())),
-  );
+  return redactHeaders(headers);
+}
+
+function sanitizeBody(body: string | Record<string, string>, operation?: ApiDocsOperation): string | Record<string, string> {
+  if (typeof body === "string") {
+    if (operation?.body.mode === "json") return redactJsonText(body, operation.body.sensitiveFields);
+    return body;
+  }
+
+  return redactRecord(body, operation?.body.mode === "json" ? operation.body.sensitiveFields : []);
 }
 
 function isHistoryEntry(value: unknown): value is ApiDocsHistoryEntry {
@@ -67,6 +75,7 @@ export function loadApiDocsHistory(storage?: Storage): ApiDocsHistoryEntry[] {
       values: {
         ...entry.values,
         headers: sanitizeHeaders(entry.values.headers),
+        body: sanitizeBody(entry.values.body),
       },
     }));
   } catch {
@@ -84,6 +93,7 @@ export function saveApiDocsHistory(entry: ApiDocsHistoryEntry, storage?: Storage
     values: {
       ...entry.values,
       headers: sanitizeHeaders(entry.values.headers),
+      body: sanitizeBody(entry.values.body),
     },
   };
 
@@ -99,6 +109,7 @@ export function clearApiDocsHistory(storage?: Storage): void {
 
 export function toApiDocsHistoryEntry(input: {
   operationId: string;
+  operation: ApiDocsOperation;
   request: ApiDocsRequest;
   values: ApiDocsEditorValues;
   status: number | null;
@@ -113,13 +124,13 @@ export function toApiDocsHistoryEntry(input: {
     id: `${input.operationId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     operationId: input.operationId,
     method: input.request.init.method ?? "GET",
-    url: input.request.url,
+    url: input.request.safeUrl,
     headers,
     values: {
       path: { ...input.values.path },
       query: { ...input.values.query },
-      headers: { ...input.values.headers },
-      body: typeof input.values.body === "string" ? input.values.body : { ...input.values.body },
+      headers: sanitizeHeaders(input.values.headers),
+      body: sanitizeBody(input.values.body, input.operation),
     },
     status: input.status,
     elapsedMs: input.elapsedMs,

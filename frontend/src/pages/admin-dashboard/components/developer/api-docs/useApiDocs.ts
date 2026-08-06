@@ -150,6 +150,7 @@ export function useApiDocs(): ApiDocsHookState {
       setResponse(normalizedResponse);
       const entry = toApiDocsHistoryEntry({
         operationId: selectedOperation.id,
+        operation: selectedOperation,
         request,
         values: editorValues,
         status: normalizedResponse.status,

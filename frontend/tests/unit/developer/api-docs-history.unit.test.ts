@@ -25,6 +25,7 @@ class MemoryStorage implements Storage {
 
 const request: ApiDocsRequest = {
   url: "http://localhost:3001/api/inspections",
+  safeUrl: "http://localhost:3001/api/inspections",
   init: {
     method: "POST",
     headers: new Headers({
@@ -42,6 +43,7 @@ const request: ApiDocsRequest = {
     "X-Debug": "enabled",
   }),
   bodyPreview: '{"ok":true}',
+  curlBodyParts: [],
 };
 
 function historyEntry(id: number): ApiDocsHistoryEntry {

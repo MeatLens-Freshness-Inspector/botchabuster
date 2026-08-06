@@ -51,6 +51,7 @@ export type ApiDocsBody =
       mode: "json";
       contentType: "application/json";
       defaultValue: string;
+      sensitiveFields?: string[];
     }
   | {
       mode: "urlencoded";

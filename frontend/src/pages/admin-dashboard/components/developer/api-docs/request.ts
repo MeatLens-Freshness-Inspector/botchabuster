@@ -1,5 +1,6 @@
 import { createAuthHeaders } from "@/lib/authCache";
 import { API_BASE_URL } from "@/integrations/api/apiBaseUrl";
+import { redactJsonText, redactRecord, sanitizeUrl } from "./redaction";
 import type {
   ApiDocsBodyField,
   ApiDocsEditorValues,
@@ -10,9 +11,11 @@ const PROTECTED_HEADERS = new Set(["authorization", "x-csrf-token"]);
 
 export interface ApiDocsRequest {
   url: string;
+  safeUrl: string;
   init: RequestInit;
   headers: Headers;
   bodyPreview: string;
+  curlBodyParts: string[];
 }
 
 function getRecordValue(record: string | Record<string, string>, key: string): string {
@@ -151,6 +154,25 @@ function createFormDataBody(operation: ApiDocsOperation, values: ApiDocsEditorVa
   return formData;
 }
 
+function createCurlBodyParts(operation: ApiDocsOperation, values: ApiDocsEditorValues): string[] {
+  if (operation.body.mode !== "form-data") return [];
+
+  const body = typeof values.body === "string" ? {} : values.body;
+  const parts: string[] = [];
+  for (const field of operation.body.fields) {
+    if (field.kind === "file") {
+      if (values.files[field.name]) parts.push(`${field.name}=@<select file>`);
+      continue;
+    }
+
+    if (body[field.name] !== undefined && body[field.name] !== "") {
+      const safeValue = redactRecord({ [field.name]: body[field.name] }, operation.body.fields.filter((entry) => entry.kind === "text").map((entry) => entry.name))[field.name];
+      parts.push(`${field.name}=${safeValue}`);
+    }
+  }
+  return parts;
+}
+
 export function buildApiDocsRequest(
   operation: ApiDocsOperation,
   values: ApiDocsEditorValues,
@@ -171,24 +193,29 @@ export function buildApiDocsRequest(
   const headers = createHeaders(values);
   let body: BodyInit | undefined;
   let bodyPreview = "";
+  let curlBodyParts: string[] = [];
 
   if (operation.body.mode === "json") {
     headers.set("Content-Type", operation.body.contentType);
     body = createJsonBody(values);
-    bodyPreview = body;
+    bodyPreview = redactJsonText(body, operation.body.sensitiveFields);
   } else if (operation.body.mode === "urlencoded") {
     headers.set("Content-Type", operation.body.contentType);
     body = createUrlencodedBody(values);
-    bodyPreview = body;
+    const bodyRecord = typeof values.body === "string" ? {} : values.body;
+    bodyPreview = new URLSearchParams(redactRecord(bodyRecord)).toString();
   } else if (operation.body.mode === "form-data") {
     body = createFormDataBody(operation, values);
     bodyPreview = "[multipart form-data]";
+    curlBodyParts = createCurlBodyParts(operation, values);
   }
 
   return {
     url: url.toString(),
+    safeUrl: sanitizeUrl(url.toString()),
     init: { method: operation.method, headers, body },
     headers,
     bodyPreview,
+    curlBodyParts,
   };
 }
