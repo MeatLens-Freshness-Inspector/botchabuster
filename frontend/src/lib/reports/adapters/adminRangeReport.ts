@@ -36,7 +36,13 @@ type AdminReportRow = {
   imageUrl: string | null;
 };
 
-type DeveloperReportRun = Pick<DeveloperOverviewMetricPoint, "name" | "accuracy" | "precision" | "recall" | "f1Score">;
+type DeveloperReportRun = {
+  name: string;
+  accuracy: number;
+  precision: number;
+  recall: number;
+  f1Score: number;
+};
 
 const CLASSIFICATION_ORDER = [
   "fresh",
@@ -163,11 +169,10 @@ function buildDeveloperSections(
           kind: "bar",
           points: [],
           series: [
-            { name: "Accuracy", color: "#2563eb", points: latestRuns.map((run) => ({ label: run.name, value: run.accuracy })) },
-            { name: "Precision", color: "#22c55e", points: latestRuns.map((run) => ({ label: run.name, value: run.precision })) },
-            { name: "Recall", color: "#eab308", points: latestRuns.map((run) => ({ label: run.name, value: run.recall })) },
-            { name: "F1 Score", color: "#ef4444", points: latestRuns.map((run) => ({ label: run.name, value: run.f1Score })) },
-            { name: "In-App Live", color: "#7c3aed", points: [{ label: "In-App Live", value: metrics.inAppAccuracy * 100 }] },
+            { name: "Accuracy", color: "#2563eb", points: [...latestRuns.map((run) => ({ label: run.name, value: run.accuracy * 100 })), { label: "In-App Live", value: metrics.inAppAccuracy * 100 }] },
+            { name: "Precision", color: "#22c55e", points: [...latestRuns.map((run) => ({ label: run.name, value: run.precision * 100 })), { label: "In-App Live", value: metrics.inAppPrecision * 100 }] },
+            { name: "Recall", color: "#eab308", points: [...latestRuns.map((run) => ({ label: run.name, value: run.recall * 100 })), { label: "In-App Live", value: metrics.inAppRecall * 100 }] },
+            { name: "F1 Score", color: "#ef4444", points: [...latestRuns.map((run) => ({ label: run.name, value: run.f1Score * 100 })), { label: "In-App Live", value: metrics.inAppF1Score * 100 }] },
           ],
           emptyState: "No model comparison metrics available",
         },
