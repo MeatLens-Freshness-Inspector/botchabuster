@@ -298,7 +298,7 @@ export class DeveloperDashboardService {
       "image file",
     ] as const;
     const rows = inspections.map((inspection, index) => {
-      const manualClassification = inspection.manual_classification ?? inspection.classification;
+      const manualClassification = (inspection.manual_classification && inspection.manual_classification.trim()) || inspection.classification;
       const downloadedImage = downloadedImages[index] ?? null;
       const imageFile = downloadedImage ? `${downloadedImage.id}.${downloadedImage.extension}` : "";
       return [

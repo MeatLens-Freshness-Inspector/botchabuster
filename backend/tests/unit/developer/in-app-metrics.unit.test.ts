@@ -18,7 +18,9 @@ test("InspectionService.getInAppModelMetrics computes dataset evaluation metrics
 
   const originalFrom = supabase.from;
   (supabase as any).from = () => ({
-    select: () => Promise.resolve({ data: mockData, error: null }),
+    select: () => ({
+      range: () => Promise.resolve({ data: mockData, error: null }),
+    }),
   });
 
   try {

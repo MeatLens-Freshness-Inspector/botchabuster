@@ -315,9 +315,10 @@ export class InspectionService {
   }
 
   async getInAppModelMetrics(): Promise<InAppModelMetrics> {
-    const { data, error } = await supabase
-      .from(this.tableName)
-      .select("classification, manual_classification, meat_type");
+    const { data, error } = await (supabase
+      .from(this.tableName) as any)
+      .select("*")
+      .range(0, 10_000);
 
     if (error) throw new Error(`Failed to fetch inspection records for in-app metrics: ${error.message}`);
 
@@ -327,6 +328,14 @@ export class InspectionService {
       meat_type: string;
     }>;
 
+    const resolveGroundTruth = (record: {
+      classification: Inspection["classification"];
+      manual_classification?: Inspection["classification"] | null;
+    }): Inspection["classification"] => {
+      const manual = typeof record.manual_classification === "string" ? record.manual_classification.trim() : "";
+      return manual.length > 0 ? (manual as Inspection["classification"]) : record.classification;
+    };
+
     const totalEvaluated = records.length;
     let correctlyIdentified = 0;
 
@@ -335,7 +344,7 @@ export class InspectionService {
 
     for (const record of records) {
       const predicted = record.classification;
-      const actual = record.manual_classification ?? record.classification;
+      const actual = resolveGroundTruth(record);
       const isCorrect = predicted === actual;
 
       if (isCorrect) {
@@ -362,7 +371,7 @@ export class InspectionService {
 
       for (const record of records) {
         const predicted = record.classification;
-        const actual = record.manual_classification ?? record.classification;
+        const actual = resolveGroundTruth(record);
 
         const isPredCls = predicted === cls;
         const isActualCls = actual === cls;
