@@ -71,6 +71,12 @@ ALLOWED_ORIGINS=https://your-frontend-url
 UPLOAD_DIR=/tmp/uploads
 ```
 
+## API Docs Route Authority
+
+The Express route modules under `backend/src/routes` remain the authority for the registered `/api` surface. The developer API Docs workspace mirrors those operations in a typed frontend catalog for interactive forms; it does not change route authorization or create an unrestricted proxy.
+
+The current catalog is grouped by route namespace: `auth`, `analysis`, `access-codes`, `inspections`, `profiles`, `stats`, `upload`, `chat`, `market-locations`, `audit-logs`, `developer-options`, `developer-dashboard`, and `user-chat`. Keep the catalog and its route-audit test updated when adding or removing a route.
+
 ## Technologies Used
 - **Node.js**: JavaScript runtime
 - **Express**: Web framework

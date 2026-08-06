@@ -68,6 +68,16 @@ Set the following environment variable in Netlify:
 VITE_API_BASE_URL=https://your-backend-url/api
 ```
 
+## Developer API Docs
+
+Developer accounts have an `API Docs` tab inside the developer settings workspace. It documents every registered `/api` operation in these categories: Authentication, Analysis, Access Codes, Inspections, Profiles, Statistics, Uploads, Chat, Market Locations, Audit Logs, Developer Options, Developer Dashboard, and User Chat.
+
+Select an operation to edit path/query parameters, custom headers, JSON, URL-encoded, or multipart request bodies. `Send` executes against the configured `VITE_API_BASE_URL` using the current app session. Browser requests keep credentialed cookies and the existing CSRF transport; native requests keep the existing Bearer-token transport. Authorization and CSRF headers cannot be entered into the editor or copied into cURL/history.
+
+Responses show status, elapsed time, size, headers, and a formatted body. The last 20 requests are stored locally for replay without automatically sending them. DELETE requests require confirmation before execution.
+
+When a backend route changes, update the typed catalog at `frontend/src/pages/admin-dashboard/components/developer/api-docs/catalog.ts` and keep the category-count route audit test in sync.
+
 ## Technologies Used
 - **React**: UI library
 - **TypeScript**: Static typing
