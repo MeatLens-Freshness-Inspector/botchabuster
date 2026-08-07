@@ -212,6 +212,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e:critical
@@ -241,6 +248,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e:full
