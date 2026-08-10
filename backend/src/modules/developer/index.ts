@@ -3,6 +3,14 @@ export {
   DeveloperDashboardStorageService,
   developerDashboardStorageService,
 } from "./infrastructure/DeveloperDashboardStorageService";
+export {
+  DeveloperDashboardService,
+  developerDashboardService,
+} from "./infrastructure/DeveloperDashboardService";
+export {
+  DeveloperOptionsService,
+  developerOptionsService,
+} from "./infrastructure/DeveloperOptionsService";
 export { default as developerDashboardRoutes } from "./presentation/dashboard-routes";
 export { default as developerOptionsRoutes } from "./presentation/options-routes";
 export { DeveloperDashboardController } from "./presentation/controllers/DeveloperDashboardController";

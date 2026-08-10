@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { developerOptionsService } from "../../../../services/DeveloperOptionsService";
+import { developerOptionsService } from "../../infrastructure/DeveloperOptionsService";
 import { auditLogService } from "../../../audit/infrastructure/AuditLogService";
 import { getErrorStatus, resolveTrackedRequestAuthContext, toAuditActor, type RequestAuthContext } from "../../../../middleware/auth";
 

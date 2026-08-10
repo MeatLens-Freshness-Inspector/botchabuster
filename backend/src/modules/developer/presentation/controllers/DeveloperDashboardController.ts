@@ -1,6 +1,6 @@
 import { rm } from "node:fs/promises";
 import type { Request, Response } from "express";
-import { developerDashboardService } from "../../../../services/DeveloperDashboardService";
+import { developerDashboardService } from "../../infrastructure/DeveloperDashboardService";
 import type { DeveloperDatasetClassification, DeveloperDatasetFilters } from "../../../../types/developerDashboard";
 import type { Inspection } from "../../../../types/inspection";
 
