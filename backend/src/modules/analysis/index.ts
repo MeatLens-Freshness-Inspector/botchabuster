@@ -1,2 +1,5 @@
 /** Analysis module public surface. */
-export {};
+export {
+  StorageService,
+  storageService,
+} from "./infrastructure/StorageService";

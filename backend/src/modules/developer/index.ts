@@ -1,2 +1,5 @@
 /** Developer module public surface. */
-export {};
+export {
+  DeveloperDashboardStorageService,
+  developerDashboardStorageService,
+} from "./infrastructure/DeveloperDashboardStorageService";

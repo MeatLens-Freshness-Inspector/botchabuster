@@ -1,5 +1,9 @@
 /** Inspections module public surface. */
-export {};
+export {
+  InspectionService,
+  inspectionService,
+} from "./infrastructure/InspectionService";
+export type { InspectionScope } from "./infrastructure/InspectionService";
 
 export { InspectionId } from "./domain/InspectionId";
 export { GetInspectionById } from "./application/GetInspectionById";

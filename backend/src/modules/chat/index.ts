@@ -4,6 +4,14 @@ export { SupabaseChatContactRepository } from "./infrastructure/SupabaseChatCont
 export { createSupabaseChatContactRepository } from "./infrastructure/SupabaseChatFactory";
 export { ListChatContactsController } from "./presentation/controllers/ListChatContactsController";
 export { ChatView } from "./presentation/views/ChatView";
+export {
+  UserChatService,
+  userChatService,
+} from "./infrastructure/UserChatService";
+export type {
+  UserChatMessage,
+  UserChatContact,
+} from "./infrastructure/UserChatService";
 export type {
   ChatContact,
   ChatContactRepository,
