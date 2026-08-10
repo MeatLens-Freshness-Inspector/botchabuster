@@ -15,3 +15,5 @@ export type {
 export { InspectionServiceGateway } from "./infrastructure/InspectionServiceGateway";
 export { GetInspectionController } from "./presentation/controllers/GetInspectionController";
 export { InspectionView } from "./presentation/views/InspectionView";
+export { default as inspectionRoutes } from "./presentation/routes";
+export { InspectionController } from "./presentation/controllers/InspectionController";

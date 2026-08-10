@@ -18,3 +18,5 @@ export type {
 } from "./infrastructure/ProfileService";
 export { GetProfileController } from "./presentation/controllers/GetProfileController";
 export { UserView } from "./presentation/views/UserView";
+export { default as profileRoutes } from "./presentation/routes";
+export { ProfileController } from "./presentation/controllers/ProfileController";
