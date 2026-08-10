@@ -1,2 +1,3 @@
 /** Access-codes module public surface. */
-export {};
+export { AccessCodeService, accessCodeService } from "./infrastructure/AccessCodeService";
+export type { AccessCode } from "./infrastructure/AccessCodeService";
