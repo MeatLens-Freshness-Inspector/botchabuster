@@ -10,7 +10,7 @@ interface RpcResult<T> {
 }
 
 interface AnalyticsRpcClient {
-  rpc<T = unknown>(functionName: string, args?: Record<string, unknown>): Promise<RpcResult<T>>;
+  rpc<T = unknown>(functionName: string, args?: Record<string, unknown>): PromiseLike<RpcResult<T>>;
 }
 
 function assertNumber(value: unknown, fieldName: string): number {

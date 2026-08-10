@@ -1,9 +1,11 @@
-import { Router } from "express";
-import { StatsController } from "../controllers/StatsController";
+import { supabase } from "../integrations/supabase";
+import {
+  createAnalyticsRouter,
+  GetLandingPageStats,
+  SupabaseAnalyticsRepository,
+} from "../modules/analytics";
 
-const router = Router();
-const controller = new StatsController();
+const analyticsRepository = new SupabaseAnalyticsRepository(supabase);
+const landingPageStatsQuery = new GetLandingPageStats(analyticsRepository);
 
-router.get("/landing-page", (req, res) => controller.getLandingPageStats(req, res));
-
-export default router;
+export default createAnalyticsRouter(landingPageStatsQuery);
