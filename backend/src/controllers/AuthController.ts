@@ -10,6 +10,7 @@ import {
   toAuditActor,
 } from "../middleware/auth";
 import { authService } from "../services/AuthService";
+import { AuthServiceGateway, AuthView, SignInUser } from "../modules/auth";
 import { getAppSessionService, type AppSession } from "../services/AppSessionService";
 import { profileService, type AppRole, type PrimaryRole } from "../services/ProfileService";
 import { auditLogService, type AuditLogWriteInput } from "../services/AuditLogService";
@@ -20,6 +21,7 @@ import { isReportOrganization } from "../types/reportOrganization";
 
 export class AuthController {
   private readonly config = Config.getInstance();
+  private readonly signInUser = new SignInUser(new AuthServiceGateway(authService));
 
   private resolveOrigin(req: Request): string {
     return req.header("origin") || process.env.WEBAUTHN_ORIGIN || "http://localhost:8080";
@@ -176,11 +178,11 @@ export class AuthController {
         return;
       }
 
-      const result = await authService.signIn({ email, password });
-      const privilege = await profileService.getPrivilegeSummary(result.user.id);
-      const appSession = authService.createAppSession(result.user);
+      const user = AuthView.user(await this.signInUser.execute({ email, password }));
+      const privilege = await profileService.getPrivilegeSummary(user.id);
+      const appSession = authService.createAppSession(user);
       const payload = await this.buildBootstrapPayload({
-        user: result.user,
+        user,
         roles: privilege.roles,
         primaryRole: privilege.primaryRole,
         isAdmin: privilege.isAdmin,
@@ -188,14 +190,14 @@ export class AuthController {
         session: appSession,
       });
 
-      await this.reserveSessionSlot(result.user.id, appSession);
+      await this.reserveSessionSlot(user.id, appSession);
 
       await this.writeAuditLogSafely({
         payload: {
           event_type: "auth.sign_in",
           event_time: new Date().toISOString(),
           actor: {
-            id: result.user.id,
+            id: user.id,
             role: privilege.primaryRole,
           },
           source: {
@@ -203,7 +205,7 @@ export class AuthController {
             user_agent: req.header("user-agent") || null,
           },
           data: {
-            email: result.user.email,
+            email: user.email,
           },
         },
       });
