@@ -1,8 +1,14 @@
 import { Request, Response } from "express";
 import { userChatService } from "../../infrastructure/UserChatService";
 import { resolveTrackedRequestAuthContext } from "../../../../middleware/auth";
+import { ListUserChatContacts } from "../../application/ListUserChatContacts";
+import { ListConversation } from "../../application/ListConversation";
+import { SendUserChatMessage } from "../../application/SendUserChatMessage";
 
 export class UserChatController {
+  private readonly listContacts = new ListUserChatContacts(userChatService);
+  private readonly listConversation = new ListConversation(userChatService);
+  private readonly sendChatMessage = new SendUserChatMessage(userChatService);
   private async resolveActorId(req: Request): Promise<string> {
     const authContext = await resolveTrackedRequestAuthContext(req);
     return authContext.userId;
@@ -11,7 +17,7 @@ export class UserChatController {
   async getContacts(req: Request, res: Response): Promise<void> {
     try {
       const actorId = await this.resolveActorId(req);
-      const contacts = await userChatService.listContactsForActor(actorId);
+      const contacts = await this.listContacts.execute(actorId);
       res.json(contacts);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to fetch chat contacts";
@@ -31,7 +37,7 @@ export class UserChatController {
         return;
       }
 
-      const messages = await userChatService.listConversation(actorId, counterpartId, { limit });
+      const messages = await this.listConversation.execute(actorId, counterpartId, limit);
       res.json(messages);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to fetch chat conversation";
@@ -58,7 +64,7 @@ export class UserChatController {
         return;
       }
 
-      const message = await userChatService.sendMessage(actorId, recipientId, content);
+      const message = await this.sendChatMessage.execute(actorId, recipientId, content);
       res.status(201).json(message);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to send chat message";

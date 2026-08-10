@@ -1,5 +1,8 @@
 /** Chat module public surface. */
 export { ListChatContacts } from "./application/ListChatContacts";
+export { ListUserChatContacts } from "./application/ListUserChatContacts";
+export { ListConversation } from "./application/ListConversation";
+export { SendUserChatMessage } from "./application/SendUserChatMessage";
 export { SupabaseChatContactRepository } from "./infrastructure/SupabaseChatContactRepository";
 export { createSupabaseChatContactRepository } from "./infrastructure/SupabaseChatFactory";
 export { ListChatContactsController } from "./presentation/controllers/ListChatContactsController";
