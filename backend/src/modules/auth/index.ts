@@ -10,5 +10,15 @@ export { SignInUser } from "./application/signIn/SignInUser";
 export type { SignInUserInput } from "./application/signIn/SignInUser";
 export type { AuthGateway, AuthGatewayUser } from "./domain/ports/AuthGateway";
 export { AuthServiceGateway } from "./infrastructure/AuthServiceGateway";
+export {
+  AppSessionService,
+  getAppSessionService,
+  resolveAppSessionConfig,
+} from "./infrastructure/AppSessionService";
+export type {
+  AppSession,
+  AppSessionMetadata,
+  AppSessionUser,
+} from "./infrastructure/AppSessionService";
 export { AuthView } from "./presentation/views/AuthView";
 export type { AuthUserView } from "./presentation/views/AuthView";
