@@ -1,10 +1,23 @@
 import { Router } from "express";
 import { UserChatController } from "../controllers/UserChatController";
+import { resolveTrackedRequestAuthContext } from "../middleware/auth";
+import {
+  ListChatContacts,
+  ListChatContactsController,
+  SupabaseChatContactRepository,
+} from "../modules/chat";
+import { supabase } from "../integrations/supabase";
 
 const router = Router();
 const controller = new UserChatController();
+const listChatContactsController = new ListChatContactsController(
+  new ListChatContacts(new SupabaseChatContactRepository(supabase)),
+  resolveTrackedRequestAuthContext,
+);
 
-router.get("/contacts", (req, res) => controller.getContacts(req, res));
+router.get("/contacts", (req, res, next) => {
+  void listChatContactsController.handle(req, res, next);
+});
 router.get("/messages/:counterpartyId", (req, res) => controller.getConversation(req, res));
 router.post("/messages", (req, res) => controller.sendMessage(req, res));
 
