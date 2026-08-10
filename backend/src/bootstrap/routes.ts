@@ -1,17 +1,17 @@
 import type { Router } from "express";
-import analysisRoutes from "../routes/analysis";
-import profileRoutes from "../routes/profiles";
-import inspectionRoutes from "../routes/inspections";
-import accessCodeRoutes from "../routes/accessCodes";
-import statsRoutes from "../routes/stats";
-import uploadRoutes from "../routes/upload";
-import authRoutes from "../routes/auth";
-import chatRoutes from "../routes/chat";
-import marketLocationRoutes from "../routes/marketLocations";
-import auditLogRoutes from "../routes/auditLogs";
-import developerOptionsRoutes from "../routes/developerOptions";
-import developerDashboardRoutes from "../routes/developerDashboard";
-import userChatRoutes from "../routes/userChat";
+import analysisRoutes from "../modules/analysis/presentation/routes";
+import profileRoutes from "../modules/users/presentation/routes";
+import inspectionRoutes from "../modules/inspections/presentation/routes";
+import accessCodeRoutes from "../modules/access-codes/presentation/routes";
+import { createDefaultAnalyticsRouter } from "../modules/analytics/presentation/routes";
+import uploadRoutes from "../modules/analysis/presentation/upload-routes";
+import authRoutes from "../modules/auth/presentation/routes";
+import chatRoutes from "../modules/chat/presentation/routes";
+import marketLocationRoutes from "../modules/markets/presentation/routes";
+import auditLogRoutes from "../modules/audit/presentation/routes";
+import developerOptionsRoutes from "../modules/developer/presentation/options-routes";
+import developerDashboardRoutes from "../modules/developer/presentation/dashboard-routes";
+import userChatRoutes from "../modules/chat/presentation/user-chat-routes";
 
 export interface BackendRoute {
   readonly prefix: string;
@@ -24,7 +24,7 @@ export function createBackendRoutes(): readonly BackendRoute[] {
     { prefix: "/api/profiles", router: profileRoutes },
     { prefix: "/api/inspections", router: inspectionRoutes },
     { prefix: "/api/access-codes", router: accessCodeRoutes },
-    { prefix: "/api/stats", router: statsRoutes },
+    { prefix: "/api/stats", router: createDefaultAnalyticsRouter() },
     { prefix: "/api/upload", router: uploadRoutes },
     { prefix: "/api/auth", router: authRoutes },
     { prefix: "/api/chat", router: chatRoutes },

@@ -17,3 +17,9 @@ export function createAnalyticsRouter(query: LandingPageStatsQuery): Router {
 
   return router;
 }
+
+export function createDefaultAnalyticsRouter(): Router {
+  const { GetLandingPageStats } = require("../application/GetLandingPageStats") as typeof import("../application/GetLandingPageStats");
+  const { createSupabaseAnalyticsRepository } = require("../infrastructure/SupabaseAnalyticsFactory") as typeof import("../infrastructure/SupabaseAnalyticsFactory");
+  return createAnalyticsRouter(new GetLandingPageStats(createSupabaseAnalyticsRepository()));
+}
