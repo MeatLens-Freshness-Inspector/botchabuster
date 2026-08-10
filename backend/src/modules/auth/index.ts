@@ -42,5 +42,7 @@ export { createSupabasePasskeyService } from "./infrastructure/SupabasePasskeyFa
 export type { PasskeyDatabase, RegisteredPasskey } from "./infrastructure/PasskeyService";
 export { AuthView } from "./presentation/views/AuthView";
 export type { AuthUserView } from "./presentation/views/AuthView";
+export { EmailService, emailService } from "./infrastructure/EmailService";
+export type { MailTransport } from "./infrastructure/EmailService";
 export { default as authRoutes } from "./presentation/routes";
 export { AuthController } from "./presentation/controllers/AuthController";
