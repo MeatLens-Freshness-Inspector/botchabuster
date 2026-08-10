@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import { storageService } from "../../infrastructure/StorageService";
 import { getRequestAuthContext } from "../../../../middleware/auth";
+import { UploadInspectionImage } from "../../application/UploadInspectionImage";
 
 export class UploadController {
+  private readonly uploadImage = new UploadInspectionImage(storageService);
   /**
    * POST /api/upload/inspection-image
    *
@@ -29,11 +31,11 @@ export class UploadController {
       }
 
       // Upload to storage
-      const imageUrl = await storageService.uploadInspectionImage(
-        req.file.path,
+      const imageUrl = await this.uploadImage.execute({
+        filePath: req.file.path,
         userId,
-        req.file.originalname
-      );
+        originalName: req.file.originalname,
+      });
 
       res.json({ imageUrl });
     } catch (error) {

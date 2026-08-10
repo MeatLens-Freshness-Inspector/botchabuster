@@ -1,16 +1,11 @@
 import { Request, Response } from "express";
+import { RetiredServerAnalysis } from "../../application/RetiredServerAnalysis";
 
 export class AnalysisController {
+  private readonly retiredAnalysis = new RetiredServerAnalysis();
   async analyze(req: Request, res: Response): Promise<void> {
-    if (!req.file) {
-      res.status(400).json({ error: "No image file provided" });
-      return;
-    }
-
-    res.status(410).json({
-      error: "Server-side analysis has been retired",
-      message: "Run MobileNetV3 analysis in the frontend before submitting inspection records.",
-    });
+    const result = this.retiredAnalysis.execute(Boolean(req.file));
+    res.status(result.status).json(result.body);
   }
 
   async health(_req: Request, res: Response): Promise<void> {
