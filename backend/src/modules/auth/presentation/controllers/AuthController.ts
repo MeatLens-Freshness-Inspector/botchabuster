@@ -24,6 +24,12 @@ import { SendPasswordReset } from "../../application/SendPasswordReset";
 import { UpdateEmail } from "../../application/UpdateEmail";
 import { UpdatePassword } from "../../application/UpdatePassword";
 import { UpdateRecoveryPassword } from "../../application/UpdateRecoveryPassword";
+import { BeginPasskeyRegistration } from "../../application/BeginPasskeyRegistration";
+import { VerifyPasskeyRegistration } from "../../application/VerifyPasskeyRegistration";
+import { BeginPasskeyAuthentication } from "../../application/BeginPasskeyAuthentication";
+import { VerifyPasskeyAuthentication } from "../../application/VerifyPasskeyAuthentication";
+import { ListPasskeys } from "../../application/ListPasskeys";
+import { DeletePasskey } from "../../application/DeletePasskey";
 
 export class AuthController {
   private readonly config = Config.getInstance();
@@ -34,6 +40,12 @@ export class AuthController {
   private readonly updateEmailUseCase = new UpdateEmail(authService);
   private readonly updatePasswordUseCase = new UpdatePassword(authService);
   private readonly updateRecoveryPassword = new UpdateRecoveryPassword(authService);
+  private readonly beginRegistration = new BeginPasskeyRegistration(passkeyService);
+  private readonly verifyRegistration = new VerifyPasskeyRegistration(passkeyService);
+  private readonly beginAuthentication = new BeginPasskeyAuthentication(passkeyService);
+  private readonly verifyAuthentication = new VerifyPasskeyAuthentication(passkeyService);
+  private readonly listPasskeysUseCase = new ListPasskeys(passkeyService);
+  private readonly deletePasskeyUseCase = new DeletePasskey(passkeyService);
 
   private resolveOrigin(req: Request): string {
     return req.header("origin") || process.env.WEBAUTHN_ORIGIN || "http://localhost:8080";
@@ -414,7 +426,7 @@ export class AuthController {
   async beginPasskeyRegistration(req: Request, res: Response): Promise<void> {
     try {
       const { user } = await this.resolveAuthenticatedUser(req);
-      const result = await passkeyService.beginRegistration(user, this.resolveOrigin(req));
+      const result = await this.beginRegistration.execute(user, this.resolveOrigin(req));
       res.json(result);
     } catch (error) {
       console.error("Begin passkey registration error:", error);
@@ -436,7 +448,7 @@ export class AuthController {
         return;
       }
 
-      const registeredPasskey = await passkeyService.verifyRegistration({
+      const registeredPasskey = await this.verifyRegistration.execute({
         user,
         challengeId,
         origin: this.resolveOrigin(req),
@@ -472,7 +484,7 @@ export class AuthController {
 
   async beginPasskeyAuthentication(req: Request, res: Response): Promise<void> {
     try {
-      const result = await passkeyService.beginAuthentication(this.resolveOrigin(req));
+      const result = await this.beginAuthentication.execute(this.resolveOrigin(req));
       res.json(result);
     } catch (error) {
       console.error("Begin passkey sign-in error:", error);
@@ -492,7 +504,7 @@ export class AuthController {
         return;
       }
 
-      const result = await passkeyService.verifyAuthentication({
+      const result = await this.verifyAuthentication.execute({
         challengeId,
         origin: this.resolveOrigin(req),
         response: credential,
@@ -543,7 +555,7 @@ export class AuthController {
   async listPasskeys(req: Request, res: Response): Promise<void> {
     try {
       const { user } = await this.resolveAuthenticatedUser(req);
-      const passkeys = await passkeyService.listPasskeys(user.id);
+      const passkeys = await this.listPasskeysUseCase.execute(user.id);
       res.json(passkeys);
     } catch (error) {
       console.error("List passkeys error:", error);
@@ -560,7 +572,7 @@ export class AuthController {
         return;
       }
 
-      await passkeyService.deletePasskey(user.id, credentialId);
+      await this.deletePasskeyUseCase.execute(user.id, credentialId);
 
       await this.writeAuditLogSafely({
         payload: {
