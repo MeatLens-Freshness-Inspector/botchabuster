@@ -2,6 +2,11 @@ import { Request, Response } from "express";
 import { accessCodeService } from "../../../access-codes/infrastructure/AccessCodeService";
 import { auditLogService } from "../../../audit/infrastructure/AuditLogService";
 import { getErrorStatus, resolveTrackedRequestAuthContext, toAuditActor, type RequestAuthContext } from "../../../../middleware/auth";
+import { ListAccessCodes } from "../../application/ListAccessCodes";
+import { ValidateAccessCode } from "../../application/ValidateAccessCode";
+import { CreateAccessCode } from "../../application/CreateAccessCode";
+import { DeleteAccessCode } from "../../application/DeleteAccessCode";
+import { ToggleAccessCode } from "../../application/ToggleAccessCode";
 
 class AccessCodeAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -10,6 +15,11 @@ class AccessCodeAccessError extends Error {
 }
 
 export class AccessCodeController {
+  private readonly listAccessCodes = new ListAccessCodes(accessCodeService);
+  private readonly validateAccessCode = new ValidateAccessCode(accessCodeService);
+  private readonly createAccessCode = new CreateAccessCode(accessCodeService);
+  private readonly deleteAccessCode = new DeleteAccessCode(accessCodeService);
+  private readonly toggleAccessCode = new ToggleAccessCode(accessCodeService);
   private async requireAdmin(req: Request): Promise<RequestAuthContext> {
     try {
       const authContext = await resolveTrackedRequestAuthContext(req);
@@ -49,7 +59,7 @@ export class AccessCodeController {
         return;
       }
 
-      const isValid = await accessCodeService.validate(code);
+      const isValid = await this.validateAccessCode.execute(code);
       res.json({ valid: isValid });
     } catch (error) {
       this.handleError("Validate access code", res, error, "Failed to validate access code");
@@ -59,7 +69,7 @@ export class AccessCodeController {
   async getAll(req: Request, res: Response): Promise<void> {
     try {
       await this.requireAdmin(req);
-      const codes = await accessCodeService.getAll();
+      const codes = await this.listAccessCodes.execute();
       res.json(codes);
     } catch (error) {
       this.handleError("Get access codes", res, error, "Failed to fetch access codes");
@@ -74,7 +84,7 @@ export class AccessCodeController {
         res.status(400).json({ error: "Code is required" });
         return;
       }
-      const created = await accessCodeService.create(code, description, actor.userId);
+      const created = await this.createAccessCode.execute({ code, description, createdBy: actor.userId });
 
       await auditLogService.write({
         payload: {
@@ -106,7 +116,7 @@ export class AccessCodeController {
         res.status(400).json({ error: "Access code ID is required" });
         return;
       }
-      await accessCodeService.delete(id);
+      await this.deleteAccessCode.execute(id);
 
       await auditLogService.write({
         payload: {
@@ -142,7 +152,7 @@ export class AccessCodeController {
         res.status(400).json({ error: "is_active must be a boolean" });
         return;
       }
-      const updated = await accessCodeService.toggleActive(id, is_active);
+      const updated = await this.toggleAccessCode.execute({ id, isActive: is_active });
 
       await auditLogService.write({
         payload: {

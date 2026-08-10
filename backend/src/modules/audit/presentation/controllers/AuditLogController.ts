@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { auditLogService } from "../../infrastructure/AuditLogService";
 import { getErrorStatus, resolveTrackedRequestAuthContext, toAuditActor, type RequestAuthContext } from "../../../../middleware/auth";
+import { ListAuditLogs } from "../../application/ListAuditLogs";
+import { WriteAuditLogBatch } from "../../application/WriteAuditLogBatch";
 
 class AuditLogAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -24,6 +26,8 @@ function normalizeEventTime(value?: string): string {
 }
 
 export class AuditLogController {
+  private readonly listAuditLogs = new ListAuditLogs(auditLogService);
+  private readonly writeAuditLogBatch = new WriteAuditLogBatch(auditLogService);
   private async getActorContext(req: Request): Promise<RequestAuthContext> {
     try {
       return await resolveTrackedRequestAuthContext(req);
@@ -57,7 +61,7 @@ export class AuditLogController {
         return;
       }
 
-      const logs = await auditLogService.listRecent(this.parseLimit(req));
+      const logs = await this.listAuditLogs.execute(this.parseLimit(req));
       res.json({ logs });
     } catch (error) {
       if (error instanceof AuditLogAccessError) {
@@ -104,7 +108,7 @@ export class AuditLogController {
         };
       });
 
-      const accepted = await auditLogService.writeBatch(payloads);
+      const accepted = await this.writeAuditLogBatch.execute(payloads);
       res.status(202).json({ accepted });
     } catch (error) {
       if (error instanceof AuditLogAccessError) {

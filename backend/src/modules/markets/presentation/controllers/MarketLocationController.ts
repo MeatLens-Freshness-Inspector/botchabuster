@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import { marketLocationService } from "../../infrastructure/MarketLocationService";
 import { auditLogService } from "../../../audit/infrastructure/AuditLogService";
 import { getErrorStatus, resolveTrackedRequestAuthContext, toAuditActor, type RequestAuthContext } from "../../../../middleware/auth";
+import { ListMarketLocations } from "../../application/ListMarketLocations";
+import { CreateMarketLocation } from "../../application/CreateMarketLocation";
+import { DeleteMarketLocation } from "../../application/DeleteMarketLocation";
 
 class MarketLocationAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -10,6 +13,9 @@ class MarketLocationAccessError extends Error {
 }
 
 export class MarketLocationController {
+  private readonly listLocations = new ListMarketLocations(marketLocationService);
+  private readonly createLocation = new CreateMarketLocation(marketLocationService);
+  private readonly deleteLocation = new DeleteMarketLocation(marketLocationService);
   private async requireAdmin(req: Request): Promise<RequestAuthContext> {
     try {
       const authContext = await resolveTrackedRequestAuthContext(req);
@@ -43,7 +49,7 @@ export class MarketLocationController {
 
   async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const locations = await marketLocationService.getAll();
+      const locations = await this.listLocations.execute();
       res.json(locations);
     } catch (error) {
       this.handleError("Get market locations", res, error, "Failed to fetch market locations");
@@ -60,7 +66,7 @@ export class MarketLocationController {
         return;
       }
 
-      const createdLocation = await marketLocationService.create(name);
+      const createdLocation = await this.createLocation.execute(name);
 
       await auditLogService.write({
         payload: {
@@ -94,7 +100,7 @@ export class MarketLocationController {
         return;
       }
 
-      await marketLocationService.delete(id);
+      await this.deleteLocation.execute(id);
 
       await auditLogService.write({
         payload: {
