@@ -68,16 +68,20 @@ Keep its route-audit test synchronized. The editor must not expose authorization
 ## Commands
 
 ```bash
-npm run dev -w frontend
+# from the repository root
+npm run dev:frontend
 npm run build -w frontend
 npm run typecheck -w frontend
 npm run test:unit -w frontend
 npm run test:component -w frontend
 npm run test:integration -w frontend
 npm run test:e2e:critical -w frontend
+npm run test:contract
 ```
 
-The frontend `pretest` hook builds the backend first so integration and end-to-end tests exercise the current API contract.
+The frontend `pretest` hook builds the backend first so integration and end-to-end tests exercise the current API contract. The repository-level contract suite (`npm run test:contract`) then checks auth bootstrap, inspection-list, error-envelope, and analysis-result schemas across both workspaces.
+
+For the normal CI fast path, run `npm run test:fast`; it includes frontend unit/component/integration tests, backend unit and architecture tests, and script checks. Contract tests run as a separate root gate.
 
 ## Deployment
 

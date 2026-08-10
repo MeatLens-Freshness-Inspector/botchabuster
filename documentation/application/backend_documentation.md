@@ -62,14 +62,22 @@ Optional values include `CSRF_TOKEN_SECRET`, `CSRF_TOKEN_TTL_SECONDS`, `APP_SESS
 ## Commands
 
 ```bash
+# from the repository root
 npm install
-npm run dev
-npm run typecheck
-npm run test
-npm run build
+npm run dev:backend
+npm run typecheck -w backend
+npm run test -w backend
+npm run build -w backend
+npm run test:contract
 ```
 
-The backend test command runs  unit, integration, and architecture suites. Architecture tests verify module boundaries, query shape, final-class conventions, router composition, and absence of the deleted legacy directories.
+The backend test command runs unit, integration, and architecture suites. The root contract suite starts the composed app and verifies shared frontend/backend response schemas. Architecture tests verify module boundaries, query shape, final-class conventions, router composition, and absence of the deleted legacy directories.
+
+CI’s backend gates are therefore:
+
+```text
+typecheck → backend unit/integration/architecture → API contract tests → build
+```
 
 ## Database and storage
 
@@ -79,4 +87,4 @@ Supabase Storage holds inspection images and developer artifacts. Local `UPLOAD_
 
 ## API authority
 
-The registered API is defined by module presentation routers and mounted by `src/bootstrap/routes.ts`. Use [API_REFERENCE.md](../API_REFERENCE.md) for the current namespace summary and [SECURITY.md](../SECURITY.md) for request-authentication rules.
+The registered API is defined by module presentation routers and mounted by `src/bootstrap/routes.ts`. Use [API_REFERENCE.md](../API_REFERENCE.md) for the current namespace summary and [SECURITY.md](../SECURITY.md) for request-authentication rules. Shared payload contracts live under the repository-level `tests/contracts` suite and should be updated alongside frontend API types.
