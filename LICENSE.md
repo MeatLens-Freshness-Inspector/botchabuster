@@ -4,13 +4,13 @@
 
 ## 1. Grant of Rights
 
-No license, right, or permission of any kind — to use, view, access, execute, copy, modify, merge, publish, distribute, sublicense, store, mirror, cache, archive, or otherwise reproduce this repository or any part of its contents ("the Software") — is granted to any person or entity except the Authorized Parties expressly named in Section 2, and then only to the extent stated in this license.
+Except for the limited public-viewing permission in Section 8, no license, right, or permission — to use, access, execute, copy, modify, merge, publish, distribute, sublicense, store, mirror, cache, archive, or otherwise reproduce this repository or any part of its contents ("the Software") — is granted to any person or entity except the Authorized Parties expressly named in Section 2, and then only to the extent stated in this license.
 
 All rights not expressly granted herein are reserved by the copyright holder.
 
 ## 2. Authorized Parties — Exclusive List
 
-Access to and use of the Software is restricted to the following parties only ("Authorized Parties"). No other individual, organization, agency, contractor, or institution — public or private — is authorized to touch the codebase in any capacity:
+Access to and use of the Software is restricted to the following parties only ("Authorized Parties"), subject to the view-only public permission in Section 8. No other individual, organization, agency, contractor, or institution — public or private — is authorized to use, copy, modify, execute, or distribute the codebase:
 
 1. **The Department of Information and Communications Technology (DICT)**, in its capacity supporting or overseeing the Ikot-Palengke Program's technical infrastructure.
 2. **The Department of Trade and Industry (DTI) Zambales / Region III**, as the program-validating agency.
@@ -19,18 +19,18 @@ Access to and use of the Software is restricted to the following parties only ("
 5. **Gordon College**, and only Gordon College among all academic institutions, and only to the narrow extent expressly set out in Section 4.
 6. **Prof. Paul Vincent Corsina**, in his individual capacity as Research Adviser, to the extent set out in Section 5.
 
-No person may access, clone, deploy, execute, review, or otherwise touch the codebase on behalf of any Authorized Party unless that person is (a) one of the three Core Team members named in Section 2(4), (b) technical personnel of DICT, DTI Zambales/Region III, or the Olongapo City Veterinary Office formally designated and approved in writing under Section 8.3, (c) personnel affiliated with Gordon College formally designated and approved in writing under Section 4.1A, (d) the named adviser under Section 5, or (e) acting under a written, revocable delegation issued by the copyright holder identifying the specific individual and scope of access. Employment by, membership in, or affiliation with an Authorized Party does **not**, by itself, confer any right of access beyond what that party is expressly granted in this license — designation under Section 8.3 or 4.1A must still be made formally, individual by individual, and approved in writing by the copyright holder before access is granted.
+No person may access, clone, deploy, execute, review, or otherwise touch the codebase on behalf of any Authorized Party unless that person is (a) one of the three Core Team members named in Section 2(4), (b) technical personnel of DICT, DTI Zambales/Region III, or the Olongapo City Veterinary Office formally designated and approved in writing under Section 9.3, (c) personnel affiliated with Gordon College formally designated and approved in writing under Section 4.1A, (d) the named adviser under Section 5, or (e) acting under a written, revocable delegation issued by the copyright holder identifying the specific individual and scope of access. Employment by, membership in, or affiliation with an Authorized Party does **not**, by itself, confer any right of access beyond what that party is expressly granted in this license — designation under Section 9.3 or 4.1A must still be made formally, individual by individual, and approved in writing by the copyright holder before access is granted.
 
 This list is exhaustive and closed. It may only be expanded, and no entry on it may be broadened in scope, except by written amendment signed by the copyright holder.
 
 ## 3. Prohibited Parties — All Academic Institutions Other Than Gordon College
 
-Notwithstanding any other provision of this license, no Academic Institution other than Gordon College, nor any person acting on behalf of, at the direction of, or for the benefit of such an institution, may:
+Notwithstanding any other provision of this license, and subject only to the view-only public permission in Section 8, no Academic Institution other than Gordon College, nor any person acting on behalf of, at the direction of, or for the benefit of such an institution, may:
 
 - store, host, mirror, cache, clone, fork, or otherwise retain a copy of the Software in any repository, learning management system, institutional archive, library system, server, or storage medium owned, operated, or controlled by that institution;
 - incorporate the Software, in whole or in part, into any institutional repository, thesis archive, coursework archive, or research data repository;
 - distribute, sublicense, or make the Software available to students, faculty, staff, or third parties through any institutionally controlled system;
-- access, view, or execute the Software in any capacity, notwithstanding that an individual affiliated with such an institution may also be one of the three named developers under Section 2(4), or the named adviser under Section 2(6) — such an individual's access derives solely from that personal designation, not from institutional affiliation.
+   - access, view, or execute the Software beyond the view-only public permission in Section 8, notwithstanding that an individual affiliated with such an institution may also be one of the three named developers under Section 2(4), or the named adviser under Section 2(6) — such an individual's access derives solely from that personal designation, not from institutional affiliation.
 
 **"Academic Institution"** means any university, college, school, research institute, or other educational or research organization, including their libraries, departments, affiliated laboratories, and any cloud or hosting infrastructure operated on their behalf. Gordon College is excluded from this definition solely for purposes of Section 4, and only to the extent stated there — for every other purpose in this license, Gordon College remains subject to the same general restrictions as any other party unless Section 4 says otherwise.
 
@@ -42,7 +42,7 @@ This prohibition applies regardless of the purpose of storage, including but not
    - receive and retain a copy of the Software solely for thesis evaluation, defense, grading, and the institution's standard graduation-clearance and accreditation record-keeping requirements;
    - permit the assigned thesis panel and program coordinator to access the Software solely to review, evaluate, and grade the thesis.
 
-4.1A. **Codebase access for maintenance.** Designated technical personnel affiliated with Gordon College — other than the named adviser, who is instead governed by Section 5 — may additionally be granted direct access to the source code, repository, and development environment to help maintain the Software and implement needed features, on the same terms as Section 8.3: (i) access is limited to individuals formally designated for this purpose; (ii) the copyright holder has approved that individual's access **in writing** before access is granted — notice alone is not sufficient; (iii) all such personnel remain bound by the confidentiality obligations in Section 8.4; and (iv) ownership of the resulting codebase, including any Gordon College-affiliated contributions, remains governed by Section 8.5 and Section 4.4. This access does not authorize personnel to remove, relicense, or fork the codebase outside the repository infrastructure designated for the project, or to grant access onward to anyone not themselves approved under this section, and does not by itself constitute the broader institutional exception addressed in Section 4.2.
+4.1A. **Codebase access for maintenance.** Designated technical personnel affiliated with Gordon College — other than the named adviser, who is instead governed by Section 5 — may additionally be granted direct access to the source code, repository, and development environment to help maintain the Software and implement needed features, on the same terms as Section 9.3: (i) access is limited to individuals formally designated for this purpose; (ii) the copyright holder has approved that individual's access **in writing** before access is granted — notice alone is not sufficient; (iii) all such personnel remain bound by the confidentiality obligations in Section 9.4; and (iv) ownership of the resulting codebase, including any Gordon College-affiliated contributions, remains governed by Section 9.5 and Section 4.4. This access does not authorize personnel to remove, relicense, or fork the codebase outside the repository infrastructure designated for the project, or to grant access onward to anyone not themselves approved under this section, and does not by itself constitute the broader institutional exception addressed in Section 4.2.
 
 4.2. **What this does not permit.** This exception does **not** authorize Gordon College to:
    - publish, host publicly, or make the Software available outside personnel directly involved in evaluating the thesis or, where approved under Section 4.1A or named under Section 5, maintaining or advising on the Software;
@@ -68,9 +68,9 @@ This prohibition applies regardless of the purpose of storage, including but not
 
 5.3. **Read, review, and audit access granted directly.** The named adviser may directly access, view, and review the source code, without further approval beyond this section.
 
-5.4. **Modification access requires written approval.** The named adviser may propose or make modifications to the Software only if the copyright holder has approved his modification access **in writing** before any code changes are merged or deployed, on the same gate as Section 8.3(ii). Read/review access under Section 5.3 does not require this additional approval.
+5.4. **Modification access requires written approval.** The named adviser may propose or make modifications to the Software only if the copyright holder has approved his modification access **in writing** before any code changes are merged or deployed, on the same gate as Section 9.3(ii). Read/review access under Section 5.3 does not require this additional approval.
 
-5.5. **Confidentiality.** The adviser under this section is bound by the same confidentiality obligations as Section 8.4.
+5.5. **Confidentiality.** The adviser under this section is bound by the same confidentiality obligations as Section 9.4.
 
 5.6. **Termination.** This access terminates automatically if the individual ceases to serve as Research Adviser for the thesis, unless otherwise agreed in writing.
 
@@ -94,9 +94,13 @@ This prohibition applies regardless of the purpose of storage, including but not
 
 Submission of the Software, or any derivative work referencing the Software, as part of academic coursework, thesis, or capstone requirements does **not** grant the receiving institution any license beyond what is expressly stated in this license, and does not add any institution other than Gordon College to the Authorized Parties in Section 2. Any institutional policy purporting to claim automatic rights over student-authored repositories — including "all student work becomes institutional property" clauses — is expressly rejected by the copyright holder as a condition of this license, to the maximum extent permitted by applicable law, and is unenforceable as against the Software specifically, including as against Gordon College beyond the scope of Section 4.
 
-## 8. No Public Access
+## 8. Public Viewing Permission
 
-The general public, including but not limited to individual researchers, hobbyists, other developers, other academic institutions, and other government offices not named in Section 2, has no right to view, clone, fork, download, or otherwise access the Software, whether the repository is technically public-facing or not. Any such access obtained is unauthorized and does not constitute a license of any kind.
+To present the project in a public portfolio, the copyright holder grants the general public a limited, non-exclusive, non-transferable, revocable permission to view and read the repository and documentation exactly as intentionally hosted in a publicly accessible location. Visitors may link to the public repository and may use ordinary browser functionality required to display it.
+
+This is a view-only permission. It does **not** grant the right to download, clone, fork, copy, scrape, mirror, cache beyond ordinary browser operation, execute, modify, adapt, merge, distribute, sublicense, publish elsewhere, or otherwise reuse the Software or any code, assets, models, datasets, or documentation. It does not authorize access to secrets, credentials, personal data, deployment systems, or any material that is not intentionally made publicly viewable. No viewer becomes an Authorized Party by viewing the repository.
+
+Any attempt to bypass repository controls or obtain a local or institutional copy outside ordinary browser operation is unauthorized and constitutes a breach of this license.
 
 ## 9. Authorized Government Use — DICT, DTI, and the Veterinary Office
 
@@ -108,7 +112,7 @@ The Software is designated as an internal tool for the exclusive operational use
 
 9.3. **Codebase access for maintenance.** Designated technical personnel of DICT, DTI Zambales/Region III, and the Olongapo City Veterinary Office may be granted direct access to the source code, repository, and development environment for the purpose of maintaining the Software and implementing needed features, provided that: (i) access is limited to personnel formally designated by the Authorized Agency for this purpose; (ii) the copyright holder has approved that individual's access **in writing** before access is granted — notice alone is not sufficient; (iii) all such personnel remain bound by the confidentiality obligations in Section 9.4; and (iv) ownership of the resulting codebase, including any agency-authored modifications, remains governed by Section 9.5. This access does not authorize personnel to remove, relicense, or fork the codebase outside the repository infrastructure designated for the project, or to grant access onward to anyone not themselves approved under this section.
 
-9.4. **Confidentiality.** Source code, model weights, datasets, architecture documentation, and any non-public technical materials are confidential and may not be disclosed, published, deposited in any public or internal registry, or shared beyond personnel strictly necessary to operate or, where designated under Section 9.3, maintain and develop the tool, except as required by the Philippine Freedom of Information program or a valid legal order under Section 6.5.
+9.4. **Confidentiality.** Source code, model weights, datasets, architecture documentation, and any technical materials that are not intentionally made publicly viewable under Section 8 remain confidential and may not be disclosed, published, deposited in any public or internal registry, or shared beyond personnel strictly necessary to operate or, where designated under Section 9.3, maintain and develop the tool, except as required by the Philippine Freedom of Information program or a valid legal order under Section 6.5.
 
 9.5. **No transfer of ownership.** Use by the Authorized Agencies does not transfer, assign, or waive any copyright, trademark, or other intellectual property right in the Software. All intellectual property remains the exclusive property of the Codeborne Research Group. No provision of this license shall be construed as work-for-hire, government-owned-IP, or open government data under Philippine law.
 
@@ -132,7 +136,7 @@ The three individuals named in Section 2(4) as the Core Team hold full access to
 
 ## 11. Enforcement
 
-Any access, storage, hosting, or retention of the Software by a party other than those named in Section 2, any violation of Sections 3–6 by an Academic Institution (including Gordon College acting beyond Section 4) or anyone acting under its instruction, any unauthorized codebase access or modification by the adviser in violation of Section 5, or any unauthorized copying, disclosure, sublicensing, or codebase access by the Authorized Agencies in violation of Section 9 or by Gordon College personnel in violation of Section 4.1A, constitutes copyright infringement and/or breach of license for which the copyright holder reserves all remedies available at law and in equity, including but not limited to takedown requests, license revocation, injunctive relief, and pursuit of any Successor Repository under Section 6.4 as an infringing copy.
+Any access, storage, hosting, or retention of the Software by a party other than those named in Section 2, except for the view-only public permission expressly granted in Section 8, any violation of Sections 3–6 by an Academic Institution (including Gordon College acting beyond Section 4) or anyone acting under its instruction, any unauthorized codebase access or modification by the adviser in violation of Section 5, or any unauthorized copying, disclosure, sublicensing, or codebase access by the Authorized Agencies in violation of Section 9 or by Gordon College personnel in violation of Section 4.1A, constitutes copyright infringement and/or breach of license for which the copyright holder reserves all remedies available at law and in equity, including but not limited to takedown requests, license revocation, injunctive relief, and pursuit of any Successor Repository under Section 6.4 as an infringing copy.
 
 ## 12. No Warranty
 
@@ -144,7 +148,7 @@ If any provision of this license is held unenforceable, the remaining provisions
 
 ## 14. Governing Terms
 
-This license is a custom, restrictive, closed-access license and is **not** an OSI-approved open-source license. Continued visibility of this repository, on GitHub or elsewhere, does not constitute a grant of rights beyond those stated above.
+This license is a custom, restrictive, view-only portfolio license and is **not** an OSI-approved open-source license. Continued visibility of this repository, on GitHub or elsewhere, grants only the public-viewing permission in Section 8 and does not constitute a grant of reuse rights.
 
 ---
 

@@ -169,4 +169,4 @@ For deployment steps, see `documentation/DEPLOYMENT.md`.
 
 ## License
 
-MIT
+This repository is available for public viewing as a portfolio project under the [Portfolio Viewing License](LICENSE.md). Public viewing does not grant rights to copy, clone, modify, execute, distribute, or otherwise reuse the code, assets, models, datasets, or documentation.
