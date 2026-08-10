@@ -17,8 +17,8 @@ test("resolveRequestAuthContext treats developers as admin and exposes developer
   process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 
   const { resolveRequestAuthContext } = await import("../../../src/middleware/auth");
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);

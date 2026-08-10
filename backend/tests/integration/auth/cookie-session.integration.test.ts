@@ -6,10 +6,10 @@ import { createProfileFixture, createUserFixture } from "../../support/fixtures"
 import { startTestServer } from "../../support/appFactory";
 
 test("sign-in sets a secure cookie, returns a bootstrap payload, and registers the device slot", async () => {
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { auditLogService } = await import("../../../src/services/AuditLogService");
-  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { auditLogService } = await import("../../../src/modules/audit/infrastructure/AuditLogService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
 
   const originalSignIn = authService.signIn.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -84,10 +84,10 @@ test("sign-in sets a secure cookie, returns a bootstrap payload, and registers t
 });
 
 test("sign-in rejects before issuing a session cookie when the device limit is reached", async () => {
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { auditLogService } = await import("../../../src/services/AuditLogService");
-  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { auditLogService } = await import("../../../src/modules/audit/infrastructure/AuditLogService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
 
   const originalSignIn = authService.signIn.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -149,10 +149,10 @@ test("sign-in rejects before issuing a session cookie when the device limit is r
 });
 
 test("session bootstrap accepts a bearer-backed app session, preserves authenticatedAt, and rotates the csrf token", async () => {
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { auditLogService } = await import("../../../src/services/AuditLogService");
-  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { auditLogService } = await import("../../../src/modules/audit/infrastructure/AuditLogService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
 
   const originalSignIn = authService.signIn.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -216,11 +216,11 @@ test("session bootstrap accepts a bearer-backed app session, preserves authentic
 });
 
 test("cookie-authenticated inspection requests reuse the session slot registered at sign-in", async () => {
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { auditLogService } = await import("../../../src/services/AuditLogService");
-  const { inspectionService } = await import("../../../src/services/InspectionService");
-  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { auditLogService } = await import("../../../src/modules/audit/infrastructure/AuditLogService");
+  const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
 
   const originalSignIn = authService.signIn.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -299,9 +299,9 @@ test("cookie-authenticated inspection requests reuse the session slot registered
 });
 
 test("sign-out clears the session cookie and removes the registered app session", async () => {
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { auditLogService } = await import("../../../src/services/AuditLogService");
-  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { auditLogService } = await import("../../../src/modules/audit/infrastructure/AuditLogService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
 
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
   const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
@@ -345,11 +345,11 @@ test("sign-out clears the session cookie and removes the registered app session"
 });
 
 test("passkey authenticate verify mirrors the cookie/bootstrap contract and registers the device slot", async () => {
-  const { passkeyService } = await import("../../../src/services/PasskeyService");
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { auditLogService } = await import("../../../src/services/AuditLogService");
-  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
+  const { passkeyService } = await import("../../../src/modules/auth/infrastructure/SupabasePasskeyFactory");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { auditLogService } = await import("../../../src/modules/audit/infrastructure/AuditLogService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
 
   const originalVerifyAuthentication = passkeyService.verifyAuthentication.bind(passkeyService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -425,10 +425,10 @@ test("passkey authenticate verify mirrors the cookie/bootstrap contract and regi
 });
 
 test("passkey register, list, and delete routes accept cookie auth without an Authorization header", async () => {
-  const { passkeyService } = await import("../../../src/services/PasskeyService");
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { auditLogService } = await import("../../../src/services/AuditLogService");
-  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
+  const { passkeyService } = await import("../../../src/modules/auth/infrastructure/SupabasePasskeyFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { auditLogService } = await import("../../../src/modules/audit/infrastructure/AuditLogService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
 
   const originalBeginRegistration = passkeyService.beginRegistration.bind(passkeyService);
   const originalListPasskeys = passkeyService.listPasskeys.bind(passkeyService);

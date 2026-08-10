@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { PasskeyCeremonyStore } from "../../../src/services/PasskeyCeremonyStore";
+import { PasskeyCeremonyStore } from "../../../src/modules/auth/infrastructure/PasskeyCeremonyStore";
 
 test("stores and consumes ceremony challenges exactly once", () => {
   const issuedAt = Date.UTC(2026, 5, 20, 11, 0, 0);

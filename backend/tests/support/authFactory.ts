@@ -1,7 +1,7 @@
 import "../setup/env";
 import assert from "node:assert/strict";
-import { AppSessionService } from "../../src/services/AppSessionService";
-import { CsrfTokenService } from "../../src/services/CsrfTokenService";
+import { AppSessionService } from "../../src/modules/auth/infrastructure/AppSessionService";
+import { CsrfTokenService } from "../../src/modules/auth/infrastructure/CsrfTokenService";
 import { createUserFixture } from "./fixtures";
 
 export function parseSessionCookie(setCookieHeader: string): string {

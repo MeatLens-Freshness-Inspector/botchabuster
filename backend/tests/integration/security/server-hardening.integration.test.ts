@@ -92,8 +92,8 @@ test("non-safe auth requests reject disallowed origins before controller logic r
 });
 
 test("cookie-authenticated mutating requests reject a missing csrf token", async () => {
-  const { AppSessionService } = await import("../../../src/services/AppSessionService");
-  const { profileService } = await import("../../../src/services/ProfileService");
+  const { AppSessionService } = await import("../../../src/modules/auth/infrastructure/AppSessionService");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
   const originalGetPrivilegeSummary = profileService.getPrivilegeSummary.bind(profileService);
 
   profileService.getPrivilegeSummary = async () => ({
@@ -140,8 +140,8 @@ test("cookie-authenticated mutating requests reject a missing csrf token", async
 });
 
 test("chat requests are rate limited per authenticated user", async () => {
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetPrivilegeSummary = profileService.getPrivilegeSummary.bind(profileService);
 

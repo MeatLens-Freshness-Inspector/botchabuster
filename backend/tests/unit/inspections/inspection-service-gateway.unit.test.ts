@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { InspectionServiceGateway } from "../../../src/modules/inspections/infrastructure/InspectionServiceGateway";
 
-test("InspectionServiceGateway maps module scope to the legacy service", async () => {
+test("InspectionServiceGateway maps module scope to the inspection data source", async () => {
   let request: unknown;
   const gateway = new InspectionServiceGateway({
     getById: async (id, userId, scope, isAdmin) => {

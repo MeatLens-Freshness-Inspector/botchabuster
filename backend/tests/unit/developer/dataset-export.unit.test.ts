@@ -40,8 +40,8 @@ function createInspection(overrides: Partial<Inspection>): Inspection {
 }
 
 test("dataset export ZIP contains manifest, inspections.csv, images, and missing-image warnings", async () => {
-  const { developerDashboardService } = await import("../../../src/services/DeveloperDashboardService");
-  const { inspectionService } = await import("../../../src/services/InspectionService");
+  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
+  const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
   const originalGetDeveloperDatasetPage = (inspectionService as unknown as {
     getDeveloperDatasetPage?: typeof developerDashboardService.listDatasets;
   }).getDeveloperDatasetPage;
@@ -106,8 +106,8 @@ test("dataset export ZIP contains manifest, inspections.csv, images, and missing
 });
 
 test("dataset export downloads images concurrently", async () => {
-  const { developerDashboardService } = await import("../../../src/services/DeveloperDashboardService");
-  const { inspectionService } = await import("../../../src/services/InspectionService");
+  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
+  const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
   const originalGetDeveloperDatasetPage = (inspectionService as unknown as {
     getDeveloperDatasetPage?: typeof developerDashboardService.listDatasets;
   }).getDeveloperDatasetPage;
@@ -174,8 +174,8 @@ test("dataset export downloads images concurrently", async () => {
 });
 
 test("dataset export uses stored manual classifications", async () => {
-  const { developerDashboardService } = await import("../../../src/services/DeveloperDashboardService");
-  const { inspectionService } = await import("../../../src/services/InspectionService");
+  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
+  const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
   const originalGetDeveloperDatasetPage = (inspectionService as unknown as {
     getDeveloperDatasetPage?: typeof developerDashboardService.listDatasets;
   }).getDeveloperDatasetPage;
@@ -239,7 +239,7 @@ test("dataset export uses stored manual classifications", async () => {
 });
 
 test("inspection service persists manual classification changes", async () => {
-  const { inspectionService } = await import("../../../src/services/InspectionService");
+  const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
   const { supabase } = await import("../../../src/integrations/supabase");
   const supabaseClient = supabase as any;
   const originalFrom = supabaseClient.from;

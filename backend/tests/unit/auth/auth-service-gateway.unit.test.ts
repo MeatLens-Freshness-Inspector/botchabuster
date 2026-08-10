@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AuthServiceGateway } from "../../../src/modules/auth/infrastructure/AuthServiceGateway";
+import { AuthOperationsGateway } from "../../../src/modules/auth/infrastructure/AuthOperationsGateway";
 
-test("AuthServiceGateway adapts the legacy auth service to the module port", async () => {
-  const gateway = new AuthServiceGateway({
+test("AuthOperationsGateway adapts auth operations to the module port", async () => {
+  const gateway = new AuthOperationsGateway({
     signIn: async (input) => ({
       user: { id: "user-1", email: input.email },
       session: null,
@@ -16,8 +16,8 @@ test("AuthServiceGateway adapts the legacy auth service to the module port", asy
   });
 });
 
-test("AuthServiceGateway rejects a missing user response", async () => {
-  const gateway = new AuthServiceGateway({
+test("AuthOperationsGateway rejects a missing user response", async () => {
+  const gateway = new AuthOperationsGateway({
     signIn: async () => ({ user: null, session: null }),
   });
 

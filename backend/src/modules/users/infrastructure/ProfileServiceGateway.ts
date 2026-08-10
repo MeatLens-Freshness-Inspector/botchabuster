@@ -1,6 +1,6 @@
 import type { UserProfile, UserRepository } from "../domain/ports/UserRepository";
 
-interface LegacyProfileService {
+interface ProfileDataSource {
   getProfile(userId: string): Promise<{
     id: string;
     full_name: string | null;
@@ -9,10 +9,10 @@ interface LegacyProfileService {
 }
 
 export class ProfileServiceGateway implements UserRepository {
-  constructor(private readonly legacyProfileService: LegacyProfileService) {}
+  constructor(private readonly dataSource: ProfileDataSource) {}
 
   async getProfile(userId: string): Promise<UserProfile | null> {
-    const profile = await this.legacyProfileService.getProfile(userId);
+    const profile = await this.dataSource.getProfile(userId);
     if (!profile) return null;
 
     return {

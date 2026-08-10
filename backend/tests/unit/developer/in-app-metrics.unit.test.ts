@@ -6,7 +6,7 @@ process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-
 process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 
 test("InspectionService.getInAppModelMetrics computes dataset evaluation metrics", async () => {
-  const { InspectionService } = await import("../../../src/services/InspectionService");
+  const { InspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
   const { supabase } = await import("../../../src/integrations/supabase");
 
   const mockData = [

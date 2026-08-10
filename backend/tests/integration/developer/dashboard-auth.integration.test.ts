@@ -4,9 +4,9 @@ import "../../setup/env";
 import { startTestServer } from "../../support/appFactory";
 
 test("developer dashboard overview denies plain admins and allows developers", async () => {
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { developerDashboardService } = await import("../../../src/services/DeveloperDashboardService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);

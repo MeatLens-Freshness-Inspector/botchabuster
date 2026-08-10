@@ -10,7 +10,7 @@ process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-
 process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 
 test("training-run import rejects ZIP packages without manifest.json", async () => {
-  const { developerDashboardService } = await import("../../../src/services/DeveloperDashboardService");
+  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
   const tempDir = await mkdtemp(path.join(tmpdir(), "developer-dashboard-import-"));
   const packagePath = path.join(tempDir, "missing-manifest.zip");
 

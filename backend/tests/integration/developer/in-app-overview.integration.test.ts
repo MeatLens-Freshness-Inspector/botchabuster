@@ -4,10 +4,10 @@ import "../../setup/env";
 import { startTestServer } from "../../support/appFactory";
 
 test("developer dashboard overview returns inAppMetrics payload", async () => {
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { inspectionService } = await import("../../../src/services/InspectionService");
-  const { developerDashboardStorageService } = await import("../../../src/services/DeveloperDashboardStorageService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
+  const { developerDashboardStorageService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardStorageService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);

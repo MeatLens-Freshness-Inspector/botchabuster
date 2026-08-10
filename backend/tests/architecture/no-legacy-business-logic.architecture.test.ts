@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
 
-const legacyRoots = ["controllers", "routes", "services"];
+const moduleRoot = join(process.cwd(), "src", "modules");
 
 function listTypeScriptFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -13,16 +13,16 @@ function listTypeScriptFiles(directory: string): string[] {
   });
 }
 
-test("legacy backend layers contain no direct Supabase or SQL access", () => {
-  const violations = legacyRoots.flatMap((root) => {
-    const directory = join(process.cwd(), "src", root);
-    return listTypeScriptFiles(directory).flatMap((filePath) => {
-      const source = readFileSync(filePath, "utf8");
-      return /@supabase\/supabase-js|integrations\/supabase|\.from\(\s*["']|\.rpc\(\s*["']/.test(source)
-        ? [filePath]
-        : [];
-    });
+test("module presentation and application layers contain no persistence logic", () => {
+  const violations = listTypeScriptFiles(moduleRoot).flatMap((filePath) => {
+    const relativePath = filePath.replace(moduleRoot, "").replaceAll("\\", "/");
+    if (!/(^|\/)(presentation|application)\//.test(relativePath)) return [];
+
+    const source = readFileSync(filePath, "utf8");
+    return /@supabase\/supabase-js|integrations\/supabase|\.from\(\s*["']|\.rpc\(\s*["']/.test(source)
+      ? [filePath]
+      : [];
   });
 
-  assert.deepEqual(violations, [], `Legacy persistence access remains in: ${violations.join(", ")}`);
+  assert.deepEqual(violations, [], `Persistence access remains in module boundary files: ${violations.join(", ")}`);
 });

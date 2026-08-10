@@ -9,12 +9,12 @@ import {
   SESSION_LIMIT_REACHED_MESSAGE,
   toAuditActor,
 } from "../../../../middleware/auth";
-import { authService } from "../../../../services/AuthService";
-import { AuthServiceGateway, AuthView, SignInUser } from "../..";
+import { authOperations } from "../../infrastructure/SupabaseAuthFactory";
+import { AuthOperationsGateway, AuthView, SignInUser } from "../..";
 import { getAppSessionService, type AppSession } from "../../infrastructure/AppSessionService";
 import { profileService, type AppRole, type PrimaryRole } from "../../../users/infrastructure/ProfileService";
 import { auditLogService, type AuditLogWriteInput } from "../../../audit/infrastructure/AuditLogService";
-import { passkeyService } from "../../../../services/PasskeyService";
+import { passkeyService } from "../../infrastructure/SupabasePasskeyFactory";
 import { getSessionLimitService } from "../../infrastructure/SessionLimitService";
 import { getSessionCookieSameSite, shouldUseSecureSessionCookieForRequest } from "../sessionCookie";
 import { isReportOrganization } from "../../../../types/reportOrganization";
@@ -33,13 +33,13 @@ import { DeletePasskey } from "../../application/DeletePasskey";
 
 export class AuthController {
   private readonly config = Config.getInstance();
-  private readonly signInUser = new SignInUser(new AuthServiceGateway(authService));
-  private readonly signUpUser = new SignUpUser(authService);
-  private readonly signOutUser = new SignOutUser(authService);
-  private readonly sendPasswordResetUseCase = new SendPasswordReset(authService);
-  private readonly updateEmailUseCase = new UpdateEmail(authService);
-  private readonly updatePasswordUseCase = new UpdatePassword(authService);
-  private readonly updateRecoveryPassword = new UpdateRecoveryPassword(authService);
+  private readonly signInUser = new SignInUser(new AuthOperationsGateway(authOperations));
+  private readonly signUpUser = new SignUpUser(authOperations);
+  private readonly signOutUser = new SignOutUser(authOperations);
+  private readonly sendPasswordResetUseCase = new SendPasswordReset(authOperations);
+  private readonly updateEmailUseCase = new UpdateEmail(authOperations);
+  private readonly updatePasswordUseCase = new UpdatePassword(authOperations);
+  private readonly updateRecoveryPassword = new UpdateRecoveryPassword(authOperations);
   private readonly beginRegistration = new BeginPasskeyRegistration(passkeyService);
   private readonly verifyRegistration = new VerifyPasskeyRegistration(passkeyService);
   private readonly beginAuthentication = new BeginPasskeyAuthentication(passkeyService);
@@ -204,7 +204,7 @@ export class AuthController {
 
       const user = AuthView.user(await this.signInUser.execute({ email, password }));
       const privilege = await profileService.getPrivilegeSummary(user.id);
-      const appSession = authService.createAppSession(user);
+    const appSession = authOperations.createAppSession(user);
       const payload = await this.buildBootstrapPayload({
         user,
         roles: privilege.roles,

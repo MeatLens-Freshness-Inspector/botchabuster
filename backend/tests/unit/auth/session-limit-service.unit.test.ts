@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { SessionLimitService } from "../../../src/services/SessionLimitService";
+import { SessionLimitService } from "../../../src/modules/auth/infrastructure/SessionLimitService";
 
 // Helper to build a fake in-memory store (no DB required for unit tests)
 function makeService(limit = 2) {

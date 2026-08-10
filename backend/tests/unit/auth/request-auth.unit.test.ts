@@ -33,7 +33,7 @@ function createRequest(options: {
 
 async function createAppSessionCookie(userId = "user-1", email = "inspector@example.com"): Promise<string> {
   process.env.APP_SESSION_SECRET = process.env.APP_SESSION_SECRET || "app-session-secret";
-  const { AppSessionService } = await import("../../../src/services/AppSessionService");
+  const { AppSessionService } = await import("../../../src/modules/auth/infrastructure/AppSessionService");
   const sessionService = new AppSessionService(process.env.APP_SESSION_SECRET, 3600, () => Date.now());
   return sessionService.createSession({ id: userId, email }).access_token;
 }
@@ -78,8 +78,8 @@ test("resolveRequestAuthContext prefers the app-session cookie when present", as
   process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 
   const { resolveRequestAuthContext } = await import("../../../src/middleware/auth");
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -122,8 +122,8 @@ test("resolveRequestAuthContext still accepts a bearer header when no cookie exi
   process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
 
   const { resolveRequestAuthContext } = await import("../../../src/middleware/auth");
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -204,9 +204,9 @@ test("resolveTrackedRequestAuthContext only performs session tracking once per r
   });
 
   const { resolveTrackedRequestAuthContext } = await import("../../../src/middleware/auth");
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
@@ -271,9 +271,9 @@ test("resolveTrackedRequestAuthContext rejects unsafe cookie requests without a 
   });
 
   const { RequestAuthError, resolveTrackedRequestAuthContext } = await import("../../../src/middleware/auth");
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);

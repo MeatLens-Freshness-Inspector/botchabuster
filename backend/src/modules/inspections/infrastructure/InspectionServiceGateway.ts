@@ -5,7 +5,7 @@ import type {
   InspectionRepository,
 } from "../domain/ports/InspectionRepository";
 
-interface LegacyInspectionService {
+interface InspectionDataSource {
   getById(
     id: string,
     userId: string,
@@ -15,10 +15,10 @@ interface LegacyInspectionService {
 }
 
 export class InspectionServiceGateway implements InspectionRepository {
-  constructor(private readonly legacyInspectionService: LegacyInspectionService) {}
+  constructor(private readonly dataSource: InspectionDataSource) {}
 
   getById(request: GetInspectionByIdRequest): Promise<InspectionRecord | null> {
-    return this.legacyInspectionService.getById(
+    return this.dataSource.getById(
       request.inspectionId,
       request.userId,
       request.includeAll ? "all" : "mine",

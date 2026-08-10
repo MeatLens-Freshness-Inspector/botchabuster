@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import "../../setup/env";
-import { authService } from "../../../src/services/AuthService";
+import { authService } from "../../../src/modules/auth/infrastructure/SupabaseAuthFactory";
 import { supabase, supabaseAuth } from "../../../src/integrations/supabase";
 
 test("signIn revokes the transient Supabase auth session after exchanging credentials", async () => {
@@ -73,4 +73,3 @@ test("signIn revokes the transient Supabase auth session after exchanging creden
     globalThis.fetch = originalFetch;
   }
 });
-

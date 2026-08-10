@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { AppSessionService } from "../../../src/services/AppSessionService";
+import { AppSessionService } from "../../../src/modules/auth/infrastructure/AppSessionService";
 
 test("creates a MeatLens app session and resolves the user from its access token", async () => {
   const issuedAt = Date.UTC(2026, 5, 20, 10, 0, 0);

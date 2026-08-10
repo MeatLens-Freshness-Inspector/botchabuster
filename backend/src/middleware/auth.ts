@@ -1,11 +1,11 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import { Config } from "../config";
 import { isOriginAllowed } from "../config/cors";
-import { authService } from "../services/AuthService";
-import { getAppSessionService } from "../services/AppSessionService";
-import { CsrfTokenService } from "../services/CsrfTokenService";
-import { profileService, type AppRole, type PrimaryRole } from "../services/ProfileService";
-import { getSessionLimitService } from "../services/SessionLimitService";
+import { authOperations } from "../modules/auth/infrastructure/SupabaseAuthFactory";
+import { CsrfTokenService } from "../modules/auth/infrastructure/CsrfTokenService";
+import { getAppSessionService } from "../modules/auth/infrastructure/AppSessionService";
+import { getSessionLimitService } from "../modules/auth/infrastructure/SessionLimitService";
+import { profileService, type AppRole, type PrimaryRole } from "../modules/users/infrastructure/ProfileService";
 
 export interface RequestAuthContext {
   userId: string;
@@ -165,7 +165,7 @@ export async function resolveRequestAuthContext(req: Request): Promise<RequestAu
   let email: string | null;
 
   try {
-    const user = await authService.getUserByAccessToken(accessToken);
+    const user = await authOperations.getUserByAccessToken(accessToken);
     userId = user.id;
     email = user.email ?? null;
   } catch (error) {

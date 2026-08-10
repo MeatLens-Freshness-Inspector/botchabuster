@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ProfileServiceGateway } from "../../../src/modules/users/infrastructure/ProfileServiceGateway";
 
-test("ProfileServiceGateway maps legacy profile rows to the users port", async () => {
+test("ProfileServiceGateway maps profile rows to the users port", async () => {
   const gateway = new ProfileServiceGateway({
     getProfile: async () => ({
       id: "user-1",

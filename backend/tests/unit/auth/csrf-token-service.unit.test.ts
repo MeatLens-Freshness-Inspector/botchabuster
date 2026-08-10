@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { CsrfTokenService } from "../../../src/services/CsrfTokenService";
+import { CsrfTokenService } from "../../../src/modules/auth/infrastructure/CsrfTokenService";
 
 test("issues and verifies a csrf token bound to the app session and user", () => {
   const csrfService = new CsrfTokenService("csrf-secret", 900, () => 1_700_000_000_000);

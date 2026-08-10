@@ -5,9 +5,9 @@ import { createCookieFixture } from "../../support/authFactory";
 import { startTestServer } from "../../support/appFactory";
 
 test("protected admin data endpoints preserve session-limit 429 responses instead of downgrading them to 401", async () => {
-  const { authService } = await import("../../../src/services/AuthService");
-  const { profileService } = await import("../../../src/services/ProfileService");
-  const { getSessionLimitService } = await import("../../../src/services/SessionLimitService");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
