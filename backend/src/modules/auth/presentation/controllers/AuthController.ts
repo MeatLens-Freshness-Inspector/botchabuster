@@ -16,7 +16,7 @@ import { profileService, type AppRole, type PrimaryRole } from "../../../users/i
 import { auditLogService, type AuditLogWriteInput } from "../../../audit/infrastructure/AuditLogService";
 import { passkeyService } from "../../../../services/PasskeyService";
 import { getSessionLimitService } from "../../infrastructure/SessionLimitService";
-import { getSessionCookieSameSite, shouldUseSecureSessionCookieForRequest } from "../../../../security/sessionCookie";
+import { getSessionCookieSameSite, shouldUseSecureSessionCookieForRequest } from "../sessionCookie";
 import { isReportOrganization } from "../../../../types/reportOrganization";
 import { SignUpUser } from "../../application/SignUpUser";
 import { SignOutUser } from "../../application/SignOutUser";

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getSessionCookieSameSite, shouldUseSecureSessionCookie } from "../../../src/security/sessionCookie";
+import { getSessionCookieSameSite, shouldUseSecureSessionCookie } from "../../../src/modules/auth/presentation/sessionCookie";
 
 test("defaults to secure cookies for https origins when no override is configured", () => {
   assert.equal(
