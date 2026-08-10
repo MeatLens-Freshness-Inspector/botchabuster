@@ -15,11 +15,11 @@ Access to and use of the Software is restricted to the following parties only ("
 1. **The Department of Information and Communications Technology (DICT)**, in its capacity supporting or overseeing the Ikot-Palengke Program's technical infrastructure.
 2. **The Department of Trade and Industry (DTI) Zambales / Region III**, as the program-validating agency.
 3. **The Olongapo City Veterinary Office**, as the operational end-user agency.
-4. **The three named developers of the Codeborne Research Group**: Adriaan (Project Lead / VSDE Team Lead), James Lawrence A. Dela Cruz (Developer), and Mr. Joseph Alan Quinteles (Developer, formerly Technical Adviser), each acting in their capacity as an author and maintainer of the Software.
+4. **The Core Team of the Codeborne Research Group**: Adriaan (Project Lead / VSDE Team Lead), James Lawrence A. Dela Cruz (Developer), and Mr. Joseph Alan Quinteles (Technical Adviser). Each Core Team member holds identical full access rights to the Software as set out in Section 10 — Mr. Quinteles's title as Technical Adviser reflects his role on the project and does not reduce, gate, or otherwise distinguish his access from that of the two developers.
 5. **Gordon College**, and only Gordon College among all academic institutions, and only to the narrow extent expressly set out in Section 4.
 6. **Prof. Paul Vincent Corsina**, in his individual capacity as Research Adviser, to the extent set out in Section 5.
 
-No person may access, clone, deploy, execute, review, or otherwise touch the codebase on behalf of any Authorized Party unless that person is (a) one of the three named developers, (b) technical personnel of DICT, DTI Zambales/Region III, or the Olongapo City Veterinary Office formally designated and approved in writing under Section 8.3, (c) personnel affiliated with Gordon College formally designated and approved in writing under Section 4.1A, (d) the named adviser under Section 5, or (e) acting under a written, revocable delegation issued by the copyright holder identifying the specific individual and scope of access. Employment by, membership in, or affiliation with an Authorized Party does **not**, by itself, confer any right of access beyond what that party is expressly granted in this license — designation under Section 8.3 or 4.1A must still be made formally, individual by individual, and approved in writing by the copyright holder before access is granted.
+No person may access, clone, deploy, execute, review, or otherwise touch the codebase on behalf of any Authorized Party unless that person is (a) one of the three Core Team members named in Section 2(4), (b) technical personnel of DICT, DTI Zambales/Region III, or the Olongapo City Veterinary Office formally designated and approved in writing under Section 8.3, (c) personnel affiliated with Gordon College formally designated and approved in writing under Section 4.1A, (d) the named adviser under Section 5, or (e) acting under a written, revocable delegation issued by the copyright holder identifying the specific individual and scope of access. Employment by, membership in, or affiliation with an Authorized Party does **not**, by itself, confer any right of access beyond what that party is expressly granted in this license — designation under Section 8.3 or 4.1A must still be made formally, individual by individual, and approved in writing by the copyright holder before access is granted.
 
 This list is exhaustive and closed. It may only be expanded, and no entry on it may be broadened in scope, except by written amendment signed by the copyright holder.
 
@@ -118,15 +118,15 @@ The Software is designated as an internal tool for the exclusive operational use
 
 9.8. **No warranty of fitness for regulatory reliance.** The Software assists with image-guided decision support only. It is not a certified regulatory instrument, and the Authorized Agencies remain solely responsible for compliance with NMIS, DTI, and local government food-safety standards. See Section 12.
 
-## 10. Developer Access Terms
+## 10. Core Team Access Terms (Developers and Technical Adviser)
 
-The three individuals named in Section 2(4) hold full access to the codebase as its authors, subject to the following:
+The three individuals named in Section 2(4) as the Core Team hold full access to the codebase, subject to the following:
 
-10.1. Any of the three developers may modify, extend, and deploy the Software in furtherance of the Ikot-Palengke Program and its academic thesis requirements at Gordon College, provided that any academic submission complies with Sections 3–7 (Gordon College only, within the scope of Section 4; named adviser only within Section 5; no other institutional storage; no successor repositories; no implied license).
+10.1. Any Core Team member may modify, extend, and deploy the Software in furtherance of the Ikot-Palengke Program and its academic thesis requirements at Gordon College, provided that any academic submission complies with Sections 3–7 (Gordon College only, within the scope of Section 4; named adviser only within Section 5; no other institutional storage; no successor repositories; no implied license).
 
-10.2. No developer may unilaterally add a new Authorized Party, expand Gordon College's exception beyond Section 4, expand the adviser's access beyond Section 5, grant third-party access, or relicense the Software without the written agreement of the other two developers and the copyright holder.
+10.2. No Core Team member may unilaterally add a new Authorized Party, expand Gordon College's exception beyond Section 4, expand the Research Adviser's access beyond Section 5, grant third-party access, or relicense the Software without the written agreement of the other two Core Team members and the copyright holder.
 
-10.3. Should any developer's involvement with the Codeborne Research Group end, their access under this section terminates automatically unless otherwise agreed in writing.
+10.3. Should any Core Team member's involvement with the Codeborne Research Group end, their access under this section terminates automatically unless otherwise agreed in writing.
 
 10.4. Access under this section is subject to immediate forfeiture under Section 6.6.
 
