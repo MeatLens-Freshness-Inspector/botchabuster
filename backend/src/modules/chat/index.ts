@@ -12,6 +12,10 @@ export type {
   UserChatMessage,
   UserChatContact,
 } from "./infrastructure/UserChatService";
+export { default as chatRoutes } from "./presentation/routes";
+export { default as userChatRoutes } from "./presentation/user-chat-routes";
+export { ChatController } from "./presentation/controllers/ChatController";
+export { UserChatController } from "./presentation/controllers/UserChatController";
 export type {
   ChatContact,
   ChatContactRepository,
