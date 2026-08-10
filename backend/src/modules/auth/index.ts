@@ -22,5 +22,10 @@ export type {
 } from "./infrastructure/AppSessionService";
 export { CsrfTokenService } from "./infrastructure/CsrfTokenService";
 export type { CsrfTokenInput } from "./infrastructure/CsrfTokenService";
+export { PasskeyCeremonyStore, passkeyCeremonyStore } from "./infrastructure/PasskeyCeremonyStore";
+export type {
+  PasskeyCeremonyRecord,
+  PasskeyCeremonyType,
+} from "./infrastructure/PasskeyCeremonyStore";
 export { AuthView } from "./presentation/views/AuthView";
 export type { AuthUserView } from "./presentation/views/AuthView";
