@@ -83,6 +83,8 @@ The frontend `pretest` hook builds the backend first so integration and end-to-e
 
 For the normal CI fast path, run `npm run test:fast`; it includes frontend unit/component/integration tests, backend unit and architecture tests, and script checks. Contract tests run as a separate root gate.
 
+The workflow also validates documentation links for every relevant change. A final quality-gate job records the result of each frontend, backend, contract, build, and end-to-end lane; skipped lanes are expected when path classification shows they are out of scope, while failures and cancellations fail the workflow.
+
 ## Deployment
 
 Netlify uses the root `netlify.toml`, builds from `frontend/`, publishes `dist`, and rewrites SPA routes to `index.html`. Configure only:

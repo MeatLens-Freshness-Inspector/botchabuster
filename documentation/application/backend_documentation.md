@@ -76,8 +76,12 @@ The backend test command runs unit, integration, and architecture suites. The ro
 CI’s backend gates are therefore:
 
 ```text
-typecheck → backend unit/integration/architecture → API contract tests → build
+change detection → lint/typecheck → script/documentation checks
+  → backend unit/integration/architecture → API contract tests → build
+  → aggregate quality gate
 ```
+
+Architecture tests run as their own CI lane so module boundaries, MVC composition, query-shape rules, and final-class conventions remain visible as independent failures. The aggregate quality gate tolerates intentionally skipped path-specific lanes while failing on any failed or cancelled required lane.
 
 ## Database and storage
 

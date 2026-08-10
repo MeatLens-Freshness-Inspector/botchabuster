@@ -83,4 +83,13 @@ Then verify sign-in, cookie session bootstrap, a CSRF-protected mutation, an ima
 
 ## CI and previews
 
-The repository workflows run backend typecheck/build/tests and frontend checks. Keep preview deploy hooks optional; deployment does not depend on them. A hosted ping may be used to prevent an idle Render instance, but it is operational convenience rather than a backend dependency.
+The repository workflow is path-aware and keeps deployment independent of paid infrastructure. Every relevant change receives:
+
+- least-privilege read-only checkout permissions;
+- cancellation of superseded runs on the same branch or pull request;
+- documentation validation, including required guides and local-link checks;
+- backend unit, integration, architecture, contract, typecheck, and build gates;
+- frontend unit, component, integration, and critical Playwright gates; and
+- a final quality-gate job that summarizes all lanes and fails on any failure or cancellation.
+
+Documentation-only changes run the documentation validator and skip the expensive application lanes. Scheduled and manual runs additionally execute infrastructure checks and the full Playwright suite. Keep preview deploy hooks optional; deployment does not depend on them. A hosted ping may be used to prevent an idle Render instance, but it is operational convenience rather than a backend dependency.

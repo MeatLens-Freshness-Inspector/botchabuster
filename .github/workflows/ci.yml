@@ -9,6 +9,13 @@ on:
   schedule:
     - cron: "0 18 * * *"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   changes:
     name: Detect Changed Paths
@@ -100,6 +107,19 @@ jobs:
             echo "Docs-only changes detected, so the expensive test lanes were skipped."
           } >> "$GITHUB_STEP_SUMMARY"
 
+  docs-validation:
+    name: Documentation Validation
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.any_relevant_changes == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm run test:documentation
+
   lint-and-types:
     name: Lint and Typecheck
     runs-on: ubuntu-latest
@@ -142,6 +162,20 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:unit -w backend
+
+  backend-architecture:
+    name: Backend Architecture Tests
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:architecture -w backend
 
   frontend-tests:
     name: Frontend Unit, Component, and Integration Tests
@@ -258,3 +292,67 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e:full
+
+  quality-gate:
+    name: CI Quality Gate
+    runs-on: ubuntu-latest
+    if: always()
+    needs:
+      - changes
+      - docs-only
+      - docs-validation
+      - lint-and-types
+      - script-tests
+      - backend-unit
+      - backend-architecture
+      - frontend-tests
+      - backend-integration
+      - contract-tests
+      - build
+      - e2e-critical
+      - infrastructure-tests
+      - full-playwright
+    steps:
+      - name: Summarize job results
+        env:
+          CHANGES: ${{ needs['changes'].result }}
+          DOCS_ONLY: ${{ needs['docs-only'].result }}
+          DOCS_VALIDATION: ${{ needs['docs-validation'].result }}
+          LINT_TYPES: ${{ needs['lint-and-types'].result }}
+          SCRIPT_TESTS: ${{ needs['script-tests'].result }}
+          BACKEND_UNIT: ${{ needs['backend-unit'].result }}
+          BACKEND_ARCHITECTURE: ${{ needs['backend-architecture'].result }}
+          FRONTEND_TESTS: ${{ needs['frontend-tests'].result }}
+          BACKEND_INTEGRATION: ${{ needs['backend-integration'].result }}
+          CONTRACT_TESTS: ${{ needs['contract-tests'].result }}
+          BUILD: ${{ needs['build'].result }}
+          E2E_CRITICAL: ${{ needs['e2e-critical'].result }}
+          INFRASTRUCTURE: ${{ needs['infrastructure-tests'].result }}
+          FULL_PLAYWRIGHT: ${{ needs['full-playwright'].result }}
+        shell: bash
+        run: |
+          {
+            echo "## CI Quality Gate"
+            echo
+            printf '| Job | Result |\n| --- | --- |\n'
+            printf '| Change detection | %s |\n' "$CHANGES"
+            printf '| Docs-only summary | %s |\n' "$DOCS_ONLY"
+            printf '| Documentation validation | %s |\n' "$DOCS_VALIDATION"
+            printf '| Lint and typecheck | %s |\n' "$LINT_TYPES"
+            printf '| Script tests | %s |\n' "$SCRIPT_TESTS"
+            printf '| Backend unit | %s |\n' "$BACKEND_UNIT"
+            printf '| Backend architecture | %s |\n' "$BACKEND_ARCHITECTURE"
+            printf '| Frontend tests | %s |\n' "$FRONTEND_TESTS"
+            printf '| Backend integration | %s |\n' "$BACKEND_INTEGRATION"
+            printf '| Contract tests | %s |\n' "$CONTRACT_TESTS"
+            printf '| Build | %s |\n' "$BUILD"
+            printf '| Critical Playwright | %s |\n' "$E2E_CRITICAL"
+            printf '| Infrastructure tests | %s |\n' "$INFRASTRUCTURE"
+            printf '| Full Playwright | %s |\n' "$FULL_PLAYWRIGHT"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          for result in "$CHANGES" "$DOCS_ONLY" "$DOCS_VALIDATION" "$LINT_TYPES" "$SCRIPT_TESTS" "$BACKEND_UNIT" "$BACKEND_ARCHITECTURE" "$FRONTEND_TESTS" "$BACKEND_INTEGRATION" "$CONTRACT_TESTS" "$BUILD" "$E2E_CRITICAL" "$INFRASTRUCTURE" "$FULL_PLAYWRIGHT"; do
+            if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
+              exit 1
+            fi
+          done
