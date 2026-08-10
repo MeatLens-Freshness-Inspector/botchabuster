@@ -1,13 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const sourceRoot = join(process.cwd(), "src", "modules");
 
 function listTypeScriptFiles(directory: string): string[] {
-  const fs = require("node:fs") as typeof import("node:fs");
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name);
     if (entry.isDirectory()) return listTypeScriptFiles(path);
     return entry.name.endsWith(".ts") ? [path] : [];
@@ -15,8 +14,7 @@ function listTypeScriptFiles(directory: string): string[] {
 }
 
 test("@final classes expose a private constructor", () => {
-  const fs = require("node:fs") as typeof import("node:fs");
-  assert.ok(fs.existsSync(sourceRoot), "src/modules must exist before final-class checks run");
+  assert.ok(existsSync(sourceRoot), "src/modules must exist before final-class checks run");
 
   const violations: string[] = [];
   for (const file of listTypeScriptFiles(sourceRoot)) {

@@ -1,15 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
 
 const sourceRoot = join(process.cwd(), "src", "modules");
 
 function listTypeScriptFiles(directory: string): string[] {
-  const entries = require("node:fs").readdirSync(directory, { withFileTypes: true }) as Array<{
-    name: string;
-    isDirectory(): boolean;
-  }>;
+  const entries = readdirSync(directory, { withFileTypes: true });
 
   return entries.flatMap((entry) => {
     const path = join(directory, entry.name);
@@ -19,7 +16,7 @@ function listTypeScriptFiles(directory: string): string[] {
 }
 
 test("module presentation and application layers do not import Supabase directly", () => {
-  assert.ok(require("node:fs").existsSync(sourceRoot), "src/modules must exist before boundary checks run");
+  assert.ok(existsSync(sourceRoot), "src/modules must exist before boundary checks run");
 
   const violations = listTypeScriptFiles(sourceRoot).flatMap((file) => {
     const moduleRelativePath = relative(sourceRoot, file).replaceAll("\\", "/");
