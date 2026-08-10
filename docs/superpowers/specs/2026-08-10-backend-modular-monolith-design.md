@@ -10,6 +10,7 @@
 - Preserve existing test files and their intent. Add focused regression and architecture tests alongside them; do not wholesale rewrite the test suite.
 - Every production behavior change follows red-green-refactor. Every commit is independently typecheckable and has relevant tests passing.
 - Create no god classes. A class or module has one reason to change, owns one narrow responsibility, and delegates all other concerns through explicit collaborators.
+- Use object-oriented design deliberately: encapsulate domain state and invariants, prefer composition through ports and collaborators, and mark closed concrete classes as final where subclassing has no valid use.
 
 ## Recommended Approach: Incremental Strangler Migration
 
@@ -93,6 +94,18 @@ The current large controllers and services will not be moved wholesale into simi
 - New classes with more than four injected collaborators or more than one public business operation must be split before commit. Files approaching 200–250 lines require a documented cohesion review and are split whenever two independent reasons to change are present.
 
 Architecture tests will enforce layer-import boundaries, one-use-case-per-file naming, and that controllers cannot import Supabase infrastructure. Code review of each commit applies the collaborator and public-operation limits; together these rules prevent responsibility accumulation instead of merely renaming a god class.
+
+## Object-Oriented and Final-Class Policy
+
+The backend will use classes where they model state, invariants, boundaries, or substitutable behavior; pure stateless transformations remain functions rather than artificial classes. This keeps the design object-oriented without turning every utility into ceremony.
+
+Composition is the default. A use case receives repository, clock, cryptography, storage, or session collaborators through narrow interfaces and composes them to perform one operation. It does not subclass a base service or controller.
+
+TypeScript has no `final` keyword. A class that must be non-inheritable will therefore have a `private constructor` and expose named static factories, which prevents external construction and subclassing at compile time. These final classes include closed value objects and validated input types such as `InspectionId`, `UserId`, `PageLimit`, `Cursor`, and normalized command DTOs, as well as closed response-view serializers where a replacement must be supplied through a port instead of inheritance.
+
+Inheritance is allowed only for a real substitutability relationship. The intended examples are an abstract `ApplicationError` hierarchy for typed HTTP error mapping and narrowly defined strategy or adapter interfaces when different implementations must be selected at composition time. Base controllers, base services, and persistence inheritance trees are prohibited.
+
+Each final class carries a short `@final` documentation marker, a private constructor, and a static factory. Architecture tests parse the TypeScript source to verify that every marked class retains a private constructor. Tests use its public factory rather than bypassing encapsulation.
 
 ## Module Boundaries
 
