@@ -37,5 +37,8 @@ export type {
   PasskeyCeremonyType,
 } from "./infrastructure/PasskeyCeremonyStore";
 export { SessionLimitService, getSessionLimitService } from "./infrastructure/SessionLimitService";
+export { PasskeyService } from "./infrastructure/PasskeyService";
+export { createSupabasePasskeyService } from "./infrastructure/SupabasePasskeyFactory";
+export type { PasskeyDatabase, RegisteredPasskey } from "./infrastructure/PasskeyService";
 export { AuthView } from "./presentation/views/AuthView";
 export type { AuthUserView } from "./presentation/views/AuthView";
