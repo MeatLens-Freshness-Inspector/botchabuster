@@ -36,5 +36,6 @@ export type {
   PasskeyCeremonyRecord,
   PasskeyCeremonyType,
 } from "./infrastructure/PasskeyCeremonyStore";
+export { SessionLimitService, getSessionLimitService } from "./infrastructure/SessionLimitService";
 export { AuthView } from "./presentation/views/AuthView";
 export type { AuthUserView } from "./presentation/views/AuthView";
