@@ -34,7 +34,7 @@ function ensureUploadDirectory(uploadDir: string): void {
 export function createApp(config = Config.getInstance()) {
   const app = express();
   const dependencies = createBackendDependencies(config);
-  createModuleRegistry(dependencies);
+  const modules = createModuleRegistry(dependencies);
 
   ensureUploadDirectory(config.uploadDir);
 
@@ -43,7 +43,7 @@ export function createApp(config = Config.getInstance()) {
   app.use(cors(createCorsOptions(config.allowedOrigins)));
   app.use(express.json());
 
-  for (const route of createBackendRoutes()) {
+  for (const route of createBackendRoutes(modules)) {
     app.use(route.prefix, route.router);
   }
   app.use(globalErrorHandler);

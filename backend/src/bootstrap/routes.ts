@@ -1,4 +1,5 @@
 import type { Router } from "express";
+import type { ModuleRegistry } from "./modules";
 import analysisRoutes from "../modules/analysis/presentation/routes";
 import profileRoutes from "../modules/users/presentation/routes";
 import inspectionRoutes from "../modules/inspections/presentation/routes";
@@ -18,7 +19,7 @@ export interface BackendRoute {
   readonly router: Router;
 }
 
-export function createBackendRoutes(): readonly BackendRoute[] {
+export function createBackendRoutes(_modules?: ModuleRegistry): readonly BackendRoute[] {
   return [
     { prefix: "/api/analysis", router: analysisRoutes },
     { prefix: "/api/profiles", router: profileRoutes },
