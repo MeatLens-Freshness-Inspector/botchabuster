@@ -3,8 +3,22 @@ import { profileService } from "../../infrastructure/ProfileService";
 import { auditLogService } from "../../../audit/infrastructure/AuditLogService";
 import { isReportOrganization } from "../../../../types/reportOrganization";
 import { getRequestAuthContext, resolveTrackedRequestAuthContext, toAuditActor } from "../../../../middleware/auth";
+import { ListProfiles } from "../../application/ListProfiles";
+import { UpdateProfile } from "../../application/UpdateProfile";
+import { GetUserStats } from "../../application/GetUserStats";
+import { CheckUserRole } from "../../application/CheckUserRole";
+import { CreateAdminUser } from "../../application/CreateAdminUser";
+import { UpdateAdminUser } from "../../application/UpdateAdminUser";
+import { DeleteAdminUser } from "../../application/DeleteAdminUser";
 
 export class ProfileController {
+  private readonly listProfiles = new ListProfiles(profileService);
+  private readonly updateProfileUseCase = new UpdateProfile(profileService);
+  private readonly getUserStatsUseCase = new GetUserStats(profileService);
+  private readonly checkUserRoleUseCase = new CheckUserRole(profileService);
+  private readonly createAdminUser = new CreateAdminUser(profileService);
+  private readonly updateAdminUser = new UpdateAdminUser(profileService);
+  private readonly deleteAdminUser = new DeleteAdminUser(profileService);
   private async resolveActor(req: Request): Promise<{ id: string; role: string } | null> {
     try {
       const authContext = req.auth ?? getRequestAuthContext(req);
@@ -69,7 +83,7 @@ export class ProfileController {
         return;
       }
 
-      const profile = await profileService.updateProfile(id, {
+      const profile = await this.updateProfileUseCase.execute(id, {
         full_name,
         avatar_url,
         location,
@@ -86,7 +100,7 @@ export class ProfileController {
 
   async getAllProfiles(req: Request, res: Response): Promise<void> {
     try {
-      const profiles = await profileService.getAllProfiles();
+      const profiles = await this.listProfiles.execute();
       res.json(profiles);
     } catch (error) {
       console.error("Get all profiles error:", error);
@@ -96,7 +110,7 @@ export class ProfileController {
 
   async getUserStats(req: Request, res: Response): Promise<void> {
     try {
-      const stats = await profileService.getUserStats();
+      const stats = await this.getUserStatsUseCase.execute();
       res.json(stats);
     } catch (error) {
       console.error("Get user stats error:", error);
@@ -111,7 +125,7 @@ export class ProfileController {
         res.status(400).json({ error: "User ID and role are required" });
         return;
       }
-      const hasRole = await profileService.hasRole(userId, role);
+      const hasRole = await this.checkUserRoleUseCase.execute(userId, role);
       res.json({ hasRole });
     } catch (error) {
       console.error("Check user role error:", error);
@@ -152,7 +166,7 @@ export class ProfileController {
         return;
       }
 
-      const createdUser = await profileService.createUserByAdmin({
+      const createdUser = await this.createAdminUser.execute({
         email,
         password,
         full_name,
@@ -228,7 +242,7 @@ export class ProfileController {
         return;
       }
 
-      const updatedUser = await profileService.updateUserByAdmin(id, {
+      const updatedUser = await this.updateAdminUser.execute(id, {
         email,
         password,
         full_name,
@@ -286,7 +300,7 @@ export class ProfileController {
         return;
       }
 
-      await profileService.deleteUserByAdmin(id);
+      await this.deleteAdminUser.execute(id);
 
       const actor = await this.resolveActor(req);
       if (actor) {
