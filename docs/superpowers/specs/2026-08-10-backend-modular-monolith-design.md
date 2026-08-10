@@ -9,6 +9,7 @@
 - Preserve existing endpoint paths, request/response contracts, authentication modes, cookies, and CSRF behavior unless a security defect requires a compatible tightening.
 - Preserve existing test files and their intent. Add focused regression and architecture tests alongside them; do not wholesale rewrite the test suite.
 - Every production behavior change follows red-green-refactor. Every commit is independently typecheckable and has relevant tests passing.
+- Create no god classes. A class or module has one reason to change, owns one narrow responsibility, and delegates all other concerns through explicit collaborators.
 
 ## Recommended Approach: Incremental Strangler Migration
 
@@ -78,6 +79,20 @@ The modular-monolith boundaries do not replace MVC; they make it local to each f
 - **Routes:** `presentation/routes` defines endpoint paths and middleware order, then delegates to a controller. It contains no business logic.
 
 The request flow is therefore `route → controller → use case/model → repository port → Supabase adapter → view`. Use cases own authorization decisions and orchestration. Repository ports express a query’s required projection, filter, ordering, and page size; Supabase implementations contain all PostgREST calls. No controller or use case imports the Supabase client.
+
+## No-God-Class Rules
+
+The current large controllers and services will not be moved wholesale into similarly large module classes. The refactor applies these cohesion rules instead:
+
+- One use-case file owns one command or query and exports a single `execute` operation. It may orchestrate only the ports required for that operation.
+- A controller owns one endpoint or tightly related CRUD action group. It parses input, invokes its use case, and selects a view; validation rules, authorization decisions, persistence, and JSON shaping live elsewhere.
+- A repository implementation owns one aggregate or read model. It never coordinates auth, files, email, audit events, or unrelated tables.
+- A storage, WebAuthn, cryptography, or Supabase-auth adapter wraps one external capability only.
+- Domain models contain invariants and transformations only. They never import Express, Supabase, Node filesystem APIs, or HTTP types.
+- Module `index.ts` files expose public contracts only; they contain no orchestration or hidden service locator.
+- New classes with more than four injected collaborators or more than one public business operation must be split before commit. Files approaching 200–250 lines require a documented cohesion review and are split whenever two independent reasons to change are present.
+
+Architecture tests will enforce layer-import boundaries, one-use-case-per-file naming, and that controllers cannot import Supabase infrastructure. Code review of each commit applies the collaborator and public-operation limits; together these rules prevent responsibility accumulation instead of merely renaming a god class.
 
 ## Module Boundaries
 
