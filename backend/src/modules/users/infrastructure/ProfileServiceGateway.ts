@@ -1,9 +1,10 @@
 import type { UserProfile, UserRepository } from "../domain/ports/UserRepository";
 
 interface LegacyProfileService {
-  getProfile(userId: string): Promise<Record<string, unknown> & {
+  getProfile(userId: string): Promise<{
     id: string;
     full_name: string | null;
+    email?: unknown;
   } | null>;
 }
 
