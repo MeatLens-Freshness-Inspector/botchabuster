@@ -60,11 +60,24 @@ modules/<name>/
   domain/          # entities, value objects, errors, repository ports
   application/     # command/query use cases and DTOs
   infrastructure/  # Supabase, storage, filesystem, and WebAuthn adapters
-  presentation/    # controller, schema parsing, router
+  presentation/
+    routes/        # Express route definitions and middleware order
+    controllers/   # HTTP request-to-use-case adapters
+    schemas/       # allowlist parsing and input normalization
+    views/         # stable JSON response serializers
   index.ts         # the only module-facing public surface
 ```
 
-Controllers parse HTTP input and map application errors only. Use cases own authorization decisions and orchestration. Repository ports express a query’s required projection, filter, ordering, and page size; Supabase implementations contain all PostgREST calls. No controller or use case imports the Supabase client.
+## MVC Inside Each Module
+
+The modular-monolith boundaries do not replace MVC; they make it local to each feature.
+
+- **Model:** domain entities, value objects, repository ports, application DTOs, and the Supabase repository implementation. Persistence details remain infrastructure, while the model defines the data and business invariants used by the module.
+- **Controller:** `presentation/controllers` receives an Express request, invokes exactly one use case, and translates only expected application errors into HTTP status codes. Controllers never construct Supabase queries or decide database projections.
+- **View:** `presentation/views` serializes a use-case result into the module's stable JSON response shape. This keeps frontend-facing fields and response compatibility out of controllers and repositories.
+- **Routes:** `presentation/routes` defines endpoint paths and middleware order, then delegates to a controller. It contains no business logic.
+
+The request flow is therefore `route → controller → use case/model → repository port → Supabase adapter → view`. Use cases own authorization decisions and orchestration. Repository ports express a query’s required projection, filter, ordering, and page size; Supabase implementations contain all PostgREST calls. No controller or use case imports the Supabase client.
 
 ## Module Boundaries
 
@@ -110,7 +123,7 @@ The implementation will include a query inventory mapping every repository metho
 
 - Existing unit, integration, infrastructure, and contract tests remain as compatibility contracts.
 - Add unit tests for each newly extracted use case, parser, value object, and query adapter mapping.
-- Add integration tests for route wiring, authorization, CSRF, error mapping, and cursor/page limits.
+- Add integration tests for route wiring, MVC request-to-view flow, authorization, CSRF, error mapping, and cursor/page limits.
 - Add architecture tests that prevent `presentation` and `application` code from importing Supabase infrastructure directly.
 - Add deterministic adapter tests that assert selected columns, filter values, range/cursor bounds, and error translation without a live database.
 - Use a built-in Node load probe only against an explicitly configured non-production target; no load test runs against the developer’s database by default.
