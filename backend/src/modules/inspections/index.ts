@@ -8,3 +8,4 @@ export type {
   InspectionRecord,
   InspectionRepository,
 } from "./domain/ports/InspectionRepository";
+export { InspectionServiceGateway } from "./infrastructure/InspectionServiceGateway";
