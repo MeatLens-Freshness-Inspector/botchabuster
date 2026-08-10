@@ -5,7 +5,7 @@ import {
   type SignInInput,
   type SignUpInput,
 } from "../modules/auth/infrastructure/SupabaseAuthOperations";
-import { supabase, supabaseAuth } from "../integrations/supabase";
+import { createSupabaseAuthOperations } from "../modules/auth/infrastructure/SupabaseAuthFactory";
 import type { AppSession } from "../modules/auth/infrastructure/AppSessionService";
 
 export type { AuthSession, AuthUser, SignInInput, SignUpInput } from "../modules/auth/infrastructure/SupabaseAuthOperations";
@@ -15,7 +15,7 @@ export class AuthService {
   private static instance: AuthService;
 
   private constructor(
-    private readonly operations = new SupabaseAuthOperations(supabaseAuth.auth, {}, supabase),
+    private readonly operations = createSupabaseAuthOperations(),
   ) {}
 
   static getInstance(): AuthService {

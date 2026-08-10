@@ -4,14 +4,13 @@ import { resolveTrackedRequestAuthContext } from "../middleware/auth";
 import {
   ListChatContacts,
   ListChatContactsController,
-  SupabaseChatContactRepository,
+  createSupabaseChatContactRepository,
 } from "../modules/chat";
-import { supabase } from "../integrations/supabase";
 
 const router = Router();
 const controller = new UserChatController();
 const listChatContactsController = new ListChatContactsController(
-  new ListChatContacts(new SupabaseChatContactRepository(supabase)),
+  new ListChatContacts(createSupabaseChatContactRepository()),
   resolveTrackedRequestAuthContext,
 );
 

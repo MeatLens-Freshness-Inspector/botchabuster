@@ -1,11 +1,10 @@
-import { supabase } from "../integrations/supabase";
 import {
   createAnalyticsRouter,
   GetLandingPageStats,
-  SupabaseAnalyticsRepository,
+  createSupabaseAnalyticsRepository,
 } from "../modules/analytics";
 
-const analyticsRepository = new SupabaseAnalyticsRepository(supabase);
+const analyticsRepository = createSupabaseAnalyticsRepository();
 const landingPageStatsQuery = new GetLandingPageStats(analyticsRepository);
 
 export default createAnalyticsRouter(landingPageStatsQuery);

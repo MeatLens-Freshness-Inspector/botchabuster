@@ -7,6 +7,7 @@ export type {
 } from "./application/GetInspectionStatistics";
 export { LandingPageStatsController } from "./presentation/controllers/LandingPageStatsController";
 export { createAnalyticsRouter } from "./presentation/routes";
+export { createSupabaseAnalyticsRepository } from "./infrastructure/SupabaseAnalyticsFactory";
 export { AnalyticsView } from "./presentation/views/AnalyticsView";
 export type {
   AnalyticsRepository,
