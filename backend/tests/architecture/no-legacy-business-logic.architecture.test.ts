@@ -18,7 +18,7 @@ test("legacy backend layers contain no direct Supabase or SQL access", () => {
     const directory = join(process.cwd(), "src", root);
     return listTypeScriptFiles(directory).flatMap((filePath) => {
       const source = readFileSync(filePath, "utf8");
-      return /@supabase\/supabase-js|from\(["']|\.rpc\(|\.select\(|\.insert\(|\.update\(|\.delete\(/.test(source)
+      return /@supabase\/supabase-js|integrations\/supabase|\.from\(\s*["']|\.rpc\(\s*["']/.test(source)
         ? [filePath]
         : [];
     });

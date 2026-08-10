@@ -20,5 +20,7 @@ export type {
   AppSessionMetadata,
   AppSessionUser,
 } from "./infrastructure/AppSessionService";
+export { CsrfTokenService } from "./infrastructure/CsrfTokenService";
+export type { CsrfTokenInput } from "./infrastructure/CsrfTokenService";
 export { AuthView } from "./presentation/views/AuthView";
 export type { AuthUserView } from "./presentation/views/AuthView";
