@@ -7,6 +7,10 @@ export type { InspectionScope } from "./infrastructure/InspectionService";
 
 export { InspectionId } from "./domain/InspectionId";
 export { GetInspectionById } from "./application/GetInspectionById";
+export { ListInspections } from "./application/ListInspections";
+export { GetInspectionStatistics } from "./application/GetInspectionStatistics";
+export { CreateInspection } from "./application/CreateInspection";
+export { DeleteInspection } from "./application/DeleteInspection";
 export type {
   GetInspectionByIdRequest,
   InspectionRecord,

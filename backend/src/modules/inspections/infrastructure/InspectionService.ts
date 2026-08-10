@@ -12,7 +12,7 @@ import { mergeInspectionPreScanFields } from "../../../types/inspectionPreScan";
 
 export type InspectionScope = "mine" | "all";
 
-type CreateInspectionResult = {
+export type CreateInspectionResult = {
   inspection: Inspection;
   created: boolean;
 };

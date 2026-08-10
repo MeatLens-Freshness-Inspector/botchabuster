@@ -9,6 +9,10 @@ import {
   normalizeInspectionPreScan,
 } from "../../../../types/inspectionPreScan";
 import { getErrorStatus, resolveTrackedRequestAuthContext, toAuditActor, type RequestAuthContext } from "../../../../middleware/auth";
+import { ListInspections } from "../../application/ListInspections";
+import { GetInspectionStatistics } from "../../application/GetInspectionStatistics";
+import { CreateInspection } from "../../application/CreateInspection";
+import { DeleteInspection } from "../../application/DeleteInspection";
 
 class RequestAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -17,6 +21,10 @@ class RequestAccessError extends Error {
 }
 
 export class InspectionController {
+  private readonly listInspections = new ListInspections(inspectionService);
+  private readonly getInspectionStatistics = new GetInspectionStatistics(inspectionService);
+  private readonly createInspection = new CreateInspection(inspectionService);
+  private readonly deleteInspection = new DeleteInspection(inspectionService);
   private getScope(req: Request): InspectionScope {
     return req.query.scope === "all" ? "all" : "mine";
   }
@@ -46,7 +54,7 @@ export class InspectionController {
   async getStatistics(req: Request, res: Response): Promise<void> {
     try {
       const accessContext = await this.getRequestAccessContext(req);
-      const stats = await inspectionService.getStatistics(accessContext.userId, this.getScope(req), accessContext.isAdmin);
+      const stats = await this.getInspectionStatistics.execute(accessContext.userId, this.getScope(req), accessContext.isAdmin);
       res.json(stats);
     } catch (error) {
       this.handleError("Get inspection statistics", res, error, "Failed to fetch inspection statistics");
@@ -58,7 +66,7 @@ export class InspectionController {
       const accessContext = await this.getRequestAccessContext(req);
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
-      const inspections = await inspectionService.getAll(limit, offset, accessContext.userId, this.getScope(req), accessContext.isAdmin);
+      const inspections = await this.listInspections.execute(limit, offset, accessContext.userId, this.getScope(req), accessContext.isAdmin);
       res.json(inspections);
     } catch (error) {
       this.handleError("Get inspections", res, error, "Failed to fetch inspections");
@@ -170,7 +178,7 @@ export class InspectionController {
         return;
       }
 
-      const { inspection, created } = await inspectionService.create(inspectionInput, accessContext.userId);
+      const { inspection, created } = await this.createInspection.execute(inspectionInput, accessContext.userId);
 
       if (created) {
         await auditLogService.write({
@@ -221,7 +229,7 @@ export class InspectionController {
         res.status(400).json({ error: "Inspection ID is required" });
         return;
       }
-      await inspectionService.delete(id, accessContext.userId, accessContext.isAdmin);
+      await this.deleteInspection.execute(id, accessContext.userId, accessContext.isAdmin);
 
       if (accessContext.isAdmin) {
         await auditLogService.write({
