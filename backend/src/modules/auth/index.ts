@@ -10,6 +10,14 @@ export { SignInUser } from "./application/signIn/SignInUser";
 export type { SignInUserInput } from "./application/signIn/SignInUser";
 export type { AuthGateway, AuthGatewayUser } from "./domain/ports/AuthGateway";
 export { AuthServiceGateway } from "./infrastructure/AuthServiceGateway";
+export { SupabaseAuthOperations } from "./infrastructure/SupabaseAuthOperations";
+export type {
+  AuthOperationHooks,
+  AuthSession,
+  AuthUser,
+  SignInInput,
+  SignUpInput,
+} from "./infrastructure/SupabaseAuthOperations";
 export {
   AppSessionService,
   getAppSessionService,

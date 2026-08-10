@@ -1,291 +1,62 @@
-import { supabase, supabaseAuth } from "../integrations/supabase";
-import { resolveSupabaseClientConfig } from "../integrations/supabaseConfig";
-import { getAppSessionService, type AppSession } from "./AppSessionService";
 import {
-  isReportOrganization,
-  requireReportOrganization,
-  type ReportOrganization,
-} from "../types/reportOrganization";
+  SupabaseAuthOperations,
+  type AuthSession,
+  type AuthUser,
+  type SignInInput,
+  type SignUpInput,
+} from "../modules/auth/infrastructure/SupabaseAuthOperations";
+import { supabase, supabaseAuth } from "../integrations/supabase";
+import type { AppSession } from "../modules/auth/infrastructure/AppSessionService";
 
-export interface AuthUser {
-  id: string;
-  email: string | null;
-}
+export type { AuthSession, AuthUser, SignInInput, SignUpInput } from "../modules/auth/infrastructure/SupabaseAuthOperations";
 
-export interface AuthSession {
-  access_token: string | null;
-  refresh_token: string | null;
-  token_type: string | null;
-  expires_in: number | null;
-  expires_at: number | null;
-}
-
-export interface SignInInput {
-  email: string;
-  password: string;
-}
-
-export interface SignUpInput {
-  email: string;
-  password: string;
-  fullName?: string;
-  accessCode: string;
-  reportOrganization: ReportOrganization;
-  emailRedirectTo?: string;
-}
-
+/** @deprecated Compatibility facade. Business logic lives in the auth module. */
 export class AuthService {
   private static instance: AuthService;
 
-  private constructor() {}
+  private constructor(
+    private readonly operations = new SupabaseAuthOperations(supabaseAuth.auth, {}, supabase),
+  ) {}
 
   static getInstance(): AuthService {
-    if (!AuthService.instance) {
-      AuthService.instance = new AuthService();
-    }
+    if (!AuthService.instance) AuthService.instance = new AuthService();
     return AuthService.instance;
   }
 
-  private mapUser(user: { id: string; email?: string | null } | null): AuthUser | null {
-    if (!user) return null;
-    return {
-      id: user.id,
-      email: user.email ?? null,
-    };
+  signIn(input: SignInInput) {
+    return this.operations.signIn(input);
   }
 
-  private mapSession(session: {
-    access_token?: string;
-    refresh_token?: string;
-    token_type?: string;
-    expires_in?: number;
-    expires_at?: number;
-  } | null): AuthSession | null {
-    if (!session) return null;
-    return {
-      access_token: session.access_token ?? null,
-      refresh_token: session.refresh_token ?? null,
-      token_type: session.token_type ?? null,
-      expires_in: session.expires_in ?? null,
-      expires_at: session.expires_at ?? null,
-    };
+  signUp(input: SignUpInput) {
+    return this.operations.signUp(input);
   }
 
-  private async revokeSupabaseSession(accessToken: string | null | undefined): Promise<void> {
-    const trimmedToken = accessToken?.trim();
-    if (!trimmedToken) {
-      return;
-    }
-
-    const { supabaseUrl, supabasePublishableKey } = resolveSupabaseClientConfig(process.env);
-    const response = await fetch(`${supabaseUrl}/auth/v1/logout`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${trimmedToken}`,
-        apikey: supabasePublishableKey,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to finalize sign-in session");
-    }
-  }
-
-  private async ensureProfileExists(user: {
-    id: string;
-    user_metadata?: Record<string, unknown> | null;
-  }): Promise<void> {
-    const { data: existingProfile, error: existingProfileError } = await supabase
-      .from("profiles")
-      .select("id, report_organization")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (existingProfileError) {
-      throw new Error(`Failed to verify profile: ${existingProfileError.message}`);
-    }
-
-    const fullNameRaw = user.user_metadata?.full_name;
-    const accessCodeRaw = user.user_metadata?.access_code;
-    const reportOrganizationRaw = user.user_metadata?.report_organization;
-
-    const fullName = typeof fullNameRaw === "string" ? fullNameRaw.trim() : "";
-    const inspectorCode = typeof accessCodeRaw === "string" ? accessCodeRaw.trim() : "";
-    const reportOrganization = isReportOrganization(reportOrganizationRaw)
-      ? reportOrganizationRaw
-      : null;
-
-    if (existingProfile) {
-      const profileRecord = existingProfile as { id: string; report_organization: string | null };
-
-      if (!profileRecord.report_organization && reportOrganization) {
-        const { error: updateProfileError } = await (supabase
-          .from("profiles") as any)
-          .update({
-            report_organization: reportOrganization,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", user.id);
-
-        if (updateProfileError) {
-          throw new Error(
-            `Failed to update missing profile organization: ${updateProfileError.message}`,
-          );
-        }
-      }
-
-      return;
-    }
-
-    const { error: insertProfileError } = await (supabase
-      .from("profiles") as any)
-      .insert({
-        id: user.id,
-        full_name: fullName || null,
-        inspector_code: inspectorCode || null,
-        report_organization: reportOrganization,
-      });
-
-    if (insertProfileError) {
-      throw new Error(`Failed to create missing profile: ${insertProfileError.message}`);
-    }
-  }
-
-  async signIn(input: SignInInput): Promise<{ user: AuthUser; session: AuthSession | null }> {
-    const { data, error } = await supabaseAuth.auth.signInWithPassword({
-      email: input.email.trim(),
-      password: input.password,
-    });
-
-    if (error) throw new Error(`Sign in failed: ${error.message}`);
-
-    const user = this.mapUser(data.user);
-    if (!user) throw new Error("Sign in failed: user record missing");
-
-    await this.ensureProfileExists({
-      id: data.user.id,
-      user_metadata: (data.user.user_metadata ?? null) as Record<string, unknown> | null,
-    });
-
-    await this.revokeSupabaseSession(data.session?.access_token);
-
-    return {
-      user,
-      session: null,
-    };
-  }
-
-  async signUp(input: SignUpInput): Promise<{ user: AuthUser | null; session: AuthSession | null }> {
-    const accessCode = input.accessCode.trim();
-    if (!accessCode) {
-      throw new Error("Access code is required");
-    }
-
-    const { data: codeIsValid, error: validateError } = await supabase.rpc("validate_access_code", { _code: accessCode });
-    if (validateError) throw new Error(`Failed to validate access code: ${validateError.message}`);
-    if (!codeIsValid) throw new Error("Access code is invalid, inactive, expired, or no longer available");
-
-    const reportOrganization = requireReportOrganization(input.reportOrganization);
-    const fullName = input.fullName?.trim() || undefined;
-
-    const { data, error } = await supabaseAuth.auth.signUp({
-      email: input.email.trim(),
-      password: input.password,
-      options: {
-        data: {
-          ...(fullName ? { full_name: fullName } : {}),
-          access_code: accessCode,
-          report_organization: reportOrganization,
-        },
-        ...(input.emailRedirectTo ? { emailRedirectTo: input.emailRedirectTo } : {}),
-      },
-    });
-
-    if (error) throw new Error(`Sign up failed: ${error.message}`);
-
-    if (data.user) {
-      await this.ensureProfileExists({
-        id: data.user.id,
-        user_metadata: (data.user.user_metadata ?? null) as Record<string, unknown> | null,
-      });
-    }
-
-    await this.revokeSupabaseSession(data.session?.access_token);
-
-    return {
-      user: this.mapUser(data.user),
-      session: null,
-    };
-  }
-
-  async signOut(): Promise<void> {
-    // Backend is stateless for frontend auth. Sessions are managed client-side.
+  signOut(): Promise<void> {
+    return this.operations.signOut();
   }
 
   createAppSession(user: AuthUser): AppSession {
-    return getAppSessionService().createSession(user);
+    return this.operations.createAppSession(user);
   }
 
-  async sendPasswordReset(email: string, redirectTo?: string): Promise<void> {
-    const { error } = await supabaseAuth.auth.resetPasswordForEmail(email.trim(), redirectTo ? { redirectTo } : undefined);
-    if (error) throw new Error(`Failed to send password reset: ${error.message}`);
+  sendPasswordReset(email: string, redirectTo?: string): Promise<void> {
+    return this.operations.sendPasswordReset(email, redirectTo);
   }
 
-  async updateEmail(userId: string, email: string): Promise<AuthUser> {
-    const { data, error } = await supabase.auth.admin.updateUserById(userId, { email: email.trim() });
-    if (error) throw new Error(`Failed to update email: ${error.message}`);
-
-    const user = this.mapUser(data.user);
-    if (!user) throw new Error("Failed to update email: user record missing");
-    return user;
+  updateEmail(userId: string, email: string): Promise<AuthUser> {
+    return this.operations.updateEmail(userId, email);
   }
 
-  async updatePassword(userId: string, password: string): Promise<void> {
-    const { error } = await supabase.auth.admin.updateUserById(userId, { password });
-    if (error) throw new Error(`Failed to update password: ${error.message}`);
+  updatePassword(userId: string, password: string): Promise<void> {
+    return this.operations.updatePassword(userId, password);
   }
 
-  async getUserByAccessToken(accessToken: string): Promise<AuthUser> {
-    const trimmedToken = accessToken.trim();
-    if (!trimmedToken) {
-      throw new Error("Authentication required");
-    }
-
-    try {
-      return await getAppSessionService().getUserFromAccessToken(trimmedToken);
-    } catch (error) {
-      if (getAppSessionService().looksLikeAppSessionToken(trimmedToken)) {
-        throw error;
-      }
-    }
-
-    const { supabaseUrl, supabasePublishableKey } = resolveSupabaseClientConfig(process.env);
-    const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
-      headers: {
-        Authorization: `Bearer ${trimmedToken}`,
-        apikey: supabasePublishableKey,
-      },
-    });
-
-    if (!userResponse.ok) {
-      throw new Error("Invalid or expired access token");
-    }
-
-    const userData = await userResponse.json() as { id?: string; email?: string | null };
-    const user = this.mapUser(userData.id ? { id: userData.id, email: userData.email ?? null } : null);
-
-    if (!user) {
-      throw new Error("Invalid access token user data");
-    }
-
-    return user;
+  getUserByAccessToken(accessToken: string): Promise<AuthUser> {
+    return this.operations.getUserByAccessToken(accessToken);
   }
 
-  async updatePasswordWithRecoveryToken(accessToken: string, password: string): Promise<void> {
-    const user = await this.getUserByAccessToken(accessToken);
-
-    const { error } = await supabase.auth.admin.updateUserById(user.id, { password });
-    if (error) throw new Error(`Failed to update password: ${error.message}`);
+  updatePasswordWithRecoveryToken(accessToken: string, password: string): Promise<void> {
+    return this.operations.updatePasswordWithRecoveryToken(accessToken, password);
   }
 }
 

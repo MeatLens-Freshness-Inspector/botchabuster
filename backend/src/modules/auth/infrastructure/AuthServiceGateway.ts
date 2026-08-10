@@ -1,4 +1,4 @@
-import type { SignInInput } from "../../../services/AuthService";
+import type { SignInInput } from "./SupabaseAuthOperations";
 import type { AuthGateway, AuthGatewayUser } from "../domain/ports/AuthGateway";
 
 interface LegacyAuthService {

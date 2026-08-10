@@ -11,6 +11,10 @@ test("SupabaseAuthOperations maps a credential exchange to a module auth user", 
   } as never, {
     ensureProfile: async () => undefined,
     revokeSession: async () => undefined,
+  }, {
+    rpc: async () => ({ data: true, error: null }),
+    from: () => undefined,
+    auth: { admin: { updateUserById: async () => ({ data: { user: null }, error: null }) } },
   });
 
   const result = await operations.signIn({ email: " user@example.com ", password: "password" });
