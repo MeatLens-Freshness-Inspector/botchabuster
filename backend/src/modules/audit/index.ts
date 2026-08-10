@@ -5,3 +5,5 @@ export type {
   AuditLogRecord,
   AuditLogWriteInput,
 } from "./infrastructure/AuditLogService";
+export { default as auditRoutes } from "./presentation/routes";
+export { AuditLogController } from "./presentation/controllers/AuditLogController";
