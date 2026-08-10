@@ -18,10 +18,22 @@ import { passkeyService } from "../../../../services/PasskeyService";
 import { getSessionLimitService } from "../../infrastructure/SessionLimitService";
 import { getSessionCookieSameSite, shouldUseSecureSessionCookieForRequest } from "../../../../security/sessionCookie";
 import { isReportOrganization } from "../../../../types/reportOrganization";
+import { SignUpUser } from "../../application/SignUpUser";
+import { SignOutUser } from "../../application/SignOutUser";
+import { SendPasswordReset } from "../../application/SendPasswordReset";
+import { UpdateEmail } from "../../application/UpdateEmail";
+import { UpdatePassword } from "../../application/UpdatePassword";
+import { UpdateRecoveryPassword } from "../../application/UpdateRecoveryPassword";
 
 export class AuthController {
   private readonly config = Config.getInstance();
   private readonly signInUser = new SignInUser(new AuthServiceGateway(authService));
+  private readonly signUpUser = new SignUpUser(authService);
+  private readonly signOutUser = new SignOutUser(authService);
+  private readonly sendPasswordResetUseCase = new SendPasswordReset(authService);
+  private readonly updateEmailUseCase = new UpdateEmail(authService);
+  private readonly updatePasswordUseCase = new UpdatePassword(authService);
+  private readonly updateRecoveryPassword = new UpdateRecoveryPassword(authService);
 
   private resolveOrigin(req: Request): string {
     return req.header("origin") || process.env.WEBAUTHN_ORIGIN || "http://localhost:8080";
@@ -255,7 +267,7 @@ export class AuthController {
         return;
       }
 
-      const result = await authService.signUp({
+      const result = await this.signUpUser.execute({
         email,
         password,
         fullName,
@@ -297,7 +309,7 @@ export class AuthController {
       const authContext = getRequestAuthContext(req);
       const { accessToken } = getRequestAccessToken(req);
 
-      await authService.signOut();
+      await this.signOutUser.execute();
       await getSessionLimitService().removeSession(accessToken);
 
       await this.writeAuditLogSafely({
@@ -328,7 +340,7 @@ export class AuthController {
         return;
       }
 
-      await authService.sendPasswordReset(email, redirectTo);
+      await this.sendPasswordResetUseCase.execute(email, redirectTo);
       res.status(204).send();
     } catch (error) {
       console.error("Send password reset error:", error);
@@ -346,7 +358,7 @@ export class AuthController {
         return;
       }
 
-      const user = await authService.updateEmail(id, email);
+      const user = await this.updateEmailUseCase.execute(id, email);
       res.json(user);
     } catch (error) {
       console.error("Update email error:", error);
@@ -369,7 +381,7 @@ export class AuthController {
         return;
       }
 
-      await authService.updatePassword(id, password);
+      await this.updatePasswordUseCase.execute(id, password);
       res.status(204).send();
     } catch (error) {
       console.error("Update password error:", error);
@@ -391,7 +403,7 @@ export class AuthController {
         return;
       }
 
-      await authService.updatePasswordWithRecoveryToken(accessToken, password);
+      await this.updateRecoveryPassword.execute(accessToken, password);
       res.status(204).send();
     } catch (error) {
       console.error("Recovery password update error:", error);

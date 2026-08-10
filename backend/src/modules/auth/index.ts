@@ -7,6 +7,12 @@ export {};
 
 export { AuthToken } from "./domain/AuthToken";
 export { SignInUser } from "./application/signIn/SignInUser";
+export { SignUpUser } from "./application/SignUpUser";
+export { SignOutUser } from "./application/SignOutUser";
+export { SendPasswordReset } from "./application/SendPasswordReset";
+export { UpdateEmail } from "./application/UpdateEmail";
+export { UpdatePassword } from "./application/UpdatePassword";
+export { UpdateRecoveryPassword } from "./application/UpdateRecoveryPassword";
 export type { SignInUserInput } from "./application/signIn/SignInUser";
 export type { AuthGateway, AuthGatewayUser } from "./domain/ports/AuthGateway";
 export { AuthServiceGateway } from "./infrastructure/AuthServiceGateway";
