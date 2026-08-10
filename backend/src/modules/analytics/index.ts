@@ -6,6 +6,7 @@ export type {
   InspectionStatistics,
 } from "./application/GetInspectionStatistics";
 export { LandingPageStatsController } from "./presentation/controllers/LandingPageStatsController";
+export { createAnalyticsRouter } from "./presentation/routes";
 export { AnalyticsView } from "./presentation/views/AnalyticsView";
 export type {
   AnalyticsRepository,
