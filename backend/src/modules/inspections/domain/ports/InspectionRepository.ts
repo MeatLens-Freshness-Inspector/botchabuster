@@ -2,7 +2,6 @@ export interface InspectionRecord {
   id: string;
   user_id: string;
   classification: string;
-  [field: string]: unknown;
 }
 
 export interface GetInspectionByIdRequest {
