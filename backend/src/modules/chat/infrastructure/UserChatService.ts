@@ -44,7 +44,12 @@ export class UserChatService {
   }
 
   private async getPrivilegedUserIdSet(): Promise<Set<string>> {
-    const { data, error } = await supabase.from("user_roles").select("user_id, role");
+    const { data, error } = await supabase
+      .from("user_roles")
+      .select("user_id, role")
+      .in("role", ["admin", "developer"])
+      .order("user_id", { ascending: true })
+      .limit(2_000);
     if (error) throw new Error(`Failed to fetch user roles: ${error.message}`);
 
     const privilegedIds = new Set<string>();
@@ -87,6 +92,7 @@ export class UserChatService {
       .select("sender_id, recipient_id, content, created_at")
       .or(`sender_id.eq.${actorId},recipient_id.eq.${actorId}`)
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .limit(1000);
 
     if (latestMessagesError) {
@@ -179,6 +185,7 @@ export class UserChatService {
         `and(sender_id.eq.${actorId},recipient_id.eq.${counterpartId}),and(sender_id.eq.${counterpartId},recipient_id.eq.${actorId})`
       )
       .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
       .limit(limit);
 
     if (error) throw new Error(`Failed to fetch chat conversation: ${error.message}`);

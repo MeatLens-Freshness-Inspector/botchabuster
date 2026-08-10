@@ -49,6 +49,8 @@ type InspectionInsertPayload = {
   inspector_notes?: string | null;
 };
 
+const INSPECTION_COLUMNS = "id, user_id, meat_type, classification, manual_classification, confidence_score, flagged_deviations, explanation, image_url, location, location_latitude, location_longitude, stall_number, meat_inspection_certificate_proof, meat_expiry_date, storage_correct, light_color_correct, light_color_observed, area_clean, inspection_decision_source, protocol_spoiled_reason, regulatory_compliance, inspector_notes, client_submission_id, captured_at, created_at, updated_at";
+
 export class InspectionService {
   private static instance: InspectionService;
   private readonly tableName = "inspections";
@@ -69,7 +71,7 @@ export class InspectionService {
   async getAll(limit = 50, offset = 0, userId: string, scope: InspectionScope = "mine", isAdmin = false): Promise<Inspection[]> {
     let query = supabase
       .from(this.tableName)
-      .select("*");
+      .select(INSPECTION_COLUMNS);
 
     if (!this.shouldViewAll(scope, isAdmin)) {
       query = query.eq("user_id", userId);
@@ -77,6 +79,7 @@ export class InspectionService {
 
     const { data, error } = await query
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (error) throw new Error(`Failed to fetch inspections: ${error.message}`);
@@ -86,7 +89,7 @@ export class InspectionService {
   async getById(id: string, userId: string, scope: InspectionScope = "mine", isAdmin = false): Promise<Inspection | null> {
     let query = supabase
       .from(this.tableName)
-      .select("*")
+      .select(INSPECTION_COLUMNS)
       .eq("id", id);
 
     if (!this.shouldViewAll(scope, isAdmin)) {
@@ -153,7 +156,8 @@ export class InspectionService {
   }> {
     let query = supabase
       .from(this.tableName)
-      .select("classification");
+      .select("classification")
+      .limit(10_000);
 
     if (!this.shouldViewAll(scope ?? "mine", isAdmin ?? false)) {
       query = query.eq("user_id", userId);
@@ -178,7 +182,7 @@ export class InspectionService {
 
     let query = (supabase
       .from(this.tableName) as any)
-      .select("*", { count: "exact" });
+      .select(INSPECTION_COLUMNS, { count: "exact" });
 
     if (filters.meatType?.trim()) {
       query = query.eq("meat_type", filters.meatType.trim());
@@ -212,6 +216,7 @@ export class InspectionService {
 
     const { data, error, count } = await query
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (error) throw new Error(`Failed to fetch developer dataset: ${error.message}`);
@@ -227,7 +232,7 @@ export class InspectionService {
   private async getByClientSubmissionId(clientSubmissionId: string, userId: string): Promise<Inspection | null> {
     const { data, error } = await supabase
       .from(this.tableName)
-      .select("*")
+      .select(INSPECTION_COLUMNS)
       .eq("client_submission_id", clientSubmissionId)
       .eq("user_id", userId)
       .maybeSingle();
@@ -304,7 +309,7 @@ export class InspectionService {
         updated_at: new Date().toISOString(),
       })
       .eq("id", inspectionId)
-      .select("*")
+      .select(INSPECTION_COLUMNS)
       .single();
 
     if (error) {
@@ -317,8 +322,8 @@ export class InspectionService {
   async getInAppModelMetrics(): Promise<InAppModelMetrics> {
     const { data, error } = await (supabase
       .from(this.tableName) as any)
-      .select("*")
-      .range(0, 10_000);
+      .select("classification, manual_classification, meat_type")
+      .range(0, 9_999);
 
     if (error) throw new Error(`Failed to fetch inspection records for in-app metrics: ${error.message}`);
 

@@ -24,8 +24,10 @@ export class AccessCodeService {
   async getAll(): Promise<AccessCode[]> {
     const { data, error } = await supabase
       .from("access_codes")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select("id, code, description, is_active, times_used, created_at")
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(2_000);
     if (error) throw new Error(`Failed to fetch access codes: ${error.message}`);
     return (data as unknown as AccessCode[]) ?? [];
   }

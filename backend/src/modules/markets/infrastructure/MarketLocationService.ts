@@ -23,8 +23,10 @@ export class MarketLocationService {
   async getAll(): Promise<MarketLocation[]> {
     const { data, error } = await supabase
       .from(this.tableName)
-      .select("*")
-      .order("name", { ascending: true });
+      .select("id, name, created_at, updated_at")
+      .order("name", { ascending: true })
+      .order("id", { ascending: true })
+      .limit(2_000);
 
     if (error) throw new Error(`Failed to fetch market locations: ${error.message}`);
     return (data as unknown as MarketLocation[]) ?? [];

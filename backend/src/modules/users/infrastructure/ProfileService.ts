@@ -47,6 +47,7 @@ export interface AdminCreateUserInput {
 }
 
 const ROLE_PRIORITY: AppRole[] = ["developer", "admin", "moderator", "user"];
+const PROFILE_COLUMNS = "id, full_name, avatar_url, inspector_code, report_organization, is_dark_mode, show_detailed_results, onboarding_completed_at, onboarding_version, location, created_at, updated_at";
 
 function isAppRole(value: string): value is AppRole {
   return ROLE_PRIORITY.includes(value as AppRole);
@@ -77,7 +78,7 @@ export class ProfileService {
   async getProfile(userId: string): Promise<Profile | null> {
     const { data, error } = await supabase
       .from("profiles")
-      .select("*")
+      .select(PROFILE_COLUMNS)
       .eq("id", userId)
       .maybeSingle();
     if (error) throw new Error(`Failed to fetch profile: ${error.message}`);
@@ -136,8 +137,10 @@ export class ProfileService {
   async getAllProfiles(): Promise<AdminProfile[]> {
     const { data, error } = await supabase
       .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select(PROFILE_COLUMNS)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(2_000);
     if (error) throw new Error(`Failed to fetch profiles: ${error.message}`);
 
     const profiles = (data as unknown as Profile[]) ?? [];
@@ -321,7 +324,7 @@ export class ProfileService {
   async getUserRoles(userId: string): Promise<UserRole[]> {
     const { data, error } = await supabase
       .from("user_roles")
-      .select("*")
+      .select("id, user_id, role")
       .eq("user_id", userId);
     if (error) throw new Error(`Failed to fetch roles: ${error.message}`);
     return (data as unknown as UserRole[]) ?? [];
