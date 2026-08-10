@@ -9,3 +9,5 @@ export type {
   InspectionRepository,
 } from "./domain/ports/InspectionRepository";
 export { InspectionServiceGateway } from "./infrastructure/InspectionServiceGateway";
+export { GetInspectionController } from "./presentation/controllers/GetInspectionController";
+export { InspectionView } from "./presentation/views/InspectionView";
