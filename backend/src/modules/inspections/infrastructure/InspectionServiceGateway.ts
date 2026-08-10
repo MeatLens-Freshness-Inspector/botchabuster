@@ -1,4 +1,4 @@
-import type { InspectionScope } from "../../../services/InspectionService";
+import type { InspectionScope } from "./InspectionService";
 import type {
   GetInspectionByIdRequest,
   InspectionRecord,

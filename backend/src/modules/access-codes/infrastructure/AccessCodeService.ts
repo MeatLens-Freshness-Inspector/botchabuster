@@ -47,7 +47,7 @@ export class AccessCodeService {
         is_active: true,
         created_by: createdBy || null,
       })
-      .select()
+      .select("id, code, description, is_active, times_used, created_at")
       .single();
     if (error) throw new Error(`Failed to create access code: ${error.message}`);
     return data as unknown as AccessCode;
@@ -66,7 +66,7 @@ export class AccessCodeService {
       .from("access_codes") as any)
       .update({ is_active: isActive })
       .eq("id", id)
-      .select()
+      .select("id, code, description, is_active, times_used, created_at")
       .single();
     if (error) throw new Error(`Failed to toggle access code: ${error.message}`);
     return data as unknown as AccessCode;

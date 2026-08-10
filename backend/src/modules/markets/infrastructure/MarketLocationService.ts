@@ -41,7 +41,7 @@ export class MarketLocationService {
     const { data, error } = await (supabase
       .from(this.tableName) as any)
       .insert({ name: normalizedName })
-      .select()
+      .select("id, name, created_at, updated_at")
       .single();
 
     if (error) throw new Error(`Failed to create market location: ${error.message}`);

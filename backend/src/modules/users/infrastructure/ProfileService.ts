@@ -109,7 +109,7 @@ export class ProfileService {
     const { data, error } = await (supabase
       .from("profiles") as any)
       .upsert(payload, { onConflict: "id" })
-      .select()
+      .select(PROFILE_COLUMNS)
       .single();
     if (error) throw new Error(`Failed to update profile: ${error.message}`);
     return data as unknown as Profile;
@@ -187,7 +187,7 @@ export class ProfileService {
         avatar_url: avatarUrl,
         updated_at: new Date().toISOString(),
       }, { onConflict: "id" })
-      .select()
+      .select(PROFILE_COLUMNS)
       .single();
 
     if (profileError) {
@@ -276,7 +276,7 @@ export class ProfileService {
         .from("profiles") as any)
         .update(updatePayload)
         .eq("id", userId)
-        .select()
+        .select(PROFILE_COLUMNS)
         .maybeSingle();
 
       if (profileError) throw new Error(`Failed to update profile: ${profileError.message}`);
@@ -292,7 +292,7 @@ export class ProfileService {
             id: userId,
             ...updatePayload,
           }, { onConflict: "id" })
-          .select()
+          .select(PROFILE_COLUMNS)
           .single();
 
         if (upsertProfileError) throw new Error(`Failed to update profile: ${upsertProfileError.message}`);

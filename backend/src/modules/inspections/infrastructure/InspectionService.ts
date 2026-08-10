@@ -118,7 +118,7 @@ export class InspectionService {
     const { data, error } = await (supabase
       .from(this.tableName) as any)
       .insert(inspectionPayload)
-      .select()
+      .select(INSPECTION_COLUMNS)
       .single();
 
     if (error) {

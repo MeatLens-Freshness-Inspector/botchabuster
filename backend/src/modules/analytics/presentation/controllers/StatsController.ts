@@ -1,10 +1,13 @@
 import { Request, Response } from "express";
-import { statsService } from "../../../../services/StatsService";
+import { GetLandingPageStats } from "../../application/GetLandingPageStats";
+import { createSupabaseAnalyticsRepository } from "../../infrastructure/SupabaseAnalyticsFactory";
+
+const statsQuery = new GetLandingPageStats(createSupabaseAnalyticsRepository());
 
 export class StatsController {
   async getLandingPageStats(req: Request, res: Response): Promise<void> {
     try {
-      const stats = await statsService.getLandingPageStats();
+      const stats = await statsQuery.execute();
       res.json(stats);
     } catch (error) {
       console.error("Get landing page stats error:", error);
