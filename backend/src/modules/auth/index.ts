@@ -6,3 +6,6 @@
 export {};
 
 export { AuthToken } from "./domain/AuthToken";
+export { SignInUser } from "./application/signIn/SignInUser";
+export type { SignInUserInput } from "./application/signIn/SignInUser";
+export type { AuthGateway, AuthGatewayUser } from "./domain/ports/AuthGateway";
