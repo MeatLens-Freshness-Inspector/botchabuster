@@ -5,3 +5,5 @@ export { UserId } from "./domain/UserId";
 export { GetProfile } from "./application/GetProfile";
 export type { UserProfile, UserRepository } from "./domain/ports/UserRepository";
 export { ProfileServiceGateway } from "./infrastructure/ProfileServiceGateway";
+export { GetProfileController } from "./presentation/controllers/GetProfileController";
+export { UserView } from "./presentation/views/UserView";
