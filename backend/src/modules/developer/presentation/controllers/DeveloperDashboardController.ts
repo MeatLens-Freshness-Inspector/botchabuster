@@ -3,6 +3,12 @@ import type { Request, Response } from "express";
 import { developerDashboardService } from "../../infrastructure/DeveloperDashboardService";
 import type { DeveloperDatasetClassification, DeveloperDatasetFilters } from "../../../../types/developerDashboard";
 import type { Inspection } from "../../../../types/inspection";
+import { GetDeveloperOverview } from "../../application/GetDeveloperOverview";
+import { ListDeveloperDatasets } from "../../application/ListDeveloperDatasets";
+import { ExportDeveloperDataset } from "../../application/ExportDeveloperDataset";
+import { UpdateDatasetClassification } from "../../application/UpdateDatasetClassification";
+import { ListTrainingRuns } from "../../application/ListTrainingRuns";
+import { ImportTrainingRun } from "../../application/ImportTrainingRun";
 
 const ALLOWED_CLASSIFICATIONS = new Set<DeveloperDatasetClassification>([
   "fresh",
@@ -11,6 +17,14 @@ const ALLOWED_CLASSIFICATIONS = new Set<DeveloperDatasetClassification>([
   "acceptable",
   "warning",
 ]);
+
+const dashboard = developerDashboardService;
+const getOverview = new GetDeveloperOverview(dashboard);
+const listDatasets = new ListDeveloperDatasets(dashboard);
+const exportDataset = new ExportDeveloperDataset(dashboard);
+const updateClassification = new UpdateDatasetClassification(dashboard);
+const listRuns = new ListTrainingRuns(dashboard);
+const importRun = new ImportTrainingRun(dashboard);
 
 function parseBoolean(value: unknown): boolean | undefined {
   if (value === true || value === "true") return true;
@@ -67,7 +81,7 @@ export class DeveloperDashboardController {
 
   async getOverview(_req: Request, res: Response): Promise<void> {
     try {
-      res.json(await developerDashboardService.getOverview());
+      res.json(await getOverview.execute());
     } catch (error) {
       this.handleError("Get developer overview", res, error, "Failed to fetch developer overview");
     }
@@ -75,7 +89,7 @@ export class DeveloperDashboardController {
 
   async getDatasets(req: Request, res: Response): Promise<void> {
     try {
-      res.json(await developerDashboardService.listDatasets(this.parseFilters(req.query as Record<string, unknown>)));
+      res.json(await listDatasets.execute(this.parseFilters(req.query as Record<string, unknown>)));
     } catch (error) {
       this.handleError("Get developer datasets", res, error, "Failed to fetch developer datasets");
     }
@@ -84,7 +98,7 @@ export class DeveloperDashboardController {
   async exportDatasets(req: Request, res: Response): Promise<void> {
     try {
       const body = (req.body ?? {}) as Record<string, unknown>;
-      const exported = await developerDashboardService.exportDatasetZip(this.parseFilters(body));
+      const exported = await exportDataset.execute(this.parseFilters(body));
       res.setHeader("Content-Type", "application/zip");
       res.setHeader("Content-Disposition", `attachment; filename="${exported.filename}"`);
       res.status(200).send(exported.buffer);
@@ -109,7 +123,7 @@ export class DeveloperDashboardController {
       }
 
       res.json(
-        await developerDashboardService.updateDatasetManualClassification(inspectionId, manualClassification),
+        await updateClassification.execute(inspectionId, manualClassification),
       );
     } catch (error) {
       this.handleError("Update developer dataset classification", res, error, "Failed to update dataset classification");
@@ -118,7 +132,7 @@ export class DeveloperDashboardController {
 
   async listTrainingRuns(_req: Request, res: Response): Promise<void> {
     try {
-      res.json(await developerDashboardService.listTrainingRuns());
+      res.json(await listRuns.execute());
     } catch (error) {
       this.handleError("List developer training runs", res, error, "Failed to fetch training runs");
     }
@@ -133,7 +147,7 @@ export class DeveloperDashboardController {
         return;
       }
 
-      const importedRun = await developerDashboardService.importTrainingRunPackage(uploadedFile.path);
+      const importedRun = await importRun.execute(uploadedFile.path);
       res.status(201).json(importedRun);
     } catch (error) {
       res.status(400).json({ error: error instanceof Error ? error.message : "Failed to import training run" });

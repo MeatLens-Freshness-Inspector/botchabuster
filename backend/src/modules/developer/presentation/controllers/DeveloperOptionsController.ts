@@ -2,6 +2,10 @@ import { Request, Response } from "express";
 import { developerOptionsService } from "../../infrastructure/DeveloperOptionsService";
 import { auditLogService } from "../../../audit/infrastructure/AuditLogService";
 import { getErrorStatus, resolveTrackedRequestAuthContext, toAuditActor, type RequestAuthContext } from "../../../../middleware/auth";
+import { VerifyDeveloperPassword } from "../../application/VerifyDeveloperPassword";
+import { CreateDeveloperUnlockToken } from "../../application/CreateDeveloperUnlockToken";
+import { VerifyDeveloperUnlockToken } from "../../application/VerifyDeveloperUnlockToken";
+import { IsDeveloperOptionsConfigured } from "../../application/IsDeveloperOptionsConfigured";
 
 class DeveloperOptionsAccessError extends Error {
   constructor(public readonly status: number, message: string) {
@@ -10,6 +14,10 @@ class DeveloperOptionsAccessError extends Error {
 }
 
 export class DeveloperOptionsController {
+  private readonly verifyPasswordUseCase = new VerifyDeveloperPassword(developerOptionsService);
+  private readonly createUnlockToken = new CreateDeveloperUnlockToken(developerOptionsService);
+  private readonly verifyUnlockToken = new VerifyDeveloperUnlockToken(developerOptionsService);
+  private readonly isConfigured = new IsDeveloperOptionsConfigured(developerOptionsService);
   private async requireAdmin(req: Request): Promise<RequestAuthContext> {
     try {
       const authContext = await resolveTrackedRequestAuthContext(req);
@@ -45,7 +53,7 @@ export class DeveloperOptionsController {
     try {
       const actor = await this.requireAdmin(req);
 
-      if (!developerOptionsService.isConfigured()) {
+      if (!this.isConfigured.execute()) {
         res.status(503).json({ error: "Developer options are unavailable because password is not configured" });
         return;
       }
@@ -56,12 +64,12 @@ export class DeveloperOptionsController {
         return;
       }
 
-      if (!developerOptionsService.verifyPassword(password)) {
+      if (!this.verifyPasswordUseCase.execute(password)) {
         res.status(403).json({ error: "Invalid developer options password" });
         return;
       }
 
-      const tokenPayload = developerOptionsService.createUnlockToken(actor.userId);
+      const tokenPayload = this.createUnlockToken.execute(actor.userId);
 
       await auditLogService.write({
         payload: {
@@ -97,7 +105,7 @@ export class DeveloperOptionsController {
         return;
       }
 
-      const isValid = developerOptionsService.verifyUnlockToken(token, actor.userId);
+      const isValid = this.verifyUnlockToken.execute(token, actor.userId);
       if (!isValid) {
         res.status(401).json({ error: "Developer options token is invalid or expired" });
         return;
