@@ -1,188 +1,105 @@
-# MeatLens - Project Overview
+# MeatLens project overview
 
-Maintainer: Annah Claire B. Dimate
+MeatLens is an AI-assisted meat-freshness inspection system for wet-market workflows. Inspectors capture an image, receive computer-vision decision support, and save a traceable inspection record. Administrators manage users, access codes, markets, audit events, and aggregate reporting; developers manage datasets and training artifacts.
 
-## About MeatLens
+## Product capabilities
 
-**MeatLens** is an AI-powered meat freshness inspection system designed for wet markets. It combines computer vision and machine learning to analyze meat quality using:
+- Client-side MobileNetV3 ONNX inference for freshness decision support.
+- Authenticated inspection capture, upload, classification, and history.
+- Role-aware administration for inspectors, admins, and developers.
+- Access-code onboarding and market-location management.
+- Encrypted audit events and user-to-user chat.
+- Developer dataset export, manual classification, and training-run import.
+- Offline-friendly frontend workflows backed by explicit sync boundaries.
 
-- **CNN Classification** - MobileNetV3 image inference for freshness decision support
-- **Confidence-Based Decision Support** - Probability-aware guidance for inspectors
-- **Field Workflow Integration** - Capture, analyze, save, and sync inspection records
-- **Reporting & Analytics** - Admin insights with location-aware inspection trends
+## Technology
 
-## Project Goals
+| Area | Technology |
+| --- | --- |
+| Frontend | React 18, TypeScript, Vite, Tailwind, Capacitor, ONNX Runtime Web |
+| Backend | Node.js, Express, TypeScript |
+| Database | PostgreSQL through Supabase |
+| Auth | Supabase Auth plus an application-signed session cookie |
+| Storage | Supabase Storage and bounded local upload staging |
+| Testing | Node test runner/tsx, Vitest-compatible frontend tests, Playwright |
+| Deployment | Netlify frontend, Render backend, Supabase managed services |
 
-1. **Accurate Freshness Detection** - Provide reliable assessments of meat quality
-2. **Market Integration** - Streamline inspection workflows for wet market vendors
-3. **Data Transparency** - Track and aggregate freshness metrics over time
-4. **User-Friendly Interface** - Simple, intuitive UI for inspectors in the field
+No Redis, Grafana, queue, cache server, or external metrics stack is part of the supported deployment.
 
-## Technology Stack
+## Repository map
 
-### Frontend
-- **Framework**: React 18 with TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui components
-- **Build Tool**: Vite
-- **Testing**: Vitest + Playwright
-- **State Management**: React Context + Custom Hooks
-- **Backend Communication**: Axios-based API clients
-
-### Backend
-- **Runtime**: Node.js (v18+)
-- **Framework**: Express.js
-- **Language**: TypeScript
-- **Image Processing**: Sharp (image manipulation), OpenCV (analysis)
-- **Database**: PostgreSQL (via Supabase)
-- **Authentication**: Supabase Auth
-- **File Storage**: Supabase Storage
-
-### Infrastructure
-- **Database & Auth**: Supabase (PostgreSQL + Auth service)
-- **File Storage**: Supabase Storage (S3-compatible)
-- **Real-time**: Supabase Realtime (optional)
-
-## Project Structure
-
-```
+```text
 botchabuster/
-├── frontend/                # React UI application
+├── backend/
 │   ├── src/
-│   │   ├── components/      # React components
-│   │   ├── pages/           # Page routes
-│   │   ├── integrations/    # API clients & Supabase
-│   │   ├── contexts/        # React contexts
-│   │   ├── hooks/           # Custom React hooks
-│   │   └── types/           # TypeScript types
-│   └── package.json
-├── backend/                 # Express API server
-│   ├── src/
-│   │   ├── controllers/     # Request handlers
-│   │   ├── services/        # Business logic
-│   │   ├── routes/          # Route definitions
-│   │   ├── models/          # Data models
-│   │   ├── middleware/      # Express middleware
-│   │   ├── config/          # Configuration
-│   │   └── integrations/    # External integrations
-│   ├── supabase/            # DB migrations & functions
-│   ├── uploads/             # Local file storage (dev)
-│   └── package.json
-├── documentation/           # Project documentation
-└── package.json             # Monorepo workspace config
+│   │   ├── bootstrap/       # dependency and route composition
+│   │   ├── modules/         # bounded contexts: auth, users, inspections, ...
+│   │   ├── middleware/      # cross-cutting HTTP/security middleware
+│   │   ├── config/          # validated environment and runtime policy
+│   │   ├── integrations/    # Supabase and external adapters
+│   │   ├── shared/          # reusable application/domain/HTTP primitives
+│   │   └── types/           # shared transport and domain types
+│   ├── supabase/migrations/ # append-only database migrations
+│   └── tests/               # unit, integration, and architecture tests
+├── frontend/               # React/Vite web and Capacitor client
+├── documentation/          # this documentation set
+└── scripts/                # monorepo build and model-preflight scripts
 ```
 
-## Key Features
+## Backend modules
 
-### For Inspectors
-- Capture meat images using device camera
-- Get instant freshness analysis
-- Access inspection history
-- Use shared access codes for team collaboration
+Each module exposes an `index.ts` composition surface and follows:
 
-### For Administrators
-- View all inspections across users
-- Manage access codes and team members
-- Access dashboard with aggregate statistics
-- Export inspection data
+```text
+presentation (routes/controllers/views)
+        ↓
+application (one-operation use cases)
+        ↓
+domain (entities/value objects/ports)
+        ↓
+infrastructure (Supabase, storage, email, or other adapters)
+```
 
-### System Features
-- **Role-Based Access Control** - Inspector vs Admin roles
-- **Access Codes** - Share inspection capabilities with team members
-- **Image Storage** - Secure per-user image storage with RLS
-- **Real-time Analytics** - Dashboard stats and visualization
-- **API-First Architecture** - Backend serves frontend and potential 3rd-party integrations
+Current bounded contexts are:
 
-## Development Workflow
+- `auth` — credentials, passkeys, sessions, CSRF, email, and cookie policy.
+- `users` — profiles, roles, administration, and user statistics.
+- `inspections` — inspection CRUD, access scope, and inspection statistics.
+- `analysis` — image upload and the retired server-analysis endpoint.
+- `access-codes` — onboarding code lifecycle.
+- `markets` — market-location administration.
+- `analytics` — landing-page and aggregate reporting queries.
+- `audit` — encrypted audit-log persistence.
+- `chat` — assistant chat and user-to-user conversations.
+- `developer` — datasets, training runs, unlock tokens, and developer options.
 
-### Local Setup
+## Backend route namespaces
+
+The application mounts the module routers through `backend/src/bootstrap/routes.ts`:
+
+`/api/auth`, `/api/analysis`, `/api/upload`, `/api/profiles`, `/api/inspections`, `/api/access-codes`, `/api/stats`, `/api/chat`, `/api/user-chat`, `/api/market-locations`, `/api/audit-logs`, `/api/developer-options`, and `/api/developer-dashboard`.
+
+See [API_REFERENCE.md](API_REFERENCE.md) for the route-level summary.
+
+## Database and scaling posture
+
+Supabase is used as the only database service. High-volume reads use explicit projections, deterministic ordering, bounded limits, indexes, and aggregate RPCs. New database changes are forward-only migration files; existing migrations are never edited. The design targets roughly 1,000–2,000 simultaneous users without introducing a separate cache or queue.
+
+## Development commands
+
+From the repository root:
+
 ```bash
-# Install dependencies
 npm install
-
-# Start development services
-npm run dev:frontend   # React dev server (port 8080)
-npm run dev:backend    # Express server (port 3000)
+npm run dev
+npm run build
+npm run test:fast
 ```
 
-### Key Scripts
-- `npm run dev` - Start both frontend and backend
-- `npm run build` - Build both applications
-- `npm run test` - Run tests
-- `npm run lint` - Check code quality
+Backend-only checks:
 
-## Core Services
-
-### Backend Services
-- **AuthService** - Authentication and authorization
-- **ProfileService** - Inspector profile management
-- **InspectionService** - Inspection record CRUD
-- **AccessCodeService** - Registration access code management
-- **MarketLocationService** - Market location options management
-- **StorageService** - Inspection image upload and storage
-- **StatsService** - Dashboard statistics and rollups
-- **AuditLogService** - Encrypted audit event logging
-- **DeveloperOptionsService** - Developer option validation
-- **UserChatService** - Messaging persistence
-
-### Frontend Integrations
-- **ProfileClient** - Profile API calls
-- **InspectionClient** - Inspection API calls
-- **AccessCodeClient** - Access code management API
-- **StatsClient** - Statistics & analytics API
-- **UploadClient** - Image upload handling
-
-## Database Components
-
-### Core Tables
-- `profiles` - User profile information with roles
-- `inspections` - Inspection records (images, results, metadata)
-- `access_codes` - Access code management for team sharing
-- `activity_log` - Audit trail and activity tracking
-
-### Security
-- **Row-Level Security (RLS)** - Database-enforced access control
-- **Storage Policies** - Bucket-based file access control
-- **Authentication** - Supabase JWT-based auth
-
-## API Architecture
-
-### REST Endpoints (8 route groups)
-- `/api/profiles` - User profiles and roles
-- `/api/inspections` - Inspection records
-- `/api/access-codes` - Access code management
-- `/api/stats` - Analytics and statistics
-- `/api/analysis` - Image analysis operations
-- `/api/upload` - File uploads
-- `/api/auth` - Authentication flows
-- `/api/chat` - AI chat integration
-
-All endpoints require authentication (JWT token) except specifically documented public endpoints.
-
-## Development Phases
-
-### Phase 1: MVP (✅ Complete)
-- User authentication and profiles
-- Basic image capture and upload
-- Freshness analysis (color & texture)
-- Inspection history
-
-### Phase 2: Team Features (✅ Complete)
-- Access codes for team sharing
-- Role-based admin dashboard
-- Multi-user support
-
-### Phase 3: Analytics (✅ In Progress)
-- Statistical dashboards
-- Trend analysis
-- Export capabilities
-
-### Phase 4: Integration
-- Planned: Mobile app
-- Planned: Third-party integrations
-- Planned: Advanced ML models
-
-## Next Steps
-
-See [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md) for detailed setup and development instructions.
-
-See [DEPLOY.md](DEPLOY.md) for production deployment guidelines.
+```bash
+npm run typecheck -w backend
+npm run test -w backend
+npm run build -w backend
+```

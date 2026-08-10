@@ -1,19 +1,23 @@
-# Documentation
+# MeatLens documentation
 
-This folder contains comprehensive documentation for the MeatLens project.
+This directory documents the current MeatLens monorepo. The backend is a modular monolith; the frontend is a Vite/React application; Supabase provides PostgreSQL, authentication, and storage.
 
-## Contents
+## Start here
 
-1. [Frontend Documentation](frontend_documentation.md)
-   - Overview of the frontend architecture and development workflow.
-   - Instructions for setting up, building, and deploying the frontend.
+- [Getting started](GETTING_STARTED.md) — local setup, environment variables, migrations, and verification.
+- [Architecture](ARCHITECTURE.md) — module boundaries, MVC request flow, middleware, and persistence rules.
+- [API reference](API_REFERENCE.md) — registered route namespaces, authentication requirements, and representative operations.
+- [Security](SECURITY.md) — session cookies, bearer fallback, CSRF, CORS, rate limits, and secrets.
+- [Deployment](DEPLOYMENT.md) — Netlify frontend and Render backend deployment.
+- [Project overview](PROJECT_OVERVIEW.md) — product scope, stack, and repository map.
 
-2. [Backend Documentation](backend_documentation.md)
-   - Overview of the backend architecture and development workflow.
-   - Instructions for setting up, building, and deploying the backend.
+## Application guides
 
-## Additional Resources
-- [Getting Started Guide](GETTING_STARTED.md)
-- [Architecture Overview](ARCHITECTURE.md)
-- [Deployment Guide](DEPLOYMENT.md)
-- [Project Overview](PROJECT_OVERVIEW.md)
+- [Backend documentation](application/backend_documentation.md)
+- [Frontend documentation](application/frontend_documentation.md)
+
+## Scope and source of truth
+
+Documentation describes the code currently under `backend/src/modules`, `backend/src/bootstrap`, `backend/src/middleware`, and `frontend/src`. Route documentation must follow the module presentation routers and `backend/src/bootstrap/routes.ts`; the removed top-level `backend/src/routes`, `controllers`, `services`, and `models` directories are not valid import locations.
+
+The project deliberately uses only the services already present in the repository and Supabase. Redis, Grafana, BullMQ, Prometheus, and other additional infrastructure are not required.

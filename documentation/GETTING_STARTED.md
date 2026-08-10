@@ -1,193 +1,117 @@
-# Getting Started with MeatLens
-
-Quick guide to set up and run MeatLens locally.
+# Getting started
 
 ## Prerequisites
 
-- **Node.js** v18 or higher ([download](https://nodejs.org/))
-- **npm** v9+ (comes with Node.js)
-- **Git** for version control
-- A **Supabase account** ([free tier available](https://supabase.com))
+- Node.js 18 or newer (Node 20 is used by the hosted frontend build).
+- npm 9 or newer.
+- A Supabase project with PostgreSQL, Auth, and Storage enabled.
+- Git.
 
-## Clone the Repository
+## Install
 
 ```bash
-git clone https://github.com/Thalanas110/botchabuster.git
+git clone <repository-url>
 cd botchabuster
+npm install
 ```
 
-## Environment Setup
+The root package is an npm workspace for `frontend` and `backend`; install once from the repository root.
 
-### 1. Create Supabase Project
+## Configure the backend
 
-1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Once created, retrieve:
-   - **Project URL**: Settings > API > URL
-   - **Service Role Key**: Settings > API > Service role secret (⚠️ Keep this secret!)
+```powershell
+Copy-Item backend/.env.example backend/.env
+```
 
-### 2. Configure Backend Environment
-
-Create `.env` file in the `backend/` directory:
+Set at least:
 
 ```env
-# Backend port
-PORT=3000
-
-# Supabase credentials
+PORT=3001
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=your_service_role_key
-
-# File uploads
+SUPABASE_SERVICE_KEY=your-server-only-service-role-key
+SUPABASE_PUBLISHABLE_KEY=your-publishable-or-anon-key
+APP_SESSION_SECRET=use-a-long-random-value
+AUDIT_LOG_KEY=64-hex-characters-or-base64-for-32-bytes
+ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080
 UPLOAD_DIR=./uploads
 ```
 
-### 3. Configure Frontend Environment
+For password-reset email, also configure `SMTP_USER` and `SMTP_PASS`. Developer dashboard flows require `DEVELOPER_OPTIONS_PASSWORD`; the token secret and TTL are optional overrides. Keep all of these values server-side.
 
-Create `.env` file in the `frontend/` directory:
+## Configure the frontend
+
+```powershell
+Copy-Item frontend/.env.example frontend/.env
+```
 
 ```env
-# Backend API URL
-VITE_API_BASE_URL=http://localhost:3000/api
-
-# Supabase credentials (if direct calls are needed)
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your_anon_key
+VITE_API_BASE_URL=http://localhost:3001/api
 ```
 
-## Install Dependencies
+The frontend does not need the Supabase service key.
 
-```bash
-# Install dependencies for all packages
-npm install
+## Database and storage
 
-# Or install specific packages
-npm --workspace=frontend install
-npm --workspace=backend install
-```
+Apply every file in `backend/supabase/migrations/` in filename order using the Supabase migration workflow. Do not edit an existing applied migration; add a new timestamped migration for future schema or index changes.
 
-## Database Setup
+Create the storage buckets and policies defined by the migrations before testing uploads. The backend creates its local `UPLOAD_DIR` staging directory automatically.
 
-### Apply Migrations
+## Run locally
 
-1. Go to your Supabase dashboard
-2. Navigate to **SQL Editor**
-3. Run migrations from `backend/supabase/migrations/` in order:
-   - `20260313113439_*.sql`
-   - `20260313114452_*.sql`
-   - `20260313121403_*.sql`
-   - `20260322000000_storage_policies.sql`
-   - `20260414000000_add_inspector_code_to_profiles.sql`
-   - `20260415001000_add_is_dark_mode_to_profiles.sql`
-
-### Set Up Storage Bucket
-
-1. In Supabase Dashboard, go to **Storage**
-2. Create a new bucket named `inspection-images`
-3. Check "Public bucket"
-4. See [STORAGE_SETUP.md](STORAGE_SETUP.md) for detailed bucket policy setup
-
-## Start Development
-
-### Option 1: Start Both Services Together
+Start both workspaces:
 
 ```bash
 npm run dev
 ```
 
-This will start:
-- **Frontend**: http://localhost:8080
-- **Backend**: http://localhost:3000
+Or start them independently:
 
-### Option 2: Start Services Separately
-
-**Terminal 1 - Start Frontend:**
 ```bash
-cd frontend
-npm run dev
+npm run dev:backend
+npm run dev:frontend
 ```
-Open http://localhost:8080 in your browser
 
-**Terminal 2 - Start Backend:**
+The default URLs are:
+
+- Frontend: `http://localhost:8080`
+- Backend: `http://localhost:3001`
+- Health check: `http://localhost:3001/api/analysis/health`
+
+## Verify the installation
+
 ```bash
-cd backend
-npm run dev
+npm run typecheck -w backend
+npm run test -w backend
+npm run build -w backend
+npm run typecheck -w frontend
 ```
 
-## Verify Setup
+For the full monorepo fast suite:
 
-### Frontend Health Check
-- Open http://localhost:8080 in your browser
-- You should see the MeatLens login page
-
-### Backend Health Check
 ```bash
-curl http://localhost:3000/api/analysis/health
+npm run test:fast
 ```
 
-Expected response:
-```json
-{ "status": "ok" }
-```
+## First workflow
 
-## Create Your First User
-
-1. Go to http://localhost:8080
-2. Click **Sign Up**
-3. Enter email and password
-4. Verify email (in development, check Supabase dashboard > Auth)
-5. Log in
-
-## Try an Inspection
-
-1. Log in to the application
-2. Go to "New Inspection"
-3. Upload or capture an image
-4. Select meat type
-5. Click "Analyze" - the backend will process and return freshness metrics
+1. Open the frontend and create an account with a valid access code.
+2. Sign in; the backend establishes the application session and CSRF transport.
+3. Capture or select an image and run the client-side MobileNetV3 analysis.
+4. Upload and save the inspection record.
+5. Use an admin/developer account to inspect role-aware dashboards and audit data.
 
 ## Troubleshooting
 
-### Backend fails to start with "SUPABASE_URL not found"
-```bash
-# Make sure .env is in the backend/ directory
-# Verify the keys are correct
-cd backend
-echo $SUPABASE_URL  # Should print your URL
-```
+### Backend reports a missing environment variable
 
-### Frontend can't connect to backend
-```bash
-# Check backend is running
-curl http://localhost:3000/api/analysis/health
+Confirm `backend/.env` exists and contains `SUPABASE_URL`, both Supabase keys, `APP_SESSION_SECRET`, and a valid `AUDIT_LOG_KEY`. Restart the backend after editing `.env`.
 
-# Verify VITE_API_BASE_URL in frontend/.env
-# Default should be: http://localhost:3000/api
-```
+### Browser requests fail with an origin or CSRF error
 
-### Database migration fails
-1. Ensure you're using the correct Supabase project
-2. Check that migrations are run in correct order
-3. Verify your account has permissions to alter database
+Add the exact frontend origin to `ALLOWED_ORIGINS`, restart the backend, and use the frontend’s credentialed request client so it sends the current `X-CSRF-Token`.
 
-See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for more common issues.
+### Uploads fail locally
 
-## Next Steps
+Check that `UPLOAD_DIR` is writable and that the multipart field is named `image` for inspection uploads or `package` for developer training-run imports.
 
-- Read [ARCHITECTURE.md](ARCHITECTURE.md) for system design overview
-- Check [API_REFERENCE.md](API_REFERENCE.md) for available endpoints
-- See [DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md) for detailed development info
-- Review [SECURITY.md](SECURITY.md) for auth and access control details
-
-## Development Resources
-
-- [Express.js Documentation](https://expressjs.com/)
-- [React Documentation](https://react.dev/)
-- [Supabase Documentation](https://supabase.com/docs)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-
-## Getting Help
-
-- Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues
-- Review the [documentation folder](./documentation/)
-- Check git history: `git log --oneline`
+See [Architecture](ARCHITECTURE.md), [API reference](API_REFERENCE.md), and [Security](SECURITY.md) for the corresponding runtime rules.
