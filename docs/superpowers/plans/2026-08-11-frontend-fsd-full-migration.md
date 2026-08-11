@@ -285,9 +285,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 049 — refactor: migrate password reset workflow**
   - Change: moved reset-password state, recovery parsing, and recovery types into `features/auth/model`; moved sensitive recovery-token URL/session-storage helpers into the shared API public contract; injected the update-password action through the unchanged page view.
   - Validate: reset workflow test, typecheck, and lint passed with the existing 16 warnings.
-- [ ] **Commit 050 — refactor: create authentication route pages**
-  - Change: frontend/src/pages/LoginPage.tsx -> frontend/src/pages/auth/login-page.tsx + frontend/src/pages/SignupPage.tsx -> frontend/src/pages/auth/signup-page.tsx.
-  - Validate: B.
+- [x] **Commit 050 — refactor: create authentication route pages**
+  - Change: consolidated the login and sign-up route entries and their unchanged view components under the `pages/auth` slice, added its public index, and updated app route composition to consume that public API.
+  - Validate: authentication route-page test, typecheck, and lint passed with the existing 16 warnings; build gate remains the milestone validation.
 - [ ] **Commit 051 — refactor: create recovery route pages**
   - Change: frontend/src/pages/ForgotPasswordPage.tsx -> frontend/src/pages/auth/forgot-password-page.tsx + frontend/src/pages/ResetPasswordPage.tsx -> frontend/src/pages/auth/reset-password-page.tsx.
   - Validate: B.

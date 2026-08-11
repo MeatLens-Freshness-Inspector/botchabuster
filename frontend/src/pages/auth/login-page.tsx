@@ -1,4 +1,4 @@
-import LoginPageView from "./landing/login/components/LoginPageView";
+import LoginPageView from "./components/login-page-view";
 
 const LoginPage = () => {
   return <LoginPageView />;
