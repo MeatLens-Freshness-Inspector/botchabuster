@@ -12,3 +12,11 @@ export {
   removeAuditLog,
   type PendingAuditLog,
 } from "./model/audit-queue";
+export {
+  clearPendingScans,
+  getPendingCount,
+  getPendingScans,
+  queueScan,
+  removeScan,
+  type PendingScan,
+} from "./model/inspection-queue";

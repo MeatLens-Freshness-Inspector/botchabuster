@@ -20,8 +20,13 @@ import {
   setDeveloperOptionsSession,
   type DeveloperOptionsFlags,
 } from "@/lib/developerOptions";
-import { clearPendingScans, getPendingCount, getPendingScans } from "@/lib/offlineQueue";
-import { clearPendingAuditLogs, getPendingAuditCount } from "@/features/offline-sync";
+import {
+  clearPendingAuditLogs,
+  clearPendingScans,
+  getPendingAuditCount,
+  getPendingCount,
+  getPendingScans,
+} from "@/features/offline-sync";
 
 type FlagDefinition = {
   key: keyof DeveloperOptionsFlags;

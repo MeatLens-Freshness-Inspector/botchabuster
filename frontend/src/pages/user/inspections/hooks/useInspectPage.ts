@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
 import { buildInspectionInsert, useSubmitInspection } from "@/features/inspection-submission";
+import { queueScan, removeScan } from "@/features/offline-sync";
 import { uploadClient } from "@/integrations/api";
 import { developerOptionsClient } from "@/integrations/api/DeveloperOptionsClient";
 import { marketLocationClient } from "@/integrations/api/MarketLocationClient";
@@ -35,7 +36,6 @@ import {
   setActiveAnalysisMode,
 } from "@/lib/offlineAnalysis";
 import { setActiveMobileNetModelVariant } from "@/lib/offlineAnalysis/mobileNetV3";
-import { queueScan, removeScan } from "@/lib/offlineQueue";
 import {
   formatInspectionLocationLabel,
   getCoordinateStatusText,

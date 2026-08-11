@@ -350,8 +350,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: created `features/inspection-submission/model/use-submit-inspection.ts` for the query-aware submission mutation and `entities/inspection/model/mutations.ts` for the pure `InspectionInsert` builder; migrated `useInspectPage` to both public contracts and removed the duplicate legacy `useCreateInspection` hook.
   - TDD: added the entity mutation contract first (RED on the missing mutations module), then implemented the builder and feature mutation and reached GREEN while preserving protocol metadata, regulatory compliance, image fallback, and query invalidation behavior.
   - Validate: submission mutation units (2), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 067 — refactor: move offline queue contract**
-  - Change: frontend/src/lib/offlineQueue.ts -> frontend/src/features/offline-sync/model/inspection-queue.ts + frontend/src/lib/offlineAuditQueue.ts -> frontend/src/features/offline-sync/model/audit-queue.ts. Validate: F.
+- [x] **Commit 067 — refactor: move offline queue contract**
+  - Change: moved the inspection queue into `features/offline-sync/model/inspection-queue.ts`, completed its public feature exports, and migrated app composition, developer options, and inspection submission consumers off `@/lib/offlineQueue`. The audit queue had already moved in the earlier offline-sync slice; this commit completes the combined queue contract without duplicating it.
+  - TDD: added the inspection queue public contract first (RED on missing feature exports), then moved the queue and reached GREEN with both inspection and audit queue contract tests.
+  - Validate: offline queue contract tests (2), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 068 — refactor: move SQLite database bootstrap**
   - Change: frontend/src/lib/sqlite/db.ts -> frontend/src/shared/platform/sqlite/database.ts + frontend/src/shared/platform/sqlite/index.ts. Validate: F.
 - [ ] **Commit 069 — refactor: move SQLite inspection cache**
