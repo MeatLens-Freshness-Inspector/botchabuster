@@ -185,7 +185,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 019 — refactor: extract query provider**
   - Change: frontend/src/App.tsx -> frontend/src/app/providers/query-provider.tsx + frontend/src/app/App.tsx.
   - Validate: F.
-- [ ] **Commit 020 — refactor: extract notification provider**
+- [x] **Commit 020 — refactor: extract notification provider**
   - Change: frontend/src/app/App.tsx + frontend/src/app/providers/notification-provider.tsx.
   - Validate: F.
 - [ ] **Commit 021 — refactor: extract startup network provider**

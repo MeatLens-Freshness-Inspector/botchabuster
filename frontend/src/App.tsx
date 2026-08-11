@@ -1,7 +1,5 @@
 import { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { Toaster as Sonner } from "@/shared/ui/sonner";
-import { Toaster } from "@/shared/ui/toaster";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ProtectedRoute, AdminRoute, OnboardingRoute } from "@/components/ProtectedRoute";
@@ -14,6 +12,7 @@ import { InactivityGuard } from "@/components/InactivityGuard";
 import { useStartupNetworkCheck } from "@/hooks/useStartupNetworkCheck";
 import { applyTheme } from "@/lib/themePreference";
 import { QueryProvider } from "@/app/providers/query-provider";
+import { NotificationProvider } from "@/app/providers/notification-provider";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -79,15 +78,14 @@ const App = () => {
   <QueryProvider>
     <OfflineBanner />
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <NetworkStartupGate>
-          <AuthProvider>
-            <OfflineSyncManager />
-            <InactivityGuard />
-            <ThemeRouteController />
-            <Routes>
+      <NotificationProvider>
+        <BrowserRouter>
+          <NetworkStartupGate>
+            <AuthProvider>
+              <OfflineSyncManager />
+              <InactivityGuard />
+              <ThemeRouteController />
+              <Routes>
               {/* Public routes */}
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
@@ -110,10 +108,11 @@ const App = () => {
               <Route path="/admin" element={<AdminRoute><AdminDashboardWrapper /></AdminRoute>} />
 
               <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </NetworkStartupGate>
-      </BrowserRouter>
+              </Routes>
+            </AuthProvider>
+          </NetworkStartupGate>
+        </BrowserRouter>
+      </NotificationProvider>
     </TooltipProvider>
   </QueryProvider>
   );
