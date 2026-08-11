@@ -1,4 +1,5 @@
 import type { AuthSession, AuthUser } from "@/integrations/api/AuthClient";
+import { readJson } from "@/shared/lib/storage";
 import type { Profile } from "@/integrations/api/ProfileClient";
 
 export const USER_STORAGE_KEY = "meatlens-auth-user";
@@ -9,16 +10,6 @@ const ADMIN_STORAGE_KEY = "meatlens-auth-admin";
 interface CachedAdminState {
   userId: string;
   isAdmin: boolean;
-}
-
-function readJson<T>(storage: Storage, storageKey: string): T | null {
-  try {
-    const raw = storage.getItem(storageKey);
-    if (!raw) return null;
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
 }
 
 function readLocalJson<T>(storageKey: string): T | null {

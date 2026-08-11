@@ -11,7 +11,7 @@ import {
 import { format } from "date-fns";
 import type { Profile } from "@/integrations/api/ProfileClient";
 import { resolveReportOrganization } from "@/lib/reportOrganizations";
-import { formatReportDateTime } from "@/lib/reports/formatting";
+import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { buildAdminRangeReportModel } from "@/lib/reports/adapters/adminRangeReport";
 import type { DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
 import type { ReportDocumentModel } from "@/lib/reports/types";

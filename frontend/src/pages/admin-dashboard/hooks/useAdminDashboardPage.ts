@@ -15,7 +15,7 @@ import {
   getReportOrganizationLabel,
   isReportOrganization,
 } from "@/lib/reportOrganizations";
-import { formatReportDateTime } from "@/lib/reports/formatting";
+import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { composeReportPdf } from "@/lib/reports/pdf/composeReportPdf";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
 import { buildDeveloperInAppMetrics } from "../utils/developerInAppMetrics";

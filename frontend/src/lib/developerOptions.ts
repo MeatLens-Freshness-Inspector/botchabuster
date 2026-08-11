@@ -1,4 +1,5 @@
 import type { AnalysisResult } from "@/types/inspection";
+import { readJson, writeJson } from "@/shared/lib/storage";
 
 const DEV_OPTIONS_FLAGS_KEY_PREFIX = "meatlens-developer-options-flags";
 const DEV_OPTIONS_SESSION_KEY_PREFIX = "meatlens-developer-options-session";
@@ -51,26 +52,12 @@ function resolveAnalysisSnapshotStorageKey(userId: string): string {
   return `${DEV_OPTIONS_SNAPSHOT_KEY_PREFIX}:${userId}`;
 }
 
-function readJson<T>(storageKey: string): T | null {
-  if (typeof window === "undefined") return null;
-
-  const raw = window.localStorage.getItem(storageKey);
-  if (!raw) return null;
-
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-}
-
-function writeJson<T>(storageKey: string, value: T): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(storageKey, JSON.stringify(value));
+function getLocalStorage(): Storage | null {
+  return typeof window === "undefined" ? null : window.localStorage;
 }
 
 export function getDeveloperOptionsFlags(userId: string): DeveloperOptionsFlags {
-  const stored = readJson<Partial<DeveloperOptionsFlags>>(resolveFlagsStorageKey(userId));
+  const stored = readJson<Partial<DeveloperOptionsFlags>>(getLocalStorage(), resolveFlagsStorageKey(userId));
   if (!stored) return { ...DEFAULT_DEVELOPER_OPTIONS_FLAGS };
 
   return {
@@ -80,15 +67,15 @@ export function getDeveloperOptionsFlags(userId: string): DeveloperOptionsFlags 
 }
 
 export function setDeveloperOptionsFlags(userId: string, flags: DeveloperOptionsFlags): void {
-  writeJson(resolveFlagsStorageKey(userId), flags);
+  writeJson(getLocalStorage(), resolveFlagsStorageKey(userId), flags);
 }
 
 export function getDeveloperOptionsSession(userId: string): DeveloperOptionsSession | null {
-  return readJson<DeveloperOptionsSession>(resolveSessionStorageKey(userId));
+  return readJson<DeveloperOptionsSession>(getLocalStorage(), resolveSessionStorageKey(userId));
 }
 
 export function setDeveloperOptionsSession(userId: string, session: DeveloperOptionsSession): void {
-  writeJson(resolveSessionStorageKey(userId), session);
+  writeJson(getLocalStorage(), resolveSessionStorageKey(userId), session);
 }
 
 export function clearDeveloperOptionsSession(userId: string): void {
@@ -103,11 +90,11 @@ export function isDeveloperOptionsSessionExpired(session: DeveloperOptionsSessio
 }
 
 export function saveDeveloperAnalysisSnapshot(userId: string, snapshot: DeveloperAnalysisSnapshot): void {
-  writeJson(resolveAnalysisSnapshotStorageKey(userId), snapshot);
+  writeJson(getLocalStorage(), resolveAnalysisSnapshotStorageKey(userId), snapshot);
 }
 
 export function getDeveloperAnalysisSnapshot(userId: string): DeveloperAnalysisSnapshot | null {
-  return readJson<DeveloperAnalysisSnapshot>(resolveAnalysisSnapshotStorageKey(userId));
+  return readJson<DeveloperAnalysisSnapshot>(getLocalStorage(), resolveAnalysisSnapshotStorageKey(userId));
 }
 
 export function clearDeveloperAnalysisSnapshot(userId: string): void {

@@ -136,7 +136,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Validate: F.
 
 - [ ] **Commit 011 — refactor: migrate shared date and storage helpers**
-  - Change: frontend/src/lib/date.ts -> frontend/src/shared/lib/date.ts + frontend/src/lib/storage.ts -> frontend/src/shared/lib/storage.ts.
+  - Change: frontend/src/lib/reports/formatting.ts -> frontend/src/shared/lib/date-time.ts + frontend/src/shared/lib/storage.ts.
+  - The originally mapped generic date.ts and storage.ts files do not exist in this checkout. Move the actual reusable report date formatting behavior and extract the duplicated defensive JSON storage helpers from auth and developer-option persistence; update every active date-format consumer without a legacy forwarding module.
   - Validate: F.
 
 - [ ] **Commit 012 — refactor: migrate generic viewport hooks**

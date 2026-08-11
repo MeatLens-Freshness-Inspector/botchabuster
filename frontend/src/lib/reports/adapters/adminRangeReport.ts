@@ -1,6 +1,6 @@
 import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";
 import type { ReportOrganization } from "@/lib/reportOrganizations";
-import { formatReportDateTime } from "@/lib/reports/formatting";
+import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { getTemplateKeyForOrganization } from "@/lib/reports/pdf/assets";
 import {
   buildSharedMeatDetailSection,
