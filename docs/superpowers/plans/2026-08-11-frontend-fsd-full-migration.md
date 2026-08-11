@@ -584,8 +584,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved overview summary cards and business analytics charts into widget-owned UI modules while retaining the existing JSX content and responsive presentation.
   - TDD: added the overview UI public contract before relocation (RED on missing widget exports, then GREEN after ownership migration).
   - Validate: focused overview UI test, typecheck, and architecture checks passed.
-- [ ] **Commit 122 — refactor: complete overview tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/OverviewTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/overview/overview-tab.tsx + frontend/tests/unit/hooks/admin-dashboard-summary.unit.test.tsx. Validate: F.
+- [x] **Commit 122 — refactor: complete overview tab widget**
+  - Change: added the public overview widget composition and switched desktop/mobile dashboard slots to consume it.
+  - TDD: added the complete-overview widget contract before composition (RED on missing export, then GREEN after wiring).
+  - Validate: focused overview-widget test and typecheck passed.
 - [ ] **Commit 123 — refactor: split users tab UI**
   - Change: frontend/src/pages/admin-dashboard/components/tab-content/UsersTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/users/user-table.tsx + frontend/src/widgets/admin-dashboard/ui/users/user-actions.tsx. Validate: F.
 - [ ] **Commit 124 — refactor: complete users tab widget**

@@ -1,4 +1,4 @@
-import { InspectionChart } from "@/widgets/admin-dashboard";
+import { OverviewTab as OverviewWidget } from "@/widgets/admin-dashboard";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type OverviewTabProps = {
@@ -6,7 +6,7 @@ type OverviewTabProps = {
 };
 
 const OverviewTab = ({ dashboard }: OverviewTabProps) => {
-  return <InspectionChart dashboard={dashboard} />;
+  return <OverviewWidget dashboard={dashboard} />;
 };
 
 export default OverviewTab;
