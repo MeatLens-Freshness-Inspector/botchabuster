@@ -6,7 +6,7 @@ import { Input } from "@/shared/ui";
 import type {
   UserChatContact,
   UserChatMessage,
-} from "@/integrations/api/UserChatClient";
+} from "@/entities/message";
 import { formatContactName, formatTimestamp } from "../utils/formatters";
 
 type ThreadPanelProps = {

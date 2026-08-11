@@ -2,25 +2,7 @@ import { createAuthHeaders } from "@/shared/api/auth-headers";
 import { notifyApiAuthExpired } from "@/shared/api/request";
 import { API_BASE_URL } from "@/shared/api/base-url";
 import { fetchWithTimeout } from "@/shared/api";
-
-export interface UserChatContact {
-  id: string;
-  full_name: string | null;
-  email: string | null;
-  inspector_code: string | null;
-  location: string | null;
-  role: "admin" | "user";
-  last_message_preview: string | null;
-  last_message_at: string | null;
-}
-
-export interface UserChatMessage {
-  id: string;
-  sender_id: string;
-  recipient_id: string;
-  content: string;
-  created_at: string;
-}
+import type { UserChatContact, UserChatMessage } from "../model/types";
 
 export class UserChatClient {
   private static instance: UserChatClient;

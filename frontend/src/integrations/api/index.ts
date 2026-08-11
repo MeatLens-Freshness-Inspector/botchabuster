@@ -14,4 +14,3 @@ export {
   type DeveloperOverviewResponse,
   type TrainingRunRecord,
 } from "./DeveloperDashboardClient";
-export { UserChatClient, userChatClient, type UserChatContact, type UserChatMessage } from "./UserChatClient";

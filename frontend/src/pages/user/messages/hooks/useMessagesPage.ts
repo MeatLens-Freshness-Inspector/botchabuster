@@ -6,7 +6,7 @@ import {
   userChatClient,
   type UserChatContact,
   type UserChatMessage,
-} from "@/integrations/api/UserChatClient";
+} from "@/entities/message";
 import type { MessagesMobilePanel } from "../types";
 import { formatContactName } from "../utils/formatters";
 import { resolveSelectedContactId } from "../utils/viewState";

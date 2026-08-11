@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import type { UserChatContact } from "@/integrations/api/UserChatClient";
+import type { UserChatContact } from "@/entities/message";
 
 export function formatContactName(contact: UserChatContact): string {
   return (
