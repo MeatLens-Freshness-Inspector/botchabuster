@@ -8,7 +8,7 @@ import { EMPTY_CAMERA_CONTROLS } from "../../../src/features/inspection-capture/
 import {
   CameraCaptureView,
   type CameraCaptureViewProps,
-} from "../../../src/components/camera/CameraCaptureView";
+} from "../../../src/features/inspection-capture/ui/camera-capture-view";
 
 function buildProps(
   overrides: Partial<CameraCaptureViewProps> = {},

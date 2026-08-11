@@ -1,52 +1,16 @@
-import React, { type ChangeEventHandler, type RefObject } from "react";
+import React from "react";
 
 import { Camera, RotateCcw, Check, AlertTriangle, XCircle } from "lucide-react";
 
-import type { ImageQualityResult } from "../../lib/imageQuality";
 import { cn } from "@/shared/lib/utils";
 import { Button, buttonVariants } from "@/shared/ui";
 
 import {
   formatControlValue,
-  type CameraControlKey,
-  type CameraControlsState,
 } from "@/features/inspection-capture/lib/controls";
+import type { CameraCaptureViewProps } from "../model/types";
 
-export interface CameraCaptureViewProps {
-  className?: string;
-  disabled: boolean;
-  allowFileUpload: boolean;
-  allowInAppCamera: boolean;
-  showModelInputPreview: boolean;
-  capturedImage: string | null;
-  capturedImageRef: RefObject<HTMLImageElement | null>;
-  onCapturedImageLoad: () => void;
-  isStreaming: boolean;
-  isVideoReady: boolean;
-  videoRef: RefObject<HTMLVideoElement | null>;
-  canvasRef: RefObject<HTMLCanvasElement | null>;
-  error: string | null;
-  modelInputLabel: string;
-  modelInputPreview: string | null;
-  isPreparingModelPreview: boolean;
-  torchSupported: boolean;
-  flashEnabled: boolean;
-  cameraControls: CameraControlsState;
-  supportsManualFocusMode: boolean;
-  showManualFocusSlider: boolean;
-  hasManualControlSupport: boolean;
-  captureQualityResult: ImageQualityResult | null;
-  isStarting: boolean;
-  onTorchToggle: () => void;
-  onFocusModeChange: (nextMode: string) => void;
-  onRangeControlChange: (controlKey: CameraControlKey, value: string) => void;
-  onRetake: () => void;
-  onConfirmCapture: () => void;
-  onCapturePhoto: () => void;
-  onStartCamera: () => void;
-  onFileInput: ChangeEventHandler<HTMLInputElement>;
-  onCameraAppInput: ChangeEventHandler<HTMLInputElement>;
-}
+export type { CameraCaptureViewProps } from "../model/types";
 
 export function CameraCaptureView({
   className,

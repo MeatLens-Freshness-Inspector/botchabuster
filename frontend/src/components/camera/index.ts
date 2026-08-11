@@ -1,3 +1,2 @@
-export { CameraCapture } from "./CameraCapture";
-export type { CapturedImagePayload } from "./types";
-export type { CameraCaptureProps } from "./types";
+export { CameraCapture } from "@/features/inspection-capture";
+export type { CapturedImagePayload, CameraCaptureProps } from "@/features/inspection-capture";

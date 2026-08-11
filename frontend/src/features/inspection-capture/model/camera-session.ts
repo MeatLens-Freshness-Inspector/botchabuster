@@ -12,7 +12,6 @@ import {
 } from "../../../lib/offlineAnalysis/meatLensPipeline";
 import { getActiveModelPreprocessContract } from "../../../lib/offlineAnalysis/mobileNetV3";
 
-import type { CameraCaptureViewProps } from "../../../components/camera/CameraCaptureView";
 import { GUIDE_BOX_SIZE_RATIO, PREVIEW_EXPORT_QUALITY } from "../../../components/camera/constants";
 import {
   clampToRange,
@@ -26,10 +25,7 @@ import {
   resolveCanvasImageQuality,
   resolveFileImageQuality,
 } from "../lib/quality";
-import {
-  type CameraCaptureProps,
-  type CaptureQualitySource,
-} from "../../../components/camera/types";
+import type { CameraCaptureProps, CameraCaptureViewProps, CaptureQualitySource } from "./types";
 import {
   applyCameraTrackConstraints,
   emptyCameraDeviceState,
