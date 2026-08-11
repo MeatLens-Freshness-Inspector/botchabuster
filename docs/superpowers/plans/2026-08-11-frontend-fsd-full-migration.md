@@ -122,6 +122,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 - [ ] **Commit 008 — refactor: move timeout fetch transport into shared**
   - Change: frontend/src/integrations/api/fetchWithTimeout.ts -> frontend/src/shared/api/fetch-with-timeout.ts + frontend/src/shared/api/index.ts.
+  - Update every active timeout consumer to the shared API public surface; do not retain a legacy forwarding module.
   - Validate: F.
 
 - [ ] **Commit 009 — refactor: establish shared API error public API**

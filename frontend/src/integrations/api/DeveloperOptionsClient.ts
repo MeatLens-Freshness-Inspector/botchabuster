@@ -1,6 +1,6 @@
 import { createAuthHeaders } from "@/lib/authCache";
 import { API_BASE_URL } from "@/shared/api/base-url";
-import { fetchWithTimeout } from "./fetchWithTimeout";
+import { fetchWithTimeout } from "@/shared/api";
 
 async function readApiError(response: Response, fallback: string): Promise<string> {
   try {

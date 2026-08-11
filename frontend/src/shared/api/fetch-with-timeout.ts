@@ -1,4 +1,4 @@
-import { applyApiRequestInit, refreshApiSessionForCsrf } from "@/shared/api/request";
+import { applyApiRequestInit, refreshApiSessionForCsrf } from "./request";
 
 export const API_REQUEST_TIMEOUT_MESSAGE = "Request timed out. Please check your connection and try again.";
 export const DEFAULT_API_REQUEST_TIMEOUT_MS = 15_000;
@@ -57,7 +57,7 @@ async function isInvalidCsrfResponse(response: Response): Promise<boolean> {
   }
 
   try {
-    const payload = await response.clone().json() as { error?: unknown };
+    const payload = (await response.clone().json()) as { error?: unknown };
     return payload.error === "Invalid CSRF token";
   } catch {
     return false;

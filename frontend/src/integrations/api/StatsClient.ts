@@ -1,6 +1,6 @@
 import { IS_DEMO_MODE, demoDelay, DEMO_LANDING_STATS } from "@/lib/demoMode";
 import { API_BASE_URL } from "@/shared/api/base-url";
-import { fetchWithTimeout } from "./fetchWithTimeout";
+import { fetchWithTimeout } from "@/shared/api";
 
 export interface LandingPageStats {
   inspectionCount: number;

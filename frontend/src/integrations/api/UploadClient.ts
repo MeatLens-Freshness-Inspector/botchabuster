@@ -1,6 +1,6 @@
 import { createAuthHeaders } from "@/lib/authCache";
 import { API_BASE_URL } from "@/shared/api/base-url";
-import { UPLOAD_REQUEST_TIMEOUT_MS, fetchWithTimeout } from "./fetchWithTimeout";
+import { UPLOAD_REQUEST_TIMEOUT_MS, fetchWithTimeout } from "@/shared/api";
 
 export class UploadClient {
   private static instance: UploadClient;

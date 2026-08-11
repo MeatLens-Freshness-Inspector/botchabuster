@@ -3,7 +3,7 @@ import { IS_DEMO_MODE, demoDelay, DEMO_INSPECTIONS, DEMO_STATS } from "@/lib/dem
 import { createAuthHeaders } from "@/lib/authCache";
 import { notifyApiAuthExpired } from "@/shared/api/request";
 import { API_BASE_URL } from "@/shared/api/base-url";
-import { fetchWithTimeout } from "./fetchWithTimeout";
+import { fetchWithTimeout } from "@/shared/api";
 
 export type InspectionScope = "mine" | "all";
 
