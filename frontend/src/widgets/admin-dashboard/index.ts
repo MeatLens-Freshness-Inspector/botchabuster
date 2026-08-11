@@ -15,3 +15,5 @@ export {
   useAdminDashboard,
   type AdminDashboardPageViewModel,
 } from "./model/use-admin-dashboard";
+export { default as InspectionChart } from "./ui/overview/inspection-chart";
+export { SummaryCards } from "./ui/overview/summary-cards";

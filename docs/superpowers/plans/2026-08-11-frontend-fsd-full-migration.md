@@ -580,8 +580,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the dashboard orchestration hook to the admin-dashboard widget model and the developer workspace hook to the developer-tools feature model; route components now consume public FSD APIs.
   - TDD: added the dashboard-composition public contract before relocation (RED on missing exports, then GREEN after public API wiring).
   - Validate: focused composition test, typecheck, architecture, and lint (15 existing warnings) passed.
-- [ ] **Commit 121 — refactor: split overview tab UI**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/OverviewTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/overview/summary-cards.tsx + frontend/src/widgets/admin-dashboard/ui/overview/inspection-chart.tsx. Validate: F.
+- [x] **Commit 121 — refactor: split overview tab UI**
+  - Change: moved overview summary cards and business analytics charts into widget-owned UI modules while retaining the existing JSX content and responsive presentation.
+  - TDD: added the overview UI public contract before relocation (RED on missing widget exports, then GREEN after ownership migration).
+  - Validate: focused overview UI test, typecheck, and architecture checks passed.
 - [ ] **Commit 122 — refactor: complete overview tab widget**
   - Change: frontend/src/pages/admin-dashboard/components/tab-content/OverviewTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/overview/overview-tab.tsx + frontend/tests/unit/hooks/admin-dashboard-summary.unit.test.tsx. Validate: F.
 - [ ] **Commit 123 — refactor: split users tab UI**
