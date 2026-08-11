@@ -3,9 +3,9 @@ import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
 import { buildInspectionInsert, useSubmitInspection } from "@/features/inspection-submission";
 import { queueScan, removeScan } from "@/features/offline-sync";
-import { uploadClient } from "@/integrations/api";
-import { developerOptionsClient } from "@/integrations/api/DeveloperOptionsClient";
-import { marketLocationClient } from "@/integrations/api/MarketLocationClient";
+import { uploadClient } from "../../../integrations/api";
+import { developerOptionsClient } from "../../../integrations/api/DeveloperOptionsClient";
+import { marketLocationClient } from "../../../integrations/api/MarketLocationClient";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import {
   clearDeveloperOptionsSession,
@@ -15,7 +15,7 @@ import {
   isDeveloperOptionsSessionExpired,
   saveDeveloperAnalysisSnapshot,
   type DeveloperOptionsFlags,
-} from "@/lib/developerOptions";
+} from "../../../lib/developerOptions";
 import {
   PROTOCOL_SPOILED_REASON,
   buildProtocolSpoiledAnalysisResult,
@@ -44,22 +44,22 @@ import {
   type InspectionCoordinates,
 } from "@/entities/inspection";
 import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
-import type { CapturedImagePayload } from "@/components/CameraCapture";
-import type { InspectPageViewModel, InspectionSaveStatus } from "../types";
+import type { CapturedImagePayload } from "../../../components/CameraCapture";
+import type { InspectPageViewModel, InspectionSaveStatus } from "./types";
+import { useInspectionAnalysis } from "./use-inspection-analysis";
 import {
   createClientSubmissionId,
   DEFAULT_MEAT_TYPE,
   FALLBACK_MARKET_LOCATIONS,
   FORCE_RETAKE_CONFIDENCE_THRESHOLD,
-  getAnalysisStatusText,
   getCaptureStatusText,
   getConfidenceText,
   getSaveButtonLabel,
   normalizeMarketLocationNames,
   resolveSelectedLocation,
-} from "../utils/inspectPage";
+} from "../../../pages/user/inspections/utils/inspectPage";
 
-export function useInspectPage(): InspectPageViewModel {
+export function useInspectionWorkspace(): InspectPageViewModel {
   const { user, profile, isAdmin } = useAuth();
   const [capturedInput, setCapturedInput] = useState<CapturedImagePayload | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -564,7 +564,14 @@ export function useInspectPage(): InspectPageViewModel {
     isDeveloperUnlocked,
   );
   const confidenceSummaryClass = result ? getConfidenceTextClass(result.confidence_score) : "";
-  const isAnalyzeBlockedByModel = navigator.onLine && !isModelReady;
+  const analysisState = useInspectionAnalysis({
+    isModelReady,
+    isAnalyzing,
+    result,
+    inspectionDecisionSource,
+    online: navigator.onLine,
+  });
+  const isAnalyzeBlockedByModel = analysisState.isAnalyzeBlockedByModel;
   const locationDisplayLabel =
     formatInspectionLocationLabel(
       selectedLocation,
@@ -605,11 +612,7 @@ export function useInspectPage(): InspectPageViewModel {
     showAnalyzeAction: Boolean(capturedInput && !result && inspectionDecisionSource !== "protocol_pre_scan"),
     showSaveActions: Boolean(result),
     captureStatusText: getCaptureStatusText(capturedInput),
-    analysisStatusText: getAnalysisStatusText(
-      isAnalyzing,
-      result,
-      inspectionDecisionSource,
-    ),
+    analysisStatusText: analysisState.analysisStatusText,
     confidenceText: getConfidenceText(result),
     confidenceSummaryClass,
     saveButtonLabel: getSaveButtonLabel(saveStatus),

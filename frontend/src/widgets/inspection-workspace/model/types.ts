@@ -1,4 +1,4 @@
-import type { CapturedImagePayload } from "@/components/CameraCapture";
+import type { CapturedImagePayload } from "../../../components/CameraCapture";
 import type { InspectionPreScanForm } from "@/entities/inspection";
 import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
 

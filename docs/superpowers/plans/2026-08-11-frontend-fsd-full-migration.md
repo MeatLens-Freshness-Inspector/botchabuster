@@ -426,8 +426,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved PDF download orchestration to `features/reports/api/generate-report.ts`, added the reports public index, preserved `composeReportPdf` as the current workflow name, and migrated admin/history consumers.
   - TDD: added the reports public API contract before implementation (RED on the absent feature index, then GREEN with generation and compatibility workflow exports).
   - Validate: focused public API test, typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 086 — refactor: split inspect page view model**
-  - Change: frontend/src/pages/user/inspections/hooks/useInspectPage.ts -> frontend/src/widgets/inspection-workspace/model/use-inspection-workspace.ts + frontend/src/widgets/inspection-workspace/model/use-inspection-analysis.ts. Validate: I.
+- [x] **Commit 086 — refactor: split inspect page view model**
+  - Change: moved the inspect workflow hook and view-model types into `widgets/inspection-workspace/model`, extracted the analysis readiness/status model into `use-inspection-analysis.ts`, and migrated the existing inspect view consumer.
+  - TDD: added analysis-state contracts before implementation (RED on the absent widget module, then GREEN with readiness and protocol-result assertions).
+  - Validate: focused analysis-state tests (2), typecheck, lint (16 existing warnings), and architecture checks passed; workspace hook remains 570 nonblank lines under the hard cap.
 - [ ] **Commit 087 — refactor: move inspection workspace UI**
   - Change: frontend/src/pages/user/inspections/components/InspectPageView.tsx -> frontend/src/widgets/inspection-workspace/ui/inspection-workspace.tsx + frontend/src/pages/Index.tsx -> frontend/src/pages/inspector/inspect-page.tsx. Validate: P-inspect.
 - [ ] **Commit 088 — refactor: migrate history page**
