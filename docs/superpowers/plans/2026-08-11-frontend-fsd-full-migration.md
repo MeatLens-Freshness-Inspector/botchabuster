@@ -674,10 +674,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: frontend/tests/unit/architecture/final-fsd-audit.unit.test.ts + frontend/scripts/check-source-size.mjs.
   - Assert that no legacy root owner, bridge alias, or compatibility re-export is present and that every maintained source file is within the cap.
   - TDD evidence: the final audit test executes the repository boundary and hard-limit checks against the real `frontend/src` tree and verifies migrated public slice indexes; both audit tests pass. Validate: `npm run test:architecture -w frontend`, `npx tsx --test tests/unit/architecture/final-fsd-audit.unit.test.ts`, `npm run typecheck -w frontend`, and `npm run lint -w frontend`.
-- [ ] **Commit 144 — test: complete full-migration regression audit**
-  - Change: frontend/tests/e2e/smoke/not-found.e2e.spec.ts + frontend/tests/e2e/journeys/administrator/admin-dashboard.e2e.spec.ts.
-  - Run typecheck, lint, all architecture checks, full frontend unit/component/integration suite, production build, critical end-to-end suite, then verify the commit ledger has at least 144 qualifying implementation commits.
-  - Validate: npm run typecheck -w frontend && npm run lint -w frontend && npm run test:unit -w frontend && npm run test:component -w frontend && npm run test:integration -w frontend && npm run build -w frontend && npm run test:e2e:critical -w frontend.
+- [x] **Commit 144 — test: complete full-migration regression audit**
+  - Change: frontend/src/features/developer-tools/index.ts + frontend/tests/unit/state/developer-dashboard-workspace.unit.test.tsx + frontend/tests/e2e/smoke/not-found.e2e.spec.ts + frontend/tests/e2e/journeys/administrator/admin-dashboard.e2e.spec.ts.
+  - TDD evidence: the full unit run first exposed the missing `buildApiDocsCurl` feature export; the focused API-docs history test was then green at 4/4 after the public API fix. The developer dataset tests were realigned to the migrated feature public component and passed 7/7; the affected browser regression set passed 5/5 after aligning assertions with the existing rendered labels and anonymous route guard behavior.
+  - Validate: typecheck passed; lint passed with 0 errors and 15 existing warnings; architecture passed all 7 fixtures with zero enforced boundary/owner violations and zero hard-limit files; unit passed 272/272; component passed 11/11; integration passed 11/11; production build passed; critical E2E passed 26/26. The migration ledger contained 143 commits before this change, all with at least two changed files; this amended commit contains five meaningful files and remains Commit 144.
 
 ## Exhaustive legacy owner transfer manifest
 

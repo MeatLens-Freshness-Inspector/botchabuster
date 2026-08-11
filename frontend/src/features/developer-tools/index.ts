@@ -33,6 +33,7 @@ export * from "./model/types";
 export * from "./model/api-docs-request";
 export * from "./model/api-docs-response";
 export * from "./model/api-docs-history";
+export { buildApiDocsCurl } from "./model/api-docs-curl";
 export * from "./model/api-docs-redaction";
 export { useApiDocs } from "./model/use-api-docs";
 export { ApiDocsSection } from "./ui/api-docs/api-docs-section";
