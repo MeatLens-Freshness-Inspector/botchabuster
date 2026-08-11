@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/shared/ui";
+import { Input } from "@/shared/ui";
 import { InspectionListItem } from "@/components/InspectionListItem";
 import { Loader2, ClipboardList, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Inspection } from "@/types/inspection";

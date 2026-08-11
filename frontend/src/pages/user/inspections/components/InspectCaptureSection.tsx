@@ -1,5 +1,5 @@
 import { CameraCapture, type CapturedImagePayload } from "@/components/CameraCapture";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui";
 import { Label } from "@/components/ui/label";
 import {
   Select,

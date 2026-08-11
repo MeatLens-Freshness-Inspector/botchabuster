@@ -4,8 +4,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { developerOptionsClient } from "@/integrations/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/shared/ui";
+import { Input } from "@/shared/ui";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {

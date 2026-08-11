@@ -145,7 +145,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Preserve exported hook behavior, update every active consumer without legacy forwarding modules, and update frontend/tests/unit/hooks/use-desktop.unit.test.tsx.
   - Validate: F.
 
-- [ ] **Commit 013 — refactor: move core shared UI primitives**
+- [x] **Commit 013 — refactor: move core shared UI primitives**
   - Change: frontend/src/components/ui/button.tsx -> frontend/src/shared/ui/button.tsx + frontend/src/components/ui/input.tsx -> frontend/src/shared/ui/input.tsx.
   - Update all import consumers through frontend/src/shared/ui/index.ts.
   - Validate: F.

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui";
 import { Camera, RefreshCcw, ScanLine } from "lucide-react";
 import type { LandingMockSample } from "../../types";
 import { landingMockSamples } from "../utils/landingData";

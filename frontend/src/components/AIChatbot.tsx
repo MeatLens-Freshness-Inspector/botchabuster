@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/shared/ui";
+import { Input } from "@/shared/ui";
 import { useAuth } from "@/contexts/AuthContext";
 import { API_BASE_URL } from "@/shared/api/base-url";
 import { applyApiRequestInit, getApiCsrfToken } from "@/shared/api/request";

@@ -5,7 +5,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { ComponentType } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui";
 import type { AdminDashboardPageViewModel } from "../hooks/useAdminDashboardPage";
 
 type AdminDashboardSummaryProps = {

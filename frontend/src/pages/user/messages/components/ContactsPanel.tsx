@@ -1,5 +1,5 @@
 import { Loader2, MessageSquare, RefreshCw, Search, Shield, UserRound } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui";
 import type { UserChatContact } from "@/integrations/api/UserChatClient";
 import { formatContactName, formatTimestamp } from "../utils/formatters";
 

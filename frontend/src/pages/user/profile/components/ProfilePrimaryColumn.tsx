@@ -1,6 +1,6 @@
 import { Loader2, KeyRound, LifeBuoy, Sparkles, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/shared/ui";
+import { Input } from "@/shared/ui";
 import type { RegisteredPasskey } from "@/integrations/api/PasskeyClient";
 import { ProfileEditableDetailsCard } from "./ProfileEditableDetailsCard";
 

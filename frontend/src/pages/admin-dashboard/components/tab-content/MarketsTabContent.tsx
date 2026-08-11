@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui";
 import {
   Card,
   CardContent,
@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui";
 import { Label } from "@/components/ui/label";
 import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
 

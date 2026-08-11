@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui";
 import { Clock, Loader2, RotateCcw, Save } from "lucide-react";
 import type { InspectionSaveStatus } from "../types";
 

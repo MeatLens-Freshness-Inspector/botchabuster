@@ -20,7 +20,7 @@ import {
   getReportOrganizationLabel,
   type ReportOrganization,
 } from "@/lib/reportOrganizations";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui";
 import { SmartPagination } from "@/components/ui/SmartPagination";
 import {
   Card,
@@ -36,7 +36,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui";
 import { Label } from "@/components/ui/label";
 import {
   Select,

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui";
 import { ChevronRight, Sparkles } from "lucide-react";
 import type { AnimatedStatData } from "../../types";
 import { AnimatedStat } from "./AnimatedStat";

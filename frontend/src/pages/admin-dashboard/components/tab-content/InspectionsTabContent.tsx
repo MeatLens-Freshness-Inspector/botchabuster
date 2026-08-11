@@ -1,14 +1,14 @@
 import { format } from "date-fns";
 import { ClipboardList, Trash2 } from "lucide-react";
 import { FreshnessBadge } from "@/components/FreshnessBadge";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui";
 import { SmartPagination } from "@/components/ui/SmartPagination";
 import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
 import { getInspectorLabel } from "../../utils/adminDashboard";

@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Loader2, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/shared/ui";
+import { Input } from "@/shared/ui";
 import {
   Card,
   CardContent,

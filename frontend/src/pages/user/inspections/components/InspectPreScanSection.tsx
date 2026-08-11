@@ -1,5 +1,5 @@
 import { ShieldAlert } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui";
 import { Label } from "@/components/ui/label";
 import type { InspectionPreScanForm } from "@/lib/inspectionPreScan";
 
