@@ -10,16 +10,18 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 import { Label } from "@/shared/ui";
-import { useForgotPasswordPage } from "../hooks/useForgotPasswordPage";
+import { useAuth } from "@/entities/user";
+import { useForgotPasswordPage } from "@/features/auth";
 
 const ForgotPasswordPageView = () => {
+  const auth = useAuth();
   const {
     email,
     loading,
     sent,
     setEmail,
     handleSubmit,
-  } = useForgotPasswordPage();
+  } = useForgotPasswordPage({ resetPassword: auth.resetPassword });
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">

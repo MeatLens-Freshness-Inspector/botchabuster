@@ -1,13 +1,15 @@
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/entities/user";
-import { getForgotPasswordErrorMessage } from "../utils/forgotPasswordPage";
+import { getForgotPasswordErrorMessage } from "./forgot-password";
 
-export function useForgotPasswordPage() {
+export interface ForgotPasswordDependencies {
+  resetPassword: (email: string) => Promise<void>;
+}
+
+export function useForgotPasswordPage({ resetPassword }: ForgotPasswordDependencies) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
-  const { resetPassword } = useAuth();
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();

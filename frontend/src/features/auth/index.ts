@@ -22,3 +22,10 @@ export {
   getErrorMessage as getSignupErrorMessage,
 } from "./model/signup";
 export { useSignupPage, type SignupWorkflowDependencies } from "./model/use-signup";
+export {
+  getForgotPasswordErrorMessage,
+} from "./model/forgot-password";
+export {
+  useForgotPasswordPage,
+  type ForgotPasswordDependencies,
+} from "./model/use-forgot-password";

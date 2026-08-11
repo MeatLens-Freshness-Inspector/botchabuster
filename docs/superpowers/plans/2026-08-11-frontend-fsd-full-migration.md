@@ -279,9 +279,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 047 — refactor: migrate sign-up form workflow**
   - Change: moved sign-up state and validation into `features/auth/model`, injected the organization predicate and auth action through the page adapter, and updated the unchanged sign-up view. The offline audit queue and SQLite adapter were also moved behind the offline-sync feature public API because the app provider consumes that capability.
   - Validate: signup and offline-sync contract tests passed, typecheck passed, and lint passed with the existing 16 warnings.
-- [ ] **Commit 048 — refactor: migrate password recovery workflow**
-  - Change: frontend/src/pages/landing/forget-password/hooks/useForgotPasswordPage.ts -> frontend/src/features/auth/model/use-forgot-password.ts + frontend/src/pages/landing/forget-password/components/ForgotPasswordPageView.tsx.
-  - Validate: F.
+- [x] **Commit 048 — refactor: migrate password recovery workflow**
+  - Change: moved the password-recovery hook and error mapping into `features/auth/model`, injected the auth reset action through the existing page adapter, and retained the existing recovery view and behavior.
+  - Validate: recovery workflow test, typecheck, and lint passed with the existing 16 warnings.
 - [ ] **Commit 049 — refactor: migrate password reset workflow**
   - Change: frontend/src/pages/landing/reset-password/hooks/useResetPasswordPage.ts -> frontend/src/features/auth/model/use-reset-password.ts + frontend/src/pages/landing/reset-password/components/ResetPasswordPageView.tsx.
   - Validate: F.
