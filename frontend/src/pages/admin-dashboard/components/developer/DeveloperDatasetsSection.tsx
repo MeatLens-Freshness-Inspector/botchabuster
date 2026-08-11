@@ -1,6 +1,6 @@
 import React from "react";
 import { Download, ImageIcon, RotateCcw, Search, Sparkles } from "lucide-react";
-import { FreshnessBadge } from "@/components/FreshnessBadge";
+import { FreshnessBadge } from "@/entities/inspection";
 import { Button } from "@/shared/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui";

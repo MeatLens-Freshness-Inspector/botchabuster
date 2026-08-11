@@ -38,3 +38,5 @@ export {
   inspectionKeys,
   inspectionStatsKey,
 } from "./model/queries";
+export { FreshnessBadge } from "./ui/freshness-badge";
+export { InspectionListItem } from "./ui/inspection-list-item";

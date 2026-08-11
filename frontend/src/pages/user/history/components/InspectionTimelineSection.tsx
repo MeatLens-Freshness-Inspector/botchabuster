@@ -1,6 +1,6 @@
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
-import { InspectionListItem } from "@/components/InspectionListItem";
+import { InspectionListItem } from "@/entities/inspection";
 import { Loader2, ClipboardList, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Inspection } from "@/entities/inspection";
 import type { FilterOption } from "../types";

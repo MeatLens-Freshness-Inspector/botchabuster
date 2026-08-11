@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { ClipboardList, Trash2 } from "lucide-react";
-import { FreshnessBadge } from "@/components/FreshnessBadge";
+import { FreshnessBadge } from "@/entities/inspection";
 import { Button } from "@/shared/ui";
 import {
   Card,

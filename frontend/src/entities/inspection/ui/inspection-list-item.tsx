@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Inspection } from "@/entities/inspection";
-import { FreshnessBadge } from "@/components/FreshnessBadge";
+import { FreshnessBadge } from "./freshness-badge";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Dialog, DialogContent } from "@/shared/ui/dialog";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
