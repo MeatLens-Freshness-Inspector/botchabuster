@@ -46,7 +46,7 @@ import AdminDashboardWrapper from "./pages/AdminDashboardWrapper";
 import ProfilePage from "./pages/inspector/profile-page";
 import ProfileHelpPage from "./pages/inspector/profile-help-page";
 import ProfileHelpScopePage from "./pages/inspector/profile-help-scope-page";
-import ProfileTutorialPage from "./pages/ProfileTutorialPage";
+import ProfileTutorialPage from "./pages/inspector/profile-tutorial-page";
 import MessagesPage from "./pages/inspector/messages-page";
 import OnboardingPage from "./pages/inspector/onboarding-page";
 import NotFound from "./pages/not-found/NotFound";
