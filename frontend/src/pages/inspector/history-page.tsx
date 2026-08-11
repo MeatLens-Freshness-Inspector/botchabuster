@@ -1,8 +1,8 @@
-import { HistoryHeader } from "./user/history/components/HistoryHeader";
-import { InspectionTimelineSection } from "./user/history/components/InspectionTimelineSection";
-import { HistorySidebar } from "./user/history/components/HistorySidebar";
+import { HistoryHeader } from "../user/history/components/HistoryHeader";
+import { InspectionTimelineSection } from "../user/history/components/InspectionTimelineSection";
+import { HistorySidebar } from "../user/history/components/HistorySidebar";
 import { InspectionDetailSheet } from "@/components/InspectionDetailSheet";
-import { useHistoryPage } from "./user/history/hooks/useHistoryPage";
+import { useHistory } from "@/widgets/history/model/use-history";
 
 const HistoryPage = () => {
   const {
@@ -32,7 +32,7 @@ const HistoryPage = () => {
     selectInspection,
     setSelectedInspection,
     handleExportDetailedPdf,
-  } = useHistoryPage();
+  } = useHistory();
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.16),transparent_42%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] pb-24">

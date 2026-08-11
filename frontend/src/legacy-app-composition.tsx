@@ -39,7 +39,7 @@ import LandingPage from "./pages/LandingPage";
 import { LoginPage, SignupPage } from "@/pages/auth";
 import { ForgotPasswordPage, ResetPasswordPage } from "@/pages/auth";
 import InspectPage from "./pages/inspector/inspect-page";
-import HistoryPage from "./pages/HistoryPage";
+import HistoryPage from "./pages/inspector/history-page";
 import AdminDashboard from "./pages/AdminDashboard";
 import DesktopAdminDashboard from "./pages/DesktopAdminDashboard";
 import AdminDashboardWrapper from "./pages/AdminDashboardWrapper";

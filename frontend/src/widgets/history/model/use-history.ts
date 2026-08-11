@@ -2,18 +2,18 @@ import { useCallback, useMemo, useState } from "react";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
-import { useInspections } from "@/hooks/useInspections";
+import { useInspections } from "../../../hooks/useInspections";
 import { composeReportPdf } from "@/features/reports";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
-import type { FilterOption, HistoryMonthlyCount } from "../types";
+import type { FilterOption, HistoryMonthlyCount } from "./types";
 import {
   buildDetailedHistoryReportPdfModel,
   buildHistorySearchText,
-} from "../utils/historyPage";
+} from "../../../pages/user/history/utils/historyPage";
 
 const PAGE_SIZE = 6;
 
-export function useHistoryPage() {
+export function useHistory() {
   const { profile } = useAuth();
   const { data: inspections, isLoading } = useInspections();
   const [activeFilter, setActiveFilter] = useState<FilterOption>("all");

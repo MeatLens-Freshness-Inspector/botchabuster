@@ -434,8 +434,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the inspect view and all six inspect subcomponents into `widgets/inspection-workspace/ui`, moved the route owner to `pages/inspector/inspect-page.tsx`, and updated the app composition route consumer.
   - TDD: added the inspector-page ownership contract before implementation (RED on the absent route module, then GREEN with the page component test).
   - Validate: page ownership test, typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 088 — refactor: migrate history page**
-  - Change: frontend/src/pages/user/history/hooks/useHistoryPage.ts -> frontend/src/widgets/history/model/use-history.ts + frontend/src/pages/HistoryPage.tsx -> frontend/src/pages/inspector/history-page.tsx. Validate: P-inspect.
+- [x] **Commit 088 — refactor: migrate history page**
+  - Change: moved history state/types into `widgets/history/model`, moved the route owner to `pages/inspector/history-page.tsx`, and migrated the app composition route consumer while retaining existing history UI and PDF export behavior.
+  - TDD: added the history route ownership contract before implementation (RED on the absent inspector page, then GREEN with the page component test).
+  - Validate: history page test, typecheck, lint (16 existing warnings), and architecture checks passed.
 
 ## Phase 5 — Profile, messages, onboarding, tutorials, assistant, legal, and landing (18 commits)
 

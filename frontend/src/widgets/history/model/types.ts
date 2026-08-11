@@ -1,4 +1,4 @@
-import type { ReportOrganization } from "@/lib/reportOrganizations";
+import type { ReportOrganization } from "@/features/reports/model/types";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 
 export type FilterOption = "all" | FreshnessClassification;
