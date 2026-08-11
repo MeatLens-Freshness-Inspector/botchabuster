@@ -8,7 +8,7 @@ type MobileReportsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
 };
 
-const MobileReportsTabContent = ({
+const MobileReportsTab = ({
   dashboard,
 }: MobileReportsTabContentProps) => {
   const {
@@ -149,4 +149,4 @@ const MobileReportsTabContent = ({
   );
 };
 
-export default MobileReportsTabContent;
+export default MobileReportsTab;

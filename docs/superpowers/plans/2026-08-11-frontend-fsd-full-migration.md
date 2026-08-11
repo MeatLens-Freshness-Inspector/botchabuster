@@ -612,8 +612,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved market management content and mobile composition into admin-dashboard widget ownership; both responsive slots now consume the widget API.
   - TDD: added the markets UI public contract before relocation (RED on missing widget exports, then GREEN after wiring).
   - Validate: typecheck passed.
-- [ ] **Commit 129 — refactor: migrate reports tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/DesktopReportsTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/reports-tab.tsx + frontend/src/pages/admin-dashboard/components/tab-content/MobileReportsTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/mobile-reports-tab.tsx. Validate: F.
+- [x] **Commit 129 — refactor: migrate reports tab widget**
+  - Change: moved desktop and mobile report presentation into admin-dashboard widget ownership; responsive dashboard slots now consume the widget API.
+  - TDD: added the reports UI public contract before relocation (RED on missing widget exports, then GREEN after wiring).
+  - Validate: typecheck passed.
 - [ ] **Commit 130 — refactor: split developer overview section**
   - Change: frontend/src/pages/admin-dashboard/components/developer/DeveloperOverviewSection.tsx -> frontend/src/features/developer-tools/ui/developer-metrics.tsx + frontend/src/features/developer-tools/ui/developer-export.tsx; move frontend/src/components/DeveloperOptionsPanel.tsx into frontend/src/features/developer-tools/ui/developer-options-panel.tsx. Validate: F.
 - [ ] **Commit 131 — refactor: migrate developer data sections**

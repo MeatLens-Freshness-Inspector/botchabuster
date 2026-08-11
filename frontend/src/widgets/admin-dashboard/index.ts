@@ -29,3 +29,5 @@ export { default as LogsTab } from "./ui/logs-tab";
 export { default as DesktopLogsTab } from "./ui/desktop-logs-tab";
 export { default as MarketsTab } from "./ui/markets-tab";
 export { default as MobileMarketsTab } from "./ui/mobile-markets-tab";
+export { default as ReportsTab } from "./ui/reports-tab";
+export { default as MobileReportsTab } from "./ui/mobile-reports-tab";

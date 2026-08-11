@@ -1,4 +1,4 @@
-import DesktopReportsTabContent from "../../components/tab-content/DesktopReportsTabContent";
+import { ReportsTab as ReportsWidget } from "@/widgets/admin-dashboard";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type ReportsTabProps = {
@@ -6,7 +6,7 @@ type ReportsTabProps = {
 };
 
 const ReportsTab = ({ dashboard }: ReportsTabProps) => {
-  return <DesktopReportsTabContent dashboard={dashboard} />;
+  return <ReportsWidget dashboard={dashboard} />;
 };
 
 export default ReportsTab;

@@ -15,7 +15,7 @@ type DesktopReportsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
 };
 
-const DesktopReportsTabContent = ({
+const ReportsTab = ({
   dashboard,
 }: DesktopReportsTabContentProps) => {
   const {
@@ -173,4 +173,4 @@ const DesktopReportsTabContent = ({
   );
 };
 
-export default DesktopReportsTabContent;
+export default ReportsTab;

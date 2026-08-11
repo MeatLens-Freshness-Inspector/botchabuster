@@ -1,4 +1,4 @@
-import MobileReportsTabContent from "../../components/tab-content/MobileReportsTabContent";
+import { MobileReportsTab as ReportsWidget } from "@/widgets/admin-dashboard";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type ReportsTabProps = {
@@ -6,7 +6,7 @@ type ReportsTabProps = {
 };
 
 const ReportsTab = ({ dashboard }: ReportsTabProps) => {
-  return <MobileReportsTabContent dashboard={dashboard} />;
+  return <ReportsWidget dashboard={dashboard} />;
 };
 
 export default ReportsTab;
