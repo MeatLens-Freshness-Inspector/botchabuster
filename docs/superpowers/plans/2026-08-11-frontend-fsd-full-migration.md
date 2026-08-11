@@ -112,7 +112,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 - [ ] **Commit 006 — refactor: move API base URL into shared transport**
   - Change: frontend/src/integrations/api/apiBaseUrl.ts -> frontend/src/shared/api/base-url.ts + frontend/src/shared/config/env.ts + frontend/tests/unit/utilities/api-base-url.unit.test.ts.
-  - Move the API base URL and its environment read into shared ownership while preserving native and web URL behavior.
+  - Move the API base URL and its environment read into shared ownership while preserving native and web URL behavior. Update every active consumer in the same commit; do not retain a legacy forwarding module.
   - Validate: F.
 
 - [ ] **Commit 007 — refactor: move request initialization into shared transport**

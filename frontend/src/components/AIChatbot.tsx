@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { API_BASE_URL } from "@/integrations/api/apiBaseUrl";
+import { API_BASE_URL } from "@/shared/api/base-url";
 import { applyApiRequestInit, getApiCsrfToken } from "@/integrations/api/apiRequest";
 import { MessageCircle, X, Send, Loader2, Bot, User } from "lucide-react";
 

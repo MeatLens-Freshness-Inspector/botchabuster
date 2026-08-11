@@ -1,6 +1,6 @@
 import { createAuthHeaders } from "@/lib/authCache";
 import { notifyApiAuthExpired } from "./apiRequest";
-import { API_BASE_URL } from "./apiBaseUrl";
+import { API_BASE_URL } from "@/shared/api/base-url";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
 export type AuditLogEvent = {

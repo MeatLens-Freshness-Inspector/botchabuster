@@ -1,6 +1,6 @@
 import React from "react";
 import { Braces, ShieldCheck } from "lucide-react";
-import { API_BASE_URL } from "@/integrations/api/apiBaseUrl";
+import { API_BASE_URL } from "@/shared/api/base-url";
 import { ApiDocsCategoryNav } from "./ApiDocsCategoryNav";
 import { ApiDocsHistoryPanel } from "./ApiDocsHistoryPanel";
 import { ApiDocsRequestPanel } from "./ApiDocsRequestPanel";

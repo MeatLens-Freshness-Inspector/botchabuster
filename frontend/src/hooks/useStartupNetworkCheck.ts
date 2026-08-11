@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { API_BASE_URL } from "@/integrations/api/apiBaseUrl";
+import { API_BASE_URL } from "@/shared/api/base-url";
 const ENABLE_BACKEND_STARTUP_CHECK = import.meta.env.VITE_ENABLE_BACKEND_STARTUP_CHECK === "true";
 
 export type StartupNetworkStatus = "checking" | "ready" | "offline" | "server_unreachable";

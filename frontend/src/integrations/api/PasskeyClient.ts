@@ -1,6 +1,6 @@
 import { createAuthHeaders } from "@/lib/authCache";
 import type { AuthBootstrapPayload } from "./AuthClient";
-import { API_BASE_URL } from "./apiBaseUrl";
+import { API_BASE_URL } from "@/shared/api/base-url";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
 async function readApiError(response: Response, fallback: string): Promise<string> {

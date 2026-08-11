@@ -2,7 +2,7 @@ import type { Inspection, InspectionInsert } from "@/types/inspection";
 import { IS_DEMO_MODE, demoDelay, DEMO_INSPECTIONS, DEMO_STATS } from "@/lib/demoMode";
 import { createAuthHeaders } from "@/lib/authCache";
 import { notifyApiAuthExpired } from "./apiRequest";
-import { API_BASE_URL } from "./apiBaseUrl";
+import { API_BASE_URL } from "@/shared/api/base-url";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
 export type InspectionScope = "mine" | "all";

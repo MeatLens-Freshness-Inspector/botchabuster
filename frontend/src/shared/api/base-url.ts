@@ -1,4 +1,5 @@
 import { Capacitor } from "@capacitor/core";
+import { readEnvironmentValue } from "@/shared/config/env";
 
 const DEFAULT_WEB_API_BASE_URL = "http://localhost:3001/api";
 const DEFAULT_NATIVE_API_BASE_URL = "https://meatlens-backend.onrender.com/api";
@@ -37,6 +38,6 @@ export function resolveApiBaseUrl({
 }
 
 export const API_BASE_URL = resolveApiBaseUrl({
-  envApiBaseUrl: (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_API_BASE_URL,
+  envApiBaseUrl: readEnvironmentValue("VITE_API_BASE_URL"),
   isNativePlatform: Capacitor.isNativePlatform(),
 });

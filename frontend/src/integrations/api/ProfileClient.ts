@@ -1,6 +1,6 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
 import { createAuthHeaders } from "@/lib/authCache";
-import { API_BASE_URL } from "./apiBaseUrl";
+import { API_BASE_URL } from "@/shared/api/base-url";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
 async function readApiError(response: Response, fallback: string): Promise<string> {

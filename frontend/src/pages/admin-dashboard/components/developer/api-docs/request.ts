@@ -1,5 +1,5 @@
 import { createAuthHeaders } from "@/lib/authCache";
-import { API_BASE_URL } from "@/integrations/api/apiBaseUrl";
+import { API_BASE_URL } from "@/shared/api/base-url";
 import { redactJsonText, redactRecord, sanitizeUrl } from "./redaction";
 import type {
   ApiDocsBodyField,
