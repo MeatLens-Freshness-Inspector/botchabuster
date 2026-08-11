@@ -8,7 +8,7 @@
  * Migration: android/sql/migrations/002_create_pending_audit_logs.sql
  */
 
-import { openDb } from "@/shared/platform/sqlite/database";
+import { openDb } from "@/shared/platform/sqlite";
 
 // ---------------------------------------------------------------------------
 // Types (mirrors offlineAuditQueue.ts exactly)

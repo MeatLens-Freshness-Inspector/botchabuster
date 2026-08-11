@@ -354,8 +354,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the inspection queue into `features/offline-sync/model/inspection-queue.ts`, completed its public feature exports, and migrated app composition, developer options, and inspection submission consumers off `@/lib/offlineQueue`. The audit queue had already moved in the earlier offline-sync slice; this commit completes the combined queue contract without duplicating it.
   - TDD: added the inspection queue public contract first (RED on missing feature exports), then moved the queue and reached GREEN with both inspection and audit queue contract tests.
   - Validate: offline queue contract tests (2), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 068 — refactor: move SQLite database bootstrap**
-  - Change: frontend/src/lib/sqlite/db.ts -> frontend/src/shared/platform/sqlite/database.ts + frontend/src/shared/platform/sqlite/index.ts. Validate: F.
+- [x] **Commit 068 — refactor: move SQLite database bootstrap**
+  - Change: completed the shared SQLite platform boundary by adding `shared/platform/sqlite/index.ts`, exposing the existing moved `database.ts` singleton lifecycle, and migrating all current native SQLite adapters from the deep database module to the public platform API.
+  - TDD: added the shared SQLite public contract first (RED on the absent index), then added the barrel and reached GREEN without changing connection initialization or migration execution.
+  - Validate: SQLite public API unit (1), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 069 — refactor: move SQLite inspection cache**
   - Change: frontend/src/lib/sqlite/sqliteInspectionCache.ts -> frontend/src/entities/inspection/api/sqlite-cache.ts + frontend/src/features/offline-sync/model/inspection-queue.ts. Validate: I.
 - [ ] **Commit 070 — refactor: move SQLite offline queues**

@@ -12,7 +12,7 @@ import type { AuthPrimaryRole, AuthRole, AuthUser } from "@/entities/user";
 import type { Profile } from "@/entities/user/api/profile-client";
 import type { PasswordVerifierRecord } from "@/entities/user/model/offline-credentials";
 import type { StoredLocalPasskey } from "@/entities/user/model/offline-passkey";
-import { openDb } from "@/shared/platform/sqlite/database";
+import { openDb } from "@/shared/platform/sqlite";
 
 // ---------------------------------------------------------------------------
 // Types (mirrors offlineAuthEnvelope.ts exactly)
