@@ -410,8 +410,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the complete report-template strategy (selector, organization templates, and section ordering) into `features/reports/lib/templates` and migrated all template consumers/tests.
   - TDD: retained and migrated the template-selection contract alongside the ownership move; the focused template suite covers all organization/section variants.
   - Validate: focused template suite (9), typecheck, and lint (16 existing warnings) passed.
-- [ ] **Commit 082 — refactor: move report section composition**
-  - Change: frontend/src/lib/reports/shared/meatSections.ts -> frontend/src/features/reports/lib/meat-sections.ts + frontend/src/lib/reports/pdf/pageFrames.ts -> frontend/src/features/reports/lib/page-frames.ts. Validate: F.
+- [x] **Commit 082 — refactor: move report section composition**
+  - Change: moved shared meat sections and PDF page-frame policy into `features/reports/lib`, then migrated report adapters, chart generation, and document construction to the feature-owned modules.
+  - TDD: existing report-document and SVG chart contracts were migrated with the ownership boundary and exercised before commit.
+  - Validate: focused report document/chart suite (17), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 083 — refactor: split PDF document builder**
   - Change: frontend/src/lib/reports/pdf/buildDocDefinition.ts -> frontend/src/features/reports/lib/pdf/document-header.ts + frontend/src/features/reports/lib/pdf/document-sections.ts. Validate: F.
 - [ ] **Commit 084 — refactor: move report chart generation**

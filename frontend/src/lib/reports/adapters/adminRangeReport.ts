@@ -5,7 +5,7 @@ import { getTemplateKeyForOrganization } from "@/lib/reports/pdf/assets";
 import {
   buildSharedMeatDetailSection,
   buildSharedMeatSummarySection,
-} from "@/lib/reports/shared/meatSections";
+} from "@/features/reports/lib/meat-sections";
 import type {
   ReportChart,
   ReportDocumentModel,

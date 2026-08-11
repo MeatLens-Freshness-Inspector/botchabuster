@@ -1,5 +1,5 @@
 import type { ReportChart } from "@/features/reports/model/types";
-import type { ReportPageFrame } from "@/lib/reports/pdf/pageFrames";
+import type { ReportPageFrame } from "@/features/reports/lib/page-frames";
 import type { Content } from "pdfmake/interfaces";
 
 const CHART_WIDTH = 460;

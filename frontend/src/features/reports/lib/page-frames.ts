@@ -1,4 +1,4 @@
-import { getReportFrameAssetPath } from "@/lib/reports/pdf/assets";
+import { getReportFrameAssetPath } from "../../../lib/reports/pdf/assets";
 import type { ReportTemplateKey } from "@/features/reports/model/types";
 
 export interface ReportPageFrame {

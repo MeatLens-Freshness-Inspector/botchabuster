@@ -3,7 +3,7 @@ import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { getTemplateKeyForOrganization } from "@/lib/reports/pdf/assets";
 import {
   buildSharedMeatSummarySection,
-} from "@/lib/reports/shared/meatSections";
+} from "@/features/reports/lib/meat-sections";
 import type { ReportChart, ReportDocumentModel, ReportSection } from "@/features/reports/model/types";
 
 // commit 14: chart builders for inspector daily report

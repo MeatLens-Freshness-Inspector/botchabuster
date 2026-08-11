@@ -3,7 +3,7 @@ import {
   loadReportBrandAsset,
   loadOptionalReportImageAsset,
 } from "@/lib/reports/pdf/assets";
-import { getReportPageFrame } from "@/lib/reports/pdf/pageFrames";
+import { getReportPageFrame } from "@/features/reports/lib/page-frames";
 import { buildReportChartContent } from "@/lib/reports/pdf/reportCharts";
 import { getOrganizationReportTemplate } from "@/features/reports/lib/templates";
 import type {
