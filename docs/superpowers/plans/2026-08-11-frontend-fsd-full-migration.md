@@ -390,8 +390,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: extracted binary-mask erosion/dilation/component selection into `mask-morphology.ts` and color-based foreground/fallback image segmentation into `roi-segmentation.ts`; the pipeline now delegates its public segmentation contract.
   - TDD: added morphology behavior before implementation (RED on the absent module, then GREEN with a stable central-region test).
   - Validate: focused morphology test, lint (16 existing warnings), typecheck, and architecture checks passed.
-- [ ] **Commit 077 — refactor: split tensor and label processing**
-  - Change: frontend/src/lib/offlineAnalysis/meatLensPipeline.ts -> frontend/src/features/offline-analysis/lib/tensor-data.ts + frontend/src/features/offline-analysis/lib/classification.ts. Validate: F.
+- [x] **Commit 077 — refactor: split tensor and label processing**
+  - Change: extracted RGB/model tensor preparation into `tensor-data.ts` and label normalization, probability normalization, and prediction parsing into `classification.ts`; the existing pipeline exports feature-owned implementations.
+  - TDD: added tensor-layout and uncertain-class tests before implementation (RED on absent modules, then GREEN with two focused tests).
+  - Validate: focused tensor/classification tests (2), typecheck, and architecture checks passed.
 - [ ] **Commit 078 — refactor: move ensemble scoring**
   - Change: frontend/src/lib/offlineAnalysis/ensemble.ts -> frontend/src/features/offline-analysis/lib/ensemble.ts + frontend/src/features/offline-analysis/lib/freshness-score.ts. Validate: F.
 - [ ] **Commit 079 — refactor: create bounded analysis facade**

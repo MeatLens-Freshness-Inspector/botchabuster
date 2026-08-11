@@ -6,6 +6,16 @@ import {
 import {
   applyRoiSegmentationWithFallback as applyFeatureRoiSegmentationWithFallback,
 } from "@/features/offline-analysis/lib/roi-segmentation";
+import {
+  buildImageTensorData as buildFeatureImageTensorData,
+  preprocessRgbPixel as preprocessFeatureRgbPixel,
+} from "@/features/offline-analysis/lib/tensor-data";
+import {
+  normalizeClassificationLabel as normalizeFeatureClassificationLabel,
+  normalizeModelProbabilities as normalizeFeatureModelProbabilities,
+  parsePrediction as parseFeaturePrediction,
+  resolveOutputLabels as resolveFeatureOutputLabels,
+} from "@/features/offline-analysis/lib/classification";
 
 export {
   resolveCenteredObjectCoverGuideBox,
@@ -455,7 +465,7 @@ export function resolvePreprocessMode(
   return fallbackMode;
 }
 
-export function preprocessRgbPixel(
+function preprocessLegacyRgbPixel(
   pixel: { r: number; g: number; b: number },
   preprocessMode: ModelPreprocessMode
 ): [number, number, number] {
@@ -478,7 +488,7 @@ export function preprocessRgbPixel(
   }
 }
 
-export function buildImageTensorData(
+function buildLegacyImageTensorData(
   imageData: ImageData,
   channelsFirst: boolean,
   preprocessMode: ModelPreprocessMode
@@ -533,7 +543,7 @@ export function buildImageTensorData(
   return output;
 }
 
-export function normalizeClassificationLabel(label: string): FreshnessClassification {
+function normalizeLegacyClassificationLabel(label: string): FreshnessClassification {
   const normalized = label.trim().toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
 
   if (normalized === "not fresh" || normalized === "notfresh") {
@@ -559,7 +569,7 @@ export function normalizeClassificationLabel(label: string): FreshnessClassifica
   return "not fresh";
 }
 
-export function resolveOutputLabels(classCount: number, metadataLabelOrder?: string[] | null): FreshnessClassification[] {
+function resolveLegacyOutputLabels(classCount: number, metadataLabelOrder?: string[] | null): FreshnessClassification[] {
   const normalizedMetadataOrder = (metadataLabelOrder ?? [])
     .map((label) => label.trim())
     .filter((label) => label.length > 0)
@@ -591,7 +601,7 @@ function softmax(values: number[]): number[] {
   return exponentials.map((value) => value / denominator);
 }
 
-export function normalizeModelProbabilities(values: number[]): number[] {
+function normalizeLegacyModelProbabilities(values: number[]): number[] {
   if (values.length === 0) {
     return [];
   }
@@ -606,7 +616,7 @@ export function normalizeModelProbabilities(values: number[]): number[] {
   return softmax(values);
 }
 
-export function parsePrediction(probabilities: number[], labelOrder: string[]): {
+function parseLegacyPrediction(probabilities: number[], labelOrder: string[]): {
   predictedClass: FreshnessClassification;
   confidence: number;
   confidencePercent: number;
@@ -675,6 +685,13 @@ export function parsePrediction(probabilities: number[], labelOrder: string[]): 
     probabilitiesByLabel,
   };
 }
+
+export const preprocessRgbPixel = preprocessFeatureRgbPixel;
+export const buildImageTensorData = buildFeatureImageTensorData;
+export const normalizeClassificationLabel = normalizeFeatureClassificationLabel;
+export const resolveOutputLabels = resolveFeatureOutputLabels;
+export const normalizeModelProbabilities = normalizeFeatureModelProbabilities;
+export const parsePrediction = parseFeaturePrediction;
 
 function mapToScoringClass(
   classification: FreshnessClassification
