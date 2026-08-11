@@ -1,5 +1,7 @@
-import { ProfileHelpPageView } from "@/pages/user/tutorials/components/ProfileHelpPageView";
-import { useProfileHelpPage } from "@/pages/user/tutorials/hooks/useProfileHelpPage";
+import {
+  ProfileHelpPageView,
+  useProfileHelpPage,
+} from "@/features/tutorials";
 
 const ProfileHelpPage = () => {
   const profileHelpPage = useProfileHelpPage();

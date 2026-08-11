@@ -60,7 +60,7 @@ import {
   getSaveButtonLabel,
   normalizeMarketLocationNames,
   resolveSelectedLocation,
-} from "../../../pages/user/inspections/utils/inspectPage";
+} from "./inspect-page";
 
 export function useInspectionWorkspace(): InspectPageViewModel {
   const { user, profile, isAdmin } = useAuth();

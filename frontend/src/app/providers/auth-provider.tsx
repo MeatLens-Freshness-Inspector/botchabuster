@@ -50,7 +50,7 @@ import {
   getLegacyOfflineUnlockRequired,
   getLegacyStoredLocalPasskey,
   getStoredLocalPasskey,
-} from "@/legacy-passkey-storage";
+} from "@/features/passkeys";
 import type { AuthMode, ProfileStatus } from "@/entities/user";
 import {
   createAnonymousSessionState,

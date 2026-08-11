@@ -1,5 +1,7 @@
-import { ProfileTutorialPageView } from "@/pages/user/tutorials/components/ProfileTutorialPageView";
-import { useProfileTutorialPage } from "@/pages/user/tutorials/hooks/useProfileTutorialPage";
+import {
+  ProfileTutorialPageView,
+  useProfileTutorialPage,
+} from "@/features/tutorials";
 
 const ProfileTutorialPage = () => {
   const profileTutorialPage = useProfileTutorialPage();

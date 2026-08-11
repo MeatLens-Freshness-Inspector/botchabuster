@@ -162,8 +162,8 @@ test("InspectionsTabContent paginates admin inspections to 10 items per page", a
   } as unknown as AdminDashboardPageViewModel;
 
   try {
-    const { default: InspectionsTabContent } = await import(
-      "../../../src/pages/admin-dashboard/components/tab-content/InspectionsTabContent"
+    const { InspectionsTab: InspectionsTabContent } = await import(
+      "../../../src/widgets/admin-dashboard"
     );
 
     await act(async () => {

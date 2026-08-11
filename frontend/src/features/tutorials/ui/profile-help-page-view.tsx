@@ -7,12 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { TutorialPlayer } from "@/features/tutorials";
-import type { ProfileHelpPageViewModel } from "../types";
+import { TutorialPlayer } from "./tutorial-player";
+import type { ProfileHelpPageViewModel } from "../model/profile-tutorial-page-types";
 import {
   PROFILE_HELP_DESCRIPTION,
   PROFILE_HELP_TITLE,
-} from "../utils/tutorialPages";
+} from "../model/profile-tutorial-page";
 
 type ProfileHelpPageViewProps = ProfileHelpPageViewModel;
 

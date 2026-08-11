@@ -20,3 +20,7 @@ export type {
 } from "./model/profile-tutorial";
 export { TutorialPlayer } from "./ui/tutorial-player";
 export { TutorialScene } from "./ui/tutorial-scene";
+export { ProfileHelpPageView } from "./ui/profile-help-page-view";
+export { ProfileTutorialPageView } from "./ui/profile-tutorial-page-view";
+export { useProfileHelpPage } from "./model/use-profile-help-page";
+export { useProfileTutorialPage } from "./model/use-profile-tutorial-page";

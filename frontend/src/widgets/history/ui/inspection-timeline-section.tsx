@@ -3,8 +3,8 @@ import { Input } from "@/shared/ui";
 import { InspectionListItem } from "@/entities/inspection";
 import { Loader2, ClipboardList, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Inspection } from "@/entities/inspection";
-import type { FilterOption } from "../types";
-import { HISTORY_FILTER_OPTIONS } from "../utils/historyPage";
+import type { FilterOption } from "../model/types";
+import { HISTORY_FILTER_OPTIONS } from "../model/history-page";
 
 type InspectionTimelineSectionProps = {
   activeFilter: FilterOption;

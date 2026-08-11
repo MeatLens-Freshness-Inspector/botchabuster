@@ -1,11 +1,11 @@
-import { TutorialPlayer } from "@/features/tutorials";
-import { firstRunOnboardingSteps } from "@/features/tutorials";
-import type { ProfileTutorialPageViewModel } from "../types";
+import { firstRunOnboardingSteps } from "../model/inspection-tutorial";
+import { TutorialPlayer } from "./tutorial-player";
+import type { ProfileTutorialPageViewModel } from "../model/profile-tutorial-page-types";
 import {
   PROFILE_TUTORIAL_COMPLETION_BODY,
   PROFILE_TUTORIAL_COMPLETION_TITLE,
   PROFILE_TUTORIAL_FINISH_LABEL,
-} from "../utils/tutorialPages";
+} from "../model/profile-tutorial-page";
 
 type ProfileTutorialPageViewProps = ProfileTutorialPageViewModel;
 

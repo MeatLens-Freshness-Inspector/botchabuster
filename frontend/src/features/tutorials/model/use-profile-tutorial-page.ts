@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import type { ProfileTutorialPageViewModel } from "../types";
-import { PROFILE_TUTORIAL_SECONDARY_ACTION_LABEL } from "../utils/tutorialPages";
+import type { ProfileTutorialPageViewModel } from "./profile-tutorial-page-types";
+import { PROFILE_TUTORIAL_SECONDARY_ACTION_LABEL } from "./profile-tutorial-page";
 
 export function useProfileTutorialPage(): ProfileTutorialPageViewModel {
   const navigate = useNavigate();

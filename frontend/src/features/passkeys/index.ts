@@ -20,3 +20,14 @@ export {
   verifyLocalPasskeyAssertion,
   type StoredLocalPasskey,
 } from "./lib/local-unlock";
+export {
+  clearLegacyOfflineUnlockRequired,
+  clearLegacyStoredLocalPasskey,
+  clearStoredLocalPasskey,
+  getLegacyOfflineUnlockRequired,
+  getLegacyStoredLocalPasskey,
+  getStoredLocalPasskey,
+  isOfflineUnlockRequired,
+  setOfflineUnlockRequired,
+  storeLocalPasskey,
+} from "./model/local-passkey-storage";

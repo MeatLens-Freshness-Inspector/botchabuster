@@ -9,7 +9,7 @@ import type { FilterOption, HistoryMonthlyCount } from "./types";
 import {
   buildDetailedHistoryReportPdfModel,
   buildHistorySearchText,
-} from "../../../pages/user/history/utils/historyPage";
+} from "./history-page";
 
 const PAGE_SIZE = 6;
 

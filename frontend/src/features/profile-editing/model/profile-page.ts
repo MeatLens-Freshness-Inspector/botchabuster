@@ -1,5 +1,5 @@
 import type { RegisteredPasskey } from "@/features/passkeys/api/passkey-client";
-import { getStoredLocalPasskey } from "@/legacy-passkey-storage";
+import { getStoredLocalPasskey } from "@/features/passkeys";
 
 export function getProfileInitials(fullName: string, email: string | null | undefined): string {
   const source = fullName.trim() || email || "User";

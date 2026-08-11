@@ -1,7 +1,7 @@
 /**
  * image-quality.spec.ts
  *
- * Unit-style tests for src/lib/imageQuality.ts.
+ * Unit-style tests for the inspection-capture image-quality slice.
  * Follows the same pattern as meatlens-pipeline.spec.ts:
  * pure function imports, no browser interaction required.
  *

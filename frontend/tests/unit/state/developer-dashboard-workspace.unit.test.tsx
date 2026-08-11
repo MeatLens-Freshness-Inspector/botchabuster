@@ -5,7 +5,7 @@ import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { developerDashboardClient, DEFAULT_DEVELOPER_DATASET_FILTERS, type DeveloperDatasetListResponse } from "../../../src/entities/developer-metrics";
-import { DeveloperDatasetsSection } from "../../../src/pages/admin-dashboard/components/developer/DeveloperDatasetsSection";
+import { DeveloperDatasetsSection } from "../../../src/features/developer-tools";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -348,7 +348,7 @@ test("developer workspace renders the five internal tabs", async () => {
 
   try {
     globalThis.fetch = createDeveloperDashboardFetch();
-    const { default: DeveloperTabContent } = await import("../../../src/pages/admin-dashboard/components/tab-content/DeveloperTabContent");
+    const { DeveloperTabContent } = await import("../../../src/widgets/admin-dashboard");
 
     await act(async () => {
       root.render(<DeveloperTabContent />);
@@ -386,7 +386,7 @@ test("dataset export button calls the developer dashboard export endpoint", asyn
         exportCalls += 1;
       },
     });
-    const { default: DeveloperTabContent } = await import("../../../src/pages/admin-dashboard/components/tab-content/DeveloperTabContent");
+    const { DeveloperTabContent } = await import("../../../src/widgets/admin-dashboard");
 
     await act(async () => {
       root.render(<DeveloperTabContent />);
@@ -420,7 +420,7 @@ test("developer datasets show confidence scores as raw percentages", async () =>
 
   try {
     globalThis.fetch = createDeveloperDashboardFetch({ datasets: developerDatasetRows });
-    const { default: DeveloperTabContent } = await import("../../../src/pages/admin-dashboard/components/tab-content/DeveloperTabContent");
+    const { DeveloperTabContent } = await import("../../../src/widgets/admin-dashboard");
 
     await act(async () => {
       root.render(<DeveloperTabContent />);
@@ -490,7 +490,7 @@ test("developer overview derives in-app calculations from dataset manual classif
         },
       ],
     });
-    const { default: DeveloperTabContent } = await import("../../../src/pages/admin-dashboard/components/tab-content/DeveloperTabContent");
+    const { DeveloperTabContent } = await import("../../../src/widgets/admin-dashboard");
 
     await act(async () => {
       root.render(<DeveloperTabContent />);

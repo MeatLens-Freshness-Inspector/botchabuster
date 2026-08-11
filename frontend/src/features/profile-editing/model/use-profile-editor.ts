@@ -13,14 +13,14 @@ import {
 import {
   clearStoredLocalPasskey,
   storeLocalPasskey,
-} from "../../../legacy-passkey-storage";
+} from "@/features/passkeys";
 import { applyTheme } from "@/shared/lib/theme-preference";
 import {
   createProfileDialogState,
   type ProfileDialogKey,
   type ProfileDialogState,
 } from "@/entities/user";
-import { applyLocalDeviceReady, getProfileInitials } from "../../../pages/user/profile/utils/profilePage";
+import { applyLocalDeviceReady, getProfileInitials } from "./profile-page";
 
 const INITIAL_DIALOG_STATE: ProfileDialogState = createProfileDialogState();
 

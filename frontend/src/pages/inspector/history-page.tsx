@@ -1,6 +1,8 @@
-import { HistoryHeader } from "../user/history/components/HistoryHeader";
-import { InspectionTimelineSection } from "../user/history/components/InspectionTimelineSection";
-import { HistorySidebar } from "../user/history/components/HistorySidebar";
+import {
+  HistoryHeader,
+  HistorySidebar,
+  InspectionTimelineSection,
+} from "@/widgets/history";
 import { InspectionDetailSheet } from "@/widgets/inspection-history/ui/inspection-detail-sheet";
 import { useHistory } from "@/widgets/history/model/use-history";
 

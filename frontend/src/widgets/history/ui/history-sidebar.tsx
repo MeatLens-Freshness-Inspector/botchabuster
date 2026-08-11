@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { BarChart3 } from "lucide-react";
 import type { FreshnessClassification } from "@/entities/inspection";
-import type { HistoryMonthlyCount } from "../types";
+import type { HistoryMonthlyCount } from "../model/types";
 import {
   getHistoryClassificationColorClass,
   HISTORY_CLASSIFICATIONS,
-} from "../utils/historyPage";
+} from "../model/history-page";
 
 type HistorySidebarProps = {
   classificationCounts: Record<FreshnessClassification, number>;

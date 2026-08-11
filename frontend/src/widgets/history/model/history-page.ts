@@ -9,7 +9,7 @@ import type {
 import type {
   DetailedHistoryReportInput,
   HistoryFilterOption,
-} from "../types";
+} from "./types";
 
 export const HISTORY_FILTER_OPTIONS: HistoryFilterOption[] = [
   { key: "all", label: "All" },

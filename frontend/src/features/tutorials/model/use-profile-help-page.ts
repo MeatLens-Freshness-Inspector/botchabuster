@@ -4,12 +4,12 @@ import {
   helpCards,
   isTutorialId,
   type HelpCardDefinition,
-} from "@/features/tutorials";
-import type { ProfileHelpPageViewModel } from "../types";
+} from "./profile-tutorial";
+import type { ProfileHelpPageViewModel } from "./profile-tutorial-page-types";
 import {
   getActiveTutorialSteps,
   getActiveTutorialTitle,
-} from "../utils/tutorialPages";
+} from "./profile-tutorial-page";
 
 export function useProfileHelpPage(): ProfileHelpPageViewModel {
   const navigate = useNavigate();

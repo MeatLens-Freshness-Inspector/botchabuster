@@ -1,9 +1,9 @@
 import {
-  helpTutorialCards,
   tutorialDefinitions,
   type TutorialId,
   type TutorialStepDefinition,
-} from "@/features/tutorials";
+} from "./inspection-tutorial";
+import { helpTutorialCards } from "./profile-tutorial";
 
 export const PROFILE_TUTORIAL_FINISH_LABEL = "Back to Profile";
 

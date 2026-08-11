@@ -152,8 +152,8 @@ test("summary shows the existing KPIs without the removed inspection-volume char
   const root: Root = createRoot(container);
 
   try {
-    const { default: AdminDashboardSummary } = await import(
-      "../../../src/pages/admin-dashboard/components/AdminDashboardSummary"
+    const { AdminDashboardSummary } = await import(
+      "../../../src/widgets/admin-dashboard"
     );
 
     await act(async () => {

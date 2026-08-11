@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { API_DOCS_OPERATIONS } from "../../../src/pages/admin-dashboard/components/developer/api-docs/catalog";
+import { API_DOCS_OPERATIONS } from "../../../src/features/developer-tools";
 
 test("API docs category counts match the registered backend route audit", () => {
   const counts = Object.fromEntries(
