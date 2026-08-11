@@ -1,6 +1,6 @@
 import { ClipboardList, MapPin, Hash, ArrowLeft } from "lucide-react";
 import { MockHotspot } from "@/components/tutorial/MockHotspot";
-import type { TutorialStepDefinition } from "@/lib/tutorials/tutorialDefinitions";
+import type { TutorialStepDefinition } from "@/features/tutorials";
 
 interface HistoryMockSceneProps {
   step: TutorialStepDefinition;

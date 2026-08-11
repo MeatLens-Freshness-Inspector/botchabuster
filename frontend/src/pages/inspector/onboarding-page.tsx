@@ -1,5 +1,5 @@
 import { TutorialPlayer } from "@/components/tutorial/TutorialPlayer";
-import { firstRunOnboardingSteps } from "@/lib/tutorials/tutorialDefinitions";
+import { firstRunOnboardingSteps } from "@/features/tutorials";
 import {
   OnboardingPageView,
   ONBOARDING_COMPLETION_BODY,

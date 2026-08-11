@@ -4,7 +4,7 @@ import {
   helpCards,
   isTutorialId,
   type HelpCardDefinition,
-} from "@/lib/tutorials/tutorialDefinitions";
+} from "@/features/tutorials";
 import type { ProfileHelpPageViewModel } from "../types";
 import {
   getActiveTutorialSteps,

@@ -1,4 +1,4 @@
-import type { TutorialStepDefinition } from "@/lib/tutorials/tutorialDefinitions";
+import type { TutorialStepDefinition } from "@/features/tutorials";
 import { SafetyMockScene } from "@/components/tutorial/scenes/SafetyMockScene";
 import { ProfileMockScene } from "@/components/tutorial/scenes/ProfileMockScene";
 import { InspectMockScene } from "@/components/tutorial/scenes/InspectMockScene";

@@ -3,7 +3,7 @@ import {
   tutorialDefinitions,
   type TutorialId,
   type TutorialStepDefinition,
-} from "@/lib/tutorials/tutorialDefinitions";
+} from "@/features/tutorials";
 
 export const PROFILE_TUTORIAL_FINISH_LABEL = "Back to Profile";
 

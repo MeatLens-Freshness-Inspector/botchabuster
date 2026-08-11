@@ -2,7 +2,7 @@ import type {
   HelpCardDefinition,
   TutorialId,
   TutorialStepDefinition,
-} from "@/lib/tutorials/tutorialDefinitions";
+} from "@/features/tutorials";
 
 export interface TutorialSecondaryAction {
   label: string;
