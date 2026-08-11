@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Inspection } from "@/types/inspection";
 import { FreshnessBadge } from "@/components/FreshnessBadge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/shared/ui/dialog";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
 import { cn } from "@/shared/lib/utils";

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/shared/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/shared/ui";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/shared/ui";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/shared/lib/utils";
 import type {

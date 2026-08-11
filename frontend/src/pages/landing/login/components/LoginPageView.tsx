@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/shared/ui";
 import { useLoginPage } from "../hooks/useLoginPage";
 import { getLoginDescription } from "../utils/loginPage";
 

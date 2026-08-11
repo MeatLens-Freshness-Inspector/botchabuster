@@ -87,6 +87,7 @@ No class, context, hook, component, service, or module may become a god object. 
 - `entities` may import from `shared`.
 - `shared` imports only external packages and other shared modules.
 - Cross-slice imports use the exporting slice's `index.ts`; deep imports are prohibited outside the slice.
+- Shared UI keeps a lightweight top-level public API for foundational primitives. Browser-sensitive primitives with optional portal/focus-management dependencies expose dedicated public entry modules such as `shared/ui/dialog.tsx`, preventing unrelated consumers from eagerly evaluating those dependencies during SSR and test discovery.
 - Do not introduce compatibility re-exports, legacy aliases, or a parallel legacy layer. A migration commit moves a bounded slice together with every consumer it changes; any unavoidable bridge must be resolved in that same commit and cannot persist into the next commit.
 
 The dependency rules will be checked through ESLint restricted-import rules and a focused architecture test or script, so violations fail local validation and CI instead of relying on convention.

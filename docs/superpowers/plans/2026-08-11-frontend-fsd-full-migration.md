@@ -150,8 +150,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Update all import consumers through frontend/src/shared/ui/index.ts.
   - Validate: F.
 
-- [ ] **Commit 014 — refactor: move dialog and form UI primitives**
-  - Change: frontend/src/components/ui/dialog.tsx -> frontend/src/shared/ui/dialog.tsx + frontend/src/components/ui/form.tsx -> frontend/src/shared/ui/form.tsx.
+- [x] **Commit 014 — refactor: move dialog and form UI primitives**
+  - Change: frontend/src/components/ui/dialog.tsx -> frontend/src/shared/ui/dialog.tsx + frontend/src/components/ui/form.tsx -> frontend/src/shared/ui/form.tsx + frontend/src/components/ui/label.tsx -> frontend/src/shared/ui/label.tsx.
+  - Keep the lightweight shared/ui barrel free of the browser-sensitive dialog module; use shared/ui/dialog.tsx as its dedicated public entry and shared/ui/form.tsx/shared/ui/label.tsx as the form public entries.
   - Validate: F.
 
 - [ ] **Commit 015 — refactor: decompose shared sidebar primitive**

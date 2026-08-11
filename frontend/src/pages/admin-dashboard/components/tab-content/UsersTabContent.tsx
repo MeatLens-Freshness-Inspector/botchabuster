@@ -35,9 +35,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/shared/ui";
 import {
   Select,
   SelectContent,

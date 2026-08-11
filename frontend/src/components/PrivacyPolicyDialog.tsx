@@ -4,7 +4,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/shared/ui/dialog";
 import { PrivacyPolicyContent } from "@/components/PrivacyPolicyContent";
 
 interface PrivacyPolicyDialogProps {

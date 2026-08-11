@@ -6,7 +6,7 @@ import { developerOptionsClient } from "@/integrations/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/shared/ui";
 import { Switch } from "@/components/ui/switch";
 import {
   clearDeveloperAnalysisSnapshot,

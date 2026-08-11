@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/shared/ui";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/shared/ui";
 import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
 
 type DesktopReportsTabContentProps = {

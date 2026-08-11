@@ -1,7 +1,7 @@
 import { Loader2, UserRound } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/shared/ui";
 
 type ProfileEditableDetailsCardProps = {
   email: string;

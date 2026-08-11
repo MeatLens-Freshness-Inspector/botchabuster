@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/shared/ui/dialog";
 import { getConfidenceFillClass, getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
 import { cn } from "@/shared/lib/utils";

@@ -1,7 +1,7 @@
 import { Download } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
-import { Label } from "@/components/ui/label";
+import { Label } from "@/shared/ui";
 import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
 
 type MobileReportsTabContentProps = {
