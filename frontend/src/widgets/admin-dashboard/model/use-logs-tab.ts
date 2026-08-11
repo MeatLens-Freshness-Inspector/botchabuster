@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { auditLogClient, type AuditLogEntry } from "@/entities/audit-log";
 
@@ -6,7 +6,7 @@ export function useLogsTab() {
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [logsLoading, setLogsLoading] = useState(false);
 
-  const loadAuditLogs = async () => {
+  const loadAuditLogs = useCallback(async () => {
     setLogsLoading(true);
     try {
       setAuditLogs(await auditLogClient.listRecent(200));
@@ -17,7 +17,7 @@ export function useLogsTab() {
     } finally {
       setLogsLoading(false);
     }
-  };
+  }, []);
 
   return { auditLogs, loadAuditLogs, logsLoading };
 }

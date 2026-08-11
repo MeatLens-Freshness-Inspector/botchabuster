@@ -9,7 +9,7 @@ import {
 } from "@/shared/ui/card";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
-import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type DesktopReportsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;

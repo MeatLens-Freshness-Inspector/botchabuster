@@ -10,7 +10,7 @@ import {
 } from "@/shared/ui/card";
 import { Input } from "@/shared/ui";
 import { SmartPagination } from "@/shared/ui/SmartPagination";
-import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 import { getInspectorLabel } from "@/widgets/admin-dashboard";
 
 type InspectionsTabContentProps = {

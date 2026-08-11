@@ -11,12 +11,7 @@ export type AdminDashboardTabKey =
   | "logs"
   | "developer";
 
-export type DeveloperWorkspaceTabKey =
-  | "overview"
-  | "settings"
-  | "api-docs"
-  | "datasets"
-  | "training";
+export type { DeveloperWorkspaceTabKey } from "@/features/developer-tools/model/types";
 
 export type RoleStat = {
   role: string;

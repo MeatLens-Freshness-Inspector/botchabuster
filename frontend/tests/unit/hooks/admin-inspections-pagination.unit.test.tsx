@@ -5,7 +5,7 @@ import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { Inspection } from "../../../src/entities/inspection";
-import type { AdminDashboardPageViewModel } from "../../../src/pages/admin-dashboard/hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "../../../src/widgets/admin-dashboard";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;

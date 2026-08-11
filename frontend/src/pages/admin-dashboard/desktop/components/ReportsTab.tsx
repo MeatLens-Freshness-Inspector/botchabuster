@@ -1,5 +1,5 @@
 import DesktopReportsTabContent from "../../components/tab-content/DesktopReportsTabContent";
-import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type ReportsTabProps = {
   dashboard: AdminDashboardPageViewModel;

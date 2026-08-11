@@ -11,3 +11,7 @@ export { useUserActions } from "./model/use-user-actions";
 export { useUsersTab } from "./model/use-users-tab";
 export { useLogFilters } from "./model/use-log-filters";
 export { useLogsTab } from "./model/use-logs-tab";
+export {
+  useAdminDashboard,
+  type AdminDashboardPageViewModel,
+} from "./model/use-admin-dashboard";

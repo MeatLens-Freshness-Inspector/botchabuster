@@ -1,6 +1,6 @@
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Dialog, DialogContent } from "@/shared/ui/dialog";
-import type { AdminDashboardPageViewModel } from "../hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type AdminDashboardDialogsProps = {
   dashboard: AdminDashboardPageViewModel;

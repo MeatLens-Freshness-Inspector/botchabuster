@@ -1,5 +1,5 @@
 import InspectionsTabContent from "../../components/tab-content/InspectionsTabContent";
-import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type InspectionsTabProps = {
   dashboard: AdminDashboardPageViewModel;

@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 import AdminDashboardDialogs from "./AdminDashboardDialogs";
 import AdminDashboardSummary from "./AdminDashboardSummary";
-import { useAdminDashboardPage } from "../hooks/useAdminDashboardPage";
+import { useAdminDashboard } from "@/widgets/admin-dashboard";
 import type { AdminDashboardTabKey } from "@/widgets/admin-dashboard";
 import AccessCodesTab from "../desktop/components/AccessCodesTab";
 import DeveloperTab from "../desktop/components/DeveloperTab";
@@ -17,7 +17,7 @@ import UsersTab from "../desktop/components/UsersTab";
 
 function renderDesktopTab(
   activeTab: AdminDashboardTabKey,
-  dashboard: ReturnType<typeof useAdminDashboardPage>,
+  dashboard: ReturnType<typeof useAdminDashboard>,
 ) {
   switch (activeTab) {
     case "overview":
@@ -40,7 +40,7 @@ function renderDesktopTab(
 }
 
 export default function AdminDashboardDesktopPage() {
-  const dashboard = useAdminDashboardPage();
+  const dashboard = useAdminDashboard();
 
   if (dashboard.loading) {
     return (

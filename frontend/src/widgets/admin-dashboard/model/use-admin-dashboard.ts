@@ -19,11 +19,7 @@ import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { composeReportPdf } from "@/features/reports";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import { buildDeveloperInAppMetrics } from "@/features/developer-tools";
-import type {
-  ReportDailyTrendRow,
-  ReportLocationBreakdown,
-  ReportRow,
-} from "@/widgets/admin-dashboard";
+import type { ReportDailyTrendRow, ReportLocationBreakdown, ReportRow } from "./types";
 import {
   ADMIN_DASHBOARD_CHART_CONFIG,
   ADMIN_DASHBOARD_MOBILE_CATEGORY_AXIS_PROPS,
@@ -42,16 +38,16 @@ import {
   parsePayloadSource,
   parsePayloadText,
   toCsvValue,
-  useDashboardSession,
-  useInspectionsTab,
-  useLogFilters,
-  useLogsTab,
-  useUserActions,
-  useOverviewTab,
-  useUsersTab,
-} from "@/widgets/admin-dashboard";
+} from "../lib/dashboard";
+import { useDashboardSession } from "./use-dashboard-session";
+import { useInspectionsTab } from "./use-inspections-tab";
+import { useLogFilters } from "./use-log-filters";
+import { useLogsTab } from "./use-logs-tab";
+import { useOverviewTab } from "./use-overview-tab";
+import { useUserActions } from "./use-user-actions";
+import { useUsersTab } from "./use-users-tab";
 
-export function useAdminDashboardPage() {
+export function useAdminDashboard() {
   const {
     activeTab,
     isDeveloper,
@@ -880,5 +876,5 @@ export function useAdminDashboardPage() {
 }
 
 export type AdminDashboardPageViewModel = ReturnType<
-  typeof useAdminDashboardPage
+  typeof useAdminDashboard
 >;

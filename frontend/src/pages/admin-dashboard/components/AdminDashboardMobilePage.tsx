@@ -10,7 +10,7 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import AdminDashboardDialogs from "./AdminDashboardDialogs";
 import AdminDashboardSummary from "./AdminDashboardSummary";
-import { useAdminDashboardPage } from "../hooks/useAdminDashboardPage";
+import { useAdminDashboard } from "@/widgets/admin-dashboard";
 import type { AdminDashboardTabKey } from "@/widgets/admin-dashboard";
 import AccessCodesTab from "../mobile/components/AccessCodesTab";
 import DeveloperTab from "../mobile/components/DeveloperTab";
@@ -23,7 +23,7 @@ import UsersTab from "../mobile/components/UsersTab";
 
 function renderMobileTab(
   activeTab: AdminDashboardTabKey,
-  dashboard: ReturnType<typeof useAdminDashboardPage>,
+  dashboard: ReturnType<typeof useAdminDashboard>,
 ) {
   switch (activeTab) {
     case "overview":
@@ -46,7 +46,7 @@ function renderMobileTab(
 }
 
 export default function AdminDashboardMobilePage() {
-  const dashboard = useAdminDashboardPage();
+  const dashboard = useAdminDashboard();
 
   if (dashboard.loading) {
     return (

@@ -1,5 +1,5 @@
 import DeveloperTabContent from "../../components/tab-content/DeveloperTabContent";
-import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type DeveloperTabProps = {
   dashboard: AdminDashboardPageViewModel;

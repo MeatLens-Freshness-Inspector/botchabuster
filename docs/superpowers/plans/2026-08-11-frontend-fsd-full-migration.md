@@ -576,8 +576,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: extracted report date range/filter state and report-tab validation/file-suffix coordination into bounded report feature and widget model hooks.
   - TDD: added the report-state public contract before extraction (RED on missing exports, then GREEN after composition).
   - Validate: focused report-state test, typecheck, and lint (15 existing warnings) passed.
-- [ ] **Commit 120 — refactor: compose bounded dashboard workspace hook**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-admin-dashboard.ts + frontend/src/pages/admin-dashboard/hooks/useDeveloperDashboard.ts -> frontend/src/features/developer-tools/model/use-developer-dashboard.ts. Validate: I.
+- [x] **Commit 120 — refactor: compose bounded dashboard workspace hook**
+  - Change: moved the dashboard orchestration hook to the admin-dashboard widget model and the developer workspace hook to the developer-tools feature model; route components now consume public FSD APIs.
+  - TDD: added the dashboard-composition public contract before relocation (RED on missing exports, then GREEN after public API wiring).
+  - Validate: focused composition test, typecheck, architecture, and lint (15 existing warnings) passed.
 - [ ] **Commit 121 — refactor: split overview tab UI**
   - Change: frontend/src/pages/admin-dashboard/components/tab-content/OverviewTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/overview/summary-cards.tsx + frontend/src/widgets/admin-dashboard/ui/overview/inspection-chart.tsx. Validate: F.
 - [ ] **Commit 122 — refactor: complete overview tab widget**

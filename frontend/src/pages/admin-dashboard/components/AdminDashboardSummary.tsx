@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import type { ComponentType } from "react";
 import { Button } from "@/shared/ui";
-import type { AdminDashboardPageViewModel } from "../hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type AdminDashboardSummaryProps = {
   dashboard: AdminDashboardPageViewModel;

@@ -1,5 +1,5 @@
 import MarketsTabContent from "../../components/tab-content/MarketsTabContent";
-import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type MarketsTabProps = {
   dashboard: AdminDashboardPageViewModel;

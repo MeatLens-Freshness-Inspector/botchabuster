@@ -10,8 +10,8 @@ import {
 } from "@/entities/developer-metrics";
 import type { FreshnessClassification } from "@/entities/inspection";
 import type { Inspection } from "@/entities/inspection";
-import { buildDeveloperInAppMetrics } from "@/features/developer-tools";
-import type { DeveloperWorkspaceTabKey } from "@/widgets/admin-dashboard";
+import { buildDeveloperInAppMetrics } from "../lib/in-app-metrics";
+import type { DeveloperWorkspaceTabKey } from "./types";
 
 const OVERVIEW_DATASET_FILTERS: DeveloperDatasetFilterState = {
   ...DEFAULT_DEVELOPER_DATASET_FILTERS,

@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { SmartPagination } from "@/shared/ui/SmartPagination";
-import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 import {
   parsePayloadActor,
   parsePayloadSource,

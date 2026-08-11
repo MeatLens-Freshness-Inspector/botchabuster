@@ -1,5 +1,5 @@
 import AccessCodesTabContent from "../../components/tab-content/AccessCodesTabContent";
-import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type AccessCodesTabProps = {
   dashboard: AdminDashboardPageViewModel;
