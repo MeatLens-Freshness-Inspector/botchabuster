@@ -1,0 +1,18 @@
+export const ROUTE_PATHS = {
+  landing: "/",
+  login: "/login",
+  signup: "/signup",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
+  onboarding: "/onboarding",
+  inspect: "/inspect",
+  history: "/history",
+  messages: "/messages",
+  dashboard: "/dashboard",
+  profile: "/profile",
+  profileTutorial: "/profile/tutorial",
+  profileHelp: "/profile/help",
+  profileHelpScope: "/profile/help/scope",
+  admin: "/admin",
+  notFound: "*",
+} as const;

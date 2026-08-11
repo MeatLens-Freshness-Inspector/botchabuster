@@ -11,6 +11,7 @@ import { QueryProvider } from "@/app/providers/query-provider";
 import { NotificationProvider } from "@/app/providers/notification-provider";
 import { NetworkProvider } from "@/app/providers/network-provider";
 import { ThemeController } from "@/app/providers/theme-controller";
+import { ROUTE_PATHS } from "@/app/router/paths";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -59,27 +60,27 @@ const App = () => {
                 <ThemeRouteController />
                 <Routes>
                   {/* Public routes */}
-                  <Route path="/" element={<LandingPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/signup" element={<SignupPage />} />
-                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                  <Route path="/reset-password" element={<ResetPasswordPage />} />
-                  <Route path="/onboarding" element={<OnboardingRoute><OnboardingPage /></OnboardingRoute>} />
+                  <Route path={ROUTE_PATHS.landing} element={<LandingPage />} />
+                  <Route path={ROUTE_PATHS.login} element={<LoginPage />} />
+                  <Route path={ROUTE_PATHS.signup} element={<SignupPage />} />
+                  <Route path={ROUTE_PATHS.forgotPassword} element={<ForgotPasswordPage />} />
+                  <Route path={ROUTE_PATHS.resetPassword} element={<ResetPasswordPage />} />
+                  <Route path={ROUTE_PATHS.onboarding} element={<OnboardingRoute><OnboardingPage /></OnboardingRoute>} />
 
                   {/* Protected app routes */}
-                  <Route path="/inspect" element={<ProtectedRoute><AppLayout><InspectPage /></AppLayout></ProtectedRoute>} />
-                  <Route path="/history" element={<ProtectedRoute><AppLayout><HistoryPage /></AppLayout></ProtectedRoute>} />
-                  <Route path="/messages" element={<ProtectedRoute><AppLayout><MessagesPage /></AppLayout></ProtectedRoute>} />
-                  <Route path="/dashboard" element={<Navigate to="/history" replace />} />
-                  <Route path="/profile" element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
-                  <Route path="/profile/tutorial" element={<ProtectedRoute><AppLayout><ProfileTutorialPage /></AppLayout></ProtectedRoute>} />
-                  <Route path="/profile/help" element={<ProtectedRoute><AppLayout><ProfileHelpPage /></AppLayout></ProtectedRoute>} />
-                  <Route path="/profile/help/scope" element={<ProtectedRoute><AppLayout><ProfileHelpScopePage /></AppLayout></ProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.inspect} element={<ProtectedRoute><AppLayout><InspectPage /></AppLayout></ProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.history} element={<ProtectedRoute><AppLayout><HistoryPage /></AppLayout></ProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.messages} element={<ProtectedRoute><AppLayout><MessagesPage /></AppLayout></ProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.dashboard} element={<Navigate to={ROUTE_PATHS.history} replace />} />
+                  <Route path={ROUTE_PATHS.profile} element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileTutorial} element={<ProtectedRoute><AppLayout><ProfileTutorialPage /></AppLayout></ProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileHelp} element={<ProtectedRoute><AppLayout><ProfileHelpPage /></AppLayout></ProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileHelpScope} element={<ProtectedRoute><AppLayout><ProfileHelpScopePage /></AppLayout></ProtectedRoute>} />
 
                   {/* Admin routes */}
-                  <Route path="/admin" element={<AdminRoute><AdminDashboardWrapper /></AdminRoute>} />
+                  <Route path={ROUTE_PATHS.admin} element={<AdminRoute><AdminDashboardWrapper /></AdminRoute>} />
 
-                  <Route path="*" element={<NotFound />} />
+                  <Route path={ROUTE_PATHS.notFound} element={<NotFound />} />
                 </Routes>
               </AuthProvider>
             </NetworkProvider>

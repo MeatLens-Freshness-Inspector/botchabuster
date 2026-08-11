@@ -195,7 +195,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: frontend/src/App.tsx + frontend/src/app/providers/theme-controller.tsx + move frontend/src/lib/themePreference.ts to frontend/src/shared/lib/theme-preference.ts so app and profile consumers use the shared theme helper.
   - Preserve force-light routes and profile dark-mode behavior.
   - Validate: F.
-- [ ] **Commit 023 — refactor: define route path constants**
+- [x] **Commit 023 — refactor: define route path constants**
   - Change: frontend/src/app/router/paths.ts + frontend/src/app/router/paths.unit.test.ts.
   - Validate: F.
 - [ ] **Commit 024 — refactor: move protected route guard**
