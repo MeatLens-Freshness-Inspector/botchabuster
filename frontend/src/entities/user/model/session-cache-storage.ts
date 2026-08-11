@@ -1,7 +1,6 @@
-import type { AuthSession, AuthUser } from "@/features/auth/api/auth-client";
+import type { AuthSession, AuthUser } from "./session-types";
 import { readJson } from "@/shared/lib/storage";
-import type { Profile } from "@/entities/user/api/profile-client";
-export { createAuthHeaders } from "@/shared/api/auth-headers";
+import type { Profile } from "../api/profile-client";
 
 export const USER_STORAGE_KEY = "meatlens-auth-user";
 export const SESSION_STORAGE_KEY = "meatlens-auth-session";

@@ -19,3 +19,19 @@ export type UserSessionState = {
   isDeveloper: boolean;
   isOnlineAuthenticated: boolean;
 };
+
+export interface AuthUser {
+  id: string;
+  email: string | null;
+}
+
+export interface AuthSession {
+  access_token: string | null;
+  refresh_token: string | null;
+  token_type: string | null;
+  expires_in: number | null;
+  expires_at: number | null;
+}
+
+export type AuthRole = "developer" | "admin" | "moderator" | "user";
+export type AuthPrimaryRole = "developer" | "admin" | "inspector";

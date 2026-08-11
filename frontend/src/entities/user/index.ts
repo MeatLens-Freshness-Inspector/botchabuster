@@ -2,6 +2,27 @@ export {
   AUTH_MODE_VALUES,
   PROFILE_STATUS_VALUES,
   type AuthMode,
+  type AuthPrimaryRole,
+  type AuthRole,
+  type AuthSession,
+  type AuthUser,
   type ProfileStatus,
   type UserSessionState,
 } from "./model/session-types";
+export {
+  createSessionCacheState,
+  type SessionCacheState,
+} from "./model/session-cache";
+export {
+  clearCachedAdmin,
+  clearCachedAuth,
+  clearCachedProfile,
+  getCachedAccessToken,
+  getCachedAuthSession,
+  getCachedAuthUser,
+  getCachedAdmin,
+  getCachedProfile,
+  setCachedAdmin,
+  setCachedAuth,
+  setCachedProfile,
+} from "./model/session-cache-storage";

@@ -22,7 +22,7 @@ import {
   clearCachedAuth,
   clearCachedProfile,
   setCachedAuth,
-} from "@/lib/authCache";
+} from "@/entities/user/model/session-cache-storage";
 import {
   clearLegacyOfflineCredential,
   createPasswordVerifier,
@@ -53,6 +53,7 @@ import {
 } from "@/legacy-passkey-storage";
 import type { ReportOrganization } from "@/lib/reportOrganizations";
 import type { AuthMode, ProfileStatus } from "@/entities/user";
+import { createSessionCacheState } from "@/entities/user";
 
 const createAuditId = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -104,11 +105,12 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [session, setSession] = useState<AuthSession | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isDeveloper, setIsDeveloper] = useState(false);
+  const initialSessionCache = createSessionCacheState();
+  const [user, setUser] = useState<AuthUser | null>(initialSessionCache.user);
+  const [session, setSession] = useState<AuthSession | null>(initialSessionCache.session);
+  const [profile, setProfile] = useState<Profile | null>(initialSessionCache.profile);
+  const [isAdmin, setIsAdmin] = useState(initialSessionCache.isAdmin);
+  const [isDeveloper, setIsDeveloper] = useState(initialSessionCache.isDeveloper);
   const [isLoading, setIsLoading] = useState(true);
   const [profileStatus, setProfileStatus] = useState<ProfileStatus>("idle");
   const [authMode, setAuthMode] = useState<AuthMode>("bootstrapping");

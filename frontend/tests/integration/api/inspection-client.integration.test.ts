@@ -5,7 +5,7 @@ import { JSDOM } from "jsdom";
 
 import { AUTH_EXPIRED_EVENT } from "../../../src/shared/api/request";
 import { inspectionClient } from "../../../src/integrations/api/InspectionClient";
-import { SESSION_STORAGE_KEY, USER_STORAGE_KEY } from "../../../src/lib/authCache";
+import { SESSION_STORAGE_KEY, USER_STORAGE_KEY } from "../../../src/entities/user/model/session-cache-storage";
 
 function installDom() {
   const dom = new JSDOM("<!doctype html><html><body></body></html>", {

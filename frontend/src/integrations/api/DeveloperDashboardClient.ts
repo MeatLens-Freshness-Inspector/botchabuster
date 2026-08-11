@@ -1,4 +1,4 @@
-import { createAuthHeaders } from "@/lib/authCache";
+import { createAuthHeaders } from "@/shared/api/auth-headers";
 import type { Inspection } from "@/types/inspection";
 import { fetchWithTimeout, readApiErrorMessage } from "@/shared/api";
 import { API_BASE_URL } from "@/shared/api/base-url";

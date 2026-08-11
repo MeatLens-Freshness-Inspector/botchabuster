@@ -261,8 +261,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 041 — refactor: migrate local passkey unlock**
   - Change: frontend/src/lib/passkeys/localUnlock.ts -> frontend/src/features/passkeys/lib/local-unlock.ts + frontend/tests/unit/domain/auth/local-passkey-auth.unit.test.ts. Pure challenge construction and assertion verification now belong to the passkeys feature; the temporary root persistence adapter preserves the current envelope behavior until the session-cache/envelope commits remove it.
   - Validate: F.
-- [ ] **Commit 042 — refactor: split session cache persistence**
-  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/session-cache.ts + frontend/src/lib/authCache.ts -> frontend/src/entities/user/model/session-cache-storage.ts.
+- [x] **Commit 042 — refactor: split session cache persistence**
+  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/session-cache.ts + frontend/src/lib/authCache.ts -> frontend/src/entities/user/model/session-cache-storage.ts. Auth/profile/admin cache persistence now belongs to the user entity, while auth headers are shared infrastructure and all API clients use that primitive directly.
   - Validate: F.
 - [ ] **Commit 043 — refactor: split offline auth envelope**
   - Change: frontend/src/lib/offlineAuthEnvelope.ts -> frontend/src/entities/user/model/offline-auth-envelope.ts + frontend/src/lib/offlineCredentials.ts -> frontend/src/entities/user/model/offline-credentials.ts.
