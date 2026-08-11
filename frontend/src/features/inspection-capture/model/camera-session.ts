@@ -2,39 +2,41 @@ import { useRef, useState, useCallback, useEffect } from "react";
 
 import { toast } from "sonner";
 
-import { assessFileQuality } from "../../lib/captureQuality";
-import { type ImageQualityResult } from "../../lib/imageQuality";
+import { assessFileQuality } from "../../../lib/captureQuality";
+import { type ImageQualityResult } from "../../../lib/imageQuality";
 import {
   createModelInputImageFile,
   DEFAULT_MEATLENS_INPUT_SIZE,
   resolveCenteredObjectCoverGuideBox,
   type SquareGuideBox,
-} from "../../lib/offlineAnalysis/meatLensPipeline";
-import { getActiveModelPreprocessContract } from "../../lib/offlineAnalysis/mobileNetV3";
+} from "../../../lib/offlineAnalysis/meatLensPipeline";
+import { getActiveModelPreprocessContract } from "../../../lib/offlineAnalysis/mobileNetV3";
 
-import type { CameraCaptureViewProps } from "./CameraCaptureView";
-import { GUIDE_BOX_SIZE_RATIO, PREVIEW_EXPORT_QUALITY } from "./constants";
+import type { CameraCaptureViewProps } from "../../../components/camera/CameraCaptureView";
+import { GUIDE_BOX_SIZE_RATIO, PREVIEW_EXPORT_QUALITY } from "../../../components/camera/constants";
 import {
   clampToRange,
-  EMPTY_CAMERA_CONTROLS,
-  normalizeSettingNumber,
-  parseCameraControlRange,
   type AdvancedCameraConstraints,
   type CameraControlKey,
   type CameraControlRange,
   type CameraControlsState,
-  type ExtendedMediaTrackCapabilities,
-  type ExtendedMediaTrackSettings,
-} from "./controls";
+} from "../../../components/camera/controls";
 import {
   readBlobAsDataUrl,
   resolveCanvasImageQuality,
   resolveFileImageQuality,
-} from "./quality";
+} from "../../../components/camera/quality";
 import {
   type CameraCaptureProps,
   type CaptureQualitySource,
-} from "./types";
+} from "../../../components/camera/types";
+import {
+  applyCameraTrackConstraints,
+  emptyCameraDeviceState,
+  inspectCameraTrack,
+  requestCameraStream,
+  stopCameraStream,
+} from "./camera-device";
 
 export function useCameraCapture({
   onCapture,
@@ -62,7 +64,9 @@ export function useCameraCapture({
   const [isPreparingModelPreview, setIsPreparingModelPreview] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
   const [flashEnabled, setFlashEnabled] = useState(false);
-  const [cameraControls, setCameraControls] = useState<CameraControlsState>(EMPTY_CAMERA_CONTROLS);
+  const [cameraControls, setCameraControls] = useState<CameraControlsState>(
+    () => emptyCameraDeviceState().cameraControls,
+  );
   const [captureQualityResult, setCaptureQualityResult] = useState<ImageQualityResult | null>(null);
 
   const updateModelInputPreview = useCallback(async (sourceFile: File, guideBox: SquareGuideBox | null) => {
@@ -99,70 +103,14 @@ export function useCameraCapture({
 
   const resetCameraControls = useCallback(() => {
     videoTrackRef.current = null;
-    setTorchSupported(false);
-    setFlashEnabled(false);
-    setCameraControls(EMPTY_CAMERA_CONTROLS);
-  }, []);
-
-  const initializeCameraControls = useCallback((track: MediaStreamTrack) => {
-    const capabilities =
-      typeof track.getCapabilities === "function"
-        ? ((track.getCapabilities() as ExtendedMediaTrackCapabilities) ?? {})
-        : ({} as ExtendedMediaTrackCapabilities);
-    const settings =
-      typeof track.getSettings === "function"
-        ? ((track.getSettings() as ExtendedMediaTrackSettings) ?? {})
-        : ({} as ExtendedMediaTrackSettings);
-
-    const focusModeOptions = Array.isArray(capabilities.focusMode)
-      ? capabilities.focusMode.filter((mode): mode is string => typeof mode === "string" && mode.trim().length > 0)
-      : [];
-    const focusDistanceRange = parseCameraControlRange(capabilities.focusDistance);
-    const brightnessRange = parseCameraControlRange(capabilities.brightness);
-    const exposureCompensationRange = parseCameraControlRange(capabilities.exposureCompensation);
-    const apertureRange = parseCameraControlRange(capabilities.aperture);
-    const zoomRange = parseCameraControlRange(capabilities.zoom);
-
-    const initialFocusMode =
-      typeof settings.focusMode === "string"
-        ? settings.focusMode
-        : focusModeOptions.length > 0
-        ? focusModeOptions[0]
-        : null;
-
-    setTorchSupported(Boolean(capabilities.torch));
-    setFlashEnabled(Boolean(settings.torch));
-    setCameraControls({
-      focusModeOptions,
-      focusMode: initialFocusMode,
-      focusDistanceRange,
-      focusDistance: normalizeSettingNumber(settings.focusDistance, focusDistanceRange),
-      brightnessRange,
-      brightness: normalizeSettingNumber(settings.brightness, brightnessRange),
-      exposureCompensationRange,
-      exposureCompensation: normalizeSettingNumber(settings.exposureCompensation, exposureCompensationRange),
-      apertureRange,
-      aperture: normalizeSettingNumber(settings.aperture, apertureRange),
-      zoomRange,
-      zoom: normalizeSettingNumber(settings.zoom, zoomRange),
-    });
+    const emptyState = emptyCameraDeviceState();
+    setTorchSupported(emptyState.torchSupported);
+    setFlashEnabled(emptyState.flashEnabled);
+    setCameraControls(emptyState.cameraControls);
   }, []);
 
   const applyAdvancedTrackConstraints = useCallback(async (constraints: AdvancedCameraConstraints): Promise<boolean> => {
-    const track = videoTrackRef.current;
-    if (!track) {
-      return false;
-    }
-
-    try {
-      await track.applyConstraints({
-        advanced: [constraints as MediaTrackConstraintSet],
-      });
-      return true;
-    } catch (applyError) {
-      console.warn("[Camera] Failed to apply track constraints", applyError);
-      return false;
-    }
+    return applyCameraTrackConstraints(videoTrackRef.current, constraints);
   }, []);
 
   const handleFocusModeChange = useCallback(
@@ -251,25 +199,15 @@ export function useCameraCapture({
     await new Promise((resolve) => setTimeout(resolve, 50));
 
     try {
-      let mediaStream: MediaStream | null = null;
-
-      try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: { ideal: "environment" },
-            width: { ideal: 1280 },
-            height: { ideal: 960 },
-            torch: true,
-          },
-        });
-      } catch {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
-      }
+      const mediaStream = await requestCameraStream();
 
       const videoTrack = mediaStream?.getVideoTracks()[0];
       if (videoTrack) {
         videoTrackRef.current = videoTrack;
-        initializeCameraControls(videoTrack);
+        const deviceState = inspectCameraTrack(videoTrack);
+        setTorchSupported(deviceState.torchSupported);
+        setFlashEnabled(deviceState.flashEnabled);
+        setCameraControls(deviceState.cameraControls);
       }
 
       if (videoRef.current) {
@@ -280,7 +218,7 @@ export function useCameraCapture({
         setError("Video element not available");
         setIsStreaming(false);
         if (mediaStream) {
-          mediaStream.getTracks().forEach((track) => track.stop());
+          stopCameraStream(mediaStream);
         }
         resetCameraControls();
       }
@@ -293,7 +231,7 @@ export function useCameraCapture({
     } finally {
       setIsStarting(false);
     }
-  }, [disabled, initializeCameraControls, resetCameraControls]);
+  }, [disabled, resetCameraControls]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -317,7 +255,7 @@ export function useCameraCapture({
 
   useEffect(() => {
     return () => {
-      stream?.getTracks().forEach((track) => track.stop());
+      stopCameraStream(stream);
     };
   }, [stream]);
 
@@ -382,7 +320,7 @@ export function useCameraCapture({
       PREVIEW_EXPORT_QUALITY
     );
 
-    stream?.getTracks().forEach((track) => track.stop());
+    stopCameraStream(stream);
     setStream(null);
     setIsStreaming(false);
     setIsVideoReady(false);
@@ -474,7 +412,7 @@ export function useCameraCapture({
   const retake = useCallback(() => {
     if (disabled) return;
 
-    stream?.getTracks().forEach((track) => track.stop());
+    stopCameraStream(stream);
     setStream(null);
     setIsStreaming(false);
     setIsVideoReady(false);

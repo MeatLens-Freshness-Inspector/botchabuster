@@ -5,9 +5,10 @@ import { readFile } from "node:fs/promises";
 const publicFacadePath = new URL("../../../src/components/CameraCapture.tsx", import.meta.url);
 const internalIndexPath = new URL("../../../src/components/camera/index.ts", import.meta.url);
 const internalComponentPath = new URL("../../../src/components/camera/CameraCapture.tsx", import.meta.url);
-const internalHookPath = new URL("../../../src/components/camera/useCameraCapture.ts", import.meta.url);
+const featureIndexPath = new URL("../../../src/features/inspection-capture/index.ts", import.meta.url);
+const internalHookPath = new URL("../../../src/features/inspection-capture/model/camera-session.ts", import.meta.url);
 
-test("CameraCapture keeps a thin public facade while logic lives in src/components/camera", async () => {
+test("CameraCapture keeps a thin public facade while logic lives in the inspection-capture feature", async () => {
   const publicFacadeSource = await readFile(publicFacadePath, "utf8");
 
   assert.match(publicFacadeSource, /export\s*\{\s*CameraCapture\s*\}\s*from\s*["']\.\/camera["'];/);
@@ -20,8 +21,11 @@ test("CameraCapture keeps a thin public facade while logic lives in src/componen
   assert.match(internalIndexSource, /export\s+type\s*\{\s*CameraCaptureProps\s*\}\s*from\s*["']\.\/types["'];/);
 
   const internalComponentSource = await readFile(internalComponentPath, "utf8");
-  assert.match(internalComponentSource, /useCameraCapture/);
+  assert.match(internalComponentSource, /@\/features\/inspection-capture/);
   assert.match(internalComponentSource, /CameraCaptureView/);
+
+  const featureIndexSource = await readFile(featureIndexPath, "utf8");
+  assert.match(featureIndexSource, /export\s*\{\s*useCameraCapture\s*\}\s*from\s*["']\.\/model\/camera-session["'];/);
 
   const internalHookSource = await readFile(internalHookPath, "utf8");
   assert.match(internalHookSource, /useState/);

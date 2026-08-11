@@ -1,5 +1,5 @@
 import { CameraCaptureView } from "./CameraCaptureView";
-import { useCameraCapture } from "./useCameraCapture";
+import { useCameraCapture } from "@/features/inspection-capture";
 import type { CameraCaptureProps } from "./types";
 
 export function CameraCapture(props: CameraCaptureProps) {
