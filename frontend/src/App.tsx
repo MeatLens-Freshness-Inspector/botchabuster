@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter } from "react-router-dom";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { BottomNav } from "@/widgets/navigation";
@@ -11,6 +11,7 @@ import { NotificationProvider } from "@/app/providers/notification-provider";
 import { NetworkProvider } from "@/app/providers/network-provider";
 import { ThemeController } from "@/app/providers/theme-controller";
 import { ROUTE_PATHS } from "@/app/router/paths";
+import { AppRouter } from "@/app/router/app-router";
 import { ProtectedRoute as ProtectedRouteGuard, type ProtectedRouteProps } from "@/app/router/guards/protected-route";
 import { AdminRoute as AdminRouteGuard, type AdminRouteProps } from "@/app/router/guards/admin-route";
 import { OnboardingRoute as OnboardingRouteGuard, type OnboardingRouteProps } from "@/app/router/guards/onboarding-route";
@@ -154,30 +155,23 @@ const App = () => {
                 <AuthOfflineSyncManager />
                 <AuthInactivityGuard />
                 <ThemeRouteController />
-                <Routes>
-                  {/* Public routes */}
-                  <Route path={ROUTE_PATHS.landing} element={<PublicLayout><LandingPage /></PublicLayout>} />
-                  <Route path={ROUTE_PATHS.login} element={<PublicLayout><LoginPage /></PublicLayout>} />
-                  <Route path={ROUTE_PATHS.signup} element={<PublicLayout><SignupPage /></PublicLayout>} />
-                  <Route path={ROUTE_PATHS.forgotPassword} element={<PublicLayout><ForgotPasswordPage /></PublicLayout>} />
-                  <Route path={ROUTE_PATHS.resetPassword} element={<PublicLayout><ResetPasswordPage /></PublicLayout>} />
-                  <Route path={ROUTE_PATHS.onboarding} element={<AuthOnboardingRoute><OnboardingPage /></AuthOnboardingRoute>} />
-
-                  {/* Protected app routes */}
-                  <Route path={ROUTE_PATHS.inspect} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><InspectPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.history} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><HistoryPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.messages} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><MessagesPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.dashboard} element={<Navigate to={ROUTE_PATHS.history} replace />} />
-                  <Route path={ROUTE_PATHS.profile} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfilePage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileTutorial} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfileTutorialPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileHelp} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfileHelpPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileHelpScope} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfileHelpScopePage /></AppLayout></AuthProtectedRoute>} />
-
-                  {/* Admin routes */}
-                  <Route path={ROUTE_PATHS.admin} element={<AuthAdminRoute><AdminDashboardWrapper /></AuthAdminRoute>} />
-
-                  <Route path={ROUTE_PATHS.notFound} element={<NotFound />} />
-                </Routes>
+                <AppRouter elements={{
+                  landing: <PublicLayout><LandingPage /></PublicLayout>,
+                  login: <PublicLayout><LoginPage /></PublicLayout>,
+                  signup: <PublicLayout><SignupPage /></PublicLayout>,
+                  forgotPassword: <PublicLayout><ForgotPasswordPage /></PublicLayout>,
+                  resetPassword: <PublicLayout><ResetPasswordPage /></PublicLayout>,
+                  onboarding: <AuthOnboardingRoute><OnboardingPage /></AuthOnboardingRoute>,
+                  inspect: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><InspectPage /></AppLayout></AuthProtectedRoute>,
+                  history: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><HistoryPage /></AppLayout></AuthProtectedRoute>,
+                  messages: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><MessagesPage /></AppLayout></AuthProtectedRoute>,
+                  profile: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfilePage /></AppLayout></AuthProtectedRoute>,
+                  profileTutorial: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfileTutorialPage /></AppLayout></AuthProtectedRoute>,
+                  profileHelp: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfileHelpPage /></AppLayout></AuthProtectedRoute>,
+                  profileHelpScope: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfileHelpScopePage /></AppLayout></AuthProtectedRoute>,
+                  admin: <AuthAdminRoute><AdminDashboardWrapper /></AuthAdminRoute>,
+                  notFound: <NotFound />,
+                }} />
               </AuthProvider>
             </NetworkProvider>
           </BrowserRouter>

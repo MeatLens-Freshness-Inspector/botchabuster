@@ -229,9 +229,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 033 — refactor: isolate inactivity protection feature**
   - Change: frontend/src/components/InactivityGuard.tsx -> frontend/src/features/auth/ui/inactivity-guard.tsx + frontend/src/App.tsx. The feature receives session and navigation dependencies through its public API, preserving the existing timer and redirect behavior without importing the legacy auth context.
   - Validate: F.
-- [ ] **Commit 034 — refactor: create application router**
-  - Change: frontend/src/app/App.tsx + frontend/src/app/router/app-router.tsx.
-  - Copy every current Route path and element unchanged before later page moves.
+- [x] **Commit 034 — refactor: create application router**
+  - Change: frontend/src/App.tsx + frontend/src/app/router/app-router.tsx. Every existing route path is now declared by the app router; legacy page and guard adapters are supplied as route-element slots until later page/provider migrations.
   - Validate: B.
 - [ ] **Commit 035 — refactor: make main entry app-only**
   - Change: frontend/src/main.tsx + frontend/src/app/index.ts.
