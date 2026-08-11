@@ -1,6 +1,6 @@
 import { useIsDesktop } from "@/shared/hooks/use-desktop";
-import AdminDashboard from "./AdminDashboard";
-import DesktopAdminDashboard from "./DesktopAdminDashboard";
+import AdminDashboard from "./admin-dashboard-page";
+import DesktopAdminDashboard from "./desktop-admin-dashboard-page";
 import { BottomNav } from "@/widgets/navigation";
 import { useAuth } from "@/entities/user";
 

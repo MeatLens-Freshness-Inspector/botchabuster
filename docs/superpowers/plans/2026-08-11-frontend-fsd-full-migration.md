@@ -640,8 +640,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: consolidated the responsive admin dashboard shells, tab compositions, summary, dialogs, and developer tab into admin-dashboard widget ownership; route pages now consume public shell components.
   - TDD: added the responsive-shell public contract before consolidation (RED on missing widget exports, then GREEN after wiring).
   - Validate: focused shell test, typecheck, and architecture checks passed.
-- [ ] **Commit 136 — refactor: migrate admin route page**
-  - Change: frontend/src/pages/AdminDashboardWrapper.tsx -> frontend/src/pages/admin/admin-dashboard-page.tsx + frontend/src/app/router/app-router.tsx. Validate: P-admin.
+- [x] **Commit 136 — refactor: migrate admin route page**
+  - Change: moved the admin responsive wrapper and both route entrypoints into the pages/admin slice, with the legacy composition updated to the maintained route module paths.
+  - TDD: expanded the admin route-page contract to cover the wrapper relocation.
+  - Validate: focused admin route-page test and typecheck passed.
 
 ## Phase 7 — Final legacy purge and release verification (8 commits)
 
