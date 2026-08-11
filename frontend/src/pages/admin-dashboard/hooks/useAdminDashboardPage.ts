@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { format, subDays, startOfDay, endOfDay, isAfter } from "date-fns";
 import { toast } from "sonner";
-import { useAuth } from "@/entities/user";
-import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { accessCodeClient, type AccessCode } from "@/entities/access-code";
 import { auditLogClient, type AuditLogEntry } from "@/entities/audit-log";
-import { developerDashboardClient, type DeveloperOverviewMetricPoint } from "@/entities/developer-metrics";
+import { developerDashboardClient } from "@/entities/developer-metrics";
 import { inspectionClient } from "@/entities/inspection";
 import { marketLocationClient, type MarketLocation } from "@/entities/market-location";
 import { profileClient, type Profile } from "@/entities/user/api";
@@ -20,12 +18,10 @@ import { composeReportPdf } from "@/features/reports";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import { buildDeveloperInAppMetrics } from "@/features/developer-tools";
 import type {
-  AdminDashboardTabKey,
   ManagedUserForm,
   ReportDailyTrendRow,
   ReportLocationBreakdown,
   ReportRow,
-  RoleStat,
 } from "@/widgets/admin-dashboard";
 import {
   ADMIN_DASHBOARD_CHART_CONFIG,
@@ -39,8 +35,6 @@ import {
   REPORT_DEFAULT_RANGE_DAYS,
   buildPreScanReportFields,
   buildAdminDashboardReportPdfModel,
-  coerceAdminDashboardTab,
-  getAdminDashboardTabs,
   getInspectorLabel,
   getLocationLabel,
   getOptionalText,
@@ -49,20 +43,31 @@ import {
   parsePayloadSource,
   parsePayloadText,
   toCsvValue,
+  useDashboardSession,
+  useOverviewTab,
 } from "@/widgets/admin-dashboard";
 
 export function useAdminDashboardPage() {
-  const { user, profile, isDeveloper } = useAuth();
-  const isMobile = useIsMobile();
-  const tabs = useMemo(() => getAdminDashboardTabs(isDeveloper), [isDeveloper]);
+  const {
+    activeTab,
+    isDeveloper,
+    isMobile,
+    profile,
+    setActiveTab,
+    tabs,
+    user,
+  } = useDashboardSession();
+  const {
+    developerLatestRuns,
+    setDeveloperLatestRuns,
+    setStats,
+    stats,
+  } = useOverviewTab();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [accessCodes, setAccessCodes] = useState<AccessCode[]>([]);
   const [marketLocations, setMarketLocations] = useState<MarketLocation[]>([]);
-  const [developerLatestRuns, setDeveloperLatestRuns] = useState<DeveloperOverviewMetricPoint[]>([]);
-  const [stats, setStats] = useState<{ total_users: number; total_inspections: number; roles: RoleStat[] | null } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<AdminDashboardTabKey>("overview");
   const [newCode, setNewCode] = useState("");
   const [newCodeDesc, setNewCodeDesc] = useState("");
   const [newMarketName, setNewMarketName] = useState("");
@@ -105,10 +110,6 @@ export function useAdminDashboardPage() {
   useEffect(() => {
     void loadData();
   }, []);
-
-  useEffect(() => {
-    setActiveTab((currentTab) => coerceAdminDashboardTab(currentTab, isDeveloper));
-  }, [isDeveloper]);
 
   useEffect(() => {
     setInspectionPage(1);

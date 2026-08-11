@@ -548,8 +548,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved dashboard contracts/utilities into the admin-dashboard widget, published its model API, and moved the supporting report organizations, range-report adapter, letterheads, market defaults, and developer metric calculations behind their final entity/feature APIs.
   - TDD: added the dashboard model tab contract before extraction (RED on absent widget API, then GREEN after ownership migration).
   - Validate: focused dashboard/report tests, typecheck, lint (15 existing warnings), and architecture checks passed.
-- [ ] **Commit 113 — refactor: split dashboard overview state**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-overview-tab.ts + frontend/src/widgets/admin-dashboard/model/use-dashboard-session.ts. Validate: F.
+- [x] **Commit 113 — refactor: split dashboard overview state**
+  - Change: extracted dashboard session/tab selection and overview-owned statistics/latest-run state into bounded widget model hooks, leaving the existing load orchestration behavior intact.
+  - TDD: added the session/overview hook ownership contract before extraction (RED on missing exports, then GREEN after composition).
+  - Validate: focused model test, typecheck, lint (15 existing warnings), and architecture checks passed.
 - [ ] **Commit 114 — refactor: split dashboard inspection state**
   - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-inspections-tab.ts + frontend/src/widgets/admin-dashboard/model/use-inspection-pagination.ts. Validate: F.
 - [ ] **Commit 115 — refactor: split dashboard user state**
