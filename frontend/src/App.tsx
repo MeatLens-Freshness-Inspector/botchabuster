@@ -4,7 +4,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { BottomNav } from "@/widgets/navigation";
 import { AssistantWidget } from "@/widgets/assistant";
 import { OfflineBanner } from "@/widgets/navigation";
-import { OfflineSyncManager } from "@/components/OfflineSyncManager";
+import { OfflineSyncManager, type OfflineSyncDependencies } from "@/features/offline-sync";
 import { InactivityGuard } from "@/components/InactivityGuard";
 import { QueryProvider } from "@/app/providers/query-provider";
 import { NotificationProvider } from "@/app/providers/notification-provider";
@@ -17,6 +17,15 @@ import { OnboardingRoute as OnboardingRouteGuard, type OnboardingRouteProps } fr
 import { AppLayout } from "@/app/layouts/app-layout";
 import { PublicLayout } from "@/app/layouts/public-layout";
 import { hasSkippedOnboardingForSession } from "@/lib/onboardingSession";
+import { uploadClient } from "@/integrations/api/UploadClient";
+import { inspectionClient } from "@/integrations/api/InspectionClient";
+import { auditLogClient } from "@/integrations/api/AuditLogClient";
+import { getPendingScans, removeScan } from "@/lib/offlineQueue";
+import { getPendingAuditLogs, removeAuditLog } from "@/lib/offlineAuditQueue";
+import { PROTOCOL_SPOILED_REASON, buildProtocolSpoiledAnalysisResult } from "@/lib/inspectionPreScan";
+import { analyzeOffline, prewarmModel, setActiveAnalysisMode } from "@/lib/offlineAnalysis";
+import { setActiveMobileNetModelVariant } from "@/lib/offlineAnalysis/mobileNetV3";
+import { getDeveloperOptionsFlags, getDeveloperOptionsSession, isDeveloperOptionsSessionExpired } from "@/lib/developerOptions";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -35,6 +44,26 @@ import MessagesPage from "./pages/MessagesPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/not-found/NotFound";
 
+const offlineSyncDependencies: OfflineSyncDependencies = {
+  uploadInspectionImage: (file) => uploadClient.uploadInspectionImage(file),
+  createInspection: (inspection) => inspectionClient.create(inspection),
+  createAuditBatch: (events) => auditLogClient.createBatch(events),
+  getPendingScans,
+  removeScan,
+  getPendingAuditLogs,
+  removeAuditLog,
+  protocolSpoiledReason: PROTOCOL_SPOILED_REASON,
+  buildProtocolSpoiledAnalysisResult,
+  analyzeOffline,
+  prewarmModel,
+  setActiveAnalysisMode,
+  setActiveMobileNetModelVariant,
+  getDeveloperOptionsFlags,
+  getDeveloperOptionsSession,
+  isDeveloperOptionsSessionExpired: (session) =>
+    isDeveloperOptionsSessionExpired(session as Parameters<typeof isDeveloperOptionsSessionExpired>[0]),
+};
+
 function ThemeRouteController() {
   const { user, profile } = useAuth();
 
@@ -51,6 +80,19 @@ function AuthAssistant() {
   const { isOnlineAuthenticated } = useAuth();
 
   return <AssistantWidget isOnlineAuthenticated={isOnlineAuthenticated} />;
+}
+
+function AuthOfflineSyncManager() {
+  const { user, isAdmin, isOnlineAuthenticated } = useAuth();
+
+  return (
+    <OfflineSyncManager
+      user={user ? { id: user.id } : null}
+      isAdmin={isAdmin}
+      isOnlineAuthenticated={isOnlineAuthenticated}
+      dependencies={offlineSyncDependencies}
+    />
+  );
 }
 
 function AuthProtectedRoute({ children }: Pick<ProtectedRouteProps, "children">) {
@@ -103,7 +145,7 @@ const App = () => {
           <BrowserRouter>
             <NetworkProvider>
               <AuthProvider>
-                <OfflineSyncManager />
+                <AuthOfflineSyncManager />
                 <InactivityGuard />
                 <ThemeRouteController />
                 <Routes>

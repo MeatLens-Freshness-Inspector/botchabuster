@@ -223,8 +223,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 031 — refactor: migrate offline status widget**
   - Change: frontend/src/components/OfflineBanner.tsx -> frontend/src/widgets/navigation/offline-banner.tsx + frontend/src/App.tsx. The optional initial-state input is test-only determinism; browser event handling and markup remain unchanged.
   - Validate: F.
-- [ ] **Commit 032 — refactor: isolate offline synchronization feature**
-  - Change: frontend/src/components/OfflineSyncManager.tsx -> frontend/src/features/offline-sync/ui/offline-sync-manager.tsx + frontend/src/features/offline-sync/index.ts.
+- [x] **Commit 032 — refactor: isolate offline synchronization feature**
+  - Change: frontend/src/components/OfflineSyncManager.tsx -> frontend/src/features/offline-sync/ui/offline-sync-manager.tsx + frontend/src/features/offline-sync/index.ts. The feature now owns sync orchestration behind an explicit dependency contract; the temporary root adapter supplies existing auth, queue, API, and analysis implementations until their later slice migrations.
   - Validate: I.
 - [ ] **Commit 033 — refactor: isolate inactivity protection feature**
   - Change: frontend/src/components/InactivityGuard.tsx -> frontend/src/features/auth/ui/inactivity-guard.tsx + frontend/src/app/App.tsx.
