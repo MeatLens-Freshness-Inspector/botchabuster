@@ -1,7 +1,7 @@
+import React from "react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
-import { useAuth } from "@/contexts/AuthContext";
 import { API_BASE_URL } from "@/shared/api/base-url";
 import { applyApiRequestInit, getApiCsrfToken } from "@/shared/api/request";
 import { MessageCircle, X, Send, Loader2, Bot, User } from "lucide-react";
@@ -23,8 +23,11 @@ export function getChatRequestHeaders(): Record<string, string> {
   return headers;
 }
 
-export function AIChatbot() {
-  const { isOnlineAuthenticated } = useAuth();
+export type AssistantWidgetProps = {
+  isOnlineAuthenticated: boolean;
+};
+
+export function AssistantWidget({ isOnlineAuthenticated }: AssistantWidgetProps) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
     { role: "assistant", content: "Hi! I'm MeatLens AI. Ask me about meat freshness, food safety, or how to use the app." },

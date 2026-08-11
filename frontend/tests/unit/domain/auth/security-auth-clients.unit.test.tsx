@@ -4,7 +4,7 @@ import { JSDOM } from "jsdom";
 import { authClient } from "../../../../src/integrations/api/AuthClient";
 import { uploadClient } from "../../../../src/integrations/api/UploadClient";
 import { clearApiCsrfToken, setApiCsrfToken } from "../../../../src/shared/api/request";
-import { getChatRequestHeaders } from "../../../../src/components/AIChatbot";
+import { getChatRequestHeaders } from "../../../../src/widgets/assistant";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;

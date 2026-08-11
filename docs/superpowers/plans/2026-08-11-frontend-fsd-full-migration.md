@@ -217,8 +217,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 029 — refactor: migrate bottom navigation widget**
   - Change: frontend/src/components/BottomNav.tsx -> frontend/src/widgets/navigation/bottom-nav.tsx + frontend/src/widgets/navigation/index.ts. The widget receives `isAdmin` from app/page adapters so widget ownership remains independent of legacy auth state.
   - Validate: F.
-- [ ] **Commit 030 — refactor: migrate assistant widget shell**
-  - Change: frontend/src/components/AIChatbot.tsx -> frontend/src/widgets/assistant/assistant-widget.tsx + frontend/src/widgets/assistant/index.ts.
+- [x] **Commit 030 — refactor: migrate assistant widget shell**
+  - Change: frontend/src/components/AIChatbot.tsx -> frontend/src/widgets/assistant/assistant-widget.tsx + frontend/src/widgets/assistant/index.ts. Authentication state is supplied by the root adapter and request-header behavior remains covered through the widget public API.
   - Validate: F.
 - [ ] **Commit 031 — refactor: migrate offline status widget**
   - Change: frontend/src/components/OfflineBanner.tsx -> frontend/src/widgets/navigation/offline-banner.tsx + frontend/src/app/App.tsx.

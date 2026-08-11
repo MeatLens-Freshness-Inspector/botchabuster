@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { BottomNav } from "@/widgets/navigation";
-import { AIChatbot } from "@/components/AIChatbot";
+import { AssistantWidget } from "@/widgets/assistant";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { OfflineSyncManager } from "@/components/OfflineSyncManager";
 import { InactivityGuard } from "@/components/InactivityGuard";
@@ -45,6 +45,12 @@ function AuthBottomNav() {
   const { isAdmin } = useAuth();
 
   return <BottomNav isAdmin={isAdmin} />;
+}
+
+function AuthAssistant() {
+  const { isOnlineAuthenticated } = useAuth();
+
+  return <AssistantWidget isOnlineAuthenticated={isOnlineAuthenticated} />;
 }
 
 function AuthProtectedRoute({ children }: Pick<ProtectedRouteProps, "children">) {
@@ -110,14 +116,14 @@ const App = () => {
                   <Route path={ROUTE_PATHS.onboarding} element={<AuthOnboardingRoute><OnboardingPage /></AuthOnboardingRoute>} />
 
                   {/* Protected app routes */}
-                  <Route path={ROUTE_PATHS.inspect} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><InspectPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.history} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><HistoryPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.messages} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><MessagesPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.inspect} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><InspectPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.history} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><HistoryPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.messages} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><MessagesPage /></AppLayout></AuthProtectedRoute>} />
                   <Route path={ROUTE_PATHS.dashboard} element={<Navigate to={ROUTE_PATHS.history} replace />} />
-                  <Route path={ROUTE_PATHS.profile} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><ProfilePage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileTutorial} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><ProfileTutorialPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileHelp} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><ProfileHelpPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileHelpScope} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><ProfileHelpScopePage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profile} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfilePage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileTutorial} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfileTutorialPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileHelp} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfileHelpPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileHelpScope} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfileHelpScopePage /></AppLayout></AuthProtectedRoute>} />
 
                   {/* Admin routes */}
                   <Route path={ROUTE_PATHS.admin} element={<AuthAdminRoute><AdminDashboardWrapper /></AuthAdminRoute>} />
