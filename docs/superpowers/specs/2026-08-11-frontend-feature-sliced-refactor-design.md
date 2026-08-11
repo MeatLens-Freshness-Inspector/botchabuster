@@ -97,6 +97,7 @@ The dependency rules will be checked through ESLint restricted-import rules and 
 - Enable the runner to discover both the existing top-level tests and colocated slice tests during the transition.
 - Move unit and component tests with the slice they verify once that slice is stable. Keep cross-slice integration and Playwright end-to-end journeys in the shared `tests/` hierarchy.
 - Add focused regression coverage whenever a large module is split, concentrating on public API compatibility, query/mutation behavior, offline persistence boundaries, route guards, and import-boundary rules.
+- Apply test-driven development to every production refactor unit: write the smallest behavior, characterization, import-contract, or architecture test first; run it and observe the expected RED failure; implement the minimal GREEN change; then refactor only while the tests remain green. Pure relocations require a failing public-import or characterization test, and runtime-affecting configuration requires a failing fixture test before the configuration change.
 - Add an automated non-blank-line source-size check. It fails at more than 600 lines and reports files at or above the 450-line split trigger for mandatory review before the phase can continue.
 - Validate each migration phase with typecheck, lint, the source-size and architecture checks, targeted unit/component/integration tests, a production build, and the affected critical Playwright journey. The final phase runs the full frontend suite.
 
