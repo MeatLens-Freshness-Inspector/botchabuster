@@ -3,6 +3,9 @@ import {
   createCroppedResizedImageFile as prepareCroppedResizedImageFile,
   createModelInputImageFile as prepareModelInputImageFile,
 } from "@/features/offline-analysis/lib/image-input";
+import {
+  applyRoiSegmentationWithFallback as applyFeatureRoiSegmentationWithFallback,
+} from "@/features/offline-analysis/lib/roi-segmentation";
 
 export {
   resolveCenteredObjectCoverGuideBox,
@@ -312,7 +315,7 @@ function selectBestCentralComponent(mask: Uint8Array, width: number, height: num
   return bestMask;
 }
 
-export function applyRoiSegmentationWithFallback(
+function applyLegacyRoiSegmentationWithFallback(
   imageData: ImageData
 ): { imageData: ImageData; segmented: boolean } {
   try {
@@ -364,6 +367,12 @@ export function applyRoiSegmentationWithFallback(
   } catch {
     return { imageData, segmented: false };
   }
+}
+
+export function applyRoiSegmentationWithFallback(
+  imageData: ImageData
+): { imageData: ImageData; segmented: boolean } {
+  return applyFeatureRoiSegmentationWithFallback(imageData);
 }
 
 export async function createCroppedResizedImageFile(

@@ -386,8 +386,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: extracted object-cover/crop geometry into `image-crop.ts` and browser image/file preparation into `image-input.ts`; the existing pipeline API delegates to these feature-owned modules.
   - TDD: added crop geometry tests before implementation (RED on the absent feature module, then GREEN with normalized-guide and centered-crop assertions).
   - Validate: focused geometry tests (2), typecheck, and architecture checks passed; full lint/unit validation remains part of the phase checkpoint.
-- [ ] **Commit 076 — refactor: split ROI segmentation**
-  - Change: frontend/src/lib/offlineAnalysis/meatLensPipeline.ts -> frontend/src/features/offline-analysis/lib/roi-segmentation.ts + frontend/src/features/offline-analysis/lib/mask-morphology.ts. Validate: F.
+- [x] **Commit 076 — refactor: split ROI segmentation**
+  - Change: extracted binary-mask erosion/dilation/component selection into `mask-morphology.ts` and color-based foreground/fallback image segmentation into `roi-segmentation.ts`; the pipeline now delegates its public segmentation contract.
+  - TDD: added morphology behavior before implementation (RED on the absent module, then GREEN with a stable central-region test).
+  - Validate: focused morphology test, lint (16 existing warnings), typecheck, and architecture checks passed.
 - [ ] **Commit 077 — refactor: split tensor and label processing**
   - Change: frontend/src/lib/offlineAnalysis/meatLensPipeline.ts -> frontend/src/features/offline-analysis/lib/tensor-data.ts + frontend/src/features/offline-analysis/lib/classification.ts. Validate: F.
 - [ ] **Commit 078 — refactor: move ensemble scoring**
