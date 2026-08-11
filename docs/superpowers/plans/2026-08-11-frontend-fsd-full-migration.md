@@ -232,9 +232,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 034 — refactor: create application router**
   - Change: frontend/src/App.tsx + frontend/src/app/router/app-router.tsx. Every existing route path is now declared by the app router; legacy page and guard adapters are supplied as route-element slots until later page/provider migrations.
   - Validate: B.
-- [ ] **Commit 035 — refactor: make main entry app-only**
-  - Change: frontend/src/main.tsx + frontend/src/app/index.ts.
-  - main.tsx imports App only from @/app; no providers or feature imports remain there.
+- [x] **Commit 035 — refactor: make main entry app-only**
+  - Change: frontend/src/main.tsx + frontend/src/app/index.ts + frontend/src/app/App.tsx. `main.tsx` now imports the app public entry only; startup side effects are exposed through `initializeAppRuntime`, and the temporary root composition is isolated behind the app facade until page migrations complete.
   - Validate: B.
 - [ ] **Commit 036 — test: verify all legacy route URLs**
   - Change: frontend/tests/e2e/smoke/legacy-route-contract.e2e.spec.ts + frontend/src/app/router/paths.ts.

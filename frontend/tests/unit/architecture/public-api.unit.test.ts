@@ -25,7 +25,7 @@ test("foundation boundary audit reports remaining legacy-root import owners", as
   assert.ok(
     owners.some(
       (owner) =>
-        owner.file === "App.tsx" &&
+        owner.file === "legacy-app-composition.tsx" &&
         owner.importPath === "@/contexts/AuthContext" &&
         owner.owner === "contexts",
     ),

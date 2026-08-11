@@ -16,12 +16,12 @@ import {
 } from "./meatLensPipeline";
 
 const ENV_MODEL_PATH = (
-  import.meta.env.VITE_ONNX_MODEL_PATH ?? ""
+  import.meta.env?.VITE_ONNX_MODEL_PATH ?? ""
 ).trim();
 const ENV_CLASS_LABELS = (
-  import.meta.env.VITE_ONNX_CLASS_LABELS ?? ""
+  import.meta.env?.VITE_ONNX_CLASS_LABELS ?? ""
 ).trim();
-const ENV_METADATA_PATH = (import.meta.env.VITE_MODEL_METADATA_PATH ?? "").trim();
+const ENV_METADATA_PATH = (import.meta.env?.VITE_MODEL_METADATA_PATH ?? "").trim();
 
 function isMobileNetAssetPath(path: string): boolean {
   const normalized = path.toLowerCase();
@@ -496,7 +496,7 @@ async function getOrtModule(): Promise<OrtModule> {
   }
 
   ortModule = await import("onnxruntime-web");
-  const baseUrl = import.meta.env.BASE_URL ?? "/";
+  const baseUrl = import.meta.env?.BASE_URL ?? "/";
   const wasmBasePath = `${baseUrl.replace(/\/?$/, "/")}ort/`;
   // Override only the .wasm binary URL so ORT can keep using its embedded
   // .mjs loader module. This avoids Vite /public "?import" failures.

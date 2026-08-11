@@ -27,6 +27,9 @@ import { PROTOCOL_SPOILED_REASON, buildProtocolSpoiledAnalysisResult } from "@/l
 import { analyzeOffline, prewarmModel, setActiveAnalysisMode } from "@/lib/offlineAnalysis";
 import { setActiveMobileNetModelVariant } from "@/lib/offlineAnalysis/mobileNetV3";
 import { getDeveloperOptionsFlags, getDeveloperOptionsSession, isDeveloperOptionsSessionExpired } from "@/lib/developerOptions";
+import { applyTheme } from "@/shared/lib/theme-preference";
+import { scrubSensitiveAuthHashFromUrl } from "@/lib/authUrlHash";
+import { Capacitor } from "@capacitor/core";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -64,6 +67,19 @@ const offlineSyncDependencies: OfflineSyncDependencies = {
   isDeveloperOptionsSessionExpired: (session) =>
     isDeveloperOptionsSessionExpired(session as Parameters<typeof isDeveloperOptionsSessionExpired>[0]),
 };
+
+export function initializeAppRuntime() {
+  // Start in light mode; the app router/auth layer will apply user preference from DB.
+  applyTheme(false);
+  // Immediately clear auth tokens from URL fragments to avoid accidental leakage.
+  scrubSensitiveAuthHashFromUrl();
+  // Start ONNX model warmup as early as possible in app boot.
+  prewarmModel();
+
+  if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android") {
+    document.body.classList.add("capacitor-android");
+  }
+}
 
 function ThemeRouteController() {
   const { user, profile } = useAuth();

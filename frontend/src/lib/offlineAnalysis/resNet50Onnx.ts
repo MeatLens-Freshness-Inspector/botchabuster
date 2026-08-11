@@ -16,9 +16,9 @@ import {
 } from "./meatLensPipeline";
 import type { ModelPredictionResult } from "./mobileNetV3Onnx";
 
-const ENV_MODEL_PATH = (import.meta.env.VITE_RESNET50_MODEL_PATH ?? "").trim();
-const ENV_METADATA_PATH = (import.meta.env.VITE_RESNET50_METADATA_PATH ?? "").trim();
-const ENV_CLASS_LABELS = (import.meta.env.VITE_RESNET50_CLASS_LABELS ?? "").trim();
+const ENV_MODEL_PATH = (import.meta.env?.VITE_RESNET50_MODEL_PATH ?? "").trim();
+const ENV_METADATA_PATH = (import.meta.env?.VITE_RESNET50_METADATA_PATH ?? "").trim();
+const ENV_CLASS_LABELS = (import.meta.env?.VITE_RESNET50_CLASS_LABELS ?? "").trim();
 
 const FALLBACK_IMAGE_SIZE = 224;
 const RETRY_INTERVAL_MS = 15_000;
@@ -340,7 +340,7 @@ async function getOrtModule(): Promise<OrtModule> {
   }
 
   ortModule = await import("onnxruntime-web");
-  const baseUrl = import.meta.env.BASE_URL ?? "/";
+  const baseUrl = import.meta.env?.BASE_URL ?? "/";
   const wasmBasePath = `${baseUrl.replace(/\/?$/, "/")}ort/`;
   ortModule.env.wasm.wasmPaths = {
     wasm: `${wasmBasePath}ort-wasm-simd-threaded.jsep.wasm`,
