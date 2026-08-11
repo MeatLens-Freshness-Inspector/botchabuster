@@ -50,15 +50,7 @@ import {
   verifyLocalPasskeyAssertion,
 } from "@/lib/passkeys/localUnlock";
 import type { ReportOrganization } from "@/lib/reportOrganizations";
-
-type ProfileStatus = "idle" | "loading" | "ready" | "error";
-type AuthMode =
-  | "anonymous"
-  | "bootstrapping"
-  | "online-authenticated"
-  | "offline-locked"
-  | "offline-authenticated"
-  | "expired";
+import type { AuthMode, ProfileStatus } from "@/entities/user";
 
 const createAuditId = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {

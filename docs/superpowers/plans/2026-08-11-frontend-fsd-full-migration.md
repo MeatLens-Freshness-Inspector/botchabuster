@@ -246,9 +246,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 **Interfaces:** Produces user session public API for app guards and feature-specific APIs for authentication and passkey actions. AuthProvider is a thin app provider, not a god context.
 
-- [ ] **Commit 037 — refactor: create user session model**
-  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/session-types.ts + frontend/src/entities/user/index.ts.
-  - Extract only public state types and status discriminants.
+- [x] **Commit 037 — refactor: create user session model**
+  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/session-types.ts + frontend/src/entities/user/index.ts. Extracted public status discriminants and a bounded session-state shape; the current context consumes the entity-owned vocabulary without moving its implementation yet.
   - Validate: F.
 - [ ] **Commit 038 — refactor: migrate profile read API**
   - Change: frontend/src/integrations/api/ProfileClient.ts -> frontend/src/entities/user/api/profile-client.ts + frontend/src/entities/user/api/index.ts.
