@@ -5,7 +5,7 @@ import type {
   ApiDocsBodyField,
   ApiDocsEditorValues,
   ApiDocsOperation,
-} from "./types";
+} from "@/features/developer-tools";
 
 const PROTECTED_HEADERS = new Set(["authorization", "x-csrf-token"]);
 

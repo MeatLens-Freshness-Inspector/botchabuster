@@ -624,8 +624,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved developer datasets and training presentation into developer-tools feature UI ownership.
   - TDD: added the developer-data UI public contract before relocation (RED on missing exports, then GREEN after wiring).
   - Validate: focused developer-data UI test and typecheck passed.
-- [ ] **Commit 132 — refactor: migrate API documentation model**
-  - Change: frontend/src/pages/admin-dashboard/components/developer/api-docs/catalog.ts -> frontend/src/features/developer-tools/model/api-docs-catalog.ts + frontend/src/pages/admin-dashboard/components/developer/api-docs/types.ts -> frontend/src/features/developer-tools/model/api-docs-types.ts. Validate: F.
+- [x] **Commit 132 — refactor: migrate API documentation model**
+  - Change: moved the API documentation catalog and type vocabulary into developer-tools feature model ownership and redirected page consumers through the feature public API.
+  - TDD: added the API-docs catalog public contract before relocation (RED on missing exports, then GREEN after wiring).
+  - Validate: focused API-docs model test and typecheck passed.
 - [ ] **Commit 133 — refactor: migrate API documentation request flow**
   - Change: frontend/src/pages/admin-dashboard/components/developer/api-docs/request.ts -> frontend/src/features/developer-tools/model/api-docs-request.ts + frontend/src/pages/admin-dashboard/components/developer/api-docs/useApiDocs.ts -> frontend/src/features/developer-tools/model/use-api-docs.ts. Validate: F.
 - [ ] **Commit 134 — refactor: migrate API documentation UI**

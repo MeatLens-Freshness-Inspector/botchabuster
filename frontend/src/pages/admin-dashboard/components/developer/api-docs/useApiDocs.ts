@@ -4,7 +4,7 @@ import {
   API_DOCS_CATEGORIES,
   API_DOCS_OPERATION_BY_ID,
   API_DOCS_OPERATIONS,
-} from "./catalog";
+} from "@/features/developer-tools";
 import { buildApiDocsCurl } from "./curl";
 import {
   clearApiDocsHistory,
@@ -26,7 +26,7 @@ import type {
   ApiDocsEditorValues,
   ApiDocsOperation,
   ApiDocsParameterLocation,
-} from "./types";
+} from "@/features/developer-tools";
 
 export interface ApiDocsHookState {
   categories: typeof API_DOCS_CATEGORIES;

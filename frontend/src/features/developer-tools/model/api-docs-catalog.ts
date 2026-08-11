@@ -8,7 +8,7 @@ import type {
   ApiDocsParameter,
   ApiDocsPermission,
   ApiDocsResponseKind,
-} from "./types";
+} from "./api-docs-types";
 
 export const API_DOCS_CATEGORIES: ApiDocsCategory[] = [
   { id: "auth", label: "Authentication", routePrefix: "/api/auth" },

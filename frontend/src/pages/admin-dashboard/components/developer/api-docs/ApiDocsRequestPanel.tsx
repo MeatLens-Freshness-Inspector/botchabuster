@@ -11,7 +11,7 @@ import type {
   ApiDocsEditorValues,
   ApiDocsOperation,
   ApiDocsParameterLocation,
-} from "./types";
+} from "@/features/developer-tools";
 
 export type ApiDocsRequestPanelProps = {
   operation: ApiDocsOperation;
