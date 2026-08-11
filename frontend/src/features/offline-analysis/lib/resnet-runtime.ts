@@ -13,8 +13,9 @@ import {
   type FreshnessRecommendation,
   type MeatLensModelMetadata,
   type SquareGuideBox,
-} from "./meatLensPipeline";
+} from "../../../lib/offlineAnalysis/meatLensPipeline";
 import type { ModelPredictionResult } from "@/features/offline-analysis/lib/mobilenet-runtime";
+import { ResNetSession, type ResNetOnnxSession } from "./resnet-session";
 
 const ENV_MODEL_PATH = (import.meta.env?.VITE_RESNET50_MODEL_PATH ?? "").trim();
 const ENV_METADATA_PATH = (import.meta.env?.VITE_RESNET50_METADATA_PATH ?? "").trim();
@@ -64,7 +65,7 @@ interface SessionMetadataShape {
 }
 
 type OrtModule = typeof import("onnxruntime-web");
-type OnnxSession = import("onnxruntime-web").InferenceSession;
+type OnnxSession = ResNetOnnxSession;
 
 const DEFAULT_MODEL_METADATA: MeatLensModelMetadata = {
   backbone: "ResNet50",
@@ -92,12 +93,10 @@ const MODEL_ASSET_PROFILE: ModelAssetProfile = {
 };
 
 let ortModule: OrtModule | null = null;
-let session: OnnxSession | null = null;
-let loadedModelPath: string | null = null;
+const modelSession = new ResNetSession();
 let loadPromise: Promise<boolean> | null = null;
 let metadataPromise: Promise<MeatLensModelMetadata> | null = null;
 let nextRetryAt = 0;
-const loadGeneration = 0;
 
 function isPositiveNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
@@ -350,13 +349,6 @@ async function getOrtModule(): Promise<OrtModule> {
   return ortModule;
 }
 
-function resetRuntimeModelState(): void {
-  loadPromise = null;
-  metadataPromise = null;
-  loadedModelPath = null;
-  nextRetryAt = 0;
-}
-
 async function releaseSession(activeSession: OnnxSession | null): Promise<void> {
   if (!activeSession) {
     return;
@@ -375,7 +367,7 @@ async function releaseSession(activeSession: OnnxSession | null): Promise<void> 
 }
 
 function isReady(): boolean {
-  return session !== null;
+  return modelSession.session !== null;
 }
 
 async function tryLoadModelFromCandidates(
@@ -392,13 +384,13 @@ async function tryLoadModelFromCandidates(
         graphOptimizationLevel: "basic",
       });
 
-      if (generation !== loadGeneration) {
+      if (generation !== modelSession.loadGeneration) {
         await releaseSession(createdSession);
         return false;
       }
 
-      session = createdSession;
-      loadedModelPath = modelPath;
+      modelSession.session = createdSession;
+      modelSession.loadedModelPath = modelPath;
       console.info(`[Model][ResNet50] Loaded model from ${modelPath}`);
       return true;
     } catch (error) {
@@ -411,7 +403,7 @@ async function tryLoadModelFromCandidates(
 }
 
 export async function loadResNet50Model(options: LoadModelOptions = {}): Promise<boolean> {
-  if (session) {
+  if (modelSession.session) {
     return true;
   }
 
@@ -423,12 +415,12 @@ export async function loadResNet50Model(options: LoadModelOptions = {}): Promise
     return false;
   }
 
-  const generation = loadGeneration;
+  const generation = modelSession.loadGeneration;
   loadPromise = (async () => {
     try {
       const ort = await getOrtModule();
       await loadModelMetadata(MODEL_ASSET_PROFILE);
-      if (generation !== loadGeneration) {
+      if (generation !== modelSession.loadGeneration) {
         return false;
       }
       return await tryLoadModelFromCandidates(ort, MODEL_ASSET_PROFILE, generation);
@@ -437,7 +429,7 @@ export async function loadResNet50Model(options: LoadModelOptions = {}): Promise
       return false;
     } finally {
       loadPromise = null;
-      if (!session) {
+      if (!modelSession.session) {
         nextRetryAt = Date.now() + RETRY_INTERVAL_MS;
       }
     }
@@ -451,20 +443,20 @@ export function isResNet50Ready(): boolean {
 }
 
 export function prewarmResNet50Model(): void {
-  if (navigator.onLine && !session) {
+  if (navigator.onLine && !modelSession.session) {
     void loadResNet50Model();
   }
 }
 
 export function getLoadedResNet50ModelPath(): string | null {
-  return loadedModelPath;
+  return modelSession.loadedModelPath;
 }
 
 export async function classifyWithResNet50(
   imageFile: File,
   options: ClassifyWithModelOptions = {}
 ): Promise<ModelPredictionResult | null> {
-  if (!session) {
+  if (!modelSession.session) {
     return null;
   }
 
@@ -472,7 +464,7 @@ export async function classifyWithResNet50(
     const ort = await getOrtModule();
     const metadata = await loadModelMetadata(MODEL_ASSET_PROFILE);
     const preferredInputSize = resolveInputSize(metadata);
-    const layout = deriveInputLayout(session, preferredInputSize);
+    const layout = deriveInputLayout(modelSession.session, preferredInputSize);
     const targetWidth = layout.width || preferredInputSize || FALLBACK_IMAGE_SIZE;
     const targetHeight = layout.height || preferredInputSize || FALLBACK_IMAGE_SIZE;
     const preprocessMode = resolvePreprocessMode(metadata, "resnet50");
@@ -489,8 +481,8 @@ export async function classifyWithResNet50(
     );
 
     const feeds: Record<string, unknown> = { [layout.inputName]: inputTensor };
-    const outputMap = await session.run(feeds as never);
-    const firstOutputName = session.outputNames?.[0];
+    const outputMap = await modelSession.session.run(feeds as never);
+    const firstOutputName = modelSession.session.outputNames?.[0];
     const firstOutput = (firstOutputName ? (outputMap as Record<string, unknown>)[firstOutputName] : null) as
       | { data?: Float32Array | number[] }
       | null;
@@ -500,7 +492,7 @@ export async function classifyWithResNet50(
     }
 
     const logits = Array.from(firstOutput.data as ArrayLike<number>);
-    const modelClassCount = deriveOutputClassCount(session) ?? logits.length;
+    const modelClassCount = deriveOutputClassCount(modelSession.session) ?? logits.length;
     const usableClassCount = Math.min(modelClassCount, logits.length);
 
     if (usableClassCount < 2) {
@@ -532,7 +524,7 @@ export async function classifyWithResNet50(
       recommendation: classifyRecommendation(freshnessScore),
       labelOrder: classLabels,
       metadata,
-      modelPath: loadedModelPath,
+      modelPath: modelSession.loadedModelPath,
     };
   } catch (error) {
     console.warn("[Model][ResNet50] Inference failed:", error);

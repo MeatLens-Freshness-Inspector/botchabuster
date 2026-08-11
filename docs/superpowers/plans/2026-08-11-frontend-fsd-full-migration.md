@@ -378,8 +378,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the MobileNet facade into `features/offline-analysis/lib/mobilenet.ts`, created the offline-analysis public index, and migrated camera, app composition, and inspection page consumers off the legacy `mobileNetV3` facade.
   - TDD: added the feature public API contract first (RED on the absent index), then moved the facade and reached GREEN with the public MobileNet/session tests and existing integration suite.
   - Validate: MobileNet public/session units (3), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 074 — refactor: split ResNet runtime**
-  - Change: frontend/src/lib/offlineAnalysis/resNet50Onnx.ts -> frontend/src/features/offline-analysis/lib/resnet-runtime.ts + frontend/src/features/offline-analysis/lib/resnet-session.ts. Validate: F.
+- [x] **Commit 074 — refactor: split ResNet runtime**
+  - Change: moved `resNet50Onnx.ts` into the offline-analysis feature, extracted mutable ONNX session identity into `ResNetSession`, and migrated the analysis runtime import to the feature-owned runtime.
+  - TDD: added the session ownership/reset contract before implementation (RED on the missing module, then GREEN with two focused unit tests).
+  - Validate: focused ResNet session tests (2), typecheck, lint, and architecture checks passed; full unit suite reached 198 passing with the same two pre-existing developer-dashboard failures outside this slice.
 - [ ] **Commit 075 — refactor: split image geometry preprocessing**
   - Change: frontend/src/lib/offlineAnalysis/meatLensPipeline.ts -> frontend/src/features/offline-analysis/lib/image-crop.ts + frontend/src/features/offline-analysis/lib/image-input.ts. Validate: F.
 - [ ] **Commit 076 — refactor: split ROI segmentation**
