@@ -226,8 +226,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 032 — refactor: isolate offline synchronization feature**
   - Change: frontend/src/components/OfflineSyncManager.tsx -> frontend/src/features/offline-sync/ui/offline-sync-manager.tsx + frontend/src/features/offline-sync/index.ts. The feature now owns sync orchestration behind an explicit dependency contract; the temporary root adapter supplies existing auth, queue, API, and analysis implementations until their later slice migrations.
   - Validate: I.
-- [ ] **Commit 033 — refactor: isolate inactivity protection feature**
-  - Change: frontend/src/components/InactivityGuard.tsx -> frontend/src/features/auth/ui/inactivity-guard.tsx + frontend/src/app/App.tsx.
+- [x] **Commit 033 — refactor: isolate inactivity protection feature**
+  - Change: frontend/src/components/InactivityGuard.tsx -> frontend/src/features/auth/ui/inactivity-guard.tsx + frontend/src/App.tsx. The feature receives session and navigation dependencies through its public API, preserving the existing timer and redirect behavior without importing the legacy auth context.
   - Validate: F.
 - [ ] **Commit 034 — refactor: create application router**
   - Change: frontend/src/app/App.tsx + frontend/src/app/router/app-router.tsx.

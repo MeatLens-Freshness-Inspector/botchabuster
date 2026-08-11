@@ -15,7 +15,6 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
 
 const TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -28,8 +27,13 @@ const ACTIVITY_EVENTS = [
   "click",
 ] as const;
 
-function useInactivitySignOut() {
-  const { user, lock } = useAuth();
+export type InactivityGuardProps = {
+  user: { id: string } | null;
+  lock: () => Promise<void>;
+  loginPath: string;
+};
+
+function useInactivitySignOut({ user, lock, loginPath }: InactivityGuardProps) {
   const navigate = useNavigate();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -44,10 +48,10 @@ function useInactivitySignOut() {
     clearTimer();
     timerRef.current = setTimeout(async () => {
       await lock();
-      navigate("/login");
+      navigate(loginPath);
       toast.info("Your session was locked due to inactivity.", { duration: 6000 });
     }, TIMEOUT_MS);
-  }, [clearTimer, lock, navigate]);
+  }, [clearTimer, lock, loginPath, navigate]);
 
   useEffect(() => {
     if (!user) {
@@ -70,7 +74,7 @@ function useInactivitySignOut() {
   }, [user, resetTimer, clearTimer]);
 }
 
-export function InactivityGuard() {
-  useInactivitySignOut();
+export function InactivityGuard(props: InactivityGuardProps) {
+  useInactivitySignOut(props);
   return null;
 }

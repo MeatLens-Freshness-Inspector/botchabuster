@@ -5,7 +5,7 @@ import { BottomNav } from "@/widgets/navigation";
 import { AssistantWidget } from "@/widgets/assistant";
 import { OfflineBanner } from "@/widgets/navigation";
 import { OfflineSyncManager, type OfflineSyncDependencies } from "@/features/offline-sync";
-import { InactivityGuard } from "@/components/InactivityGuard";
+import { InactivityGuard } from "@/features/auth";
 import { QueryProvider } from "@/app/providers/query-provider";
 import { NotificationProvider } from "@/app/providers/notification-provider";
 import { NetworkProvider } from "@/app/providers/network-provider";
@@ -95,6 +95,12 @@ function AuthOfflineSyncManager() {
   );
 }
 
+function AuthInactivityGuard() {
+  const { user, lock } = useAuth();
+
+  return <InactivityGuard user={user ? { id: user.id } : null} lock={lock} loginPath={ROUTE_PATHS.login} />;
+}
+
 function AuthProtectedRoute({ children }: Pick<ProtectedRouteProps, "children">) {
   const { user, isAdmin, isLoading, profile, profileStatus, retryProfileLoad } = useAuth();
 
@@ -146,7 +152,7 @@ const App = () => {
             <NetworkProvider>
               <AuthProvider>
                 <AuthOfflineSyncManager />
-                <InactivityGuard />
+                <AuthInactivityGuard />
                 <ThemeRouteController />
                 <Routes>
                   {/* Public routes */}
