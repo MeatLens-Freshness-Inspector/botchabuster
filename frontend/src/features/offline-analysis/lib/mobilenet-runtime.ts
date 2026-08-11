@@ -13,7 +13,13 @@ import {
   type FreshnessRecommendation,
   type MeatLensModelMetadata,
   type SquareGuideBox,
-} from "./meatLensPipeline";
+} from "../../../lib/offlineAnalysis/meatLensPipeline";
+import {
+  MobileNetSession,
+  type MobileNetModelVariant,
+  type MobileNetOnnxSession,
+  type ModelPreprocessContract,
+} from "./mobilenet-session";
 
 const ENV_MODEL_PATH = (
   import.meta.env?.VITE_ONNX_MODEL_PATH ?? ""
@@ -58,9 +64,6 @@ const LEGACY_ALLOWED_LABELS = new Set<FreshnessClassification>([
   "acceptable",
   "warning",
 ]);
-
-type ModelPreprocessContract = "legacy" | "segmented_center_roi";
-export type MobileNetModelVariant = "default" | "seed123_model2";
 
 interface ModelAssetProfile {
   variant: MobileNetModelVariant;
@@ -142,7 +145,7 @@ const MODEL_ASSET_PROFILES: Record<MobileNetModelVariant, ModelAssetProfile> = {
 
 // Keeps the import type-safe while still lazy-loading the runtime.
 type OrtModule = typeof import("onnxruntime-web");
-type OnnxSession = import("onnxruntime-web").InferenceSession;
+type OnnxSession = MobileNetOnnxSession;
 
 interface InputLayout {
   inputName: string;
@@ -183,14 +186,11 @@ interface ClassifyWithModelOptions {
 }
 
 let ortModule: OrtModule | null = null;
-let session: OnnxSession | null = null;
-let loadedModelPath: string | null = null;
+const modelSession = new MobileNetSession();
 let loadPromise: Promise<boolean> | null = null;
 let metadataPromise: Promise<MeatLensModelMetadata> | null = null;
 let metadataPromiseVariant: MobileNetModelVariant | null = null;
 let nextRetryAt = 0;
-let loadGeneration = 0;
-let activeModelVariant: MobileNetModelVariant = "seed123_model2";
 
 function getModelProfile(variant: MobileNetModelVariant): ModelAssetProfile {
   return MODEL_ASSET_PROFILES[variant];
@@ -200,7 +200,6 @@ function resetRuntimeModelState(): void {
   loadPromise = null;
   metadataPromise = null;
   metadataPromiseVariant = null;
-  loadedModelPath = null;
   nextRetryAt = 0;
 }
 
@@ -222,25 +221,22 @@ async function releaseSession(activeSession: OnnxSession | null): Promise<void> 
 }
 
 export function setActiveMobileNetModelVariant(variant: MobileNetModelVariant): void {
-  if (activeModelVariant === variant) {
+  if (modelSession.activeModelVariant === variant) {
     return;
   }
 
-  const previousSession = session;
-  activeModelVariant = variant;
-  loadGeneration += 1;
-  session = null;
+  const previousSession = modelSession.switchVariant(variant);
   resetRuntimeModelState();
   void releaseSession(previousSession);
   console.info(`[Model][ONNX] Switched model variant to ${getModelProfile(variant).displayName}`);
 }
 
 export function getActiveMobileNetModelVariant(): MobileNetModelVariant {
-  return activeModelVariant;
+  return modelSession.activeModelVariant;
 }
 
 export function getActiveModelPreprocessContract(): ModelPreprocessContract {
-  return getModelProfile(activeModelVariant).preprocessContract;
+  return getModelProfile(modelSession.activeModelVariant).preprocessContract;
 }
 
 function isPositiveNumber(value: unknown): value is number {
@@ -533,13 +529,13 @@ async function tryLoadModelFromCandidates(
         graphOptimizationLevel: "basic",
       });
 
-      if (generation !== loadGeneration || profile.variant !== activeModelVariant) {
+      if (generation !== modelSession.loadGeneration || profile.variant !== modelSession.activeModelVariant) {
         await releaseSession(createdSession);
         return false;
       }
 
-      session = createdSession;
-      loadedModelPath = modelPath;
+      modelSession.session = createdSession;
+      modelSession.loadedModelPath = modelPath;
       console.info(`[Model][ONNX] Loaded model from ${modelPath} (${profile.displayName})`);
       return true;
     } catch (error) {
@@ -552,7 +548,7 @@ async function tryLoadModelFromCandidates(
 }
 
 export async function loadMobileNetV3Model(options: LoadModelOptions = {}): Promise<boolean> {
-  if (session) {
+  if (modelSession.session) {
     return true;
   }
 
@@ -564,14 +560,14 @@ export async function loadMobileNetV3Model(options: LoadModelOptions = {}): Prom
     return false;
   }
 
-  const profile = getModelProfile(activeModelVariant);
-  const generation = loadGeneration;
+  const profile = getModelProfile(modelSession.activeModelVariant);
+  const generation = modelSession.loadGeneration;
 
   loadPromise = (async () => {
     try {
       const ort = await getOrtModule();
       await loadModelMetadata(profile);
-      if (generation !== loadGeneration || profile.variant !== activeModelVariant) {
+      if (generation !== modelSession.loadGeneration || profile.variant !== modelSession.activeModelVariant) {
         return false;
       }
       return await tryLoadModelFromCandidates(ort, profile, generation);
@@ -580,7 +576,7 @@ export async function loadMobileNetV3Model(options: LoadModelOptions = {}): Prom
       return false;
     } finally {
       loadPromise = null;
-      if (!session) {
+      if (!modelSession.session) {
         nextRetryAt = Date.now() + RETRY_INTERVAL_MS;
       }
     }
@@ -590,22 +586,22 @@ export async function loadMobileNetV3Model(options: LoadModelOptions = {}): Prom
 }
 
 export function isModelReady(): boolean {
-  return session !== null;
+  return modelSession.session !== null;
 }
 
 export async function classifyWithMobileNetV3(
   imageFile: File,
   options: ClassifyWithModelOptions = {}
 ): Promise<ModelPredictionResult | null> {
-  if (!session) {
+  if (!modelSession.session) {
     return null;
   }
 
   try {
     const ort = await getOrtModule();
-    const metadata = await loadModelMetadata(getModelProfile(activeModelVariant));
+    const metadata = await loadModelMetadata(getModelProfile(modelSession.activeModelVariant));
     const preferredInputSize = resolveInputSize(metadata);
-    const layout = deriveInputLayout(session, preferredInputSize);
+    const layout = deriveInputLayout(modelSession.session, preferredInputSize);
 
     const targetWidth = layout.width || preferredInputSize || FALLBACK_IMAGE_SIZE;
     const targetHeight = layout.height || preferredInputSize || FALLBACK_IMAGE_SIZE;
@@ -624,9 +620,9 @@ export async function classifyWithMobileNetV3(
     );
 
     const feeds: Record<string, unknown> = { [layout.inputName]: inputTensor };
-    const outputMap = await session.run(feeds as never);
+    const outputMap = await modelSession.session.run(feeds as never);
 
-    const firstOutputName = session.outputNames?.[0];
+    const firstOutputName = modelSession.session.outputNames?.[0];
     const firstOutput = (firstOutputName ? (outputMap as Record<string, unknown>)[firstOutputName] : null) as
       | { data?: Float32Array | number[] }
       | null;
@@ -636,7 +632,7 @@ export async function classifyWithMobileNetV3(
     }
 
     const logits = Array.from(firstOutput.data as ArrayLike<number>);
-    const modelClassCount = deriveOutputClassCount(session) ?? logits.length;
+    const modelClassCount = deriveOutputClassCount(modelSession.session) ?? logits.length;
     const usableClassCount = Math.min(modelClassCount, logits.length);
 
     if (usableClassCount < 2) {
@@ -672,7 +668,7 @@ export async function classifyWithMobileNetV3(
       recommendation: classifyRecommendation(freshnessScore),
       labelOrder: classLabels,
       metadata,
-      modelPath: loadedModelPath,
+      modelPath: modelSession.loadedModelPath,
     };
   } catch (error) {
     console.warn("[Model][ONNX] Inference failed:", error);
@@ -681,11 +677,11 @@ export async function classifyWithMobileNetV3(
 }
 
 export function prewarmModel(): void {
-  if (navigator.onLine && !session) {
+  if (navigator.onLine && !modelSession.session) {
     void loadMobileNetV3Model();
   }
 }
 
 export function getLoadedModelPath(): string | null {
-  return loadedModelPath;
+  return modelSession.loadedModelPath;
 }

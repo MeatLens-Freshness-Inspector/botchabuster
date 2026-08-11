@@ -14,7 +14,7 @@ import {
   type MeatLensModelMetadata,
   type SquareGuideBox,
 } from "./meatLensPipeline";
-import type { ModelPredictionResult } from "./mobileNetV3Onnx";
+import type { ModelPredictionResult } from "@/features/offline-analysis/lib/mobilenet-runtime";
 
 const ENV_MODEL_PATH = (import.meta.env?.VITE_RESNET50_MODEL_PATH ?? "").trim();
 const ENV_METADATA_PATH = (import.meta.env?.VITE_RESNET50_METADATA_PATH ?? "").trim();

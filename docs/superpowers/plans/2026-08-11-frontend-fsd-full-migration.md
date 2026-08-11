@@ -370,8 +370,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved model/rule explanation composition into `features/offline-analysis/lib/model-explanation.ts` and migrated the offline-analysis integration contract to the feature-owned helper without retaining a legacy forwarding module.
   - TDD: redirected the integration contract first (RED on the missing feature helper), then moved the implementation and reached GREEN across disagreement, aligned, and rule-override explanation cases.
   - Validate: offline explanation integration tests (3), full integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 072 — refactor: split MobileNet ONNX runtime**
-  - Change: frontend/src/lib/offlineAnalysis/mobileNetV3Onnx.ts -> frontend/src/features/offline-analysis/lib/mobilenet-runtime.ts + frontend/src/features/offline-analysis/lib/mobilenet-session.ts. Validate: F.
+- [x] **Commit 072 — refactor: split MobileNet ONNX runtime**
+  - Change: moved the MobileNet ONNX implementation into `features/offline-analysis/lib/mobilenet-runtime.ts` and extracted mutable model-variant/session identity into `mobilenet-session.ts`; analysis runtime, ResNet typing, and the temporary MobileNet facade now consume the feature runtime.
+  - TDD: added session lifecycle tests first (RED on the missing feature session module), then introduced the bounded session object and reached GREEN while preserving model switching, generation invalidation, inference, and retry behavior.
+  - Validate: MobileNet session units (2), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed; runtime/session files remain below 600 nonblank lines.
 - [ ] **Commit 073 — refactor: move MobileNet model facade**
   - Change: frontend/src/lib/offlineAnalysis/mobileNetV3.ts -> frontend/src/features/offline-analysis/lib/mobilenet.ts + frontend/src/features/offline-analysis/index.ts. Validate: F.
 - [ ] **Commit 074 — refactor: split ResNet runtime**

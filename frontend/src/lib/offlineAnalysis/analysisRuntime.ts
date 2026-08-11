@@ -10,7 +10,7 @@ import {
   isModelReady as isMobileNetReady,
   loadMobileNetV3Model,
   type ModelPredictionResult,
-} from "./mobileNetV3Onnx";
+} from "@/features/offline-analysis/lib/mobilenet-runtime";
 import {
   classifyWithResNet50,
   getLoadedResNet50ModelPath,
