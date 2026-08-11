@@ -91,56 +91,56 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: frontend/scripts/check-fsd-boundaries.mjs + frontend/scripts/check-fsd-boundaries.test.mjs.
   - Validate: node --test frontend/scripts/check-fsd-boundaries.test.mjs.
 
-- [ ] **Commit 002 — test: add frontend source-size checker**
+- [x] **Commit 002 — test: add frontend source-size checker**
   - Change: frontend/scripts/check-source-size.mjs + frontend/scripts/check-source-size.test.mjs.
   - Validate: node --test frontend/scripts/check-source-size.test.mjs.
 
-- [ ] **Commit 003 — build: register FSD validation commands**
+- [x] **Commit 003 — build: register FSD validation commands**
   - Change: frontend/package.json + package.json.
   - Add report-mode and enforcement-mode commands; do not yet make known oversized legacy files a CI exception.
   - Validate: npm run test:scripts.
 
-- [ ] **Commit 004 — chore: configure FSD import restrictions**
+- [x] **Commit 004 — chore: configure FSD import restrictions**
   - Change: frontend/eslint.config.js + frontend/tests/unit/architecture/foundation-boundaries.unit.test.ts.
   - Reject forbidden upward-layer and cross-slice deep imports; the test covers valid public imports and rejected deep imports.
   - Validate: F.
 
-- [ ] **Commit 005 — refactor: introduce app configuration ownership**
+- [x] **Commit 005 — refactor: introduce app configuration ownership**
   - Change: frontend/src/app/config/query-client.ts + frontend/src/App.tsx + frontend/tests/unit/app/query-client.unit.test.ts.
   - Move Query Client defaults from frontend/src/App.tsx without changing stale time, garbage-collection time, or online retry behavior. Generic environment access belongs to shared configuration because lower FSD layers cannot depend on app.
   - Validate: F.
 
-- [ ] **Commit 006 — refactor: move API base URL into shared transport**
+- [x] **Commit 006 — refactor: move API base URL into shared transport**
   - Change: frontend/src/integrations/api/apiBaseUrl.ts -> frontend/src/shared/api/base-url.ts + frontend/src/shared/config/env.ts + frontend/tests/unit/utilities/api-base-url.unit.test.ts.
   - Move the API base URL and its environment read into shared ownership while preserving native and web URL behavior. Update every active consumer in the same commit; do not retain a legacy forwarding module.
   - Validate: F.
 
-- [ ] **Commit 007 — refactor: move request initialization into shared transport**
+- [x] **Commit 007 — refactor: move request initialization into shared transport**
   - Change: frontend/src/integrations/api/apiRequest.ts -> frontend/src/shared/api/request.ts + frontend/tests/unit/utilities/api-request-timeouts.unit.test.ts.
   - Preserve AUTH_EXPIRED_EVENT, CSRF, session refresh, and HttpApiError behavior exactly. Update every active consumer in the same commit; do not retain a legacy forwarding module.
   - Validate: F.
 
-- [ ] **Commit 008 — refactor: move timeout fetch transport into shared**
+- [x] **Commit 008 — refactor: move timeout fetch transport into shared**
   - Change: frontend/src/integrations/api/fetchWithTimeout.ts -> frontend/src/shared/api/fetch-with-timeout.ts + frontend/src/shared/api/index.ts.
   - Update every active timeout consumer to the shared API public surface; do not retain a legacy forwarding module.
   - Validate: F.
 
-- [ ] **Commit 009 — refactor: establish shared API error public API**
+- [x] **Commit 009 — refactor: establish shared API error public API**
   - Change: frontend/src/shared/api/api-error.ts + frontend/src/shared/api/index.ts.
   - Move error-status and response-message helpers from request.ts without changing error messages, then update active consumers to the shared API public surface.
   - Validate: F.
 
-- [ ] **Commit 010 — refactor: migrate generic utility functions**
+- [x] **Commit 010 — refactor: migrate generic utility functions**
   - Change: frontend/src/lib/utils.ts -> frontend/src/shared/lib/utils.ts + frontend/src/lib/confidenceLevel.ts -> frontend/src/shared/lib/confidence-level.ts.
   - Update all active imports in the same commit; do not retain legacy forwarding modules.
   - Validate: F.
 
-- [ ] **Commit 011 — refactor: migrate shared date and storage helpers**
+- [x] **Commit 011 — refactor: migrate shared date and storage helpers**
   - Change: frontend/src/lib/reports/formatting.ts -> frontend/src/shared/lib/date-time.ts + frontend/src/shared/lib/storage.ts.
   - The originally mapped generic date.ts and storage.ts files do not exist in this checkout. Move the actual reusable report date formatting behavior and extract the duplicated defensive JSON storage helpers from auth and developer-option persistence; update every active date-format consumer without a legacy forwarding module.
   - Validate: F.
 
-- [ ] **Commit 012 — refactor: migrate generic viewport hooks**
+- [x] **Commit 012 — refactor: migrate generic viewport hooks**
   - Change: frontend/src/hooks/use-desktop.tsx -> frontend/src/shared/hooks/use-desktop.ts + frontend/src/hooks/use-mobile.tsx -> frontend/src/shared/hooks/use-mobile.ts.
   - Preserve exported hook behavior, update every active consumer without legacy forwarding modules, and update frontend/tests/unit/hooks/use-desktop.unit.test.tsx.
   - Validate: F.
@@ -166,7 +166,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Update the app provider consumer without changing notification rendering.
   - Validate: F.
 
-- [ ] **Commit 017 — refactor: establish app global style ownership**
+- [x] **Commit 017 — refactor: establish app global style ownership**
   - Change: frontend/src/index.css -> frontend/src/app/styles/globals.css + frontend/src/App.css -> frontend/src/app/styles/app.css.
   - Update only the bootstrap imports; preserve CSS bytes and cascade order.
   - Validate: B.

@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
-import "./index.css";
+import "./app/styles/globals.css";
 import { applyTheme } from "@/lib/themePreference";
 import { prewarmModel } from "@/lib/offlineAnalysis";
 import { scrubSensitiveAuthHashFromUrl } from "@/lib/authUrlHash";
