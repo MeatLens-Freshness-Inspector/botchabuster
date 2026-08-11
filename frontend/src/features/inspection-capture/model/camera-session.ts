@@ -25,7 +25,7 @@ import {
   readBlobAsDataUrl,
   resolveCanvasImageQuality,
   resolveFileImageQuality,
-} from "../../../components/camera/quality";
+} from "../lib/quality";
 import {
   type CameraCaptureProps,
   type CaptureQualitySource,

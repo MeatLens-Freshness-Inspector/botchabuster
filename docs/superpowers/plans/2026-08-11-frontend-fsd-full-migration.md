@@ -326,8 +326,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the camera session hook into `features/inspection-capture/model/camera-session.ts`, extracted stream acquisition, track inspection, constraint application, and stream cleanup into `camera-device.ts`, and exposed the feature contract through its public index. The existing component facade now consumes the feature hook while the view and quality/control adapters remain behaviorally unchanged for their dedicated migrations.
   - TDD: added camera-device contract tests first (RED on the missing feature API), then implemented the device/session split and reached GREEN without changing camera markup or user-facing behavior.
   - Validate: targeted camera unit tests (4), integration tests (11), typecheck, lint (16 existing warnings), architecture checks, and full unit baseline confirmed; two pre-existing developer-dashboard workspace assertions remain failing outside this change.
-- [ ] **Commit 061 — refactor: move camera platform adapter**
-  - Change: frontend/src/components/camera/quality.ts -> frontend/src/features/inspection-capture/lib/quality.ts + frontend/tests/unit/domain/image-quality/camera-quality.unit.test.ts. Validate: F.
+- [x] **Commit 061 — refactor: move camera platform adapter**
+  - Change: moved the camera quality and `FileReader` adapter into `features/inspection-capture/lib/quality.ts`, updated the session model and camera quality unit contract, and removed the component-owned quality module.
+  - TDD: redirected the existing quality contract to the feature path first (RED on the missing module), then moved the adapter and reached GREEN while preserving the test seam, canvas fallback, bitmap path, and data-URL error behavior.
+  - Validate: camera quality/device unit tests (6), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 062 — refactor: move camera control calculations**
   - Change: frontend/src/components/camera/controls.ts -> frontend/src/features/inspection-capture/lib/controls.ts + frontend/tests/unit/utilities/camera-controls.unit.test.ts. Validate: F.
 - [ ] **Commit 063 — refactor: move camera capture UI**
