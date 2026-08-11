@@ -346,8 +346,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved image-quality validation into `features/inspection-capture/lib/image-quality.ts`, updated the camera quality adapter/session contracts and offline-analysis consumer to use the feature public API, and migrated the 26-case Playwright contract.
   - TDD: redirected the browser contract first (RED on the missing feature module), then moved the implementation and reached GREEN with all 26 image-quality tests passing.
   - Validate: Playwright image-quality tests (26), camera quality/device units (6), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 066 — refactor: create inspection submission feature**
-  - Change: frontend/src/pages/user/inspections/hooks/useInspectPage.ts -> frontend/src/features/inspection-submission/model/use-submit-inspection.ts + frontend/src/entities/inspection/model/mutations.ts. Validate: I.
+- [x] **Commit 066 — refactor: create inspection submission feature**
+  - Change: created `features/inspection-submission/model/use-submit-inspection.ts` for the query-aware submission mutation and `entities/inspection/model/mutations.ts` for the pure `InspectionInsert` builder; migrated `useInspectPage` to both public contracts and removed the duplicate legacy `useCreateInspection` hook.
+  - TDD: added the entity mutation contract first (RED on the missing mutations module), then implemented the builder and feature mutation and reached GREEN while preserving protocol metadata, regulatory compliance, image fallback, and query invalidation behavior.
+  - Validate: submission mutation units (2), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 067 — refactor: move offline queue contract**
   - Change: frontend/src/lib/offlineQueue.ts -> frontend/src/features/offline-sync/model/inspection-queue.ts + frontend/src/lib/offlineAuditQueue.ts -> frontend/src/features/offline-sync/model/audit-queue.ts. Validate: F.
 - [ ] **Commit 068 — refactor: move SQLite database bootstrap**

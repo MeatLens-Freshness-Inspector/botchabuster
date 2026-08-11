@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
+import { buildInspectionInsert, useSubmitInspection } from "@/features/inspection-submission";
 import { uploadClient } from "@/integrations/api";
 import { developerOptionsClient } from "@/integrations/api/DeveloperOptionsClient";
 import { marketLocationClient } from "@/integrations/api/MarketLocationClient";
-import { useCreateInspection } from "@/hooks/useInspections";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import {
   clearDeveloperOptionsSession,
@@ -82,7 +82,7 @@ export function useInspectPage(): InspectPageViewModel {
   const autoSaveAttemptedRef = useRef(false);
   const coordinateRequestIdRef = useRef(0);
   const queuedAtRef = useRef<string | null>(null);
-  const createInspection = useCreateInspection();
+  const createInspection = useSubmitInspection();
 
   useEffect(() => {
     if (!user || !isAdmin) {
@@ -451,9 +451,6 @@ export function useInspectPage(): InspectPageViewModel {
 
     const submissionId = clientSubmissionId ?? createClientSubmissionId();
     const decisionSource = inspectionDecisionSource ?? getInspectionDecisionSource(preScanForm);
-    const protocolSpoiledReason =
-      decisionSource === "protocol_pre_scan" ? PROTOCOL_SPOILED_REASON : null;
-    const preScanPayload = toInspectionPreScanPayload(preScanForm);
     setClientSubmissionId(submissionId);
 
     if (!navigator.onLine) {
@@ -481,23 +478,19 @@ export function useInspectPage(): InspectPageViewModel {
         toast.warning("Image upload failed, saving without image");
       }
 
-      await createInspection.mutateAsync({
-        user_id: user.id,
-        client_submission_id: submissionId,
-        meat_type: DEFAULT_MEAT_TYPE,
-        location: selectedLocation.trim() || null,
-        location_latitude: coordinates?.latitude ?? null,
-        location_longitude: coordinates?.longitude ?? null,
-        ...preScanPayload,
-        inspection_decision_source: decisionSource,
-        protocol_spoiled_reason: protocolSpoiledReason,
-        captured_at: capturedInput.capturedAt,
-        classification: result.classification,
-        confidence_score: result.confidence_score,
-        flagged_deviations: result.flagged_deviations,
-        explanation: result.explanation,
-        image_url: imageUrl,
-      });
+      await createInspection.mutateAsync(
+        buildInspectionInsert({
+          userId: user.id,
+          submissionId,
+          capturedAt: capturedInput.capturedAt,
+          location: selectedLocation,
+          coordinates,
+          decisionSource,
+          preScanForm,
+          result,
+          imageUrl,
+        }),
+      );
       setSaveStatus("saved");
       toast.success("Inspection saved");
     } catch (error) {

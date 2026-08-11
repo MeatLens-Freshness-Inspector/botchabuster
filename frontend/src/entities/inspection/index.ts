@@ -38,6 +38,11 @@ export {
   inspectionKeys,
   inspectionStatsKey,
 } from "./model/queries";
+export {
+  buildInspectionInsert,
+  type InspectionSubmissionCoordinates,
+  type InspectionSubmissionInput,
+} from "./model/mutations";
 export { FreshnessBadge } from "./ui/freshness-badge";
 export { InspectionListItem } from "./ui/inspection-list-item";
 export { AnalysisResultCard } from "./ui/analysis-result-card";

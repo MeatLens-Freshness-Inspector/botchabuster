@@ -11,7 +11,6 @@ import {
   setCachedInspectionStats,
   upsertCachedInspection,
 } from "@/lib/inspectionHistoryCache";
-import type { InspectionInsert } from "@/entities/inspection";
 
 function isTransportFailure(error: unknown): boolean {
   if (error instanceof TypeError) {
@@ -85,17 +84,6 @@ export function useInspection(id: string) {
       }
     },
     enabled: !!user?.id && !!id,
-  });
-}
-
-export function useCreateInspection() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: InspectionInsert) => inspectionClient.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: inspectionKeys.all });
-      queryClient.invalidateQueries({ queryKey: inspectionKeys.statsPrefix });
-    },
   });
 }
 
