@@ -29,3 +29,12 @@ export {
   useForgotPasswordPage,
   type ForgotPasswordDependencies,
 } from "./model/use-forgot-password";
+export {
+  getResetPasswordErrorMessage,
+  resolveRecoverySession,
+} from "./model/reset-password";
+export {
+  useResetPasswordPage,
+  type ResetPasswordDependencies,
+} from "./model/use-reset-password";
+export type { RecoverySessionState } from "./model/recovery-types";

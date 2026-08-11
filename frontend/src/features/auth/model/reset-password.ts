@@ -1,5 +1,5 @@
-import { getStoredRecoveryAccessToken } from "@/lib/authUrlHash";
-import type { RecoverySessionState } from "../types";
+import { getStoredRecoveryAccessToken } from "@/shared/api";
+import type { RecoverySessionState } from "./recovery-types";
 
 export function resolveRecoverySession(hash: string): RecoverySessionState {
   const hashValue = hash.startsWith("#") ? hash.slice(1) : hash;

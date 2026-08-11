@@ -9,9 +9,11 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 import { Label } from "@/shared/ui";
-import { useResetPasswordPage } from "../hooks/useResetPasswordPage";
+import { useAuth } from "@/entities/user";
+import { useResetPasswordPage } from "@/features/auth";
 
 const ResetPasswordPageView = () => {
+  const auth = useAuth();
   const {
     password,
     confirm,
@@ -21,7 +23,9 @@ const ResetPasswordPageView = () => {
     setConfirm,
     handleSubmit,
     handleBackToSignIn,
-  } = useResetPasswordPage();
+  } = useResetPasswordPage({
+    updatePasswordWithRecoveryToken: auth.updatePasswordWithRecoveryToken,
+  });
 
   if (!isRecovery) {
     return (

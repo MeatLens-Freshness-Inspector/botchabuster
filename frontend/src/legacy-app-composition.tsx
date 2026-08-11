@@ -29,7 +29,7 @@ import { analyzeOffline, prewarmModel, setActiveAnalysisMode } from "@/lib/offli
 import { setActiveMobileNetModelVariant } from "@/lib/offlineAnalysis/mobileNetV3";
 import { getDeveloperOptionsFlags, getDeveloperOptionsSession, isDeveloperOptionsSessionExpired } from "@/lib/developerOptions";
 import { applyTheme } from "@/shared/lib/theme-preference";
-import { scrubSensitiveAuthHashFromUrl } from "@/lib/authUrlHash";
+import { scrubSensitiveAuthHashFromUrl } from "@/shared/api";
 import { Capacitor } from "@capacitor/core";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";

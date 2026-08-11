@@ -1,20 +1,22 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useAuth } from "@/entities/user";
-import { clearStoredRecoveryAccessToken } from "@/lib/authUrlHash";
+import { clearStoredRecoveryAccessToken } from "@/shared/api";
 import {
   getResetPasswordErrorMessage,
   resolveRecoverySession,
-} from "../utils/resetPasswordPage";
+} from "./reset-password";
 
-export function useResetPasswordPage() {
+export interface ResetPasswordDependencies {
+  updatePasswordWithRecoveryToken: (accessToken: string, password: string) => Promise<void>;
+}
+
+export function useResetPasswordPage({ updatePasswordWithRecoveryToken }: ResetPasswordDependencies) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [isRecovery, setIsRecovery] = useState(false);
   const [accessToken, setAccessToken] = useState("");
-  const { updatePasswordWithRecoveryToken } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {

@@ -6,3 +6,8 @@ export {
 } from "./fetch-with-timeout";
 export { createHttpApiError, getHttpApiErrorStatus, readApiErrorMessage } from "./api-error";
 export type { HttpApiError } from "./api-error";
+export {
+  clearStoredRecoveryAccessToken,
+  getStoredRecoveryAccessToken,
+  scrubSensitiveAuthHashFromUrl,
+} from "./auth-recovery";
