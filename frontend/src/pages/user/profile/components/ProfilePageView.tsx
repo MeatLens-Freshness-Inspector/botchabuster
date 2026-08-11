@@ -4,7 +4,7 @@ import { PrivacyPolicyDialog } from "@/components/PrivacyPolicyDialog";
 import { TermsAndConditionsDialog } from "@/components/TermsAndConditionsDialog";
 import { useProfileEditor } from "@/features/profile-editing";
 import { ProfilePageHeader } from "./ProfilePageHeader";
-import { ProfilePrimaryColumn } from "./ProfilePrimaryColumn";
+import { ProfilePrimaryColumn } from "@/widgets/profile/profile-primary-column";
 import { ProfileSecondaryColumn } from "./ProfileSecondaryColumn";
 import { ProfileSummaryCard } from "./ProfileSummaryCard";
 

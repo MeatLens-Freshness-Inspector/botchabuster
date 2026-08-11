@@ -2,7 +2,7 @@ import { Loader2, KeyRound, LifeBuoy, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import type { RegisteredPasskey } from "@/features/passkeys/api/passkey-client";
-import { ProfileEditableDetailsCard } from "./ProfileEditableDetailsCard";
+import { ProfileEditableDetailsCard } from "@/features/profile-editing/ui/editable-details-card";
 
 type ProfilePrimaryColumnProps = {
   email: string;

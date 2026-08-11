@@ -453,8 +453,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the profile/passkey editing workflow to `features/profile-editing/model/use-profile-editor.ts`, added the feature public index, and migrated `ProfilePageView` to the feature API.
   - TDD: added the profile-editing public contract before implementation (RED on the absent feature module, then GREEN with the editor export test).
   - Validate: focused public API test, typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 091 — refactor: move profile primary UI**
-  - Change: frontend/src/pages/user/profile/components/ProfilePrimaryColumn.tsx -> frontend/src/widgets/profile/profile-primary-column.tsx + frontend/src/pages/user/profile/components/ProfileEditableDetailsCard.tsx -> frontend/src/features/profile-editing/ui/editable-details-card.tsx. Validate: F.
+- [x] **Commit 091 — refactor: move profile primary UI**
+  - Change: moved `ProfilePrimaryColumn` into the profile widget and `ProfileEditableDetailsCard` into the profile-editing feature UI, then updated the profile page composition.
+  - TDD: added component ownership contracts before implementation (RED on both absent target modules, then GREEN with the profile UI export test).
+  - Validate: focused profile UI test, typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 092 — refactor: move profile secondary UI**
   - Change: frontend/src/pages/user/profile/components/ProfileSecondaryColumn.tsx -> frontend/src/widgets/profile/profile-secondary-column.tsx + frontend/src/pages/user/profile/components/ProfileSummaryCard.tsx -> frontend/src/entities/user/ui/profile-summary-card.tsx. Validate: F.
 - [ ] **Commit 093 — refactor: migrate profile route page**
