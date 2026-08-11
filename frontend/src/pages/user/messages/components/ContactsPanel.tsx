@@ -1,7 +1,7 @@
 import { Loader2, MessageSquare, RefreshCw, Search, Shield, UserRound } from "lucide-react";
 import { Button } from "@/shared/ui";
 import type { UserChatContact } from "@/entities/message";
-import { formatContactName, formatTimestamp } from "../utils/formatters";
+import { formatContactName, formatTimestamp } from "@/features/messaging/lib/formatters";
 
 type ContactsPanelProps = {
   contacts: UserChatContact[];

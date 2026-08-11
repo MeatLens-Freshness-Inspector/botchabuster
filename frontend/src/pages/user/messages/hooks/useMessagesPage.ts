@@ -8,7 +8,7 @@ import {
   type UserChatMessage,
 } from "@/entities/message";
 import type { MessagesMobilePanel } from "../types";
-import { formatContactName } from "../utils/formatters";
+import { formatContactName } from "@/features/messaging/lib/formatters";
 import { resolveSelectedContactId } from "../utils/viewState";
 
 const POLL_INTERVAL_MS = 6_000;

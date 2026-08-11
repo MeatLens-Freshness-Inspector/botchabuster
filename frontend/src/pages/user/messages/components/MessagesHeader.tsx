@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { CalendarDays, MessageSquare } from "lucide-react";
-import { formatTimestamp } from "../utils/formatters";
+import { formatTimestamp } from "@/features/messaging/lib/formatters";
 
 type MessagesHeaderProps = {
   isAdmin: boolean;

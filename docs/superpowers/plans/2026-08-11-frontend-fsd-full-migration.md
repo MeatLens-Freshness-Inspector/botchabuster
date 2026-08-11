@@ -473,8 +473,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved contact selection derivation into the messaging feature model and redirected its state contract test to the new ownership boundary.
   - TDD: redirected the test import before the move (RED on the absent feature model, then GREEN after extraction).
   - Validate: focused state suite (3 tests), typecheck, and lint (16 existing warnings) passed.
-- [ ] **Commit 096 — refactor: move message thread widget**
-  - Change: frontend/src/pages/user/messages/components/ThreadPanel.tsx -> frontend/src/widgets/messages/thread-panel.tsx + frontend/src/widgets/messages/index.ts. Validate: F.
+- [x] **Commit 096 — refactor: move message thread widget**
+  - Change: moved the thread panel and messaging formatters into the widget/feature slices, published the thread widget, and updated the active page composition.
+  - TDD: added the widget ownership contract before extraction (RED on the absent widget API, then GREEN after the move).
+  - Validate: focused widget test, typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 097 — refactor: move message contacts widget**
   - Change: frontend/src/pages/user/messages/components/ContactsPanel.tsx -> frontend/src/widgets/messages/contacts-panel.tsx + frontend/src/pages/user/messages/hooks/useMessagesPage.ts -> frontend/src/features/messaging/model/use-messages.ts. Validate: I.
 - [ ] **Commit 098 — refactor: migrate messages route page**

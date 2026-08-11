@@ -7,7 +7,7 @@ import type {
   UserChatContact,
   UserChatMessage,
 } from "@/entities/message";
-import { formatContactName, formatTimestamp } from "../utils/formatters";
+import { formatContactName, formatTimestamp } from "@/features/messaging/lib/formatters";
 
 type ThreadPanelProps = {
   currentUserId: string | null;

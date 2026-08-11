@@ -1,7 +1,7 @@
 import { useAuth } from "@/entities/user";
 import { MessagesHeader } from "./user/messages/components/MessagesHeader";
 import { ContactsPanel } from "./user/messages/components/ContactsPanel";
-import { ThreadPanel } from "./user/messages/components/ThreadPanel";
+import { ThreadPanel } from "@/widgets/messages";
 import { useMessagesPage } from "./user/messages/hooks/useMessagesPage";
 
 export default function MessagesPage() {
