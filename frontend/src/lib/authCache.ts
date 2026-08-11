@@ -1,6 +1,7 @@
 import type { AuthSession, AuthUser } from "@/integrations/api/AuthClient";
 import { readJson } from "@/shared/lib/storage";
-import type { Profile } from "@/integrations/api/ProfileClient";
+import type { Profile } from "@/entities/user/api/profile-client";
+export { createAuthHeaders } from "@/shared/api/auth-headers";
 
 export const USER_STORAGE_KEY = "meatlens-auth-user";
 export const SESSION_STORAGE_KEY = "meatlens-auth-session";
@@ -67,17 +68,6 @@ export function getCachedAuthSession(): AuthSession | null {
 
 export function getCachedAccessToken(): string | null {
   return getCachedAuthSession()?.access_token ?? null;
-}
-
-export function createAuthHeaders(initialHeaders?: HeadersInit): Headers {
-  const headers = new Headers(initialHeaders);
-  const accessToken = getCachedAccessToken();
-
-  if (accessToken && !headers.has("Authorization")) {
-    headers.set("Authorization", `Bearer ${accessToken}`);
-  }
-
-  return headers;
 }
 
 export function setCachedAuth(user: AuthUser, session: AuthSession | null): void {

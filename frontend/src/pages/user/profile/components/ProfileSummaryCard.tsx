@@ -10,7 +10,7 @@ import {
   Phone,
   ShieldCheck,
 } from "lucide-react";
-import type { Profile } from "@/integrations/api/ProfileClient";
+import type { Profile } from "@/entities/user/api/profile-client";
 
 type ProfileSummaryCardProps = {
   fullName: string;

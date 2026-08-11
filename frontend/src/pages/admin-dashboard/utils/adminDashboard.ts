@@ -9,7 +9,7 @@ import {
   Users,
 } from "lucide-react";
 import { format } from "date-fns";
-import type { Profile } from "@/integrations/api/ProfileClient";
+import type { Profile } from "@/entities/user/api/profile-client";
 import { resolveReportOrganization } from "@/lib/reportOrganizations";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { buildAdminRangeReportModel } from "@/lib/reports/adapters/adminRangeReport";

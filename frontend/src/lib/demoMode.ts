@@ -5,7 +5,7 @@
  */
 
 import type { AuthUser, AuthSession } from "@/integrations/api/AuthClient";
-import type { Profile } from "@/integrations/api/ProfileClient";
+import type { Profile } from "@/entities/user/api/profile-client";
 import type { Inspection, AnalysisResult } from "@/types/inspection";
 import type { LandingPageStats } from "@/integrations/api/StatsClient";
 

@@ -8,7 +8,7 @@ import { auditLogClient, type AuditLogEntry } from "@/integrations/api/AuditLogC
 import { developerDashboardClient, type DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
 import { inspectionClient } from "@/integrations/api/InspectionClient";
 import { marketLocationClient, type MarketLocation } from "@/integrations/api/MarketLocationClient";
-import { profileClient, type Profile } from "@/integrations/api/ProfileClient";
+import { profileClient, type Profile } from "@/entities/user/api";
 import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
 import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";
 import {

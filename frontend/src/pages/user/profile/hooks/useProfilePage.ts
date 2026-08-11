@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { passkeyClient, type RegisteredPasskey } from "@/integrations/api/PasskeyClient";
-import { profileClient } from "@/integrations/api/ProfileClient";
+import { profileClient } from "@/entities/user/api";
 import { uploadClient } from "@/integrations/api/UploadClient";
 import {
   canUsePasskeys,

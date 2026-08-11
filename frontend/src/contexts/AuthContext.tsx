@@ -8,7 +8,7 @@ import {
   type AuthUser,
 } from "@/integrations/api/AuthClient";
 import { passkeyClient } from "@/integrations/api/PasskeyClient";
-import { profileClient, type Profile } from "@/integrations/api/ProfileClient";
+import { profileClient, type Profile } from "@/entities/user/api";
 import {
   AUTH_EXPIRED_EVENT,
   clearApiCsrfToken,

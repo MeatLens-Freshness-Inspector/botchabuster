@@ -1,6 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import type { AuthPrimaryRole, AuthRole, AuthUser } from "@/integrations/api/AuthClient";
-import type { Profile } from "@/integrations/api/ProfileClient";
+import type { Profile } from "@/entities/user/api/profile-client";
 import type { PasswordVerifierRecord } from "@/lib/offlineCredentials";
 import type { StoredLocalPasskey } from "@/lib/passkeys/localUnlock";
 import * as sqliteImpl from "@/lib/sqlite/sqliteAuthEnvelope";

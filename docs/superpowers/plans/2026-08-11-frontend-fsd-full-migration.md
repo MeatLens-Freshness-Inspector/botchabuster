@@ -249,8 +249,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 037 — refactor: create user session model**
   - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/session-types.ts + frontend/src/entities/user/index.ts. Extracted public status discriminants and a bounded session-state shape; the current context consumes the entity-owned vocabulary without moving its implementation yet.
   - Validate: F.
-- [ ] **Commit 038 — refactor: migrate profile read API**
-  - Change: frontend/src/integrations/api/ProfileClient.ts -> frontend/src/entities/user/api/profile-client.ts + frontend/src/entities/user/api/index.ts.
+- [x] **Commit 038 — refactor: migrate profile read API**
+  - Change: frontend/src/integrations/api/ProfileClient.ts -> frontend/src/entities/user/api/profile-client.ts + frontend/src/entities/user/api/index.ts. All current profile consumers now use the entity API; shared auth-header ownership prevents the entity client from importing legacy cache code.
   - Validate: I.
 - [ ] **Commit 039 — refactor: migrate authentication API**
   - Change: frontend/src/integrations/api/AuthClient.ts -> frontend/src/features/auth/api/auth-client.ts + frontend/src/features/auth/index.ts.
