@@ -1,5 +1,5 @@
-import { LogsTab as LogsWidget } from "@/widgets/admin-dashboard";
-import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
+import LogsWidget from "./logs-tab";
+import type { AdminDashboardPageViewModel } from "../model/use-admin-dashboard";
 
 type LogsTabProps = {
   dashboard: AdminDashboardPageViewModel;

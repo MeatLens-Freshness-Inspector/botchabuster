@@ -636,8 +636,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved API documentation section, category navigation, history, request, and response panels into developer-tools feature UI ownership.
   - TDD: added the API-docs UI public contract before relocation (RED on missing exports, then GREEN after wiring).
   - Validate: focused API-docs UI test and typecheck passed.
-- [ ] **Commit 135 — refactor: compose desktop and mobile admin widgets**
-  - Change: frontend/src/pages/admin-dashboard/components/AdminDashboardDesktopPage.tsx -> frontend/src/widgets/admin-dashboard/ui/admin-dashboard-desktop.tsx + frontend/src/pages/admin-dashboard/components/AdminDashboardMobilePage.tsx -> frontend/src/widgets/admin-dashboard/ui/admin-dashboard-mobile.tsx. Validate: P-admin.
+- [x] **Commit 135 — refactor: compose desktop and mobile admin widgets**
+  - Change: consolidated the responsive admin dashboard shells, tab compositions, summary, dialogs, and developer tab into admin-dashboard widget ownership; route pages now consume public shell components.
+  - TDD: added the responsive-shell public contract before consolidation (RED on missing widget exports, then GREEN after wiring).
+  - Validate: focused shell test, typecheck, and architecture checks passed.
 - [ ] **Commit 136 — refactor: migrate admin route page**
   - Change: frontend/src/pages/AdminDashboardWrapper.tsx -> frontend/src/pages/admin/admin-dashboard-page.tsx + frontend/src/app/router/app-router.tsx. Validate: P-admin.
 

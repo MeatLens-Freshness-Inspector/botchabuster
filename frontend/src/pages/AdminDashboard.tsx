@@ -1,5 +1,5 @@
-import AdminDashboardMobilePage from "./admin-dashboard/components/AdminDashboardMobilePage";
+import { MobileAdminDashboard } from "@/widgets/admin-dashboard";
 
 export default function AdminDashboard() {
-  return <AdminDashboardMobilePage />;
+  return <MobileAdminDashboard />;
 }

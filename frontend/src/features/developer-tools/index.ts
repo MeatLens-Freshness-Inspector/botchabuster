@@ -12,6 +12,7 @@ export { DeveloperDatasetsSection } from "./ui/datasets-section";
 export { DeveloperTrainingSection } from "./ui/training-section";
 export * from "./model/api-docs-catalog";
 export * from "./model/api-docs-types";
+export * from "./model/types";
 export * from "./model/api-docs-request";
 export * from "./model/api-docs-response";
 export * from "./model/api-docs-history";

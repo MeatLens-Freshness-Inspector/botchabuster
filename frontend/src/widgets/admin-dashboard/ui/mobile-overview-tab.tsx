@@ -1,5 +1,5 @@
-import { OverviewTab as OverviewWidget } from "@/widgets/admin-dashboard";
-import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
+import { OverviewTab as OverviewWidget } from "./overview/overview-tab";
+import type { AdminDashboardPageViewModel } from "../model/use-admin-dashboard";
 
 type OverviewTabProps = {
   dashboard: AdminDashboardPageViewModel;

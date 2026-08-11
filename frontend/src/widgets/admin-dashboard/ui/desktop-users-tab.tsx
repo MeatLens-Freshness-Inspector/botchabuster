@@ -1,5 +1,5 @@
-import { UsersTab as UsersWidget } from "@/widgets/admin-dashboard";
-import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
+import { UsersTab as UsersWidget } from "./users/users-tab";
+import type { AdminDashboardPageViewModel } from "../model/use-admin-dashboard";
 
 type UsersTabProps = {
   dashboard: AdminDashboardPageViewModel;

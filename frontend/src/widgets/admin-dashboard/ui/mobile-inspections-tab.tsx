@@ -1,5 +1,5 @@
-import { InspectionsTab as InspectionsWidget } from "@/widgets/admin-dashboard";
-import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
+import InspectionsWidget from "./inspections-tab";
+import type { AdminDashboardPageViewModel } from "../model/use-admin-dashboard";
 
 type InspectionsTabProps = {
   dashboard: AdminDashboardPageViewModel;

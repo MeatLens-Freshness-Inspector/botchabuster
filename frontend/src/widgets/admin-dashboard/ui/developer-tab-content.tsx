@@ -7,9 +7,9 @@ import {
   DeveloperOverviewSection,
   DeveloperTrainingSection,
   ApiDocsSection,
+  DeveloperOptionsPanel,
 } from "@/features/developer-tools";
-import type { DeveloperWorkspaceTabKey } from "@/widgets/admin-dashboard";
-import { DeveloperSettingsSection } from "../developer/DeveloperSettingsSection";
+import type { DeveloperWorkspaceTabKey } from "@/features/developer-tools";
 
 const DeveloperTabContent = () => {
   const developer = useDeveloperDashboard();
@@ -35,7 +35,7 @@ const DeveloperTabContent = () => {
           />
         </TabsContent>
         <TabsContent value="settings" className="mt-5">
-          <DeveloperSettingsSection />
+          <DeveloperOptionsPanel />
         </TabsContent>
         <TabsContent value="api-docs" className="mt-5">
           <ApiDocsSection />

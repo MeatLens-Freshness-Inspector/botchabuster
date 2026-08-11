@@ -8,18 +8,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import AdminDashboardDialogs from "./AdminDashboardDialogs";
-import AdminDashboardSummary from "./AdminDashboardSummary";
-import { useAdminDashboard } from "@/widgets/admin-dashboard";
-import type { AdminDashboardTabKey } from "@/widgets/admin-dashboard";
-import { MobileAccessCodesTab as AccessCodesTab } from "@/widgets/admin-dashboard";
-import DeveloperTab from "../mobile/components/DeveloperTab";
-import InspectionsTab from "../mobile/components/InspectionsTab";
-import LogsTab from "../mobile/components/LogsTab";
-import { MobileMarketsTab as MarketsTab } from "@/widgets/admin-dashboard";
-import OverviewTab from "../mobile/components/OverviewTab";
-import ReportsTab from "../mobile/components/ReportsTab";
-import UsersTab from "../mobile/components/UsersTab";
+import AdminDashboardDialogs from "./admin-dashboard-dialogs";
+import AdminDashboardSummary from "./admin-dashboard-summary";
+import { useAdminDashboard } from "../model/use-admin-dashboard";
+import type { AdminDashboardTabKey } from "../model/types";
+import AccessCodesTab from "./mobile-access-codes-tab";
+import DeveloperTab from "./mobile-developer-tab";
+import InspectionsTab from "./mobile-inspections-tab";
+import LogsTab from "./mobile-logs-tab";
+import MarketsTab from "./mobile-markets-tab";
+import OverviewTab from "./mobile-overview-tab";
+import ReportsTab from "./mobile-reports-dashboard-tab";
+import UsersTab from "./mobile-users-tab";
 
 function renderMobileTab(
   activeTab: AdminDashboardTabKey,

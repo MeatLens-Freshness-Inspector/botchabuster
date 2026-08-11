@@ -1,5 +1,5 @@
-import AdminDashboardDesktopPage from "./admin-dashboard/components/AdminDashboardDesktopPage";
+import { DesktopAdminDashboard } from "@/widgets/admin-dashboard";
 
 export default function DesktopAdminDashboard() {
-  return <AdminDashboardDesktopPage />;
+  return <DesktopAdminDashboard />;
 }

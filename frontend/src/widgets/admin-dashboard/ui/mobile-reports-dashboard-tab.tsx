@@ -1,5 +1,5 @@
-import { MobileReportsTab as ReportsWidget } from "@/widgets/admin-dashboard";
-import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
+import ReportsWidget from "./mobile-reports-tab";
+import type { AdminDashboardPageViewModel } from "../model/use-admin-dashboard";
 
 type ReportsTabProps = {
   dashboard: AdminDashboardPageViewModel;

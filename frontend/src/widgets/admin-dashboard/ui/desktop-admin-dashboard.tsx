@@ -2,18 +2,18 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
-import AdminDashboardDialogs from "./AdminDashboardDialogs";
-import AdminDashboardSummary from "./AdminDashboardSummary";
-import { useAdminDashboard } from "@/widgets/admin-dashboard";
-import type { AdminDashboardTabKey } from "@/widgets/admin-dashboard";
-import AccessCodesTab from "../desktop/components/AccessCodesTab";
-import DeveloperTab from "../desktop/components/DeveloperTab";
-import { DesktopInspectionsTab as InspectionsTab } from "@/widgets/admin-dashboard";
-import { DesktopLogsTab as LogsTab } from "@/widgets/admin-dashboard";
-import MarketsTab from "../desktop/components/MarketsTab";
-import OverviewTab from "../desktop/components/OverviewTab";
-import ReportsTab from "../desktop/components/ReportsTab";
-import UsersTab from "../desktop/components/UsersTab";
+import AdminDashboardDialogs from "./admin-dashboard-dialogs";
+import AdminDashboardSummary from "./admin-dashboard-summary";
+import { useAdminDashboard } from "../model/use-admin-dashboard";
+import type { AdminDashboardTabKey } from "../model/types";
+import AccessCodesTab from "./desktop-access-codes-tab";
+import DeveloperTab from "./desktop-developer-tab";
+import InspectionsTab from "./desktop-inspections-tab";
+import LogsTab from "./desktop-logs-tab";
+import MarketsTab from "./desktop-markets-tab";
+import OverviewTab from "./desktop-overview-tab";
+import ReportsTab from "./desktop-reports-tab";
+import UsersTab from "./desktop-users-tab";
 
 function renderDesktopTab(
   activeTab: AdminDashboardTabKey,

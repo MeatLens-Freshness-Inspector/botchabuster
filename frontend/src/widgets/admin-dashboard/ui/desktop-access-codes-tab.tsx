@@ -1,5 +1,5 @@
-import { AccessCodesTab as AccessCodesWidget } from "@/widgets/admin-dashboard";
-import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
+import AccessCodesWidget from "./access-codes-tab";
+import type { AdminDashboardPageViewModel } from "../model/use-admin-dashboard";
 
 type AccessCodesTabProps = {
   dashboard: AdminDashboardPageViewModel;
