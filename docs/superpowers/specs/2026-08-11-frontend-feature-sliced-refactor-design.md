@@ -11,6 +11,8 @@ Refactor the MeatLens frontend into a scalable Feature-Sliced Design (FSD) archi
 - Treat current unit, component, integration, and end-to-end tests as behavior contracts throughout the migration.
 - Do not redesign components, change visual styling, alter content, introduce features, change the backend, or perform a big-bang rewrite.
 - Migrate in independently releasable slices. A phase is complete only after its targeted validation passes and its compatibility boundary is explicit.
+- This is a full-scale migration, not a partial reorganization. The completed frontend contains only the FSD architecture defined here; it retains no legacy architectural layer, legacy root ownership, compatibility facade, or legacy import alias.
+- The implementation must produce at least 140 qualifying migration commits after this design phase. A qualifying commit changes at least two non-empty files, delivers one independently verifiable architectural or behavior-preserving refactor unit, and is neither empty, single-file, merge-only, lockfile-only, formatting-only, nor created solely to increase the count.
 
 ## Target architecture
 
@@ -82,7 +84,7 @@ Use classes only when they materially improve encapsulation, lifecycle ownership
 - `entities` may import from `shared`.
 - `shared` imports only external packages and other shared modules.
 - Cross-slice imports use the exporting slice's `index.ts`; deep imports are prohibited outside the slice.
-- A compatibility re-export may exist only while a documented migration phase has live consumers. It must be deleted in the cleanup phase.
+- Do not introduce compatibility re-exports, legacy aliases, or a parallel legacy layer. A migration commit moves a bounded slice together with every consumer it changes; any unavoidable bridge must be resolved in that same commit and cannot persist into the next commit.
 
 The dependency rules will be checked through ESLint restricted-import rules and a focused architecture test or script, so violations fail local validation and CI instead of relying on convention.
 
@@ -97,19 +99,21 @@ The dependency rules will be checked through ESLint restricted-import rules and 
 ## Migration sequence
 
 ```text
-Foundation
-  -> shared transport and platform boundaries plus app shell
-  -> public/authentication/session flows
-  -> inspector, camera, offline analysis, history, and reports
-  -> profile, messages, onboarding, tutorials, and assistant
-  -> administrator and developer dashboard domains
-  -> compatibility removal and legacy-folder deletion
+Foundation and architecture enforcement (minimum 18 commits)
+  -> shared transport, platform boundaries, and app shell (minimum 18 commits)
+  -> public/authentication/session flows (minimum 16 commits)
+  -> inspector, camera, offline analysis, history, and reports (minimum 36 commits)
+  -> profile, messages, onboarding, tutorials, and assistant (minimum 18 commits)
+  -> administrator and developer dashboard domains (minimum 30 commits)
+  -> final verification and legacy-folder deletion (minimum 8 commits)
 ```
 
-The foundation phase establishes aliases, public-slice exports, dependency checks, and test discovery before feature code moves. Public/authentication flows migrate next because route guards and session wiring establish patterns used by later protected routes. Inspector and offline workflows then move as a bounded set because camera capture, local inference, inspection submission, history, and reporting share the inspection domain. Administrator and developer tooling migrate after the domain boundaries are proven, which limits risk around the current large dashboard modules.
+These phase floors total 144 qualifying migration commits, giving a small safety margin over the required 140. The detailed implementation plan will map each count to a real source-and-test, source-and-consumer, or source-and-configuration unit. Documentation-only commits, the design and plan commits, merge commits, and any commit that changes fewer than two non-empty files do not count toward the floor.
+
+The foundation phase establishes aliases, public-slice exports, dependency checks, and test discovery before feature code moves. Public/authentication flows migrate next because route guards and session wiring establish patterns used by later protected routes. Inspector and offline workflows then move as a bounded set because camera capture, local inference, inspection submission, history, and reporting share the inspection domain. Administrator and developer tooling migrate after the domain boundaries are proven, which limits risk around the current large dashboard modules. Existing root folders may shrink only as their contents are moved directly into final FSD slices; they are not retained as an architectural compatibility layer.
 
 No legacy root ownership remains at completion: production code will not be owned by the former top-level `components/`, `pages/`, `hooks/`, `lib/`, `contexts/`, or `integrations/api/` directories. Existing code is either moved into a final FSD slice or deleted only when proven unused.
 
 ## Definition of done
 
-The refactor is complete when all production frontend code belongs to an FSD layer and public slice API; route pages are composition-only; dependency direction and public import rules are automatically checked; compatibility exports and obsolete root folders have been removed; and typecheck, lint, production build, existing behavior tests, and critical end-to-end journeys pass with no intentional UI or UX changes.
+The refactor is complete when all production frontend code belongs to an FSD layer and public slice API; route pages are composition-only; dependency direction and public import rules are automatically checked; no compatibility exports, legacy aliases, or obsolete root folders remain; and typecheck, lint, production build, existing behavior tests, and critical end-to-end journeys pass with no intentional UI or UX changes. The final migration audit confirms at least 140 qualifying commits, each modifying at least two non-empty files and representing a meaningful, independently verified change.
