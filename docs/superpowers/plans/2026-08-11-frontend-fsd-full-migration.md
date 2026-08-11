@@ -304,8 +304,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 053 — refactor: move inspection domain types**
   - Change: moved inspection domain types into `entities/inspection/model/types.ts`, added the entity public API and stable domain vocabularies, and migrated all source/test consumers off the legacy `types/inspection.ts` path.
   - Validate: inspection domain tests (5), typecheck, lint, and architecture checks passed; no legacy inspection-type imports remain.
-- [ ] **Commit 054 — refactor: move inspection pre-scan model**
-  - Change: frontend/src/lib/inspectionPreScan.ts -> frontend/src/entities/inspection/model/pre-scan.ts + frontend/tests/unit/domain/inspections/inspection-pre-scan.unit.test.ts. Validate: F.
+- [x] **Commit 054 — refactor: move inspection pre-scan model**
+  - Change: moved the pre-scan protocol model into `entities/inspection/model/pre-scan.ts`, exposed it through the inspection entity API, and migrated app/page consumers and tests.
+  - Validate: pre-scan unit tests (3), typecheck, and lint passed with the existing 16 warnings.
 - [ ] **Commit 055 — refactor: move inspection location model**
   - Change: frontend/src/lib/inspectionLocation.ts -> frontend/src/entities/inspection/model/location.ts + frontend/tests/unit/domain/inspections/inspection-location.unit.test.ts. Validate: F.
 - [ ] **Commit 056 — refactor: move inspection endpoint client**

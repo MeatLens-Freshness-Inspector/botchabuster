@@ -24,7 +24,7 @@ import {
   isPreScanChecklistComplete as isPreScanChecklistCompleteHelper,
   toInspectionPreScanPayload,
   type InspectionPreScanForm,
-} from "@/lib/inspectionPreScan";
+} from "@/entities/inspection";
 import {
   analyzeOffline,
   getMockOfflineAnalysisResult,

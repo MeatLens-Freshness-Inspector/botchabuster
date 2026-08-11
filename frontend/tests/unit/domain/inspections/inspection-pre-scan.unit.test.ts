@@ -8,7 +8,7 @@ import {
   hasProtocolFailure,
   isPreScanChecklistComplete,
   toInspectionPreScanPayload,
-} from "../../../../src/lib/inspectionPreScan";
+} from "../../../../src/entities/inspection/model/pre-scan";
 
 test("isPreScanChecklistComplete requires all fields and observed light color when the light is incorrect", () => {
   const incomplete = createEmptyPreScanForm();
