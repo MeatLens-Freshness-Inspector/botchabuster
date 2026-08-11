@@ -40,15 +40,17 @@ import {
 } from "@/lib/offlineAuthEnvelope";
 import { startPasskeyAuthentication } from "@/features/passkeys/lib/browser";
 import {
-  clearLegacyOfflineUnlockRequired,
-  clearLegacyStoredLocalPasskey,
   createLocalPasskeyAuthenticationOptions,
   createLocalPasskeyChallenge,
+  verifyLocalPasskeyAssertion,
+} from "@/features/passkeys/lib/local-unlock";
+import {
+  clearLegacyOfflineUnlockRequired,
+  clearLegacyStoredLocalPasskey,
   getLegacyOfflineUnlockRequired,
   getLegacyStoredLocalPasskey,
   getStoredLocalPasskey,
-  verifyLocalPasskeyAssertion,
-} from "@/lib/passkeys/localUnlock";
+} from "@/legacy-passkey-storage";
 import type { ReportOrganization } from "@/lib/reportOrganizations";
 import type { AuthMode, ProfileStatus } from "@/entities/user";
 

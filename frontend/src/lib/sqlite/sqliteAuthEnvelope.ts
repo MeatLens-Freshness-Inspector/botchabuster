@@ -11,7 +11,7 @@
 import type { AuthPrimaryRole, AuthRole, AuthUser } from "@/features/auth/api/auth-client";
 import type { Profile } from "@/entities/user/api/profile-client";
 import type { PasswordVerifierRecord } from "@/lib/offlineCredentials";
-import type { StoredLocalPasskey } from "@/lib/passkeys/localUnlock";
+import type { StoredLocalPasskey } from "@/features/passkeys/lib/local-unlock";
 import { openDb } from "./db";
 
 // ---------------------------------------------------------------------------

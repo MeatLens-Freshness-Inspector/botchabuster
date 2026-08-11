@@ -258,8 +258,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 040 — refactor: migrate passkey browser API**
   - Change: frontend/src/integrations/api/PasskeyClient.ts -> frontend/src/features/passkeys/api/passkey-client.ts + frontend/src/lib/passkeys/browser.ts -> frontend/src/features/passkeys/lib/browser.ts. Auth, login, profile, local-unlock, and passkey tests now consume the passkeys slice API.
   - Validate: F.
-- [ ] **Commit 041 — refactor: migrate local passkey unlock**
-  - Change: frontend/src/lib/passkeys/localUnlock.ts -> frontend/src/features/passkeys/lib/local-unlock.ts + frontend/tests/unit/domain/auth/local-passkey-auth.unit.test.ts.
+- [x] **Commit 041 — refactor: migrate local passkey unlock**
+  - Change: frontend/src/lib/passkeys/localUnlock.ts -> frontend/src/features/passkeys/lib/local-unlock.ts + frontend/tests/unit/domain/auth/local-passkey-auth.unit.test.ts. Pure challenge construction and assertion verification now belong to the passkeys feature; the temporary root persistence adapter preserves the current envelope behavior until the session-cache/envelope commits remove it.
   - Validate: F.
 - [ ] **Commit 042 — refactor: split session cache persistence**
   - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/session-cache.ts + frontend/src/lib/authCache.ts -> frontend/src/entities/user/model/session-cache-storage.ts.

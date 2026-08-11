@@ -13,7 +13,7 @@ import {
 import {
   clearStoredLocalPasskey,
   storeLocalPasskey,
-} from "@/lib/passkeys/localUnlock";
+} from "@/legacy-passkey-storage";
 import { applyTheme } from "@/shared/lib/theme-preference";
 import type { ProfileDialogKey, ProfileDialogState } from "../types";
 import { applyLocalDeviceReady, getProfileInitials } from "../utils/profilePage";

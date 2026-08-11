@@ -14,3 +14,9 @@ export {
   startPasskeyAuthentication,
   startPasskeyRegistration,
 } from "./lib/browser";
+export {
+  createLocalPasskeyAuthenticationOptions,
+  createLocalPasskeyChallenge,
+  verifyLocalPasskeyAssertion,
+  type StoredLocalPasskey,
+} from "./lib/local-unlock";
