@@ -1,17 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useAuth } from "@/entities/user";
-import {
-  isReportOrganization,
-  type ReportOrganization,
-} from "@/lib/reportOrganizations";
+import type { ReportOrganization } from "@/entities/user/api";
 import {
   getErrorMessage,
   validateSignupState,
-} from "../utils/signupPage";
+} from "./signup";
 
-export function useSignupPage() {
+export interface SignupWorkflowDependencies {
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string,
+    accessCode: string,
+    reportOrganization: ReportOrganization,
+  ) => Promise<void>;
+  isReportOrganization: (value: unknown) => value is ReportOrganization;
+}
+
+export function useSignupPage({ signUp, isReportOrganization }: SignupWorkflowDependencies) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +32,6 @@ export function useSignupPage() {
   const [showTermsDialog, setShowTermsDialog] = useState(false);
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -36,7 +42,7 @@ export function useSignupPage() {
       acceptedTerms,
       accessCode,
       reportOrganization,
-    });
+    }, isReportOrganization);
 
     if (validationError) {
       setFormError(validationError);

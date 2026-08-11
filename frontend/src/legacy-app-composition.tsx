@@ -23,7 +23,7 @@ import { uploadClient } from "@/integrations/api/UploadClient";
 import { inspectionClient } from "@/integrations/api/InspectionClient";
 import { auditLogClient } from "@/integrations/api/AuditLogClient";
 import { getPendingScans, removeScan } from "@/lib/offlineQueue";
-import { getPendingAuditLogs, removeAuditLog } from "@/lib/offlineAuditQueue";
+import { getPendingAuditLogs, removeAuditLog } from "@/features/offline-sync";
 import { PROTOCOL_SPOILED_REASON, buildProtocolSpoiledAnalysisResult } from "@/lib/inspectionPreScan";
 import { analyzeOffline, prewarmModel, setActiveAnalysisMode } from "@/lib/offlineAnalysis";
 import { setActiveMobileNetModelVariant } from "@/lib/offlineAnalysis/mobileNetV3";

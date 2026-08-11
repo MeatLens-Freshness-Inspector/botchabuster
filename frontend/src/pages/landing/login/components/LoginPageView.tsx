@@ -11,8 +11,7 @@ import {
 } from "@/shared/ui/card";
 import { Label } from "@/shared/ui";
 import { useAuth } from "@/entities/user";
-import { useLoginPage } from "@/features/auth/model/use-login";
-import { getLoginDescription } from "@/features/auth/model/login";
+import { getLoginDescription, useLoginPage } from "@/features/auth";
 
 const LoginPageView = () => {
   const auth = useAuth();

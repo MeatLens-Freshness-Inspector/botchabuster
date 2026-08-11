@@ -21,7 +21,7 @@ import {
   type DeveloperOptionsFlags,
 } from "@/lib/developerOptions";
 import { clearPendingScans, getPendingCount, getPendingScans } from "@/lib/offlineQueue";
-import { clearPendingAuditLogs, getPendingAuditCount } from "@/lib/offlineAuditQueue";
+import { clearPendingAuditLogs, getPendingAuditCount } from "@/features/offline-sync";
 
 type FlagDefinition = {
   key: keyof DeveloperOptionsFlags;

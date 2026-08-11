@@ -1,5 +1,5 @@
 import { Capacitor } from "@capacitor/core";
-import * as sqliteImpl from "@/lib/sqlite/sqliteAuditQueue";
+import * as sqliteImpl from "../api/sqlite-audit-queue";
 
 const isNative = () => Capacitor.isNativePlatform();
 

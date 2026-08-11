@@ -29,7 +29,7 @@ import {
   readLegacyOfflineCredential,
   verifyPasswordVerifier,
 } from "@/entities/user/model/offline-credentials";
-import { queueAuditLog } from "@/lib/offlineAuditQueue";
+import { queueAuditLog } from "@/features/offline-sync";
 import {
   clearOfflineAuthEnvelope,
   isOfflineAuthExpired,

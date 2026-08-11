@@ -19,11 +19,14 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { REPORT_ORGANIZATION_OPTIONS } from "@/lib/reportOrganizations";
+import { isReportOrganization } from "@/lib/reportOrganizations";
+import { useAuth } from "@/entities/user";
 import { TermsAndConditionsDialog } from "@/components/TermsAndConditionsDialog";
 import { PrivacyPolicyDialog } from "@/components/PrivacyPolicyDialog";
-import { useSignupPage } from "../hooks/useSignupPage";
+import { useSignupPage } from "@/features/auth";
 
 const SignupPageView = () => {
+  const auth = useAuth();
   const {
     fullName,
     email,
@@ -46,7 +49,10 @@ const SignupPageView = () => {
     handleSubmit,
     handleAcceptedTermsChange,
     handleAcceptedPrivacyChange,
-  } = useSignupPage();
+  } = useSignupPage({
+    signUp: auth.signUp,
+    isReportOrganization,
+  });
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">

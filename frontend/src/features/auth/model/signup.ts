@@ -1,11 +1,9 @@
-import { isReportOrganization } from "@/lib/reportOrganizations";
-
 export function validateSignupState(input: {
   acceptedPrivacy: boolean;
   acceptedTerms: boolean;
   accessCode: string;
   reportOrganization: string;
-}): string | null {
+}, isReportOrganization: (value: unknown) => boolean): string | null {
   if (!input.acceptedTerms) {
     return "Please accept the Terms and Conditions before creating an account.";
   }

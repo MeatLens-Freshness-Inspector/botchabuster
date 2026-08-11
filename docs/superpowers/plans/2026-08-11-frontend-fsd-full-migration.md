@@ -276,9 +276,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 046 — refactor: migrate sign-in form workflow**
   - Change: moved the login workflow hook and pure destination/description helpers into `features/auth/model`, injected the session actions to preserve layer direction, and updated the existing login view to consume the feature model. The session context contract now lives in the user entity so pages do not import the app layer.
   - Validate: login workflow, provider, and boundary tests passed; typecheck and integration tests passed.
-- [ ] **Commit 047 — refactor: migrate sign-up form workflow**
-  - Change: frontend/src/pages/landing/signup/hooks/useSignupPage.ts -> frontend/src/features/auth/model/use-signup.ts + frontend/src/pages/landing/signup/components/SignupPageView.tsx.
-  - Validate: F.
+- [x] **Commit 047 — refactor: migrate sign-up form workflow**
+  - Change: moved sign-up state and validation into `features/auth/model`, injected the organization predicate and auth action through the page adapter, and updated the unchanged sign-up view. The offline audit queue and SQLite adapter were also moved behind the offline-sync feature public API because the app provider consumes that capability.
+  - Validate: signup and offline-sync contract tests passed, typecheck passed, and lint passed with the existing 16 warnings.
 - [ ] **Commit 048 — refactor: migrate password recovery workflow**
   - Change: frontend/src/pages/landing/forget-password/hooks/useForgotPasswordPage.ts -> frontend/src/features/auth/model/use-forgot-password.ts + frontend/src/pages/landing/forget-password/components/ForgotPasswordPageView.tsx.
   - Validate: F.
