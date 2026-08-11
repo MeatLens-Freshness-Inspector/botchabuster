@@ -1,7 +1,7 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { useDeveloperDashboard } from "../../hooks/useDeveloperDashboard";
-import type { DeveloperWorkspaceTabKey } from "../../types";
+import type { DeveloperWorkspaceTabKey } from "@/widgets/admin-dashboard";
 import { DeveloperDatasetsSection } from "../developer/DeveloperDatasetsSection";
 import { DeveloperOverviewSection } from "../developer/DeveloperOverviewSection";
 import { DeveloperSettingsSection } from "../developer/DeveloperSettingsSection";

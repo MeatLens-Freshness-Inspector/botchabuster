@@ -11,7 +11,7 @@ import {
 import { Input } from "@/shared/ui";
 import { SmartPagination } from "@/shared/ui/SmartPagination";
 import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
-import { getInspectorLabel } from "../../utils/adminDashboard";
+import { getInspectorLabel } from "@/widgets/admin-dashboard";
 
 type InspectionsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;

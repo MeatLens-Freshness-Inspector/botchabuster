@@ -10,15 +10,15 @@ import { inspectionClient } from "@/entities/inspection";
 import { marketLocationClient, type MarketLocation } from "@/entities/market-location";
 import { profileClient, type Profile } from "@/entities/user/api";
 import { formatInspectionLocationLabel } from "@/entities/inspection";
-import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";
+import { DEFAULT_MARKET_LOCATIONS } from "@/entities/market-location";
 import {
   getReportOrganizationLabel,
   isReportOrganization,
-} from "@/lib/reportOrganizations";
+} from "@/features/reports";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { composeReportPdf } from "@/features/reports";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
-import { buildDeveloperInAppMetrics } from "../utils/developerInAppMetrics";
+import { buildDeveloperInAppMetrics } from "@/features/developer-tools";
 import type {
   AdminDashboardTabKey,
   ManagedUserForm,
@@ -26,7 +26,7 @@ import type {
   ReportLocationBreakdown,
   ReportRow,
   RoleStat,
-} from "../types";
+} from "@/widgets/admin-dashboard";
 import {
   ADMIN_DASHBOARD_CHART_CONFIG,
   ADMIN_DASHBOARD_MOBILE_CATEGORY_AXIS_PROPS,
@@ -49,7 +49,7 @@ import {
   parsePayloadSource,
   parsePayloadText,
   toCsvValue,
-} from "../utils/adminDashboard";
+} from "@/widgets/admin-dashboard";
 
 export function useAdminDashboardPage() {
   const { user, profile, isDeveloper } = useAuth();

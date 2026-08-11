@@ -1,4 +1,4 @@
-import { getReportOrganizationLabel } from "../../../../lib/reportOrganizations";
+import { getReportOrganizationLabel } from "../../model/organizations";
 import { buildReportChartContent } from "./report-charts";
 import type { Content, ContentTable } from "pdfmake/interfaces";
 import type {

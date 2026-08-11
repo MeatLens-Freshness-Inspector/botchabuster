@@ -34,7 +34,7 @@ import {
   parsePayloadActor,
   parsePayloadSource,
   parsePayloadText,
-} from "../../utils/adminDashboard";
+} from "@/widgets/admin-dashboard";
 
 type LogsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;

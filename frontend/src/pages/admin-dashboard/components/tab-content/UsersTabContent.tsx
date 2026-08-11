@@ -19,7 +19,7 @@ import {
   REPORT_ORGANIZATION_OPTIONS,
   getReportOrganizationLabel,
   type ReportOrganization,
-} from "@/lib/reportOrganizations";
+} from "@/features/reports";
 import { Button } from "@/shared/ui";
 import { SmartPagination } from "@/shared/ui/SmartPagination";
 import {

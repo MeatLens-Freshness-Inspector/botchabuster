@@ -1,7 +1,7 @@
 import {
   resolveReportOrganization,
   type ReportOrganization,
-} from "@/lib/reportOrganizations";
+} from "../model/organizations";
 
 const REPORT_LETTERHEAD_FILES: Record<ReportOrganization, string> = {
   dti: "DTI zambales letterhead.pdf",

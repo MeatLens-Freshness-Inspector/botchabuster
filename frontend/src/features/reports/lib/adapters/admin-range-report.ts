@@ -1,7 +1,7 @@
-import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";
-import type { ReportOrganization } from "@/lib/reportOrganizations";
+import { DEFAULT_MARKET_LOCATIONS } from "@/entities/market-location";
+import type { ReportOrganization } from "@/features/reports/model/types";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
-import { getTemplateKeyForOrganization } from "@/lib/reports/pdf/assets";
+import { getTemplateKeyForOrganization } from "../pdf/assets";
 import {
   buildSharedMeatDetailSection,
   buildSharedMeatSummarySection,
@@ -12,7 +12,7 @@ import type {
   ReportInspectionEvidenceItem,
   ReportSection,
 } from "@/features/reports/model/types";
-import { buildDeveloperInAppMetrics, type DeveloperMetricRecord } from "@/pages/admin-dashboard/utils/developerInAppMetrics";
+import { buildDeveloperInAppMetrics, type DeveloperMetricRecord } from "@/features/developer-tools";
 
 type AdminSummary = {
   total: number;

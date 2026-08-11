@@ -1,4 +1,4 @@
-import { resolveReportOrganization } from "@/lib/reportOrganizations";
+import { resolveReportOrganization } from "../../model/organizations";
 import type { ReportTemplateKey } from "@/features/reports/model/types";
 
 const REPORT_TEMPLATE_FRAME_ASSET_PATHS: Record<ReportTemplateKey, string> = {

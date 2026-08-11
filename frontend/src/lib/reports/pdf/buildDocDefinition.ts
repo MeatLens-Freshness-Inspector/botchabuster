@@ -1,7 +1,7 @@
 import {
   loadOptionalReportImageAsset,
   loadReportBrandAsset,
-} from "@/lib/reports/pdf/assets";
+} from "@/features/reports/lib/pdf/assets";
 import { getReportPageFrame } from "@/features/reports/lib/page-frames";
 import { buildReportDocumentHeader } from "@/features/reports/lib/pdf/document-header";
 import { buildReportDocumentSections } from "@/features/reports/lib/pdf/document-sections";

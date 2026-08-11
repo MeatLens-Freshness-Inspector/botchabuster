@@ -5,7 +5,7 @@ import {
 import AdminDashboardDialogs from "./AdminDashboardDialogs";
 import AdminDashboardSummary from "./AdminDashboardSummary";
 import { useAdminDashboardPage } from "../hooks/useAdminDashboardPage";
-import type { AdminDashboardTabKey } from "../types";
+import type { AdminDashboardTabKey } from "@/widgets/admin-dashboard";
 import AccessCodesTab from "../desktop/components/AccessCodesTab";
 import DeveloperTab from "../desktop/components/DeveloperTab";
 import InspectionsTab from "../desktop/components/InspectionsTab";

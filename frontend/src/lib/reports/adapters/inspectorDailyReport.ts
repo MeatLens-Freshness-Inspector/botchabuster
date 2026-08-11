@@ -1,6 +1,6 @@
-import type { ReportOrganization } from "@/lib/reportOrganizations";
+import type { ReportOrganization } from "@/features/reports/model/types";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
-import { getTemplateKeyForOrganization } from "@/lib/reports/pdf/assets";
+import { getTemplateKeyForOrganization } from "@/features/reports/lib/pdf/assets";
 import {
   buildSharedMeatSummarySection,
 } from "@/features/reports/lib/meat-sections";

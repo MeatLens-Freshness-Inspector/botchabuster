@@ -29,7 +29,7 @@ import {
   PIE_COLORS,
   UNSPECIFIED_LOCATION_LABEL,
   truncateChartLabel,
-} from "../../utils/adminDashboard";
+} from "@/widgets/admin-dashboard";
 
 type OverviewTabContentProps = {
   dashboard: AdminDashboardPageViewModel;

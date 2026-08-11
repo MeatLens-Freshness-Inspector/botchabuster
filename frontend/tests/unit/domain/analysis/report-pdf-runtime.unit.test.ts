@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getTemplateKeyForOrganization } from "../../../../src/lib/reports/pdf/assets";
+import { getTemplateKeyForOrganization } from "../../../../src/features/reports/lib/pdf/assets";
 import { loadPdfMake } from "../../../../src/lib/reports/pdf/runtime";
 
 test("maps report organizations to stable template keys", () => {

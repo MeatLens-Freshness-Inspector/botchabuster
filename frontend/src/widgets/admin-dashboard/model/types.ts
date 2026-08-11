@@ -1,4 +1,4 @@
-import type { ReportOrganization } from "@/lib/reportOrganizations";
+import type { ReportOrganization } from "@/features/reports/model/types";
 import type { FreshnessClassification } from "@/entities/inspection";
 
 export type AdminDashboardTabKey =

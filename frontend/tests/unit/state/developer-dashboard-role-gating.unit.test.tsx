@@ -3,7 +3,7 @@ import test from "node:test";
 import {
   coerceAdminDashboardTab,
   getAdminDashboardTabs,
-} from "../../../src/pages/admin-dashboard/utils/adminDashboard";
+} from "../../../src/widgets/admin-dashboard";
 
 test("plain admins do not get the developer workspace tab", () => {
   const tabs = getAdminDashboardTabs(false);

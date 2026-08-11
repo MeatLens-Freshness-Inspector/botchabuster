@@ -1,5 +1,5 @@
 import type { CapturedImagePayload } from "@/components/CameraCapture";
-import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";
+import { DEFAULT_MARKET_LOCATIONS } from "@/entities/market-location";
 import type {
   AnalysisResult,
   InspectionDecisionSource,

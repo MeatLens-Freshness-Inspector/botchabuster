@@ -544,8 +544,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved developer-options transport into the developer-tools feature API, published its client/types, removed the integration export, and updated options/inspection consumers.
   - TDD: added the developer-options feature singleton contract before extraction (RED on absent feature API, then GREEN after migration).
   - Validate: focused feature test, typecheck, and all 11 integration tests passed.
-- [ ] **Commit 112 — refactor: create admin dashboard model types**
-  - Change: frontend/src/pages/admin-dashboard/types.ts -> frontend/src/widgets/admin-dashboard/model/types.ts + frontend/src/pages/admin-dashboard/utils/adminDashboard.ts -> frontend/src/widgets/admin-dashboard/lib/dashboard.ts. Validate: F.
+- [x] **Commit 112 — refactor: create admin dashboard model types**
+  - Change: moved dashboard contracts/utilities into the admin-dashboard widget, published its model API, and moved the supporting report organizations, range-report adapter, letterheads, market defaults, and developer metric calculations behind their final entity/feature APIs.
+  - TDD: added the dashboard model tab contract before extraction (RED on absent widget API, then GREEN after ownership migration).
+  - Validate: focused dashboard/report tests, typecheck, lint (15 existing warnings), and architecture checks passed.
 - [ ] **Commit 113 — refactor: split dashboard overview state**
   - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-overview-tab.ts + frontend/src/widgets/admin-dashboard/model/use-dashboard-session.ts. Validate: F.
 - [ ] **Commit 114 — refactor: split dashboard inspection state**

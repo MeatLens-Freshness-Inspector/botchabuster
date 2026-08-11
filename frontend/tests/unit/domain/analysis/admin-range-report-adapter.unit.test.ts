@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildAdminRangeReportModel } from "../../../../src/lib/reports/adapters/adminRangeReport";
+import { buildAdminRangeReportModel } from "../../../../src/features/reports";
 
 const sampleAdminInput = {
   reportOrganization: "gordon_college_ccs" as const,

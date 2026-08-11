@@ -18,8 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { REPORT_ORGANIZATION_OPTIONS } from "@/lib/reportOrganizations";
-import { isReportOrganization } from "@/lib/reportOrganizations";
+import { REPORT_ORGANIZATION_OPTIONS, isReportOrganization } from "@/features/reports";
 import { useAuth } from "@/entities/user";
 import { TermsAndConditionsDialog } from "@/components/TermsAndConditionsDialog";
 import { PrivacyPolicyDialog } from "@/components/PrivacyPolicyDialog";

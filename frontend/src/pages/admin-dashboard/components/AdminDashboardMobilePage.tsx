@@ -11,7 +11,7 @@ import {
 import AdminDashboardDialogs from "./AdminDashboardDialogs";
 import AdminDashboardSummary from "./AdminDashboardSummary";
 import { useAdminDashboardPage } from "../hooks/useAdminDashboardPage";
-import type { AdminDashboardTabKey } from "../types";
+import type { AdminDashboardTabKey } from "@/widgets/admin-dashboard";
 import AccessCodesTab from "../mobile/components/AccessCodesTab";
 import DeveloperTab from "../mobile/components/DeveloperTab";
 import InspectionsTab from "../mobile/components/InspectionsTab";
