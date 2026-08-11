@@ -414,8 +414,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved shared meat sections and PDF page-frame policy into `features/reports/lib`, then migrated report adapters, chart generation, and document construction to the feature-owned modules.
   - TDD: existing report-document and SVG chart contracts were migrated with the ownership boundary and exercised before commit.
   - Validate: focused report document/chart suite (17), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 083 — refactor: split PDF document builder**
-  - Change: frontend/src/lib/reports/pdf/buildDocDefinition.ts -> frontend/src/features/reports/lib/pdf/document-header.ts + frontend/src/features/reports/lib/pdf/document-sections.ts. Validate: F.
+- [x] **Commit 083 — refactor: split PDF document builder**
+  - Change: reduced the legacy document builder to orchestration and moved page metadata/style construction to `document-header.ts` plus report content/evidence/table composition to `document-sections.ts`.
+  - TDD: added the feature-owned header contract before implementation (RED on the absent module, then GREEN with letter-page metadata assertions); existing document regression tests remained green.
+  - Validate: header test (1), report document/chart suite (17), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 084 — refactor: move report chart generation**
   - Change: frontend/src/lib/reports/pdf/reportCharts.ts -> frontend/src/features/reports/lib/pdf/report-charts.ts + frontend/tests/unit/domain/analysis/inspector-pdf-chart-svg.unit.test.ts. Validate: F.
 - [ ] **Commit 085 — refactor: create report generation feature API**
