@@ -469,8 +469,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the user-chat client and message/contact contracts into the message entity, published its API, and updated all consumers and integration coverage.
   - TDD: added the entity public API contract before implementation (RED on the absent entity module, then GREEN after extraction).
   - Validate: focused entity test, typecheck, and all 11 integration tests passed.
-- [ ] **Commit 095 — refactor: split message view state**
-  - Change: frontend/src/pages/user/messages/utils/viewState.ts -> frontend/src/features/messaging/model/view-state.ts + frontend/tests/unit/state/messages-view-state.unit.test.ts. Validate: F.
+- [x] **Commit 095 — refactor: split message view state**
+  - Change: moved contact selection derivation into the messaging feature model and redirected its state contract test to the new ownership boundary.
+  - TDD: redirected the test import before the move (RED on the absent feature model, then GREEN after extraction).
+  - Validate: focused state suite (3 tests), typecheck, and lint (16 existing warnings) passed.
 - [ ] **Commit 096 — refactor: move message thread widget**
   - Change: frontend/src/pages/user/messages/components/ThreadPanel.tsx -> frontend/src/widgets/messages/thread-panel.tsx + frontend/src/widgets/messages/index.ts. Validate: F.
 - [ ] **Commit 097 — refactor: move message contacts widget**
