@@ -14,8 +14,8 @@ import {
   prewarmAnalysisModel,
   runActiveAnalysis,
   setActiveAnalysisMode,
-} from "./analysisRuntime";
-import { type SquareGuideBox } from "./meatLensPipeline";
+} from "@/lib/offlineAnalysis/analysisRuntime";
+import type { SquareGuideBox } from "@/lib/offlineAnalysis/meatLensPipeline";
 import { validateImageQuality, type ImageQualityResult } from "@/features/inspection-capture";
 
 export {

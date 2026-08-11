@@ -3,9 +3,17 @@ export {
   getActiveModelPreprocessContract,
   getActiveMobileNetModelVariant,
   getLoadedModelPath,
-  isModelReady,
   loadMobileNetV3,
-  prewarmModel,
   setActiveMobileNetModelVariant,
   type MobileNetModelVariant,
 } from "./lib/mobilenet";
+
+export {
+  analyzeOffline,
+  getActiveAnalysisMode,
+  isModelReady,
+  loadActiveAnalysisModel,
+  prewarmModel,
+  runActiveAnalysis,
+  setActiveAnalysisMode,
+} from "./api/analyze-inspection";

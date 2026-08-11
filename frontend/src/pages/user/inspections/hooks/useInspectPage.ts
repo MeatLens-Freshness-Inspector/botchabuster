@@ -34,7 +34,7 @@ import {
   loadActiveAnalysisModel,
   prewarmModel,
   setActiveAnalysisMode,
-} from "@/lib/offlineAnalysis";
+} from "@/features/offline-analysis";
 import { setActiveMobileNetModelVariant } from "@/features/offline-analysis";
 import {
   formatInspectionLocationLabel,

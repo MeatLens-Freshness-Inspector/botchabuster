@@ -398,8 +398,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved ensemble fusion into the offline-analysis feature and extracted freshness score/recommendation policy into `freshness-score.ts`; analysis and ensemble tests now consume the feature-owned fusion module.
   - TDD: added score-curve and recommendation-threshold tests before implementation (RED on the missing feature module, then GREEN with two focused tests).
   - Validate: focused freshness-score tests (2), typecheck, and architecture checks passed.
-- [ ] **Commit 079 — refactor: create bounded analysis facade**
-  - Change: frontend/src/lib/offlineAnalysis/index.ts -> frontend/src/features/offline-analysis/api/analyze-inspection.ts + frontend/src/features/offline-analysis/index.ts. Validate: P-offline.
+- [x] **Commit 079 — refactor: create bounded analysis facade**
+  - Change: moved the offline orchestrator into `features/offline-analysis/api/analyze-inspection.ts`, consolidated the feature public index, and migrated app/page consumers off `@/lib/offlineAnalysis`.
+  - TDD: added the public lifecycle/analysis API contract first (RED on the missing `analyzeOffline` export, then GREEN after the facade/index composition).
+  - Validate: focused public API test, typecheck, and architecture checks passed.
 - [ ] **Commit 080 — refactor: move report data types and formatting**
   - Change: frontend/src/lib/reports/types.ts -> frontend/src/features/reports/model/types.ts + frontend/src/lib/reports/formatting.ts -> frontend/src/features/reports/lib/formatting.ts. Validate: F.
 - [ ] **Commit 081 — refactor: move report templates**
