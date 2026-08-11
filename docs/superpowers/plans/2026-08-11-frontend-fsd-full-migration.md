@@ -366,8 +366,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the native inspection queue adapter into `features/offline-sync/api/sqlite-offline-queue.ts`, added the offline-sync API barrel for both native queue adapters, and migrated the inspection queue model off the legacy SQLite path. The audit adapter had already moved in the earlier audit-queue migration and is now included in the same API contract.
   - TDD: added the native adapter contract first (RED on the absent API barrel), then moved the adapter and reached GREEN across inspection and audit adapter/public queue tests.
   - Validate: adapter/public queue units (3), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 071 — refactor: split model explanation helpers**
-  - Change: frontend/src/lib/offlineAnalysis/modelExplanation.ts -> frontend/src/features/offline-analysis/lib/model-explanation.ts + frontend/tests/integration/offline/offline-analysis-explanation.integration.test.ts. Validate: I.
+- [x] **Commit 071 — refactor: split model explanation helpers**
+  - Change: moved model/rule explanation composition into `features/offline-analysis/lib/model-explanation.ts` and migrated the offline-analysis integration contract to the feature-owned helper without retaining a legacy forwarding module.
+  - TDD: redirected the integration contract first (RED on the missing feature helper), then moved the implementation and reached GREEN across disagreement, aligned, and rule-override explanation cases.
+  - Validate: offline explanation integration tests (3), full integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 072 — refactor: split MobileNet ONNX runtime**
   - Change: frontend/src/lib/offlineAnalysis/mobileNetV3Onnx.ts -> frontend/src/features/offline-analysis/lib/mobilenet-runtime.ts + frontend/src/features/offline-analysis/lib/mobilenet-session.ts. Validate: F.
 - [ ] **Commit 073 — refactor: move MobileNet model facade**
