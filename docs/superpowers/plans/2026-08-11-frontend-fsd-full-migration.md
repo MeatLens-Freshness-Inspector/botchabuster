@@ -477,8 +477,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the thread panel and messaging formatters into the widget/feature slices, published the thread widget, and updated the active page composition.
   - TDD: added the widget ownership contract before extraction (RED on the absent widget API, then GREEN after the move).
   - Validate: focused widget test, typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 097 — refactor: move message contacts widget**
-  - Change: frontend/src/pages/user/messages/components/ContactsPanel.tsx -> frontend/src/widgets/messages/contacts-panel.tsx + frontend/src/pages/user/messages/hooks/useMessagesPage.ts -> frontend/src/features/messaging/model/use-messages.ts. Validate: I.
+- [x] **Commit 097 — refactor: move message contacts widget**
+  - Change: moved the contacts panel into the messages widget and renamed/composed the messages workflow hook inside the messaging feature model, including its mobile state type and public API.
+  - TDD: added the feature workflow ownership contract before extraction (RED on the absent feature API, then GREEN after composition).
+  - Validate: focused workflow test, typecheck, all 11 integration tests, and architecture checks passed.
 - [ ] **Commit 098 — refactor: migrate messages route page**
   - Change: frontend/src/pages/MessagesPage.tsx -> frontend/src/pages/inspector/messages-page.tsx + frontend/src/pages/user/messages/components/MessagesHeader.tsx -> frontend/src/widgets/messages/messages-header.tsx. Validate: P-inspect.
 - [ ] **Commit 099 — refactor: create onboarding feature model**

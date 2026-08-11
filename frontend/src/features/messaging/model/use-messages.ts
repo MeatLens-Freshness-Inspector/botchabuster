@@ -7,9 +7,9 @@ import {
   type UserChatContact,
   type UserChatMessage,
 } from "@/entities/message";
-import type { MessagesMobilePanel } from "../types";
+import type { MessagesMobilePanel } from "./types";
 import { formatContactName } from "@/features/messaging/lib/formatters";
-import { resolveSelectedContactId } from "../utils/viewState";
+import { resolveSelectedContactId } from "./view-state";
 
 const POLL_INTERVAL_MS = 6_000;
 
@@ -17,7 +17,7 @@ type LoadOptions = {
   silent?: boolean;
 };
 
-export function useMessagesPage() {
+export function useMessages() {
   const { user, isAdmin, isOnlineAuthenticated } = useAuth();
   const isDesktop = useIsDesktop();
   const [contacts, setContacts] = useState<UserChatContact[]>([]);

@@ -1,8 +1,8 @@
 import { useAuth } from "@/entities/user";
 import { MessagesHeader } from "./user/messages/components/MessagesHeader";
-import { ContactsPanel } from "./user/messages/components/ContactsPanel";
 import { ThreadPanel } from "@/widgets/messages";
-import { useMessagesPage } from "./user/messages/hooks/useMessagesPage";
+import { ContactsPanel } from "@/widgets/messages";
+import { useMessages } from "@/features/messaging";
 
 export default function MessagesPage() {
   const { isOnlineAuthenticated } = useAuth();
@@ -31,7 +31,7 @@ export default function MessagesPage() {
     handleRefreshContacts,
     handleSelectContact,
     handleSendMessage,
-  } = useMessagesPage();
+  } = useMessages();
 
   if (!isOnlineAuthenticated || !messagesOnline) {
     return (
