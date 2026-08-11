@@ -1,4 +1,13 @@
 import type { FreshnessClassification } from "@/entities/inspection";
+import {
+  createCroppedResizedImageFile as prepareCroppedResizedImageFile,
+  createModelInputImageFile as prepareModelInputImageFile,
+} from "@/features/offline-analysis/lib/image-input";
+
+export {
+  resolveCenteredObjectCoverGuideBox,
+  resolveSquareCropRegion,
+} from "@/features/offline-analysis/lib/image-crop";
 
 export interface SquareGuideBox {
   x: number;
@@ -66,178 +75,6 @@ function isFinitePositive(value: unknown): value is number {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
-}
-
-/**
- * Converts a centered square overlay drawn on an object-cover preview surface
- * into normalized source-image guide-box coordinates.
- */
-export function resolveCenteredObjectCoverGuideBox({
-  sourceWidth,
-  sourceHeight,
-  viewportWidth,
-  viewportHeight,
-  overlayWidthRatio,
-}: CenteredObjectCoverGuideBoxOptions): SquareGuideBox {
-  const safeSourceWidth = Math.max(1, sourceWidth);
-  const safeSourceHeight = Math.max(1, sourceHeight);
-  const safeViewportWidth = Math.max(1, viewportWidth);
-  const safeViewportHeight = Math.max(1, viewportHeight);
-  const safeOverlayRatio = clamp(overlayWidthRatio, 0.01, 1);
-
-  const coverScale = Math.max(
-    safeViewportWidth / safeSourceWidth,
-    safeViewportHeight / safeSourceHeight
-  );
-  const renderedWidth = safeSourceWidth * coverScale;
-  const renderedHeight = safeSourceHeight * coverScale;
-  const horizontalCrop = (renderedWidth - safeViewportWidth) / 2;
-  const verticalCrop = (renderedHeight - safeViewportHeight) / 2;
-
-  const overlaySideInViewport = safeViewportWidth * safeOverlayRatio;
-  const overlayLeftInViewport = (safeViewportWidth - overlaySideInViewport) / 2;
-  const overlayTopInViewport = (safeViewportHeight - overlaySideInViewport) / 2;
-
-  const projectedSide = overlaySideInViewport / coverScale;
-  const sourceMinSide = Math.min(safeSourceWidth, safeSourceHeight);
-  const clampedSide = clamp(projectedSide, 1, sourceMinSide);
-
-  const projectedLeft = (overlayLeftInViewport + horizontalCrop) / coverScale;
-  const projectedTop = (overlayTopInViewport + verticalCrop) / coverScale;
-  const clampedLeft = clamp(projectedLeft, 0, safeSourceWidth - clampedSide);
-  const clampedTop = clamp(projectedTop, 0, safeSourceHeight - clampedSide);
-
-  return {
-    x: clampedLeft / safeSourceWidth,
-    y: clampedTop / safeSourceHeight,
-    size: clampedSide / sourceMinSide,
-    normalized: true,
-  };
-}
-
-function loadImageElement(file: File): Promise<HTMLImageElement> {
-  const url = URL.createObjectURL(file);
-
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve(image);
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Could not decode source image."));
-    };
-    image.src = url;
-  });
-}
-
-function canvasToBlob(canvas: HTMLCanvasElement, mimeType: string, quality: number): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error("Failed to export preprocessed image."));
-          return;
-        }
-        resolve(blob);
-      },
-      mimeType,
-      quality
-    );
-  });
-}
-
-function resolveOutputExtension(mimeType: string): string {
-  const normalized = mimeType.toLowerCase();
-  if (normalized === "image/png") {
-    return ".png";
-  }
-  if (normalized === "image/webp") {
-    return ".webp";
-  }
-  return ".jpg";
-}
-
-export function resolveSquareCropRegion(
-  imageWidth: number,
-  imageHeight: number,
-  guideBox?: SquareGuideBox | null
-): SquareCropRegion {
-  const safeWidth = Math.max(1, Math.round(imageWidth));
-  const safeHeight = Math.max(1, Math.round(imageHeight));
-
-  const fallbackSide = Math.min(safeWidth, safeHeight);
-  const fallbackLeft = Math.round((safeWidth - fallbackSide) / 2);
-  const fallbackTop = Math.round((safeHeight - fallbackSide) / 2);
-
-  if (!guideBox || !isFinitePositive(guideBox.size)) {
-    return { left: fallbackLeft, top: fallbackTop, side: fallbackSide };
-  }
-
-  const minSide = Math.min(safeWidth, safeHeight);
-
-  const requestedSide = guideBox.normalized
-    ? guideBox.size * minSide
-    : guideBox.size;
-
-  const side = Math.round(clamp(requestedSide, 1, minSide));
-
-  const requestedLeft = guideBox.normalized
-    ? guideBox.x * safeWidth
-    : guideBox.x;
-
-  const requestedTop = guideBox.normalized
-    ? guideBox.y * safeHeight
-    : guideBox.y;
-
-  const left = Math.round(clamp(requestedLeft, 0, safeWidth - side));
-  const top = Math.round(clamp(requestedTop, 0, safeHeight - side));
-
-  return { left, top, side };
-}
-
-export async function createCroppedResizedImageFile(
-  imageFile: File,
-  options: PreprocessImageOptions = {}
-): Promise<File> {
-  const prepared = await createModelInputImageFile(imageFile, {
-    ...options,
-    applySegmentation: false,
-  });
-  return prepared.file;
-}
-
-function buildCroppedResizedImageData(
-  image: HTMLImageElement,
-  targetSize: number,
-  guideBox?: SquareGuideBox | null
-): ImageData {
-  const crop = resolveSquareCropRegion(image.width, image.height, guideBox);
-  const canvas = document.createElement("canvas");
-  canvas.width = targetSize;
-  canvas.height = targetSize;
-
-  const context = canvas.getContext("2d");
-  if (!context) {
-    throw new Error("Unable to create 2D canvas context.");
-  }
-
-  context.imageSmoothingEnabled = true;
-  context.imageSmoothingQuality = "high";
-  context.drawImage(
-    image,
-    crop.left,
-    crop.top,
-    crop.side,
-    crop.side,
-    0,
-    0,
-    targetSize,
-    targetSize
-  );
-
-  return context.getImageData(0, 0, targetSize, targetSize);
 }
 
 function toLinearRgb(channel: number): number {
@@ -529,53 +366,22 @@ export function applyRoiSegmentationWithFallback(
   }
 }
 
-async function imageDataToFile(
-  imageData: ImageData,
-  fileName: string,
-  mimeType: string,
-  quality: number
+export async function createCroppedResizedImageFile(
+  imageFile: File,
+  options: PreprocessImageOptions = {}
 ): Promise<File> {
-  const canvas = document.createElement("canvas");
-  canvas.width = imageData.width;
-  canvas.height = imageData.height;
-
-  const context = canvas.getContext("2d");
-  if (!context) {
-    throw new Error("Unable to create 2D canvas context.");
-  }
-
-  context.putImageData(imageData, 0, 0);
-  const blob = await canvasToBlob(canvas, mimeType, quality);
-  return new File([blob], fileName, {
-    type: mimeType,
-    lastModified: Date.now(),
-  });
+  return prepareCroppedResizedImageFile(imageFile, options);
 }
 
 export async function createModelInputImageFile(
   imageFile: File,
   options: ModelInputPreparationOptions = {}
 ): Promise<{ file: File; segmentationApplied: boolean }> {
-  const targetSize = Math.max(1, Math.round(options.size ?? DEFAULT_MEATLENS_INPUT_SIZE));
-  const mimeType = options.mimeType ?? "image/jpeg";
-  const quality = clamp(options.quality ?? 0.92, 0, 1);
-  const cropGuideBox = options.forceCenterCrop ? null : (options.guideBox ?? null);
-
-  const image = await loadImageElement(imageFile);
-  const croppedImageData = buildCroppedResizedImageData(image, targetSize, cropGuideBox);
-  const segmentedResult = options.applySegmentation
-    ? applyRoiSegmentationWithFallback(croppedImageData)
-    : { imageData: croppedImageData, segmented: false };
-
-  const outputFileName =
-    options.fileName ??
-    `${imageFile.name.replace(/\.[^.]+$/, "")}${resolveOutputExtension(mimeType)}`;
-  const outputFile = await imageDataToFile(segmentedResult.imageData, outputFileName, mimeType, quality);
-
-  return {
-    file: outputFile,
-    segmentationApplied: segmentedResult.segmented,
-  };
+  return prepareModelInputImageFile(
+    imageFile,
+    options,
+    applyRoiSegmentationWithFallback
+  );
 }
 
 export function resolveInputSize(metadata?: MeatLensModelMetadata | null): number {

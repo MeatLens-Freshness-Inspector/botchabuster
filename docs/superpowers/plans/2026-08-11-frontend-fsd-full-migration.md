@@ -382,8 +382,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved `resNet50Onnx.ts` into the offline-analysis feature, extracted mutable ONNX session identity into `ResNetSession`, and migrated the analysis runtime import to the feature-owned runtime.
   - TDD: added the session ownership/reset contract before implementation (RED on the missing module, then GREEN with two focused unit tests).
   - Validate: focused ResNet session tests (2), typecheck, lint, and architecture checks passed; full unit suite reached 198 passing with the same two pre-existing developer-dashboard failures outside this slice.
-- [ ] **Commit 075 — refactor: split image geometry preprocessing**
-  - Change: frontend/src/lib/offlineAnalysis/meatLensPipeline.ts -> frontend/src/features/offline-analysis/lib/image-crop.ts + frontend/src/features/offline-analysis/lib/image-input.ts. Validate: F.
+- [x] **Commit 075 — refactor: split image geometry preprocessing**
+  - Change: extracted object-cover/crop geometry into `image-crop.ts` and browser image/file preparation into `image-input.ts`; the existing pipeline API delegates to these feature-owned modules.
+  - TDD: added crop geometry tests before implementation (RED on the absent feature module, then GREEN with normalized-guide and centered-crop assertions).
+  - Validate: focused geometry tests (2), typecheck, and architecture checks passed; full lint/unit validation remains part of the phase checkpoint.
 - [ ] **Commit 076 — refactor: split ROI segmentation**
   - Change: frontend/src/lib/offlineAnalysis/meatLensPipeline.ts -> frontend/src/features/offline-analysis/lib/roi-segmentation.ts + frontend/src/features/offline-analysis/lib/mask-morphology.ts. Validate: F.
 - [ ] **Commit 077 — refactor: split tensor and label processing**
