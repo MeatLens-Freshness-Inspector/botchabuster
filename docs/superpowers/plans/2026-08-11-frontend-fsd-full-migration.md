@@ -25,11 +25,16 @@
 
 Every numbered ledger entry below is one required qualifying commit. Before committing:
 
-- [ ] Add or move the listed focused test with the source, or update the listed active consumer when the change is a pure relocation.
-- [ ] Run the named validation profile and confirm the relevant test or check succeeds.
+- [ ] RED: write the smallest focused failing test before changing production code. For a behavior change, test the desired behavior; for a relocation, write a characterization or public-import contract test; for an architecture/configuration change, write the failing boundary or configuration fixture test.
+- [ ] Verify RED: run the new test alone and confirm it fails for the expected missing behavior, missing public API, or forbidden dependency—not because of a typo, broken setup, or incorrect test.
+- [ ] GREEN: implement the smallest production change needed to pass the failing test. Do not add unrelated cleanup or speculative abstractions.
+- [ ] Verify GREEN: rerun the focused test, then run the named validation profile and confirm the relevant test or check succeeds with no failures.
+- [ ] REFACTOR: only after green, split responsibilities, remove duplication, or improve names. Rerun the focused test and validation profile after refactoring.
 - [ ] Run git diff --check and verify that the staged commit has at least two non-empty files.
 - [ ] Stage only the files in that ledger entry and commit with its exact Conventional Commit title.
-- [ ] Record the resulting commit SHA in the execution log and update the phase count.
+- [ ] Record the RED command/output, GREEN command/output, resulting commit SHA, and phase count in the execution log. A commit without recorded red-green evidence does not qualify toward the 144-commit floor.
+
+The implementation must never introduce production code first and add tests afterward. Existing passing tests are not evidence of RED; every new test must be observed failing before its production change is written. Pure file moves still require a failing import-contract or characterization test before the move. Configuration and generated-code exceptions are limited to files that cannot contain maintained runtime behavior; configuration that affects runtime behavior receives a failing fixture test first.
 
 Validation profiles:
 
@@ -564,5 +569,6 @@ The following current owners must have no production files at completion. A path
 - [ ] Confirm frontend/src contains only app, pages, widgets, features, entities, shared, main.tsx, vite-env.d.ts, and test-only support where required by Vite.
 - [ ] Confirm frontend/src/components, frontend/src/contexts, frontend/src/hooks, frontend/src/integrations, frontend/src/lib, the legacy root frontend/src/pages layout, frontend/src/App.tsx, frontend/src/App.css, and frontend/src/index.css no longer own production architecture.
 - [ ] Run node frontend/scripts/check-fsd-boundaries.mjs --enforce and node frontend/scripts/check-source-size.mjs --enforce with zero violations.
+- [ ] Review the execution log and confirm every qualifying commit contains a focused RED failure, a minimal GREEN implementation, and a post-green REFACTOR validation where refactoring was needed.
 - [ ] Run git log from the first migration commit through the final migration commit and verify at least 144 qualifying commits. For each, inspect git show --stat --oneline <sha> and confirm two or more non-empty changed files and one meaningful source/test, source/consumer, or source/configuration unit.
 - [ ] Run the validation command from Commit 144 and preserve its successful output in the execution handoff.
