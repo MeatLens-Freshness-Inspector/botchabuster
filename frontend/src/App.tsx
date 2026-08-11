@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { ProtectedRoute, AdminRoute, OnboardingRoute } from "@/components/ProtectedRoute";
+import { AdminRoute, OnboardingRoute } from "@/components/ProtectedRoute";
 import { BottomNav } from "@/components/BottomNav";
 import { AIChatbot } from "@/components/AIChatbot";
 import { OfflineBanner } from "@/components/OfflineBanner";
@@ -12,6 +12,8 @@ import { NotificationProvider } from "@/app/providers/notification-provider";
 import { NetworkProvider } from "@/app/providers/network-provider";
 import { ThemeController } from "@/app/providers/theme-controller";
 import { ROUTE_PATHS } from "@/app/router/paths";
+import { ProtectedRoute as ProtectedRouteGuard, type ProtectedRouteProps } from "@/app/router/guards/protected-route";
+import { hasSkippedOnboardingForSession } from "@/lib/onboardingSession";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -46,6 +48,24 @@ function ThemeRouteController() {
   return <ThemeController isAuthenticated={Boolean(user)} isDarkMode={profile?.is_dark_mode} />;
 }
 
+function AuthProtectedRoute({ children }: Pick<ProtectedRouteProps, "children">) {
+  const { user, isAdmin, isLoading, profile, profileStatus, retryProfileLoad } = useAuth();
+
+  return (
+    <ProtectedRouteGuard
+      user={user}
+      isAdmin={isAdmin}
+      isLoading={isLoading}
+      profile={profile}
+      profileStatus={profileStatus}
+      retryProfileLoad={retryProfileLoad}
+      skippedForSession={user ? hasSkippedOnboardingForSession(user.id) : false}
+    >
+      {children}
+    </ProtectedRouteGuard>
+  );
+}
+
 const App = () => {
   return (
     <QueryProvider>
@@ -68,14 +88,14 @@ const App = () => {
                   <Route path={ROUTE_PATHS.onboarding} element={<OnboardingRoute><OnboardingPage /></OnboardingRoute>} />
 
                   {/* Protected app routes */}
-                  <Route path={ROUTE_PATHS.inspect} element={<ProtectedRoute><AppLayout><InspectPage /></AppLayout></ProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.history} element={<ProtectedRoute><AppLayout><HistoryPage /></AppLayout></ProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.messages} element={<ProtectedRoute><AppLayout><MessagesPage /></AppLayout></ProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.inspect} element={<AuthProtectedRoute><AppLayout><InspectPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.history} element={<AuthProtectedRoute><AppLayout><HistoryPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.messages} element={<AuthProtectedRoute><AppLayout><MessagesPage /></AppLayout></AuthProtectedRoute>} />
                   <Route path={ROUTE_PATHS.dashboard} element={<Navigate to={ROUTE_PATHS.history} replace />} />
-                  <Route path={ROUTE_PATHS.profile} element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileTutorial} element={<ProtectedRoute><AppLayout><ProfileTutorialPage /></AppLayout></ProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileHelp} element={<ProtectedRoute><AppLayout><ProfileHelpPage /></AppLayout></ProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileHelpScope} element={<ProtectedRoute><AppLayout><ProfileHelpScopePage /></AppLayout></ProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profile} element={<AuthProtectedRoute><AppLayout><ProfilePage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileTutorial} element={<AuthProtectedRoute><AppLayout><ProfileTutorialPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileHelp} element={<AuthProtectedRoute><AppLayout><ProfileHelpPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileHelpScope} element={<AuthProtectedRoute><AppLayout><ProfileHelpScopePage /></AppLayout></AuthProtectedRoute>} />
 
                   {/* Admin routes */}
                   <Route path={ROUTE_PATHS.admin} element={<AdminRoute><AdminDashboardWrapper /></AdminRoute>} />

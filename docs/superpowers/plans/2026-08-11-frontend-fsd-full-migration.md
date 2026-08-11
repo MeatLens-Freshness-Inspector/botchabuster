@@ -198,8 +198,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 023 — refactor: define route path constants**
   - Change: frontend/src/app/router/paths.ts + frontend/src/app/router/paths.unit.test.ts.
   - Validate: F.
-- [ ] **Commit 024 — refactor: move protected route guard**
-  - Change: frontend/src/components/ProtectedRoute.tsx -> frontend/src/app/router/guards/protected-route.tsx + frontend/src/app/router/guards/protected-route.unit.test.tsx.
+- [x] **Commit 024 — refactor: move protected route guard**
+  - Change: move the protected guard logic to frontend/src/app/router/guards/protected-route.tsx, remove its legacy export, and keep the current root app as the temporary auth/session adapter until the remaining guards migrate.
   - Validate: F.
 - [ ] **Commit 025 — refactor: move administrator route guard**
   - Change: frontend/src/app/router/guards/admin-route.tsx + frontend/src/app/router/guards/admin-route.unit.test.tsx.
