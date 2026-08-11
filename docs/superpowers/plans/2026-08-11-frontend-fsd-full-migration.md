@@ -214,8 +214,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 028 — refactor: create public app layout**
   - Change: frontend/src/App.tsx + frontend/src/app/layouts/public-layout.tsx. Public routes now use a transparent layout slot while the root composition remains temporary until the router extraction.
   - Validate: F.
-- [ ] **Commit 029 — refactor: migrate bottom navigation widget**
-  - Change: frontend/src/components/BottomNav.tsx -> frontend/src/widgets/navigation/bottom-nav.tsx + frontend/src/widgets/navigation/index.ts.
+- [x] **Commit 029 — refactor: migrate bottom navigation widget**
+  - Change: frontend/src/components/BottomNav.tsx -> frontend/src/widgets/navigation/bottom-nav.tsx + frontend/src/widgets/navigation/index.ts. The widget receives `isAdmin` from app/page adapters so widget ownership remains independent of legacy auth state.
   - Validate: F.
 - [ ] **Commit 030 — refactor: migrate assistant widget shell**
   - Change: frontend/src/components/AIChatbot.tsx -> frontend/src/widgets/assistant/assistant-widget.tsx + frontend/src/widgets/assistant/index.ts.

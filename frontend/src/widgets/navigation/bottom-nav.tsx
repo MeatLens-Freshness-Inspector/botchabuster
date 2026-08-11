@@ -1,7 +1,7 @@
+import React from "react";
 import { NavLink as RouterNavLink } from "react-router-dom";
 import { Camera, ClipboardList, Shield, UserRound, MessageSquare } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { to: "/inspect", icon: Camera, label: "Inspect" },
@@ -9,9 +9,11 @@ const navItems = [
   { to: "/messages", icon: MessageSquare, label: "Messages" },
 ];
 
-export function BottomNav() {
-  const { isAdmin } = useAuth();
+export type BottomNavProps = {
+  isAdmin: boolean;
+};
 
+export function BottomNav({ isAdmin }: BottomNavProps) {
   return (
     <nav className="fixed bottom-0 inset-x-0 z-50 border-t border-border bg-card safe-bottom">
       <div className="mx-auto flex w-full max-w-md items-stretch justify-between gap-1 px-1.5 py-2 sm:px-2">

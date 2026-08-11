@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { BottomNav } from "@/components/BottomNav";
+import { BottomNav } from "@/widgets/navigation";
 import { AIChatbot } from "@/components/AIChatbot";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { OfflineSyncManager } from "@/components/OfflineSyncManager";
@@ -39,6 +39,12 @@ function ThemeRouteController() {
   const { user, profile } = useAuth();
 
   return <ThemeController isAuthenticated={Boolean(user)} isDarkMode={profile?.is_dark_mode} />;
+}
+
+function AuthBottomNav() {
+  const { isAdmin } = useAuth();
+
+  return <BottomNav isAdmin={isAdmin} />;
 }
 
 function AuthProtectedRoute({ children }: Pick<ProtectedRouteProps, "children">) {
@@ -104,14 +110,14 @@ const App = () => {
                   <Route path={ROUTE_PATHS.onboarding} element={<AuthOnboardingRoute><OnboardingPage /></AuthOnboardingRoute>} />
 
                   {/* Protected app routes */}
-                  <Route path={ROUTE_PATHS.inspect} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><InspectPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.history} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><HistoryPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.messages} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><MessagesPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.inspect} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><InspectPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.history} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><HistoryPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.messages} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><MessagesPage /></AppLayout></AuthProtectedRoute>} />
                   <Route path={ROUTE_PATHS.dashboard} element={<Navigate to={ROUTE_PATHS.history} replace />} />
-                  <Route path={ROUTE_PATHS.profile} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><ProfilePage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileTutorial} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><ProfileTutorialPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileHelp} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><ProfileHelpPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileHelpScope} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><ProfileHelpScopePage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profile} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><ProfilePage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileTutorial} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><ProfileTutorialPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileHelp} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><ProfileHelpPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileHelpScope} element={<AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AIChatbot />}><ProfileHelpScopePage /></AppLayout></AuthProtectedRoute>} />
 
                   {/* Admin routes */}
                   <Route path={ROUTE_PATHS.admin} element={<AuthAdminRoute><AdminDashboardWrapper /></AuthAdminRoute>} />
