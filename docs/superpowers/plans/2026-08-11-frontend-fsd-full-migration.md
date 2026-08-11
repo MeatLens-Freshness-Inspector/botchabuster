@@ -422,8 +422,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved chart SVG/content generation into `features/reports/lib/pdf/report-charts.ts` and migrated document section composition to the feature-owned chart API.
   - TDD: added an empty-data chart contract before implementation (RED on the absent feature module, then GREEN with the chart and existing SVG regression tests).
   - Validate: focused chart/SVG suite (5), typecheck, and lint (16 existing warnings) passed.
-- [ ] **Commit 085 — refactor: create report generation feature API**
-  - Change: frontend/src/lib/reports/pdf/composeReportPdf.ts -> frontend/src/features/reports/api/generate-report.ts + frontend/src/features/reports/index.ts. Validate: I.
+- [x] **Commit 085 — refactor: create report generation feature API**
+  - Change: moved PDF download orchestration to `features/reports/api/generate-report.ts`, added the reports public index, preserved `composeReportPdf` as the current workflow name, and migrated admin/history consumers.
+  - TDD: added the reports public API contract before implementation (RED on the absent feature index, then GREEN with generation and compatibility workflow exports).
+  - Validate: focused public API test, typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 086 — refactor: split inspect page view model**
   - Change: frontend/src/pages/user/inspections/hooks/useInspectPage.ts -> frontend/src/widgets/inspection-workspace/model/use-inspection-workspace.ts + frontend/src/widgets/inspection-workspace/model/use-inspection-analysis.ts. Validate: I.
 - [ ] **Commit 087 — refactor: move inspection workspace UI**
