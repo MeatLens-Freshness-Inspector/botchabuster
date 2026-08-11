@@ -1,4 +1,4 @@
-import { useIsDesktop } from "@/hooks/use-desktop";
+import { useIsDesktop } from "@/shared/hooks/use-desktop";
 import AdminDashboard from "./AdminDashboard";
 import DesktopAdminDashboard from "./DesktopAdminDashboard";
 import { BottomNav } from "@/components/BottomNav";

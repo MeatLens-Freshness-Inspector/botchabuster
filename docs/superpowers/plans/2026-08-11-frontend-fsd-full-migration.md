@@ -142,7 +142,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 - [ ] **Commit 012 — refactor: migrate generic viewport hooks**
   - Change: frontend/src/hooks/use-desktop.tsx -> frontend/src/shared/hooks/use-desktop.ts + frontend/src/hooks/use-mobile.tsx -> frontend/src/shared/hooks/use-mobile.ts.
-  - Preserve exported hook behavior and update frontend/tests/unit/hooks/use-desktop.unit.test.tsx.
+  - Preserve exported hook behavior, update every active consumer without legacy forwarding modules, and update frontend/tests/unit/hooks/use-desktop.unit.test.tsx.
   - Validate: F.
 
 - [ ] **Commit 013 — refactor: move core shared UI primitives**

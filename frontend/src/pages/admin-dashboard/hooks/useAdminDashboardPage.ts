@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { format, subDays, startOfDay, endOfDay, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { accessCodeClient, type AccessCode } from "@/integrations/api/AccessCodeClient";
 import { auditLogClient, type AuditLogEntry } from "@/integrations/api/AuditLogClient";
 import { developerDashboardClient, type DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
