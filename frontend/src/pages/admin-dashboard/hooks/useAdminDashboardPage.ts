@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { format, subDays, startOfDay, endOfDay, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { accessCodeClient, type AccessCode } from "@/entities/access-code";
-import { auditLogClient, type AuditLogEntry } from "@/entities/audit-log";
+import type { AuditLogEntry } from "@/entities/audit-log";
 import { developerDashboardClient } from "@/entities/developer-metrics";
 import { inspectionClient } from "@/entities/inspection";
 import { marketLocationClient, type MarketLocation } from "@/entities/market-location";
@@ -44,6 +44,8 @@ import {
   toCsvValue,
   useDashboardSession,
   useInspectionsTab,
+  useLogFilters,
+  useLogsTab,
   useUserActions,
   useOverviewTab,
   useUsersTab,
@@ -76,9 +78,6 @@ export function useAdminDashboardPage() {
   const accessCodeForm = useAccessCodeForm({ setAccessCodes });
   const accessCodesState = useAccessCodes({ setAccessCodes });
   const [pendingDeleteMarketId, setPendingDeleteMarketId] = useState<string | null>(null);
-  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
-  const [auditLogPage, setAuditLogPage] = useState(1);
-  const [logsLoading, setLogsLoading] = useState(false);
   const [reportStartDate, setReportStartDate] = useState(() => format(subDays(new Date(), REPORT_DEFAULT_RANGE_DAYS - 1), "yyyy-MM-dd"));
   const [reportEndDate, setReportEndDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const usersTab = useUsersTab(profiles);
@@ -88,6 +87,8 @@ export function useAdminDashboardPage() {
     setStats,
     setUserPage: usersTab.setUserPage,
   });
+  const logsTab = useLogsTab();
+  const logFilters = useLogFilters(logsTab.auditLogs);
 
   useEffect(() => {
     void loadData();
@@ -124,23 +125,9 @@ export function useAdminDashboardPage() {
     }
   };
 
-  const loadAuditLogs = async () => {
-    setLogsLoading(true);
-    try {
-      const logs = await auditLogClient.listRecent(200);
-      setAuditLogs(logs);
-    } catch (err) {
-      console.error("Failed to load audit logs:", err);
-      const message = err instanceof Error && err.message ? err.message : "Failed to load audit logs";
-      toast.error(message);
-    } finally {
-      setLogsLoading(false);
-    }
-  };
-
   useEffect(() => {
     if (activeTab !== "logs") return;
-    void loadAuditLogs();
+    void logsTab.loadAuditLogs();
   }, [activeTab]);
 
   const classificationCounts = useMemo(() => {
@@ -876,16 +863,9 @@ export function useAdminDashboardPage() {
   const activeTabConfig =
     tabs.find((tab) => tab.key === activeTab) ??
     tabs[0];
-  const auditLogsPerPage = 5;
-  const paginatedAuditLogs = auditLogs.slice(
-    (auditLogPage - 1) * auditLogsPerPage,
-    auditLogPage * auditLogsPerPage,
-  );
-  const totalAuditLogPages = Math.ceil(auditLogs.length / auditLogsPerPage);
-
   const handleRefresh = () => {
     if (activeTab === "logs") {
-      void loadAuditLogs();
+      void logsTab.loadAuditLogs();
       return;
     }
 
@@ -910,6 +890,8 @@ export function useAdminDashboardPage() {
     ...userActions,
     ...accessCodeForm,
     ...accessCodesState,
+    ...logsTab,
+    ...logFilters,
     activeTab,
     activeTabConfig,
     newMarketName,
@@ -917,9 +899,6 @@ export function useAdminDashboardPage() {
     pendingDeleteInspectionId,
     pendingDeleteMarketId,
     inspectorFilter,
-    auditLogs,
-    auditLogPage,
-    logsLoading,
     reportStartDate,
     reportEndDate,
     classificationCounts,
@@ -949,19 +928,15 @@ export function useAdminDashboardPage() {
     avgConfidence,
     spoiledRate,
     recentTrend,
-    paginatedAuditLogs,
-    totalAuditLogPages,
     setActiveTab,
     setNewMarketName,
     setPreviewImageUrl,
     setPendingDeleteInspectionId,
     setPendingDeleteMarketId,
     setInspectorFilter,
-    setAuditLogPage,
     setReportStartDate,
     setReportEndDate,
     loadData,
-    loadAuditLogs,
     handleRefresh,
     handleDeleteInspection,
     confirmDeleteInspection,
