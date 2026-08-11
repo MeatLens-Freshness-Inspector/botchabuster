@@ -457,8 +457,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved `ProfilePrimaryColumn` into the profile widget and `ProfileEditableDetailsCard` into the profile-editing feature UI, then updated the profile page composition.
   - TDD: added component ownership contracts before implementation (RED on both absent target modules, then GREEN with the profile UI export test).
   - Validate: focused profile UI test, typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 092 — refactor: move profile secondary UI**
-  - Change: frontend/src/pages/user/profile/components/ProfileSecondaryColumn.tsx -> frontend/src/widgets/profile/profile-secondary-column.tsx + frontend/src/pages/user/profile/components/ProfileSummaryCard.tsx -> frontend/src/entities/user/ui/profile-summary-card.tsx. Validate: F.
+- [x] **Commit 092 — refactor: move profile secondary UI**
+  - Change: moved `ProfileSecondaryColumn` into the profile widget and `ProfileSummaryCard` into the user entity UI, then published the entity card through its public API.
+  - TDD: added secondary/profile-summary ownership contracts before implementation (RED on absent target modules, then GREEN with the UI export test).
+  - Validate: focused profile secondary UI test, typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 093 — refactor: migrate profile route page**
   - Change: frontend/src/pages/user/profile/components/ProfilePageView.tsx -> frontend/src/widgets/profile/profile-widget.tsx + frontend/src/pages/ProfilePage.tsx -> frontend/src/pages/inspector/profile-page.tsx. Validate: P-inspect.
 - [ ] **Commit 094 — refactor: create message entity**

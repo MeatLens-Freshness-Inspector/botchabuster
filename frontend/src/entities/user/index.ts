@@ -62,3 +62,4 @@ export {
   type ProfileDialogKey,
   type ProfileDialogState,
 } from "./model/profile-types";
+export { ProfileSummaryCard } from "./ui/profile-summary-card";
