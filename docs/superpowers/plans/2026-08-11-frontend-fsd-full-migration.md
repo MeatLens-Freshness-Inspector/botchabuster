@@ -106,12 +106,13 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Validate: F.
 
 - [ ] **Commit 005 — refactor: introduce app configuration ownership**
-  - Change: frontend/src/app/config/query-client.ts + frontend/src/app/config/env.ts.
-  - Move Query Client defaults and environment reads from frontend/src/App.tsx and direct consumers without changing values.
+  - Change: frontend/src/app/config/query-client.ts + frontend/src/App.tsx + frontend/tests/unit/app/query-client.unit.test.ts.
+  - Move Query Client defaults from frontend/src/App.tsx without changing stale time, garbage-collection time, or online retry behavior. Generic environment access belongs to shared configuration because lower FSD layers cannot depend on app.
   - Validate: F.
 
 - [ ] **Commit 006 — refactor: move API base URL into shared transport**
-  - Change: frontend/src/integrations/api/apiBaseUrl.ts -> frontend/src/shared/api/base-url.ts + frontend/tests/unit/utilities/api-base-url.unit.test.ts.
+  - Change: frontend/src/integrations/api/apiBaseUrl.ts -> frontend/src/shared/api/base-url.ts + frontend/src/shared/config/env.ts + frontend/tests/unit/utilities/api-base-url.unit.test.ts.
+  - Move the API base URL and its environment read into shared ownership while preserving native and web URL behavior.
   - Validate: F.
 
 - [ ] **Commit 007 — refactor: move request initialization into shared transport**
