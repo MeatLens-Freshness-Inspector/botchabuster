@@ -8,7 +8,7 @@ import {
   getActiveMobileNetModelVariant,
   getActiveModelPreprocessContract,
   type MobileNetModelVariant,
-} from "@/features/offline-analysis/lib/mobilenet-runtime";
+} from "./mobilenet-runtime";
 
 export { isModelReady, prewarmModel, getLoadedModelPath };
 export const loadMobileNetV3 = loadMobileNetV3Model;

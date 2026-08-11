@@ -35,7 +35,7 @@ import {
   prewarmModel,
   setActiveAnalysisMode,
 } from "@/lib/offlineAnalysis";
-import { setActiveMobileNetModelVariant } from "@/lib/offlineAnalysis/mobileNetV3";
+import { setActiveMobileNetModelVariant } from "@/features/offline-analysis";
 import {
   formatInspectionLocationLabel,
   getCoordinateStatusText,

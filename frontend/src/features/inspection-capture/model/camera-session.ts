@@ -10,7 +10,7 @@ import {
   resolveCenteredObjectCoverGuideBox,
   type SquareGuideBox,
 } from "../../../lib/offlineAnalysis/meatLensPipeline";
-import { getActiveModelPreprocessContract } from "../../../lib/offlineAnalysis/mobileNetV3";
+import { getActiveModelPreprocessContract } from "@/features/offline-analysis";
 
 import { GUIDE_BOX_SIZE_RATIO, PREVIEW_EXPORT_QUALITY } from "../../../components/camera/constants";
 import {

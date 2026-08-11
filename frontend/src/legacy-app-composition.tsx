@@ -30,7 +30,7 @@ import {
 } from "@/features/offline-sync";
 import { PROTOCOL_SPOILED_REASON, buildProtocolSpoiledAnalysisResult } from "@/entities/inspection";
 import { analyzeOffline, prewarmModel, setActiveAnalysisMode } from "@/lib/offlineAnalysis";
-import { setActiveMobileNetModelVariant } from "@/lib/offlineAnalysis/mobileNetV3";
+import { setActiveMobileNetModelVariant } from "@/features/offline-analysis";
 import { getDeveloperOptionsFlags, getDeveloperOptionsSession, isDeveloperOptionsSessionExpired } from "@/lib/developerOptions";
 import { applyTheme } from "@/shared/lib/theme-preference";
 import { scrubSensitiveAuthHashFromUrl } from "@/shared/api";

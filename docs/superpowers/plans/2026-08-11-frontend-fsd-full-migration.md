@@ -374,8 +374,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the MobileNet ONNX implementation into `features/offline-analysis/lib/mobilenet-runtime.ts` and extracted mutable model-variant/session identity into `mobilenet-session.ts`; analysis runtime, ResNet typing, and the temporary MobileNet facade now consume the feature runtime.
   - TDD: added session lifecycle tests first (RED on the missing feature session module), then introduced the bounded session object and reached GREEN while preserving model switching, generation invalidation, inference, and retry behavior.
   - Validate: MobileNet session units (2), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed; runtime/session files remain below 600 nonblank lines.
-- [ ] **Commit 073 — refactor: move MobileNet model facade**
-  - Change: frontend/src/lib/offlineAnalysis/mobileNetV3.ts -> frontend/src/features/offline-analysis/lib/mobilenet.ts + frontend/src/features/offline-analysis/index.ts. Validate: F.
+- [x] **Commit 073 — refactor: move MobileNet model facade**
+  - Change: moved the MobileNet facade into `features/offline-analysis/lib/mobilenet.ts`, created the offline-analysis public index, and migrated camera, app composition, and inspection page consumers off the legacy `mobileNetV3` facade.
+  - TDD: added the feature public API contract first (RED on the absent index), then moved the facade and reached GREEN with the public MobileNet/session tests and existing integration suite.
+  - Validate: MobileNet public/session units (3), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 074 — refactor: split ResNet runtime**
   - Change: frontend/src/lib/offlineAnalysis/resNet50Onnx.ts -> frontend/src/features/offline-analysis/lib/resnet-runtime.ts + frontend/src/features/offline-analysis/lib/resnet-session.ts. Validate: F.
 - [ ] **Commit 075 — refactor: split image geometry preprocessing**
