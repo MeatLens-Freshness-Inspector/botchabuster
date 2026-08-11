@@ -319,8 +319,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 058 — refactor: move inspection list domain UI**
   - Change: moved `InspectionListItem` and its domain `FreshnessBadge` dependency into `entities/inspection/ui`, exposed both through the entity public API, and migrated history, dashboard, and component consumers without changing markup or interaction behavior.
   - Validate: component tests (2), typecheck, and lint passed with the existing 16 warnings.
-- [ ] **Commit 059 — refactor: move inspection result domain UI**
-  - Change: frontend/src/components/AnalysisResultCard.tsx -> frontend/src/entities/inspection/ui/analysis-result-card.tsx + frontend/tests/component/analysis/analysis-result-card.component.test.tsx. Validate: F.
+- [x] **Commit 059 — refactor: move inspection result domain UI**
+  - Change: moved `AnalysisResultCard` into `entities/inspection/ui`, exposed it through the inspection public API, and migrated the inspection workspace and component tests without changing rendered behavior.
+  - Validate: component tests (2), typecheck, and lint passed with the existing 16 warnings.
 - [ ] **Commit 060 — refactor: split camera capture state**
   - Change: frontend/src/components/camera/useCameraCapture.ts -> frontend/src/features/inspection-capture/model/camera-session.ts + frontend/src/features/inspection-capture/model/camera-device.ts. Validate: I.
 - [ ] **Commit 061 — refactor: move camera platform adapter**

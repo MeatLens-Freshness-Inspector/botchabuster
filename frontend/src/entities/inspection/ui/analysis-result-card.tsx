@@ -1,5 +1,5 @@
-import type { AnalysisResult, FreshnessClassification } from "@/entities/inspection";
-import { FreshnessBadge } from "@/entities/inspection";
+import type { AnalysisResult, FreshnessClassification } from "../model/types";
+import { FreshnessBadge } from "./freshness-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { getConfidenceFillClass, getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import { cn } from "@/shared/lib/utils";

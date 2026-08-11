@@ -1,4 +1,4 @@
-import { AnalysisResultCard } from "@/components/AnalysisResultCard";
+import { AnalysisResultCard } from "@/entities/inspection";
 import { Camera } from "lucide-react";
 import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
 

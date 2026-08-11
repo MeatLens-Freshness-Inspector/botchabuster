@@ -40,3 +40,4 @@ export {
 } from "./model/queries";
 export { FreshnessBadge } from "./ui/freshness-badge";
 export { InspectionListItem } from "./ui/inspection-list-item";
+export { AnalysisResultCard } from "./ui/analysis-result-card";
