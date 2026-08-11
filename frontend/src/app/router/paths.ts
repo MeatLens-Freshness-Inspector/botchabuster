@@ -16,3 +16,20 @@ export const ROUTE_PATHS = {
   admin: "/admin",
   notFound: "*",
 } as const;
+
+export const ROUTE_CONTRACT_PATHS = [
+  ROUTE_PATHS.landing,
+  ROUTE_PATHS.login,
+  ROUTE_PATHS.signup,
+  ROUTE_PATHS.forgotPassword,
+  ROUTE_PATHS.resetPassword,
+  ROUTE_PATHS.onboarding,
+  ROUTE_PATHS.inspect,
+  ROUTE_PATHS.history,
+  ROUTE_PATHS.messages,
+  ROUTE_PATHS.profile,
+  ROUTE_PATHS.profileTutorial,
+  ROUTE_PATHS.profileHelp,
+  ROUTE_PATHS.profileHelpScope,
+  ROUTE_PATHS.admin,
+] as const;

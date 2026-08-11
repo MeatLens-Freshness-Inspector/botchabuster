@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ROUTE_PATHS } from "../../../src/app/router/paths";
+import { ROUTE_CONTRACT_PATHS, ROUTE_PATHS } from "../../../src/app/router/paths";
 
 test("route path constants preserve the existing public and protected URLs", () => {
   assert.deepEqual(ROUTE_PATHS, {
@@ -22,4 +22,21 @@ test("route path constants preserve the existing public and protected URLs", () 
     admin: "/admin",
     notFound: "*",
   });
+
+  assert.deepEqual(ROUTE_CONTRACT_PATHS, [
+    "/",
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/onboarding",
+    "/inspect",
+    "/history",
+    "/messages",
+    "/profile",
+    "/profile/tutorial",
+    "/profile/help",
+    "/profile/help/scope",
+    "/admin",
+  ]);
 });

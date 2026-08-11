@@ -235,8 +235,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 035 — refactor: make main entry app-only**
   - Change: frontend/src/main.tsx + frontend/src/app/index.ts + frontend/src/app/App.tsx. `main.tsx` now imports the app public entry only; startup side effects are exposed through `initializeAppRuntime`, and the temporary root composition is isolated behind the app facade until page migrations complete.
   - Validate: B.
-- [ ] **Commit 036 — test: verify all legacy route URLs**
-  - Change: frontend/tests/e2e/smoke/legacy-route-contract.e2e.spec.ts + frontend/src/app/router/paths.ts.
+- [x] **Commit 036 — test: verify all legacy route URLs**
+  - Change: frontend/tests/e2e/smoke/legacy-route-contract.e2e.spec.ts + frontend/src/app/router/paths.ts. A route contract list now drives the browser smoke coverage for public, inspector, profile, and administrator URLs before page ownership moves.
   - Cover all public, inspector, profile, and admin route URLs before their source pages move.
   - Validate: B.
 
