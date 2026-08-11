@@ -171,7 +171,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Update only the bootstrap imports; preserve CSS bytes and cascade order.
   - Validate: B.
 
-- [ ] **Commit 018 — test: verify foundation public import contracts**
+- [x] **Commit 018 — test: verify foundation public import contracts**
   - Change: frontend/tests/unit/architecture/public-api.unit.test.ts + frontend/scripts/check-fsd-boundaries.mjs.
   - Add assertions for app/shared public APIs and report all remaining legacy-root import owners.
   - Validate: F.
