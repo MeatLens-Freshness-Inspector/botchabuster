@@ -11,14 +11,12 @@ import { formatInspectionLocationLabel } from "@/entities/inspection";
 import { DEFAULT_MARKET_LOCATIONS } from "@/entities/market-location";
 import {
   getReportOrganizationLabel,
-  isReportOrganization,
 } from "@/features/reports";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { composeReportPdf } from "@/features/reports";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import { buildDeveloperInAppMetrics } from "@/features/developer-tools";
 import type {
-  ManagedUserForm,
   ReportDailyTrendRow,
   ReportLocationBreakdown,
   ReportRow,
@@ -45,7 +43,9 @@ import {
   toCsvValue,
   useDashboardSession,
   useInspectionsTab,
+  useUserActions,
   useOverviewTab,
+  useUsersTab,
 } from "@/widgets/admin-dashboard";
 
 export function useAdminDashboardPage() {
@@ -73,78 +73,25 @@ export function useAdminDashboardPage() {
   const [newCodeDesc, setNewCodeDesc] = useState("");
   const [newMarketName, setNewMarketName] = useState("");
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
-  const [pendingDeleteUserId, setPendingDeleteUserId] = useState<string | null>(null);
   const [pendingDeleteInspectionId, setPendingDeleteInspectionId] = useState<string | null>(null);
   const [pendingDeleteCodeId, setPendingDeleteCodeId] = useState<string | null>(null);
   const [pendingDeleteMarketId, setPendingDeleteMarketId] = useState<string | null>(null);
-  const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [editingUser, setEditingUser] = useState<Profile | null>(null);
-  const [editUserForm, setEditUserForm] = useState<ManagedUserForm>({
-    full_name: "",
-    email: "",
-    password: "",
-    inspector_code: "",
-    report_organization: "",
-    location: "",
-  });
-  const [isSavingUser, setIsSavingUser] = useState(false);
-  const [userSearchQuery, setUserSearchQuery] = useState("");
-  const [userPage, setUserPage] = useState(1);
-  const [userPageSize, setUserPageSize] = useState(5);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [auditLogPage, setAuditLogPage] = useState(1);
   const [logsLoading, setLogsLoading] = useState(false);
   const [reportStartDate, setReportStartDate] = useState(() => format(subDays(new Date(), REPORT_DEFAULT_RANGE_DAYS - 1), "yyyy-MM-dd"));
   const [reportEndDate, setReportEndDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
-  const [userForm, setUserForm] = useState<ManagedUserForm>({
-    full_name: "",
-    email: "",
-    password: "",
-    inspector_code: "",
-    report_organization: "",
-    location: "",
+  const usersTab = useUsersTab(profiles);
+  const userActions = useUserActions({
+    currentUserId: user?.id,
+    setProfiles,
+    setStats,
+    setUserPage: usersTab.setUserPage,
   });
 
   useEffect(() => {
     void loadData();
   }, []);
-
-  const resetUserForm = () => {
-    setUserForm({
-      full_name: "",
-      email: "",
-      password: "",
-      inspector_code: "",
-      report_organization: "",
-      location: "",
-    });
-  };
-
-  const handleStartEditUser = (profile: Profile) => {
-    setEditingUserId(profile.id);
-    setEditingUser(profile);
-    setEditUserForm({
-      full_name: profile.full_name || "",
-      email: profile.email || "",
-      password: "",
-      inspector_code: profile.inspector_code || "",
-      report_organization: profile.report_organization || "",
-      location: profile.location || "",
-    });
-  };
-
-  const closeEditUserModal = () => {
-    setEditingUserId(null);
-    setEditingUser(null);
-    setEditUserForm({
-      full_name: "",
-      email: "",
-      password: "",
-      inspector_code: "",
-      report_organization: "",
-      location: "",
-    });
-  };
 
   const loadData = async () => {
     setLoading(true);
@@ -195,117 +142,6 @@ export function useAdminDashboardPage() {
     if (activeTab !== "logs") return;
     void loadAuditLogs();
   }, [activeTab]);
-
-  const handleSubmitUserForm = async () => {
-    const email = userForm.email.trim();
-    const password = userForm.password.trim();
-    const reportOrganization = isReportOrganization(userForm.report_organization)
-      ? userForm.report_organization
-      : null;
-
-    if (!email) {
-      toast.error("Email is required");
-      return;
-    }
-
-    if (password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-
-    setIsSavingUser(true);
-
-    try {
-      const created = await profileClient.createUserByAdmin({
-        email,
-        password,
-        full_name: userForm.full_name.trim() || null,
-        inspector_code: userForm.inspector_code.trim() || null,
-        report_organization: reportOrganization,
-        location: userForm.location.trim() || null,
-      });
-
-      setProfiles((prev) => [created, ...prev]);
-      setStats((prev) => (prev ? { ...prev, total_users: prev.total_users + 1 } : prev));
-      setUserPage(1);
-      toast.success("User created");
-      resetUserForm();
-    } catch (err) {
-      console.error("Failed to create user:", err);
-      const message = err instanceof Error && err.message ? err.message : "Failed to create user";
-      toast.error(message);
-    } finally {
-      setIsSavingUser(false);
-    }
-  };
-
-  const handleSaveEditUser = async () => {
-    if (!editingUserId) return;
-    const email = editUserForm.email.trim();
-    const password = editUserForm.password.trim();
-    const reportOrganization = isReportOrganization(editUserForm.report_organization)
-      ? editUserForm.report_organization
-      : null;
-
-    if (!email) {
-      toast.error("Email is required");
-      return;
-    }
-
-    if (password.length > 0 && password.length < 6) {
-      toast.error("New password must be at least 6 characters");
-      return;
-    }
-
-    setIsSavingUser(true);
-
-    try {
-      const updated = await profileClient.updateUserByAdmin(editingUserId, {
-        email,
-        full_name: editUserForm.full_name.trim() || null,
-        inspector_code: editUserForm.inspector_code.trim() || null,
-        report_organization: reportOrganization,
-        location: editUserForm.location.trim() || null,
-        ...(password ? { password } : {}),
-      });
-
-      setProfiles((prev) => prev.map((p) => (p.id === editingUserId ? updated : p)));
-      toast.success("User credentials updated");
-      closeEditUserModal();
-    } catch (err) {
-      console.error("Failed to update user:", err);
-      const message = err instanceof Error && err.message ? err.message : "Failed to update user";
-      toast.error(message);
-    } finally {
-      setIsSavingUser(false);
-    }
-  };
-
-  const handleDeleteUser = async (profileId: string) => {
-    if (profileId === user?.id) {
-      toast.error("You can't delete your own account");
-      return;
-    }
-
-    setPendingDeleteUserId(profileId);
-  };
-
-  const confirmDeleteUser = async () => {
-    const profileId = pendingDeleteUserId;
-    if (!profileId) return;
-    setPendingDeleteUserId(null);
-
-    try {
-      await profileClient.deleteUserByAdmin(profileId);
-      setProfiles((prev) => prev.filter((p) => p.id !== profileId));
-      setStats((prev) => (prev ? { ...prev, total_users: Math.max(0, prev.total_users - 1) } : prev));
-      if (editingUserId === profileId) closeEditUserModal();
-      toast.success("User deleted");
-    } catch (err) {
-      console.error("Failed to delete user:", err);
-      toast.error("Failed to delete user");
-    }
-  };
 
   const classificationCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -511,34 +347,17 @@ export function useAdminDashboardPage() {
     }));
   }, [dailyAnalytics]);
 
-  const filteredProfiles = useMemo(() => {
-    const query = userSearchQuery.trim().toLowerCase();
-    if (!query) return profiles;
-    return profiles.filter((p) => {
-      const fullName = (p.full_name || "").toLowerCase();
-      const email = (p.email || "").toLowerCase();
-      const code = (p.inspector_code || "").toLowerCase();
-      const location = (p.location || "").toLowerCase();
-      const org = p.report_organization
-        ? getReportOrganizationLabel(p.report_organization).toLowerCase()
-        : "";
-      return (
-        fullName.includes(query) ||
-        email.includes(query) ||
-        code.includes(query) ||
-        location.includes(query) ||
-        org.includes(query)
-      );
-    });
-  }, [profiles, userSearchQuery]);
-
-  const totalUserPages = Math.max(1, Math.ceil(filteredProfiles.length / userPageSize));
-
-  const paginatedProfiles = useMemo(() => {
-    const safePage = Math.min(Math.max(1, userPage), totalUserPages);
-    const start = (safePage - 1) * userPageSize;
-    return filteredProfiles.slice(start, start + userPageSize);
-  }, [filteredProfiles, userPage, userPageSize, totalUserPages]);
+  const {
+    filteredProfiles,
+    paginatedProfiles,
+    totalUserPages,
+    userPage,
+    userPageSize,
+    userSearchQuery,
+    setUserPage,
+    setUserPageSize,
+    setUserSearchQuery,
+  } = usersTab;
 
   const reportDateRangeInvalid = reportStartDate > reportEndDate;
 
@@ -1130,27 +949,23 @@ export function useAdminDashboardPage() {
     marketLocations,
     stats,
     loading,
+    ...usersTab,
+    ...userActions,
     activeTab,
     activeTabConfig,
     newCode,
     newCodeDesc,
     newMarketName,
     previewImageUrl,
-    pendingDeleteUserId,
     pendingDeleteInspectionId,
     pendingDeleteCodeId,
     pendingDeleteMarketId,
     inspectorFilter,
-    editingUserId,
-    editingUser,
-    editUserForm,
-    isSavingUser,
     auditLogs,
     auditLogPage,
     logsLoading,
     reportStartDate,
     reportEndDate,
-    userForm,
     classificationCounts,
     profileById,
     pieData,
@@ -1178,23 +993,13 @@ export function useAdminDashboardPage() {
     avgConfidence,
     spoiledRate,
     recentTrend,
-    userSearchQuery,
-    userPage,
-    userPageSize,
-    filteredProfiles,
-    paginatedProfiles,
-    totalUserPages,
     paginatedAuditLogs,
     totalAuditLogPages,
-    setUserSearchQuery,
-    setUserPage,
-    setUserPageSize,
     setActiveTab,
     setNewCode,
     setNewCodeDesc,
     setNewMarketName,
     setPreviewImageUrl,
-    setPendingDeleteUserId,
     setPendingDeleteInspectionId,
     setPendingDeleteCodeId,
     setPendingDeleteMarketId,
@@ -1202,18 +1007,9 @@ export function useAdminDashboardPage() {
     setAuditLogPage,
     setReportStartDate,
     setReportEndDate,
-    setUserForm,
-    resetUserForm,
-    setEditUserForm,
-    closeEditUserModal,
-    handleSaveEditUser,
     loadData,
     loadAuditLogs,
     handleRefresh,
-    handleStartEditUser,
-    handleSubmitUserForm,
-    handleDeleteUser,
-    confirmDeleteUser,
     handleDeleteInspection,
     confirmDeleteInspection,
     handleExportCSV,

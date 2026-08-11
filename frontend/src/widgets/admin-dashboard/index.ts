@@ -7,3 +7,5 @@ export {
 } from "./model/use-overview-tab";
 export { useInspectionPagination } from "./model/use-inspection-pagination";
 export { useInspectionsTab } from "./model/use-inspections-tab";
+export { useUserActions } from "./model/use-user-actions";
+export { useUsersTab } from "./model/use-users-tab";

@@ -556,8 +556,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: extracted inspection filtering, pagination, and profile-label derivation from frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts into bounded widget model hooks.
   - TDD: added the inspection-state public contract before extraction (RED on missing widget exports, then GREEN after ownership migration).
   - Validate: focused inspection-state test, typecheck, lint (15 existing warnings), and architecture checks passed; full unit suite remains at 240 passing with the two known developer-dashboard baseline failures.
-- [ ] **Commit 115 — refactor: split dashboard user state**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-users-tab.ts + frontend/src/widgets/admin-dashboard/model/use-user-actions.ts. Validate: F.
+- [x] **Commit 115 — refactor: split dashboard user state**
+  - Change: extracted user filtering/pagination and user CRUD/edit-form workflows from frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts into bounded widget model hooks.
+  - TDD: added the user-state public contract before extraction (RED on missing widget exports, then GREEN after ownership migration).
+  - Validate: focused user-state test, typecheck, and lint (15 existing warnings) passed.
 - [ ] **Commit 116 — refactor: split dashboard access-code state**
   - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/features/admin-management/model/use-access-codes.ts + frontend/src/features/admin-management/model/use-access-code-form.ts. Validate: F.
 - [ ] **Commit 117 — refactor: split dashboard log state**
