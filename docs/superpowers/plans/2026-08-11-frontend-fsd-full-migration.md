@@ -489,8 +489,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved onboarding session persistence, view-model contracts, copy helpers, and the onboarding workflow hook into a feature public API; updated the existing page and route composition consumers.
   - TDD: added the onboarding session public contract before extraction (RED on the absent feature API, then GREEN after the model migration).
   - Validate: focused session test, typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 100 — refactor: migrate onboarding route page**
-  - Change: frontend/src/pages/user/onboarding/components/OnboardingPageView.tsx -> frontend/src/features/onboarding/ui/onboarding-page.tsx + frontend/src/pages/OnboardingPage.tsx -> frontend/src/pages/inspector/onboarding-page.tsx. Validate: P-inspect.
+- [x] **Commit 100 — refactor: migrate onboarding route page**
+  - Change: moved the onboarding route page into the inspector page slice and moved its view boundary into the onboarding feature UI, updating composition imports while keeping the existing tutorial renderer injected at the route boundary.
+  - TDD: added the onboarding route ownership contract before migration (RED on the absent inspector page, then GREEN after the move).
+  - Validate: focused route test, typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 101 — refactor: split tutorial definitions**
   - Change: frontend/src/lib/tutorials/tutorialDefinitions.ts -> frontend/src/features/tutorials/model/inspection-tutorial.ts + frontend/src/features/tutorials/model/profile-tutorial.ts. Validate: F.
 - [ ] **Commit 102 — refactor: move tutorial player components**

@@ -48,7 +48,7 @@ import ProfileHelpPage from "./pages/ProfileHelpPage";
 import ProfileHelpScopePage from "./pages/ProfileHelpScopePage";
 import ProfileTutorialPage from "./pages/ProfileTutorialPage";
 import MessagesPage from "./pages/inspector/messages-page";
-import OnboardingPage from "./pages/OnboardingPage";
+import OnboardingPage from "./pages/inspector/onboarding-page";
 import NotFound from "./pages/not-found/NotFound";
 
 const offlineSyncDependencies: OfflineSyncDependencies = {

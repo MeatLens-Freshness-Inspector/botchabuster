@@ -15,3 +15,4 @@ export type {
   OnboardingPageViewModel,
   OnboardingSecondaryAction,
 } from "./model/types";
+export { OnboardingPageView } from "./ui/onboarding-page";
