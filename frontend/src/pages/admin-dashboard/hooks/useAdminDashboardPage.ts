@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { format, subDays, startOfDay, endOfDay, isAfter } from "date-fns";
+import { format, subDays, startOfDay, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { accessCodeClient, type AccessCode } from "@/entities/access-code";
 import type { AuditLogEntry } from "@/entities/audit-log";
@@ -14,6 +14,7 @@ import {
 } from "@/features/reports";
 import { useAccessCodeForm, useAccessCodes } from "@/features/admin-management";
 import { useMarketForm, useMarketLocations } from "@/features/admin-management";
+import { useAdminReport, useReportsTab } from "@/features/reports";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { composeReportPdf } from "@/features/reports";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
@@ -32,7 +33,6 @@ import {
   MEAT_TYPE_LABELS,
   PIE_COLORS,
   REPORT_CLASSIFICATIONS,
-  REPORT_DEFAULT_RANGE_DAYS,
   buildPreScanReportFields,
   buildAdminDashboardReportPdfModel,
   getInspectorLabel,
@@ -78,8 +78,6 @@ export function useAdminDashboardPage() {
   const accessCodesState = useAccessCodes({ setAccessCodes });
   const marketForm = useMarketForm({ marketLocations, setMarketLocations });
   const marketLocationsState = useMarketLocations({ marketLocations, setMarketLocations });
-  const [reportStartDate, setReportStartDate] = useState(() => format(subDays(new Date(), REPORT_DEFAULT_RANGE_DAYS - 1), "yyyy-MM-dd"));
-  const [reportEndDate, setReportEndDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const usersTab = useUsersTab(profiles);
   const userActions = useUserActions({
     currentUserId: user?.id,
@@ -89,6 +87,8 @@ export function useAdminDashboardPage() {
   });
   const logsTab = useLogsTab();
   const logFilters = useLogFilters(logsTab.auditLogs);
+  const { loadAuditLogs } = logsTab;
+  const adminReport = useAdminReport(inspections);
 
   useEffect(() => {
     void loadData();
@@ -127,8 +127,8 @@ export function useAdminDashboardPage() {
 
   useEffect(() => {
     if (activeTab !== "logs") return;
-    void logsTab.loadAuditLogs();
-  }, [activeTab]);
+    void loadAuditLogs();
+  }, [activeTab, loadAuditLogs]);
 
   const classificationCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -346,19 +346,14 @@ export function useAdminDashboardPage() {
     setUserSearchQuery,
   } = usersTab;
 
-  const reportDateRangeInvalid = reportStartDate > reportEndDate;
-
-  const reportFilteredInspections = useMemo(() => {
-    if (reportDateRangeInvalid) return [];
-
-    const startDate = startOfDay(new Date(`${reportStartDate}T00:00:00`));
-    const endDate = endOfDay(new Date(`${reportEndDate}T00:00:00`));
-
-    return inspections.filter((inspection) => {
-      const inspectionDate = new Date(inspection.created_at);
-      return inspectionDate >= startDate && inspectionDate <= endDate;
-    });
-  }, [inspections, reportDateRangeInvalid, reportStartDate, reportEndDate]);
+  const {
+    reportDateRangeInvalid,
+    reportEndDate,
+    reportFilteredInspections,
+    reportStartDate,
+    setReportEndDate,
+    setReportStartDate,
+  } = adminReport;
 
   const reportClassCounts = useMemo(() => {
     const counts: Record<FreshnessClassification, number> = {
@@ -540,6 +535,12 @@ export function useAdminDashboardPage() {
       : null,
     [isDeveloper, reportRows],
   );
+  const reportsTab = useReportsTab({
+    reportDateRangeInvalid,
+    reportEndDate,
+    reportRows,
+    reportStartDate,
+  });
 
   const avgConfidence = useMemo(() => {
     if (inspections.length === 0) return 0;
@@ -597,22 +598,6 @@ export function useAdminDashboardPage() {
       URL.revokeObjectURL(url);
       anchor.remove();
     }, 1000);
-  };
-
-  const getReportFileSuffix = () => `${reportStartDate}_to_${reportEndDate}`;
-
-  const validateReportRange = (): boolean => {
-    if (reportDateRangeInvalid) {
-      toast.error("Report date range is invalid");
-      return false;
-    }
-
-    if (reportRows.length === 0) {
-      toast.error("No inspections found for the selected report range");
-      return false;
-    }
-
-    return true;
   };
 
   const handleExportCSV = () => {
@@ -817,7 +802,7 @@ export function useAdminDashboardPage() {
     tabs[0];
   const handleRefresh = () => {
     if (activeTab === "logs") {
-      void logsTab.loadAuditLogs();
+      void loadAuditLogs();
       return;
     }
 
@@ -846,13 +831,13 @@ export function useAdminDashboardPage() {
     ...logFilters,
     ...marketForm,
     ...marketLocationsState,
+    ...adminReport,
+    ...reportsTab,
     activeTab,
     activeTabConfig,
     previewImageUrl,
     pendingDeleteInspectionId,
     inspectorFilter,
-    reportStartDate,
-    reportEndDate,
     classificationCounts,
     profileById,
     pieData,
@@ -884,8 +869,6 @@ export function useAdminDashboardPage() {
     setPreviewImageUrl,
     setPendingDeleteInspectionId,
     setInspectorFilter,
-    setReportStartDate,
-    setReportEndDate,
     loadData,
     handleRefresh,
     handleDeleteInspection,

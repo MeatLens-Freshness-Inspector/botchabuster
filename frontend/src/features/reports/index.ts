@@ -14,3 +14,5 @@ export {
   getReportLetterheadAssetPath,
   getReportLetterheadAssetUrl,
 } from "./lib/letterheads";
+export { useAdminReport } from "./model/use-admin-report";
+export { useReportsTab } from "./model/use-reports-tab";
