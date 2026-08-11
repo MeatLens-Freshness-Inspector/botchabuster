@@ -17,4 +17,7 @@ export * from "./model/api-docs-response";
 export * from "./model/api-docs-history";
 export * from "./model/api-docs-redaction";
 export { useApiDocs } from "./model/use-api-docs";
+export { ApiDocsSection } from "./ui/api-docs/api-docs-section";
+export { ApiDocsRequestPanel } from "./ui/api-docs/request-panel";
+export { ApiDocsResponsePanel } from "./ui/api-docs/response-panel";
 export type { DeveloperMetricRecord } from "./lib/in-app-metrics";

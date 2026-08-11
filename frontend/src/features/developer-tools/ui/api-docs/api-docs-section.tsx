@@ -1,11 +1,11 @@
 import React from "react";
 import { Braces, ShieldCheck } from "lucide-react";
 import { API_BASE_URL } from "@/shared/api/base-url";
-import { ApiDocsCategoryNav } from "./ApiDocsCategoryNav";
-import { ApiDocsHistoryPanel } from "./ApiDocsHistoryPanel";
-import { ApiDocsRequestPanel } from "./ApiDocsRequestPanel";
-import { ApiDocsResponsePanel } from "./ApiDocsResponsePanel";
-import { useApiDocs } from "@/features/developer-tools";
+import { ApiDocsCategoryNav } from "./category-nav";
+import { ApiDocsHistoryPanel } from "./history-panel";
+import { ApiDocsRequestPanel } from "./request-panel";
+import { ApiDocsResponsePanel } from "./response-panel";
+import { useApiDocs } from "../../model/use-api-docs";
 
 export function ApiDocsSection() {
   const apiDocs = useApiDocs();

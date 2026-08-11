@@ -6,10 +6,10 @@ import {
   DeveloperExport,
   DeveloperOverviewSection,
   DeveloperTrainingSection,
+  ApiDocsSection,
 } from "@/features/developer-tools";
 import type { DeveloperWorkspaceTabKey } from "@/widgets/admin-dashboard";
 import { DeveloperSettingsSection } from "../developer/DeveloperSettingsSection";
-import { ApiDocsSection } from "../developer/api-docs/ApiDocsSection";
 
 const DeveloperTabContent = () => {
   const developer = useDeveloperDashboard();
