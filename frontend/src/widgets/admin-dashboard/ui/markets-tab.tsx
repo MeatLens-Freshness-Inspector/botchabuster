@@ -16,7 +16,7 @@ type MarketsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
 };
 
-const MarketsTabContent = ({ dashboard }: MarketsTabContentProps) => {
+const MarketsTab = ({ dashboard }: MarketsTabContentProps) => {
   const {
     marketLocations,
     newMarketName,
@@ -109,4 +109,4 @@ const MarketsTabContent = ({ dashboard }: MarketsTabContentProps) => {
   );
 };
 
-export default MarketsTabContent;
+export default MarketsTab;

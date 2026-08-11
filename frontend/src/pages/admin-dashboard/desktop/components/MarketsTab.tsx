@@ -1,4 +1,4 @@
-import MarketsTabContent from "../../components/tab-content/MarketsTabContent";
+import { MarketsTab as MarketsWidget } from "@/widgets/admin-dashboard";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type MarketsTabProps = {
@@ -6,7 +6,7 @@ type MarketsTabProps = {
 };
 
 const MarketsTab = ({ dashboard }: MarketsTabProps) => {
-  return <MarketsTabContent dashboard={dashboard} />;
+  return <MarketsWidget dashboard={dashboard} />;
 };
 
 export default MarketsTab;

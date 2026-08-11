@@ -16,7 +16,7 @@ import { MobileAccessCodesTab as AccessCodesTab } from "@/widgets/admin-dashboar
 import DeveloperTab from "../mobile/components/DeveloperTab";
 import InspectionsTab from "../mobile/components/InspectionsTab";
 import LogsTab from "../mobile/components/LogsTab";
-import MarketsTab from "../mobile/components/MarketsTab";
+import { MobileMarketsTab as MarketsTab } from "@/widgets/admin-dashboard";
 import OverviewTab from "../mobile/components/OverviewTab";
 import ReportsTab from "../mobile/components/ReportsTab";
 import UsersTab from "../mobile/components/UsersTab";
