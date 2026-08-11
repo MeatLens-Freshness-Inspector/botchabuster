@@ -5,7 +5,7 @@ import { useAuth } from "@/entities/user";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { accessCodeClient, type AccessCode } from "@/entities/access-code";
 import { auditLogClient, type AuditLogEntry } from "@/entities/audit-log";
-import { developerDashboardClient, type DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
+import { developerDashboardClient, type DeveloperOverviewMetricPoint } from "@/entities/developer-metrics";
 import { inspectionClient } from "@/entities/inspection";
 import { marketLocationClient, type MarketLocation } from "@/entities/market-location";
 import { profileClient, type Profile } from "@/entities/user/api";

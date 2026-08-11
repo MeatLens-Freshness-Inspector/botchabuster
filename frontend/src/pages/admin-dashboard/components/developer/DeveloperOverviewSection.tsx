@@ -26,7 +26,7 @@ import type {
   DeveloperOverviewMetricPoint,
   DeveloperOverviewResponse,
   InAppModelMetrics,
-} from "@/integrations/api/DeveloperDashboardClient";
+} from "@/entities/developer-metrics";
 
 function formatPercent(value: number | null | undefined): string {
   if (typeof value !== "number" || !Number.isFinite(value)) {

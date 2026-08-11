@@ -13,7 +13,7 @@ import type { Profile } from "@/entities/user/api/profile-client";
 import { resolveReportOrganization } from "@/lib/reportOrganizations";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { buildAdminRangeReportModel } from "@/lib/reports/adapters/adminRangeReport";
-import type { DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
+import type { DeveloperOverviewMetricPoint } from "@/entities/developer-metrics";
 import type { ReportDocumentModel } from "@/features/reports/model/types";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import type { AdminDashboardTabKey, ReportRow } from "../types";

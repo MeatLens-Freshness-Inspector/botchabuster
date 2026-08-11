@@ -2,7 +2,7 @@ import type {
   InAppClassBreakdown,
   InAppMeatTypeBreakdown,
   InAppModelMetrics,
-} from "@/integrations/api/DeveloperDashboardClient";
+} from "@/entities/developer-metrics";
 import type { Inspection, FreshnessClassification } from "@/entities/inspection";
 
 export type DeveloperMetricRecord = Pick<Inspection, "classification" | "manual_classification" | "meat_type">;

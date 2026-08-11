@@ -3,7 +3,7 @@ import { UploadCloud } from "lucide-react";
 import { Badge } from "@/shared/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui";
-import type { TrainingRunRecord } from "@/integrations/api/DeveloperDashboardClient";
+import type { TrainingRunRecord } from "@/entities/developer-metrics";
 
 function formatPercent(value: number): string {
   return `${Math.round(value * 1000) / 10}%`;

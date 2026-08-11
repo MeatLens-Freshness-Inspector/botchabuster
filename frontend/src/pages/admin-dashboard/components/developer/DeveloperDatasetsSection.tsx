@@ -15,7 +15,7 @@ import {
 import type {
   DeveloperDatasetFilterState,
   DeveloperDatasetListResponse,
-} from "@/integrations/api/DeveloperDashboardClient";
+} from "@/entities/developer-metrics";
 import type { FreshnessClassification } from "@/entities/inspection";
 
 function formatDateTime(value: string | null | undefined): string {

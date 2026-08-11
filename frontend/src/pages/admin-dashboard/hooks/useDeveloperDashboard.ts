@@ -7,7 +7,7 @@ import {
   type DeveloperDatasetListResponse,
   type DeveloperOverviewResponse,
   type TrainingRunRecord,
-} from "@/integrations/api/DeveloperDashboardClient";
+} from "@/entities/developer-metrics";
 import type { FreshnessClassification } from "@/entities/inspection";
 import type { Inspection } from "@/entities/inspection";
 import { buildDeveloperInAppMetrics } from "../utils/developerInAppMetrics";

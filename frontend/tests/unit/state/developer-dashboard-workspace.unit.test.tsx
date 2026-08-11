@@ -4,7 +4,7 @@ import { JSDOM } from "jsdom";
 import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { developerDashboardClient, DEFAULT_DEVELOPER_DATASET_FILTERS, type DeveloperDatasetListResponse } from "../../../src/integrations/api/DeveloperDashboardClient";
+import { developerDashboardClient, DEFAULT_DEVELOPER_DATASET_FILTERS, type DeveloperDatasetListResponse } from "../../../src/entities/developer-metrics";
 import { DeveloperDatasetsSection } from "../../../src/pages/admin-dashboard/components/developer/DeveloperDatasetsSection";
 
 type GlobalWithDom = typeof globalThis & {
