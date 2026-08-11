@@ -1,5 +1,5 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
-import type { FreshnessClassification } from "@/types/inspection";
+import type { FreshnessClassification } from "@/entities/inspection";
 
 export type AdminDashboardTabKey =
   | "overview"

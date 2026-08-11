@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import type { FreshnessClassification } from "../../../src/types/inspection";
+import type { FreshnessClassification } from "../../../src/entities/inspection";
 import { buildEnsembleAnalysisResult } from "../../../src/lib/offlineAnalysis/ensemble";
 
 function buildModelResult(

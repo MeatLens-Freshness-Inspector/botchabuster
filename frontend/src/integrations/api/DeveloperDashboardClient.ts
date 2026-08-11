@@ -1,5 +1,5 @@
 import { createAuthHeaders } from "@/shared/api/auth-headers";
-import type { Inspection } from "@/types/inspection";
+import type { Inspection } from "@/entities/inspection";
 import { fetchWithTimeout, readApiErrorMessage } from "@/shared/api";
 import { API_BASE_URL } from "@/shared/api/base-url";
 const LONG_RUNNING_REQUEST_TIMEOUT_MS = 120_000;

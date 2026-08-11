@@ -1,4 +1,4 @@
-import type { AnalysisResult } from "@/types/inspection";
+import type { AnalysisResult } from "@/entities/inspection";
 import { readJson, writeJson } from "@/shared/lib/storage";
 
 const DEV_OPTIONS_FLAGS_KEY_PREFIX = "meatlens-developer-options-flags";

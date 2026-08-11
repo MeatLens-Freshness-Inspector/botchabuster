@@ -43,7 +43,7 @@ import {
   type CoordinateCaptureStatus,
   type InspectionCoordinates,
 } from "@/lib/inspectionLocation";
-import type { AnalysisResult, InspectionDecisionSource } from "@/types/inspection";
+import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
 import type { CapturedImagePayload } from "@/components/CameraCapture";
 import type { InspectPageViewModel, InspectionSaveStatus } from "../types";
 import {

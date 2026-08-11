@@ -16,7 +16,7 @@ import type {
   DeveloperDatasetFilterState,
   DeveloperDatasetListResponse,
 } from "@/integrations/api/DeveloperDashboardClient";
-import type { FreshnessClassification } from "@/types/inspection";
+import type { FreshnessClassification } from "@/entities/inspection";
 
 function formatDateTime(value: string | null | undefined): string {
   if (!value) return "-";

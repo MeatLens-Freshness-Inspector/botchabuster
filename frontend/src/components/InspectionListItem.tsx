@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Inspection } from "@/types/inspection";
+import type { Inspection } from "@/entities/inspection";
 import { FreshnessBadge } from "@/components/FreshnessBadge";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Dialog, DialogContent } from "@/shared/ui/dialog";

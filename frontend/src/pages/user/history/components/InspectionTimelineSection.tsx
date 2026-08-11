@@ -2,7 +2,7 @@ import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import { InspectionListItem } from "@/components/InspectionListItem";
 import { Loader2, ClipboardList, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import type { Inspection } from "@/types/inspection";
+import type { Inspection } from "@/entities/inspection";
 import type { FilterOption } from "../types";
 import { HISTORY_FILTER_OPTIONS } from "../utils/historyPage";
 

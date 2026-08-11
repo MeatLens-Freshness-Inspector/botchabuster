@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/shared/lib/utils";
-import type { FreshnessClassification } from "@/types/inspection";
+import type { FreshnessClassification } from "@/entities/inspection";
 
 const classificationConfig: Record<FreshnessClassification, { label: string; className: string; icon?: string }> = {
   fresh: { label: "Fresh", className: "bg-fresh/20 text-fresh border-fresh/40" },

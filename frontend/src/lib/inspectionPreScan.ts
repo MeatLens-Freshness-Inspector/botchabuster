@@ -2,7 +2,7 @@ import type {
   AnalysisResult,
   InspectionDecisionSource,
   InspectionInsert,
-} from "@/types/inspection";
+} from "@/entities/inspection";
 
 export const PROTOCOL_SPOILED_REASON = "failed_pre_scan_safety_protocol";
 

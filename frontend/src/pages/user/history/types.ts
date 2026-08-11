@@ -1,5 +1,5 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
-import type { FreshnessClassification, Inspection } from "@/types/inspection";
+import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 
 export type FilterOption = "all" | FreshnessClassification;
 

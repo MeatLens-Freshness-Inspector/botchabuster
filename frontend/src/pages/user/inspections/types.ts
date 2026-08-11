@@ -1,6 +1,6 @@
 import type { CapturedImagePayload } from "@/components/CameraCapture";
 import type { InspectionPreScanForm } from "@/lib/inspectionPreScan";
-import type { AnalysisResult, InspectionDecisionSource } from "@/types/inspection";
+import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
 
 export type InspectionSaveStatus = "idle" | "saving" | "saved" | "queued";
 

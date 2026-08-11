@@ -5,7 +5,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { AnalysisResultCard } from "../../../src/components/AnalysisResultCard";
-import type { AnalysisResult } from "../../../src/types/inspection";
+import type { AnalysisResult } from "../../../src/entities/inspection";
 
 Object.assign(globalThis, { React });
 

@@ -2,6 +2,15 @@ export type FreshnessClassification = 'fresh' | 'not fresh' | 'spoiled' | 'accep
 export type MeatType = 'pork' | 'beef' | 'chicken' | 'fish' | 'other';
 export type InspectionDecisionSource = 'ai' | 'protocol_pre_scan';
 
+export const FRESHNESS_CLASSIFICATIONS = [
+  'fresh',
+  'not fresh',
+  'spoiled',
+  'acceptable',
+  'warning',
+] as const satisfies readonly FreshnessClassification[];
+export const MEAT_TYPES = ['pork', 'beef', 'chicken', 'fish', 'other'] as const satisfies readonly MeatType[];
+
 export interface Inspection {
   id: string;
   user_id: string | null;

@@ -15,7 +15,7 @@ import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { buildAdminRangeReportModel } from "@/lib/reports/adapters/adminRangeReport";
 import type { DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
 import type { ReportDocumentModel } from "@/lib/reports/types";
-import type { FreshnessClassification, Inspection } from "@/types/inspection";
+import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import type { AdminDashboardTabKey, ReportRow } from "../types";
 
 export const CLASS_COLORS: Record<FreshnessClassification, string> = {

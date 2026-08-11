@@ -1,4 +1,4 @@
-import type { FreshnessClassification } from "@/types/inspection";
+import type { FreshnessClassification } from "@/entities/inspection";
 import {
   classifyRecommendation,
   computeFreshnessScore,

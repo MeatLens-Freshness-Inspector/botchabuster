@@ -1,4 +1,4 @@
-import type { AnalysisResult, FreshnessClassification } from "@/types/inspection";
+import type { AnalysisResult, FreshnessClassification } from "@/entities/inspection";
 import { FreshnessBadge } from "@/components/FreshnessBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { getConfidenceFillClass, getConfidenceTextClass } from "@/shared/lib/confidence-level";

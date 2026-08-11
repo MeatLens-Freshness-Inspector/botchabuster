@@ -5,7 +5,7 @@ import type { ReportDocumentModel } from "@/lib/reports/types";
 import type {
   FreshnessClassification,
   Inspection,
-} from "@/types/inspection";
+} from "@/entities/inspection";
 import type {
   DetailedHistoryReportInput,
   HistoryFilterOption,

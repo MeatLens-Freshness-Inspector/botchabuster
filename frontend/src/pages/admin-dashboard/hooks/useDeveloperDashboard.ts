@@ -8,8 +8,8 @@ import {
   type DeveloperOverviewResponse,
   type TrainingRunRecord,
 } from "@/integrations/api/DeveloperDashboardClient";
-import type { FreshnessClassification } from "@/types/inspection";
-import type { Inspection } from "@/types/inspection";
+import type { FreshnessClassification } from "@/entities/inspection";
+import type { Inspection } from "@/entities/inspection";
 import { buildDeveloperInAppMetrics } from "../utils/developerInAppMetrics";
 import type { DeveloperWorkspaceTabKey } from "../types";
 

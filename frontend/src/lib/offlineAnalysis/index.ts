@@ -6,7 +6,7 @@
  * Returns an AnalysisResult aligned with backend fields used by the app.
  */
 
-import type { AnalysisResult, FreshnessClassification } from "@/types/inspection";
+import type { AnalysisResult, FreshnessClassification } from "@/entities/inspection";
 import {
   getActiveAnalysisMode,
   isAnalysisReady,

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildPreScanReportFields } from "../../../../src/pages/admin-dashboard/utils/adminDashboard";
-import type { Inspection } from "../../../../src/types/inspection";
+import type { Inspection } from "../../../../src/entities/inspection";
 
 test("buildPreScanReportFields converts nullable protocol fields into export-friendly strings", () => {
   const inspection: Pick<

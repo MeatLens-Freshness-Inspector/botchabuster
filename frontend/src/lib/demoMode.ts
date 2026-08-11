@@ -6,7 +6,7 @@
 
 import type { AuthUser, AuthSession } from "@/features/auth/api/auth-client";
 import type { Profile } from "@/entities/user/api/profile-client";
-import type { Inspection, AnalysisResult } from "@/types/inspection";
+import type { Inspection, AnalysisResult } from "@/entities/inspection";
 import type { LandingPageStats } from "@/integrations/api/StatsClient";
 
 const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env ?? {};

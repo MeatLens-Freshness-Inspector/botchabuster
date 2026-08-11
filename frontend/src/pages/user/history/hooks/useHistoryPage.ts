@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
 import { useInspections } from "@/hooks/useInspections";
 import { composeReportPdf } from "@/lib/reports/pdf/composeReportPdf";
-import type { FreshnessClassification, Inspection } from "@/types/inspection";
+import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import type { FilterOption, HistoryMonthlyCount } from "../types";
 import {
   buildDetailedHistoryReportPdfModel,

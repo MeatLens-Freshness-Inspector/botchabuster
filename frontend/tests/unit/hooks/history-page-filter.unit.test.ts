@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { Inspection } from "../../../src/types/inspection";
+import type { Inspection } from "../../../src/entities/inspection";
 
 const sampleInspections: Inspection[] = [
   {

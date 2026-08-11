@@ -1,6 +1,6 @@
 import { AnalysisResultCard } from "@/components/AnalysisResultCard";
 import { Camera } from "lucide-react";
-import type { AnalysisResult, InspectionDecisionSource } from "@/types/inspection";
+import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
 
 type InspectAnalysisSectionProps = {
   result: AnalysisResult | null;

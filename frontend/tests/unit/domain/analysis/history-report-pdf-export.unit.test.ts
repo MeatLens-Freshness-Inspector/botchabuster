@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { formatDateTime as formatReportDateTime } from "../../../../src/shared/lib/date-time";
 import { buildDetailedHistoryReportPdfModel } from "../../../../src/pages/user/history/utils/historyPage";
-import type { Inspection } from "../../../../src/types/inspection";
+import type { Inspection } from "../../../../src/entities/inspection";
 
 const sampleInspection: Inspection = {
   id: "inspection-1",

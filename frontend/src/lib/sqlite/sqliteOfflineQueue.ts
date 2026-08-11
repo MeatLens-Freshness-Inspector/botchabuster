@@ -16,7 +16,7 @@ import type {
   AnalysisResult,
   InspectionDecisionSource,
   MeatType,
-} from "@/types/inspection";
+} from "@/entities/inspection";
 import { openDb } from "@/shared/platform/sqlite/database";
 
 // ---------------------------------------------------------------------------

@@ -4,7 +4,7 @@ import type {
   AnalysisResult,
   InspectionDecisionSource,
   MeatType,
-} from "@/types/inspection";
+} from "@/entities/inspection";
 import type { InspectionSaveStatus } from "../types";
 
 export const DEFAULT_MEAT_TYPE: MeatType = "pork";

@@ -8,7 +8,7 @@
  * Migration: android/sql/migrations/004_create_inspection_history_cache.sql
  */
 
-import type { FreshnessClassification, Inspection } from "@/types/inspection";
+import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import { openDb } from "@/shared/platform/sqlite/database";
 
 // ---------------------------------------------------------------------------

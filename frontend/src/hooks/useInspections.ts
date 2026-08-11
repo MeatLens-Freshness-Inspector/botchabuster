@@ -11,7 +11,7 @@ import {
   setCachedInspectionStats,
   upsertCachedInspection,
 } from "@/lib/inspectionHistoryCache";
-import type { InspectionInsert } from "@/types/inspection";
+import type { InspectionInsert } from "@/entities/inspection";
 
 function isTransportFailure(error: unknown): boolean {
   if (error instanceof TypeError) {
