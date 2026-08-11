@@ -1,7 +1,7 @@
 import { Loader2, KeyRound, LifeBuoy, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
-import type { RegisteredPasskey } from "@/integrations/api/PasskeyClient";
+import type { RegisteredPasskey } from "@/features/passkeys/api/passkey-client";
 import { ProfileEditableDetailsCard } from "./ProfileEditableDetailsCard";
 
 type ProfilePrimaryColumnProps = {

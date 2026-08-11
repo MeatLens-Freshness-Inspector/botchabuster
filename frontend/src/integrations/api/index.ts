@@ -3,15 +3,6 @@ export { AccessCodeClient, accessCodeClient, type AccessCode } from "./AccessCod
 export { MarketLocationClient, marketLocationClient, type MarketLocation } from "./MarketLocationClient";
 export { StatsClient, statsClient, type LandingPageStats } from "./StatsClient";
 export { UploadClient, uploadClient } from "./UploadClient";
-export {
-  PasskeyClient,
-  passkeyClient,
-  type RegisteredPasskey,
-  type RegistrationOptionsJSON,
-  type AuthenticationOptionsJSON,
-  type RegistrationResponseJSON,
-  type AuthenticationResponseJSON,
-} from "./PasskeyClient";
 export { AuditLogClient, auditLogClient, type AuditLogEvent } from "./AuditLogClient";
 export { DeveloperOptionsClient, developerOptionsClient, type DeveloperUnlockResponse } from "./DeveloperOptionsClient";
 export {

@@ -1,4 +1,4 @@
-import type { RegisteredPasskey } from "@/integrations/api/PasskeyClient";
+import type { RegisteredPasskey } from "@/features/passkeys/api/passkey-client";
 import { getStoredLocalPasskey } from "@/lib/passkeys/localUnlock";
 
 export function getProfileInitials(fullName: string, email: string | null | undefined): string {

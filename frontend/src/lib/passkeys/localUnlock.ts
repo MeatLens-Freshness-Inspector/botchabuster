@@ -1,7 +1,7 @@
 import type {
   AuthenticationOptionsJSON,
   AuthenticationResponseJSON,
-} from "@/integrations/api/PasskeyClient";
+} from "@/features/passkeys/api/passkey-client";
 import {
   getOfflineAuthEnvelopeSnapshot,
   updateOfflineAuthEnvelope,

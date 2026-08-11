@@ -7,7 +7,7 @@ import {
   type AuthSession,
   type AuthUser,
 } from "@/features/auth/api";
-import { passkeyClient } from "@/integrations/api/PasskeyClient";
+import { passkeyClient } from "@/features/passkeys/api";
 import { profileClient, type Profile } from "@/entities/user/api";
 import {
   AUTH_EXPIRED_EVENT,
@@ -38,7 +38,7 @@ import {
   updateOfflineAuthEnvelope,
   type OfflineAuthEnvelope,
 } from "@/lib/offlineAuthEnvelope";
-import { startPasskeyAuthentication } from "@/lib/passkeys/browser";
+import { startPasskeyAuthentication } from "@/features/passkeys/lib/browser";
 import {
   clearLegacyOfflineUnlockRequired,
   clearLegacyStoredLocalPasskey,

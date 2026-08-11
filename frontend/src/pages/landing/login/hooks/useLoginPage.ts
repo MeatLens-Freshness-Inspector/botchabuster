@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { canUsePasskeys } from "@/lib/passkeys/browser";
+import { canUsePasskeys } from "@/features/passkeys/lib/browser";
 import {
   getAuthDestination,
   getErrorMessage,

@@ -4,7 +4,7 @@ import type {
   RegistrationOptionsJSON,
   RegistrationResponseJSON,
   WebAuthnCredentialDescriptorJSON,
-} from "@/integrations/api/PasskeyClient";
+} from "@/features/passkeys/api/passkey-client";
 
 function encodeBase64Url(input: ArrayBuffer): string {
   const bytes = new Uint8Array(input);
