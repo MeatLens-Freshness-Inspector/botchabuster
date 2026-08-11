@@ -1,7 +1,7 @@
 /**
  * SQLite-backed implementation of the offline scan queue.
  *
- * API is intentionally identical to lib/offlineQueue.ts so the platform
+ * API is intentionally identical to model/inspection-queue.ts so the platform
  * branch in that file is a one-liner swap.
  *
  * Schema: pending_scans

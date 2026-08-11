@@ -4,7 +4,7 @@ import type {
   InspectionDecisionSource,
   MeatType,
 } from "@/entities/inspection";
-import * as sqliteImpl from "../../../lib/sqlite/sqliteOfflineQueue";
+import * as sqliteImpl from "../api/sqlite-offline-queue";
 
 const isNative = () => Capacitor.isNativePlatform();
 

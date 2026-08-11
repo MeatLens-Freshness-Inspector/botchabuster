@@ -362,8 +362,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the native inspection cache adapter into `entities/inspection/api/sqlite-cache.ts`, exposed it through the inspection entity API, and routed the existing cross-platform history-cache facade through the entity contract. The offline inspection queue remains a separate model boundary rather than absorbing cache responsibilities.
   - TDD: added the entity cache public contract first (RED on the missing export), then moved and exported the adapter and reached GREEN with cache statistics behavior unchanged.
   - Validate: inspection cache unit (1), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 070 — refactor: move SQLite offline queues**
-  - Change: frontend/src/lib/sqlite/sqliteOfflineQueue.ts -> frontend/src/features/offline-sync/api/sqlite-offline-queue.ts + frontend/src/lib/sqlite/sqliteAuditQueue.ts -> frontend/src/features/offline-sync/api/sqlite-audit-queue.ts. Validate: I.
+- [x] **Commit 070 — refactor: move SQLite offline queues**
+  - Change: moved the native inspection queue adapter into `features/offline-sync/api/sqlite-offline-queue.ts`, added the offline-sync API barrel for both native queue adapters, and migrated the inspection queue model off the legacy SQLite path. The audit adapter had already moved in the earlier audit-queue migration and is now included in the same API contract.
+  - TDD: added the native adapter contract first (RED on the absent API barrel), then moved the adapter and reached GREEN across inspection and audit adapter/public queue tests.
+  - Validate: adapter/public queue units (3), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 071 — refactor: split model explanation helpers**
   - Change: frontend/src/lib/offlineAnalysis/modelExplanation.ts -> frontend/src/features/offline-analysis/lib/model-explanation.ts + frontend/tests/integration/offline/offline-analysis-explanation.integration.test.ts. Validate: I.
 - [ ] **Commit 072 — refactor: split MobileNet ONNX runtime**
