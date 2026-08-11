@@ -654,9 +654,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 137 — refactor: remove remaining legacy component ownership**
   - Change: delete frontend/src/components/ConfirmDialog.tsx after moving its last consumer to frontend/src/shared/ui/confirm-dialog.tsx + move frontend/src/components/PageHeader.tsx to frontend/src/shared/ui/page-header.tsx.
   - Complete every remaining frontend/src/components transfer listed in the manifest and update every consumer through public APIs. TDD evidence: the component ownership contract was added before the final ownership wiring and passes directly with `npx tsx --test tests/unit/architecture/component-ownership.unit.test.ts`. Validate: `npm run typecheck -w frontend`, `npm run lint -w frontend`, and the focused ownership test.
-- [ ] **Commit 138 — refactor: remove remaining legacy hook ownership**
+- [x] **Commit 138 — refactor: remove remaining legacy hook ownership**
   - Change: delete frontend/src/hooks/use-toast.ts after moving it to frontend/src/shared/hooks/use-toast.ts + move frontend/src/hooks/useMounted.ts to frontend/src/shared/hooks/use-mounted.ts.
-  - Validate: F.
+  - TDD evidence: the inspection-history public API contract was added for the migrated query hooks and passes directly with `npx tsx --test tests/unit/features/inspection-history/inspection-history-public-api.unit.test.ts`. Validate: `npm run typecheck -w frontend`, `npm run lint -w frontend`, and the focused ownership test.
 - [ ] **Commit 139 — refactor: remove remaining legacy API ownership**
   - Change: delete frontend/src/integrations/api/index.ts + delete frontend/src/integrations/api/UploadClient.ts after its final consumer moves to frontend/src/features/inspection-submission/api/upload-client.ts.
   - Validate: I.

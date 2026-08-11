@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
-import { useInspections } from "../../../hooks/useInspections";
+import { useInspections } from "@/features/inspection-history";
 import { composeReportPdf } from "@/features/reports";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import type { FilterOption, HistoryMonthlyCount } from "./types";

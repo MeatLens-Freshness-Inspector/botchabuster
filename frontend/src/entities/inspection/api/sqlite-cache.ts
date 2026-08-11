@@ -1,8 +1,8 @@
 /**
  * SQLite-backed implementation of the inspection history cache.
  *
- * API is intentionally identical to lib/inspectionHistoryCache.ts so the
- * platform branch in that file is a one-liner swap.
+ * API is intentionally identical to the browser inspection-history adapter so
+ * the platform branch in that adapter is a one-liner swap.
  *
  * Schema: inspection_history_cache + inspection_stats_cache
  * Migration: android/sql/migrations/004_create_inspection_history_cache.sql
@@ -12,7 +12,7 @@ import type { FreshnessClassification, Inspection } from "@/entities/inspection"
 import { openDb } from "@/shared/platform/sqlite";
 
 // ---------------------------------------------------------------------------
-// Types (mirrors inspectionHistoryCache.ts exactly)
+// Types shared with the browser inspection-history adapter.
 // ---------------------------------------------------------------------------
 
 type InspectionHistoryScope = "mine" | "all";

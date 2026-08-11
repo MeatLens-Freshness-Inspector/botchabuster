@@ -12,4 +12,4 @@ export {
   setCachedInspectionStats,
   upsertCachedInspection,
   type InspectionHistoryStats,
-} from "./sqlite-cache";
+} from "./inspection-history-cache";

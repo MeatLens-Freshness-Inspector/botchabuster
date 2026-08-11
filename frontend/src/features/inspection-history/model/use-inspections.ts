@@ -1,16 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/entities/user";
-import { inspectionClient, inspectionKeys } from "@/entities/inspection";
-import { API_REQUEST_TIMEOUT_MESSAGE } from "@/shared/api";
 import {
   buildInspectionHistoryStats,
   getCachedInspection,
   getCachedInspectionList,
   getCachedInspectionStats,
+  inspectionClient,
+  inspectionKeys,
   setCachedInspectionList,
   setCachedInspectionStats,
   upsertCachedInspection,
-} from "@/lib/inspectionHistoryCache";
+} from "@/entities/inspection";
+import { API_REQUEST_TIMEOUT_MESSAGE } from "@/shared/api";
 
 function isTransportFailure(error: unknown): boolean {
   if (error instanceof TypeError) {
