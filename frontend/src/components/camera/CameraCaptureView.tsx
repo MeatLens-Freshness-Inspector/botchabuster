@@ -3,7 +3,7 @@ import React, { type ChangeEventHandler, type RefObject } from "react";
 import { Camera, RotateCcw, Check, AlertTriangle, XCircle } from "lucide-react";
 
 import type { ImageQualityResult } from "../../lib/imageQuality";
-import { cn } from "../../lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { Button, buttonVariants } from "../ui/button";
 
 import { formatControlValue, type CameraControlKey, type CameraControlsState } from "./controls";

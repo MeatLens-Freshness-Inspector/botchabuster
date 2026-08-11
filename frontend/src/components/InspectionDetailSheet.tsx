@@ -7,9 +7,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getConfidenceFillClass, getConfidenceTextClass } from "@/lib/confidenceLevel";
+import { getConfidenceFillClass, getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { format } from "date-fns";
 import {
   MapPin,

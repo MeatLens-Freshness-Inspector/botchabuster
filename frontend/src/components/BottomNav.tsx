@@ -1,6 +1,6 @@
 import { NavLink as RouterNavLink } from "react-router-dom";
 import { Camera, ClipboardList, Shield, UserRound, MessageSquare } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [

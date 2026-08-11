@@ -2,7 +2,7 @@ import React from "react";
 import { Clock3, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import type { ApiDocsHistoryEntry } from "./history";
 
 type ApiDocsHistoryPanelProps = {

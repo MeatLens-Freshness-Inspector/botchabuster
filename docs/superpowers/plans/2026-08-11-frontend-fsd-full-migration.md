@@ -132,7 +132,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 - [ ] **Commit 010 — refactor: migrate generic utility functions**
   - Change: frontend/src/lib/utils.ts -> frontend/src/shared/lib/utils.ts + frontend/src/lib/confidenceLevel.ts -> frontend/src/shared/lib/confidence-level.ts.
-  - Update all active imports in the same commit.
+  - Update all active imports in the same commit; do not retain legacy forwarding modules.
   - Validate: F.
 
 - [ ] **Commit 011 — refactor: migrate shared date and storage helpers**

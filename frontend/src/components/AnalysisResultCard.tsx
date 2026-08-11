@@ -1,8 +1,8 @@
 import type { AnalysisResult, FreshnessClassification } from "@/types/inspection";
 import { FreshnessBadge } from "@/components/FreshnessBadge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getConfidenceFillClass, getConfidenceTextClass } from "@/lib/confidenceLevel";
-import { cn } from "@/lib/utils";
+import { getConfidenceFillClass, getConfidenceTextClass } from "@/shared/lib/confidence-level";
+import { cn } from "@/shared/lib/utils";
 
 interface AnalysisResultCardProps {
   result: AnalysisResult;

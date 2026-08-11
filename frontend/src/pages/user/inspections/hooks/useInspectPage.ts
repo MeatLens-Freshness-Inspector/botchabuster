@@ -5,7 +5,7 @@ import { uploadClient } from "@/integrations/api";
 import { developerOptionsClient } from "@/integrations/api/DeveloperOptionsClient";
 import { marketLocationClient } from "@/integrations/api/MarketLocationClient";
 import { useCreateInspection } from "@/hooks/useInspections";
-import { getConfidenceTextClass } from "@/lib/confidenceLevel";
+import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import {
   clearDeveloperOptionsSession,
   DEFAULT_DEVELOPER_OPTIONS_FLAGS,

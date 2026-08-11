@@ -3,9 +3,9 @@ import type { Inspection } from "@/types/inspection";
 import { FreshnessBadge } from "@/components/FreshnessBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { getConfidenceTextClass } from "@/lib/confidenceLevel";
+import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { format } from "date-fns";
 import { MapPin, Hash } from "lucide-react";
 

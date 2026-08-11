@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Check, Clipboard, Clock3, Code2, Copy, Download, FileText, HardDrive, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import type { ApiDocsResponse } from "./response";
 
 type ApiDocsResponsePanelProps = {

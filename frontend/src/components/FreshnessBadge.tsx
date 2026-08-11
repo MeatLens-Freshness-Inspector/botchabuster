@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import type { FreshnessClassification } from "@/types/inspection";
 
 const classificationConfig: Record<FreshnessClassification, { label: string; className: string; icon?: string }> = {
