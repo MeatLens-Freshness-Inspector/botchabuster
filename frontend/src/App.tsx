@@ -14,6 +14,7 @@ import { ROUTE_PATHS } from "@/app/router/paths";
 import { ProtectedRoute as ProtectedRouteGuard, type ProtectedRouteProps } from "@/app/router/guards/protected-route";
 import { AdminRoute as AdminRouteGuard, type AdminRouteProps } from "@/app/router/guards/admin-route";
 import { OnboardingRoute as OnboardingRouteGuard, type OnboardingRouteProps } from "@/app/router/guards/onboarding-route";
+import { AppLayout } from "@/app/layouts/app-layout";
 import { hasSkippedOnboardingForSession } from "@/lib/onboardingSession";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
@@ -32,16 +33,6 @@ import ProfileTutorialPage from "./pages/ProfileTutorialPage";
 import MessagesPage from "./pages/MessagesPage";
 import OnboardingPage from "./pages/OnboardingPage";
 import NotFound from "./pages/not-found/NotFound";
-
-function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      {children}
-      <BottomNav />
-      <AIChatbot />
-    </>
-  );
-}
 
 function ThemeRouteController() {
   const { user, profile } = useAuth();
@@ -112,14 +103,14 @@ const App = () => {
                   <Route path={ROUTE_PATHS.onboarding} element={<AuthOnboardingRoute><OnboardingPage /></AuthOnboardingRoute>} />
 
                   {/* Protected app routes */}
-                  <Route path={ROUTE_PATHS.inspect} element={<AuthProtectedRoute><AppLayout><InspectPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.history} element={<AuthProtectedRoute><AppLayout><HistoryPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.messages} element={<AuthProtectedRoute><AppLayout><MessagesPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.inspect} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><InspectPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.history} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><HistoryPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.messages} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><MessagesPage /></AppLayout></AuthProtectedRoute>} />
                   <Route path={ROUTE_PATHS.dashboard} element={<Navigate to={ROUTE_PATHS.history} replace />} />
-                  <Route path={ROUTE_PATHS.profile} element={<AuthProtectedRoute><AppLayout><ProfilePage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileTutorial} element={<AuthProtectedRoute><AppLayout><ProfileTutorialPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileHelp} element={<AuthProtectedRoute><AppLayout><ProfileHelpPage /></AppLayout></AuthProtectedRoute>} />
-                  <Route path={ROUTE_PATHS.profileHelpScope} element={<AuthProtectedRoute><AppLayout><ProfileHelpScopePage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profile} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><ProfilePage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileTutorial} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><ProfileTutorialPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileHelp} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><ProfileHelpPage /></AppLayout></AuthProtectedRoute>} />
+                  <Route path={ROUTE_PATHS.profileHelpScope} element={<AuthProtectedRoute><AppLayout bottomNavigation={<BottomNav />} assistant={<AIChatbot />}><ProfileHelpScopePage /></AppLayout></AuthProtectedRoute>} />
 
                   {/* Admin routes */}
                   <Route path={ROUTE_PATHS.admin} element={<AuthAdminRoute><AdminDashboardWrapper /></AuthAdminRoute>} />

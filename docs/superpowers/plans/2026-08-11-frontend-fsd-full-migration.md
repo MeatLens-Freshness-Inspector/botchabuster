@@ -208,8 +208,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 026 — refactor: move onboarding route guard**
   - Change: move onboarding gating to frontend/src/app/router/guards/onboarding-route.tsx, adapt the root app to its auth state, and remove the obsolete mixed frontend/src/components/ProtectedRoute.tsx module.
   - Validate: F.
-- [ ] **Commit 027 — refactor: create signed-in app layout**
-  - Change: frontend/src/app/App.tsx + frontend/src/app/layouts/app-layout.tsx.
+- [x] **Commit 027 — refactor: create signed-in app layout**
+  - Change: frontend/src/App.tsx + frontend/src/app/layouts/app-layout.tsx. The app layout owns stable screen/navigation/assistant ordering through slots while the remaining legacy widgets are migrated in later commits.
   - Validate: F.
 - [ ] **Commit 028 — refactor: create public app layout**
   - Change: frontend/src/app/App.tsx + frontend/src/app/layouts/public-layout.tsx.
