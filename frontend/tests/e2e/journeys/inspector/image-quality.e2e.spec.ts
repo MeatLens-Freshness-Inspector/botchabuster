@@ -1,7 +1,7 @@
 /**
  * image-quality.spec.ts
  *
- * Unit-style tests for src/lib/imageQuality.ts.
+ * Unit-style tests for the inspection-capture image-quality slice.
  * Follows the same pattern as meatlens-pipeline.spec.ts:
  * pure function imports, no browser interaction required.
  *
@@ -16,7 +16,7 @@ import {
   validateImageQuality,
   type ImageQualityIssue,
   type ImageQualityResult,
-} from "../../../../src/lib/imageQuality";
+} from "../../../../src/features/inspection-capture/lib/image-quality";
 
 // ---------------------------------------------------------------------------
 // Helpers â€” synthetic ImageData builders

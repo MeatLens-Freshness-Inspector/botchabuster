@@ -5,7 +5,7 @@ import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { ShieldCheck } from "lucide-react";
-import type { AdminDashboardPageViewModel } from "../../../src/pages/admin-dashboard/hooks/useAdminDashboardPage";
+import type { AdminDashboardPageViewModel } from "../../../src/widgets/admin-dashboard";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -152,8 +152,8 @@ test("summary shows the existing KPIs without the removed inspection-volume char
   const root: Root = createRoot(container);
 
   try {
-    const { default: AdminDashboardSummary } = await import(
-      "../../../src/pages/admin-dashboard/components/AdminDashboardSummary"
+    const { AdminDashboardSummary } = await import(
+      "../../../src/widgets/admin-dashboard"
     );
 
     await act(async () => {

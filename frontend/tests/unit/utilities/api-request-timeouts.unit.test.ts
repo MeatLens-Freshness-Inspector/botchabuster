@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
-import { authClient } from "../../../src/integrations/api/AuthClient";
-import { uploadClient } from "../../../src/integrations/api/UploadClient";
+import { authClient } from "../../../src/features/auth/api/auth-client";
+import { uploadClient } from "../../../src/features/inspection-submission";
 import {
   clearApiCsrfToken,
   setApiCsrfToken,
   setApiSessionRefreshHandler,
-} from "../../../src/integrations/api/apiRequest";
-import { fetchWithTimeout } from "../../../src/integrations/api/fetchWithTimeout";
+} from "../../../src/shared/api/request";
+import { fetchWithTimeout } from "../../../src/shared/api";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;

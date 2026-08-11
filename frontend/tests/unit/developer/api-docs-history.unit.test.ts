@@ -2,15 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   buildApiDocsCurl,
-} from "../../../src/pages/admin-dashboard/components/developer/api-docs/curl";
+} from "../../../src/features/developer-tools";
 import {
   clearApiDocsHistory,
   loadApiDocsHistory,
   saveApiDocsHistory,
   toApiDocsReplayValues,
-} from "../../../src/pages/admin-dashboard/components/developer/api-docs/history";
-import type { ApiDocsHistoryEntry } from "../../../src/pages/admin-dashboard/components/developer/api-docs/history";
-import type { ApiDocsRequest } from "../../../src/pages/admin-dashboard/components/developer/api-docs/request";
+} from "../../../src/features/developer-tools";
+import type { ApiDocsHistoryEntry, ApiDocsRequest } from "../../../src/features/developer-tools";
 
 class MemoryStorage implements Storage {
   private readonly values = new Map<string, string>();

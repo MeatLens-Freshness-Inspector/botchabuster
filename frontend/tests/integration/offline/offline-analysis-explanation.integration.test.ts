@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildModelAlignedExplanation } from "../../../src/lib/offlineAnalysis/modelExplanation";
+import { buildModelAlignedExplanation } from "../../../src/features/offline-analysis/lib/model-explanation";
 
 test("keeps spoiled narrative when model predicts spoiled and rules disagree", () => {
   const explanation = buildModelAlignedExplanation({

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { resolveSelectedContactId } from "../../../src/pages/user/messages/utils/viewState";
+import { resolveSelectedContactId } from "../../../src/features/messaging/model/view-state";
 
 const contacts = [
   { id: "admin-1" },

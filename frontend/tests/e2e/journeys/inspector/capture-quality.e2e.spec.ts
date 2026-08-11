@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { evaluateBlur, evaluateForegroundPresence, getAdaptiveBlurThreshold } from "../../../../src/lib/captureQuality";
+import { evaluateBlur, evaluateForegroundPresence, getAdaptiveBlurThreshold } from "../../../../src/features/inspection-capture/lib/capture-quality";
 
 test.describe("captureQuality blur gating", () => {
   test("uses a lower threshold for low-contrast scenes", () => {

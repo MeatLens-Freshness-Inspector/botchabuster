@@ -4,8 +4,8 @@ import test from "node:test";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { InspectionListItem } from "../../../src/components/InspectionListItem";
-import type { Inspection } from "../../../src/types/inspection";
+import { InspectionListItem } from "../../../src/entities/inspection";
+import type { Inspection } from "../../../src/entities/inspection";
 
 Object.assign(globalThis, { React });
 

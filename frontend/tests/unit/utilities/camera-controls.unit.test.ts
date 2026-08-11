@@ -6,7 +6,7 @@ import {
   formatControlValue,
   normalizeSettingNumber,
   parseCameraControlRange,
-} from "../../../src/components/camera/controls";
+} from "../../../src/features/inspection-capture/lib/controls";
 
 test("parseCameraControlRange reads valid ranges and falls back to a default step", () => {
   assert.deepEqual(parseCameraControlRange({ min: 1, max: 5, step: 0.5 }), {

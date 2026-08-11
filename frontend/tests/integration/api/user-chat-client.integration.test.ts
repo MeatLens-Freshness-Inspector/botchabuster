@@ -3,8 +3,8 @@ import test from "node:test";
 
 import { JSDOM } from "jsdom";
 
-import { userChatClient } from "../../../src/integrations/api/UserChatClient";
-import { SESSION_STORAGE_KEY, USER_STORAGE_KEY } from "../../../src/lib/authCache";
+import { userChatClient } from "../../../src/entities/message";
+import { SESSION_STORAGE_KEY, USER_STORAGE_KEY } from "../../../src/entities/user/model/session-cache-storage";
 
 function installDom() {
   const dom = new JSDOM("<!doctype html><html><body></body></html>", {

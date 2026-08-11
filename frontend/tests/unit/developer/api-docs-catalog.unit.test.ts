@@ -3,7 +3,7 @@ import test from "node:test";
 import {
   API_DOCS_CATEGORIES,
   API_DOCS_OPERATIONS,
-} from "../../../src/pages/admin-dashboard/components/developer/api-docs/catalog";
+} from "../../../src/features/developer-tools";
 
 test("catalog contains every API route operation exactly once", () => {
   assert.equal(API_DOCS_OPERATIONS.length, 53);

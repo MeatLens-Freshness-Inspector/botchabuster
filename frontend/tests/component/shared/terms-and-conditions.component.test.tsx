@@ -4,7 +4,7 @@ import test from "node:test";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { TermsAndConditionsContent } from "../../../src/components/TermsAndConditionsContent";
+import { TermsAndConditionsContent } from "../../../src/widgets/legal/terms-content";
 
 Object.assign(globalThis, { React });
 

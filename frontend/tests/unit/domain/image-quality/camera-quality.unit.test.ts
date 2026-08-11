@@ -5,7 +5,7 @@ import {
   readBlobAsDataUrl,
   resolveCanvasImageQuality,
   resolveFileImageQuality,
-} from "../../../../src/components/camera/quality";
+} from "../../../../src/features/inspection-capture/lib/quality";
 
 type MockWindow = Window & {
   __mockImageQualityResult?: unknown;

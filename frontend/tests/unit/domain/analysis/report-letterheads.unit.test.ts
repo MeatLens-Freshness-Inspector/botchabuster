@@ -3,7 +3,7 @@ import test from "node:test";
 import {
   getReportLetterheadAssetPath,
   getReportLetterheadAssetUrl,
-} from "../../../../src/lib/reportLetterheads";
+} from "../../../../src/features/reports";
 
 test("maps each report organization to the correct letterhead asset", () => {
   assert.equal(

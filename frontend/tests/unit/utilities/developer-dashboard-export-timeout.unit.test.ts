@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { developerDashboardClient, DEFAULT_DEVELOPER_DATASET_FILTERS } from "../../../src/integrations/api/DeveloperDashboardClient";
+import { developerDashboardClient, DEFAULT_DEVELOPER_DATASET_FILTERS } from "../../../src/entities/developer-metrics";
 
 test("developer dataset export uses a longer timeout than uploads", async () => {
   const originalFetch = globalThis.fetch;

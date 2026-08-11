@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { webcrypto } from "node:crypto";
-import { verifyLocalPasskeyAssertion } from "../../../../src/lib/passkeys/localUnlock";
+import { verifyLocalPasskeyAssertion } from "../../../../src/features/passkeys/lib/local-unlock";
 
 function encodeBase64Url(input: ArrayBuffer | Uint8Array): string {
   const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);

@@ -9,7 +9,7 @@ import {
   resolveOutputLabels,
   resolvePreprocessMode,
   resolveSquareCropRegion,
-} from "../../../../src/lib/offlineAnalysis/meatLensPipeline";
+} from "../../../../src/features/offline-analysis";
 
 test.describe("MeatLens inference pipeline helpers", () => {
   test("uses centered square crop when no guide-box is provided", () => {

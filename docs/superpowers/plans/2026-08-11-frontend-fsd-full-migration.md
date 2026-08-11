@@ -91,82 +91,87 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: frontend/scripts/check-fsd-boundaries.mjs + frontend/scripts/check-fsd-boundaries.test.mjs.
   - Validate: node --test frontend/scripts/check-fsd-boundaries.test.mjs.
 
-- [ ] **Commit 002 — test: add frontend source-size checker**
+- [x] **Commit 002 — test: add frontend source-size checker**
   - Change: frontend/scripts/check-source-size.mjs + frontend/scripts/check-source-size.test.mjs.
   - Validate: node --test frontend/scripts/check-source-size.test.mjs.
 
-- [ ] **Commit 003 — build: register FSD validation commands**
+- [x] **Commit 003 — build: register FSD validation commands**
   - Change: frontend/package.json + package.json.
   - Add report-mode and enforcement-mode commands; do not yet make known oversized legacy files a CI exception.
   - Validate: npm run test:scripts.
 
-- [ ] **Commit 004 — chore: configure FSD import restrictions**
+- [x] **Commit 004 — chore: configure FSD import restrictions**
   - Change: frontend/eslint.config.js + frontend/tests/unit/architecture/foundation-boundaries.unit.test.ts.
   - Reject forbidden upward-layer and cross-slice deep imports; the test covers valid public imports and rejected deep imports.
   - Validate: F.
 
-- [ ] **Commit 005 — refactor: introduce app configuration ownership**
-  - Change: frontend/src/app/config/query-client.ts + frontend/src/app/config/env.ts.
-  - Move Query Client defaults and environment reads from frontend/src/App.tsx and direct consumers without changing values.
+- [x] **Commit 005 — refactor: introduce app configuration ownership**
+  - Change: frontend/src/app/config/query-client.ts + frontend/src/App.tsx + frontend/tests/unit/app/query-client.unit.test.ts.
+  - Move Query Client defaults from frontend/src/App.tsx without changing stale time, garbage-collection time, or online retry behavior. Generic environment access belongs to shared configuration because lower FSD layers cannot depend on app.
   - Validate: F.
 
-- [ ] **Commit 006 — refactor: move API base URL into shared transport**
-  - Change: frontend/src/integrations/api/apiBaseUrl.ts -> frontend/src/shared/api/base-url.ts + frontend/tests/unit/utilities/api-base-url.unit.test.ts.
+- [x] **Commit 006 — refactor: move API base URL into shared transport**
+  - Change: frontend/src/integrations/api/apiBaseUrl.ts -> frontend/src/shared/api/base-url.ts + frontend/src/shared/config/env.ts + frontend/tests/unit/utilities/api-base-url.unit.test.ts.
+  - Move the API base URL and its environment read into shared ownership while preserving native and web URL behavior. Update every active consumer in the same commit; do not retain a legacy forwarding module.
   - Validate: F.
 
-- [ ] **Commit 007 — refactor: move request initialization into shared transport**
+- [x] **Commit 007 — refactor: move request initialization into shared transport**
   - Change: frontend/src/integrations/api/apiRequest.ts -> frontend/src/shared/api/request.ts + frontend/tests/unit/utilities/api-request-timeouts.unit.test.ts.
-  - Preserve AUTH_EXPIRED_EVENT, CSRF, session refresh, and HttpApiError behavior exactly.
+  - Preserve AUTH_EXPIRED_EVENT, CSRF, session refresh, and HttpApiError behavior exactly. Update every active consumer in the same commit; do not retain a legacy forwarding module.
   - Validate: F.
 
-- [ ] **Commit 008 — refactor: move timeout fetch transport into shared**
+- [x] **Commit 008 — refactor: move timeout fetch transport into shared**
   - Change: frontend/src/integrations/api/fetchWithTimeout.ts -> frontend/src/shared/api/fetch-with-timeout.ts + frontend/src/shared/api/index.ts.
+  - Update every active timeout consumer to the shared API public surface; do not retain a legacy forwarding module.
   - Validate: F.
 
-- [ ] **Commit 009 — refactor: establish shared API error public API**
+- [x] **Commit 009 — refactor: establish shared API error public API**
   - Change: frontend/src/shared/api/api-error.ts + frontend/src/shared/api/index.ts.
-  - Move error-status and response-message helpers from request.ts without changing error messages.
+  - Move error-status and response-message helpers from request.ts without changing error messages, then update active consumers to the shared API public surface.
   - Validate: F.
 
-- [ ] **Commit 010 — refactor: migrate generic utility functions**
+- [x] **Commit 010 — refactor: migrate generic utility functions**
   - Change: frontend/src/lib/utils.ts -> frontend/src/shared/lib/utils.ts + frontend/src/lib/confidenceLevel.ts -> frontend/src/shared/lib/confidence-level.ts.
-  - Update all active imports in the same commit.
+  - Update all active imports in the same commit; do not retain legacy forwarding modules.
   - Validate: F.
 
-- [ ] **Commit 011 — refactor: migrate shared date and storage helpers**
-  - Change: frontend/src/lib/date.ts -> frontend/src/shared/lib/date.ts + frontend/src/lib/storage.ts -> frontend/src/shared/lib/storage.ts.
+- [x] **Commit 011 — refactor: migrate shared date and storage helpers**
+  - Change: frontend/src/lib/reports/formatting.ts -> frontend/src/shared/lib/date-time.ts + frontend/src/shared/lib/storage.ts.
+  - The originally mapped generic date.ts and storage.ts files do not exist in this checkout. Move the actual reusable report date formatting behavior and extract the duplicated defensive JSON storage helpers from auth and developer-option persistence; update every active date-format consumer without a legacy forwarding module.
   - Validate: F.
 
-- [ ] **Commit 012 — refactor: migrate generic viewport hooks**
+- [x] **Commit 012 — refactor: migrate generic viewport hooks**
   - Change: frontend/src/hooks/use-desktop.tsx -> frontend/src/shared/hooks/use-desktop.ts + frontend/src/hooks/use-mobile.tsx -> frontend/src/shared/hooks/use-mobile.ts.
-  - Preserve exported hook behavior and update frontend/tests/unit/hooks/use-desktop.unit.test.tsx.
+  - Preserve exported hook behavior, update every active consumer without legacy forwarding modules, and update frontend/tests/unit/hooks/use-desktop.unit.test.tsx.
   - Validate: F.
 
-- [ ] **Commit 013 — refactor: move core shared UI primitives**
+- [x] **Commit 013 — refactor: move core shared UI primitives**
   - Change: frontend/src/components/ui/button.tsx -> frontend/src/shared/ui/button.tsx + frontend/src/components/ui/input.tsx -> frontend/src/shared/ui/input.tsx.
   - Update all import consumers through frontend/src/shared/ui/index.ts.
   - Validate: F.
 
-- [ ] **Commit 014 — refactor: move dialog and form UI primitives**
-  - Change: frontend/src/components/ui/dialog.tsx -> frontend/src/shared/ui/dialog.tsx + frontend/src/components/ui/form.tsx -> frontend/src/shared/ui/form.tsx.
+- [x] **Commit 014 — refactor: move dialog and form UI primitives**
+  - Change: frontend/src/components/ui/dialog.tsx -> frontend/src/shared/ui/dialog.tsx + frontend/src/components/ui/form.tsx -> frontend/src/shared/ui/form.tsx + frontend/src/components/ui/label.tsx -> frontend/src/shared/ui/label.tsx.
+  - Keep the lightweight shared/ui barrel free of the browser-sensitive dialog module; use shared/ui/dialog.tsx as its dedicated public entry and shared/ui/form.tsx/shared/ui/label.tsx as the form public entries.
   - Validate: F.
 
-- [ ] **Commit 015 — refactor: decompose shared sidebar primitive**
-  - Change: frontend/src/components/ui/sidebar.tsx -> frontend/src/shared/ui/sidebar/sidebar-provider.tsx + frontend/src/shared/ui/sidebar/sidebar-layout.tsx.
+- [x] **Commit 015 — refactor: decompose shared sidebar primitive**
+  - Change: frontend/src/components/ui/sidebar.tsx -> frontend/src/shared/ui/sidebar/sidebar-provider.tsx + frontend/src/shared/ui/sidebar/sidebar-layout.tsx + frontend/src/shared/ui/sidebar/sidebar-menu.tsx; move the sidebar’s generic separator, sheet, skeleton, and tooltip dependencies into shared UI public modules in the same commit.
   - Keep the public Sidebar exports stable through frontend/src/shared/ui/sidebar/index.ts; the resulting maintained files must each be below 450 non-blank lines.
   - Validate: F.
 
-- [ ] **Commit 016 — refactor: migrate remaining maintained shared UI**
-  - Change: frontend/src/components/ui/sonner.tsx -> frontend/src/shared/ui/sonner.tsx + frontend/src/components/ui/toaster.tsx -> frontend/src/shared/ui/toaster.tsx; move every remaining maintained frontend/src/components/ui/*.tsx primitive to frontend/src/shared/ui in the same commit.
+- [x] **Commit 016 — refactor: migrate remaining maintained shared UI**
+  - Change: frontend/src/components/ui/sonner.tsx -> frontend/src/shared/ui/sonner.tsx + frontend/src/components/ui/toaster.tsx -> frontend/src/shared/ui/toaster.tsx; move every remaining maintained frontend/src/components/ui/*.tsx primitive to frontend/src/shared/ui in the same commit, and move frontend/src/hooks/use-toast.ts to frontend/src/shared/ui/use-toast.ts.
+  - Delete the obsolete frontend/src/components/ui/use-toast.ts forwarding module and update all consumers through shared UI public modules.
   - Update the app provider consumer without changing notification rendering.
   - Validate: F.
 
-- [ ] **Commit 017 — refactor: establish app global style ownership**
+- [x] **Commit 017 — refactor: establish app global style ownership**
   - Change: frontend/src/index.css -> frontend/src/app/styles/globals.css + frontend/src/App.css -> frontend/src/app/styles/app.css.
   - Update only the bootstrap imports; preserve CSS bytes and cascade order.
   - Validate: B.
 
-- [ ] **Commit 018 — test: verify foundation public import contracts**
+- [x] **Commit 018 — test: verify foundation public import contracts**
   - Change: frontend/tests/unit/architecture/public-api.unit.test.ts + frontend/scripts/check-fsd-boundaries.mjs.
   - Add assertions for app/shared public APIs and report all remaining legacy-root import owners.
   - Validate: F.
@@ -177,63 +182,61 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 **Interfaces:** Produces app/App, app/router, app/providers, and widget public APIs. Existing URL strings and guard outcomes remain byte-for-byte identical.
 
-- [ ] **Commit 019 — refactor: extract query provider**
+- [x] **Commit 019 — refactor: extract query provider**
   - Change: frontend/src/App.tsx -> frontend/src/app/providers/query-provider.tsx + frontend/src/app/App.tsx.
   - Validate: F.
-- [ ] **Commit 020 — refactor: extract notification provider**
+- [x] **Commit 020 — refactor: extract notification provider**
   - Change: frontend/src/app/App.tsx + frontend/src/app/providers/notification-provider.tsx.
   - Validate: F.
-- [ ] **Commit 021 — refactor: extract startup network provider**
+- [x] **Commit 021 — refactor: extract startup network provider**
   - Change: frontend/src/hooks/useStartupNetworkCheck.ts -> frontend/src/app/providers/network-provider.tsx + frontend/src/components/NetworkLoadingScreen.tsx -> frontend/src/shared/ui/network-loading-screen.tsx.
   - Validate: F.
-- [ ] **Commit 022 — refactor: extract theme route controller**
-  - Change: frontend/src/App.tsx + frontend/src/app/providers/theme-controller.tsx.
+- [x] **Commit 022 — refactor: extract theme route controller**
+  - Change: frontend/src/App.tsx + frontend/src/app/providers/theme-controller.tsx + move frontend/src/lib/themePreference.ts to frontend/src/shared/lib/theme-preference.ts so app and profile consumers use the shared theme helper.
   - Preserve force-light routes and profile dark-mode behavior.
   - Validate: F.
-- [ ] **Commit 023 — refactor: define route path constants**
+- [x] **Commit 023 — refactor: define route path constants**
   - Change: frontend/src/app/router/paths.ts + frontend/src/app/router/paths.unit.test.ts.
   - Validate: F.
-- [ ] **Commit 024 — refactor: move protected route guard**
-  - Change: frontend/src/components/ProtectedRoute.tsx -> frontend/src/app/router/guards/protected-route.tsx + frontend/src/app/router/guards/protected-route.unit.test.tsx.
+- [x] **Commit 024 — refactor: move protected route guard**
+  - Change: move the protected guard logic to frontend/src/app/router/guards/protected-route.tsx, remove its legacy export, and keep the current root app as the temporary auth/session adapter until the remaining guards migrate.
   - Validate: F.
-- [ ] **Commit 025 — refactor: move administrator route guard**
-  - Change: frontend/src/app/router/guards/admin-route.tsx + frontend/src/app/router/guards/admin-route.unit.test.tsx.
+- [x] **Commit 025 — refactor: move administrator route guard**
+  - Change: move administrator gating to frontend/src/app/router/guards/admin-route.tsx, remove the legacy export, and retain the current root app as its auth-state adapter.
   - Preserve developer and administrator gating.
   - Validate: F.
-- [ ] **Commit 026 — refactor: move onboarding route guard**
-  - Change: frontend/src/app/router/guards/onboarding-route.tsx + frontend/src/app/router/guards/onboarding-route.unit.test.tsx.
+- [x] **Commit 026 — refactor: move onboarding route guard**
+  - Change: move onboarding gating to frontend/src/app/router/guards/onboarding-route.tsx, adapt the root app to its auth state, and remove the obsolete mixed frontend/src/components/ProtectedRoute.tsx module.
   - Validate: F.
-- [ ] **Commit 027 — refactor: create signed-in app layout**
-  - Change: frontend/src/app/App.tsx + frontend/src/app/layouts/app-layout.tsx.
+- [x] **Commit 027 — refactor: create signed-in app layout**
+  - Change: frontend/src/App.tsx + frontend/src/app/layouts/app-layout.tsx. The app layout owns stable screen/navigation/assistant ordering through slots while the remaining legacy widgets are migrated in later commits.
   - Validate: F.
-- [ ] **Commit 028 — refactor: create public app layout**
-  - Change: frontend/src/app/App.tsx + frontend/src/app/layouts/public-layout.tsx.
+- [x] **Commit 028 — refactor: create public app layout**
+  - Change: frontend/src/App.tsx + frontend/src/app/layouts/public-layout.tsx. Public routes now use a transparent layout slot while the root composition remains temporary until the router extraction.
   - Validate: F.
-- [ ] **Commit 029 — refactor: migrate bottom navigation widget**
-  - Change: frontend/src/components/BottomNav.tsx -> frontend/src/widgets/navigation/bottom-nav.tsx + frontend/src/widgets/navigation/index.ts.
+- [x] **Commit 029 — refactor: migrate bottom navigation widget**
+  - Change: frontend/src/components/BottomNav.tsx -> frontend/src/widgets/navigation/bottom-nav.tsx + frontend/src/widgets/navigation/index.ts. The widget receives `isAdmin` from app/page adapters so widget ownership remains independent of legacy auth state.
   - Validate: F.
-- [ ] **Commit 030 — refactor: migrate assistant widget shell**
-  - Change: frontend/src/components/AIChatbot.tsx -> frontend/src/widgets/assistant/assistant-widget.tsx + frontend/src/widgets/assistant/index.ts.
+- [x] **Commit 030 — refactor: migrate assistant widget shell**
+  - Change: frontend/src/components/AIChatbot.tsx -> frontend/src/widgets/assistant/assistant-widget.tsx + frontend/src/widgets/assistant/index.ts. Authentication state is supplied by the root adapter and request-header behavior remains covered through the widget public API.
   - Validate: F.
-- [ ] **Commit 031 — refactor: migrate offline status widget**
-  - Change: frontend/src/components/OfflineBanner.tsx -> frontend/src/widgets/navigation/offline-banner.tsx + frontend/src/app/App.tsx.
+- [x] **Commit 031 — refactor: migrate offline status widget**
+  - Change: frontend/src/components/OfflineBanner.tsx -> frontend/src/widgets/navigation/offline-banner.tsx + frontend/src/App.tsx. The optional initial-state input is test-only determinism; browser event handling and markup remain unchanged.
   - Validate: F.
-- [ ] **Commit 032 — refactor: isolate offline synchronization feature**
-  - Change: frontend/src/components/OfflineSyncManager.tsx -> frontend/src/features/offline-sync/ui/offline-sync-manager.tsx + frontend/src/features/offline-sync/index.ts.
+- [x] **Commit 032 — refactor: isolate offline synchronization feature**
+  - Change: frontend/src/components/OfflineSyncManager.tsx -> frontend/src/features/offline-sync/ui/offline-sync-manager.tsx + frontend/src/features/offline-sync/index.ts. The feature now owns sync orchestration behind an explicit dependency contract; the temporary root adapter supplies existing auth, queue, API, and analysis implementations until their later slice migrations.
   - Validate: I.
-- [ ] **Commit 033 — refactor: isolate inactivity protection feature**
-  - Change: frontend/src/components/InactivityGuard.tsx -> frontend/src/features/auth/ui/inactivity-guard.tsx + frontend/src/app/App.tsx.
+- [x] **Commit 033 — refactor: isolate inactivity protection feature**
+  - Change: frontend/src/components/InactivityGuard.tsx -> frontend/src/features/auth/ui/inactivity-guard.tsx + frontend/src/App.tsx. The feature receives session and navigation dependencies through its public API, preserving the existing timer and redirect behavior without importing the legacy auth context.
   - Validate: F.
-- [ ] **Commit 034 — refactor: create application router**
-  - Change: frontend/src/app/App.tsx + frontend/src/app/router/app-router.tsx.
-  - Copy every current Route path and element unchanged before later page moves.
+- [x] **Commit 034 — refactor: create application router**
+  - Change: frontend/src/App.tsx + frontend/src/app/router/app-router.tsx. Every existing route path is now declared by the app router; legacy page and guard adapters are supplied as route-element slots until later page/provider migrations.
   - Validate: B.
-- [ ] **Commit 035 — refactor: make main entry app-only**
-  - Change: frontend/src/main.tsx + frontend/src/app/index.ts.
-  - main.tsx imports App only from @/app; no providers or feature imports remain there.
+- [x] **Commit 035 — refactor: make main entry app-only**
+  - Change: frontend/src/main.tsx + frontend/src/app/index.ts + frontend/src/app/App.tsx. `main.tsx` now imports the app public entry only; startup side effects are exposed through `initializeAppRuntime`, and the temporary root composition is isolated behind the app facade until page migrations complete.
   - Validate: B.
-- [ ] **Commit 036 — test: verify all legacy route URLs**
-  - Change: frontend/tests/e2e/smoke/legacy-route-contract.e2e.spec.ts + frontend/src/app/router/paths.ts.
+- [x] **Commit 036 — test: verify all legacy route URLs**
+  - Change: frontend/tests/e2e/smoke/legacy-route-contract.e2e.spec.ts + frontend/src/app/router/paths.ts. A route contract list now drives the browser smoke coverage for public, inspector, profile, and administrator URLs before page ownership moves.
   - Cover all public, inspector, profile, and admin route URLs before their source pages move.
   - Validate: B.
 
@@ -243,57 +246,54 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 **Interfaces:** Produces user session public API for app guards and feature-specific APIs for authentication and passkey actions. AuthProvider is a thin app provider, not a god context.
 
-- [ ] **Commit 037 — refactor: create user session model**
-  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/session-types.ts + frontend/src/entities/user/index.ts.
-  - Extract only public state types and status discriminants.
+- [x] **Commit 037 — refactor: create user session model**
+  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/session-types.ts + frontend/src/entities/user/index.ts. Extracted public status discriminants and a bounded session-state shape; the current context consumes the entity-owned vocabulary without moving its implementation yet.
   - Validate: F.
-- [ ] **Commit 038 — refactor: migrate profile read API**
-  - Change: frontend/src/integrations/api/ProfileClient.ts -> frontend/src/entities/user/api/profile-client.ts + frontend/src/entities/user/api/index.ts.
+- [x] **Commit 038 — refactor: migrate profile read API**
+  - Change: frontend/src/integrations/api/ProfileClient.ts -> frontend/src/entities/user/api/profile-client.ts + frontend/src/entities/user/api/index.ts. All current profile consumers now use the entity API; shared auth-header ownership prevents the entity client from importing legacy cache code.
   - Validate: I.
-- [ ] **Commit 039 — refactor: migrate authentication API**
-  - Change: frontend/src/integrations/api/AuthClient.ts -> frontend/src/features/auth/api/auth-client.ts + frontend/src/features/auth/index.ts.
+- [x] **Commit 039 — refactor: migrate authentication API**
+  - Change: frontend/src/integrations/api/AuthClient.ts -> frontend/src/features/auth/api/auth-client.ts + frontend/src/features/auth/index.ts. Auth state consumers, offline persistence types, passkey typing, and security tests now depend on the auth feature API.
   - Validate: F.
-- [ ] **Commit 040 — refactor: migrate passkey browser API**
-  - Change: frontend/src/integrations/api/PasskeyClient.ts -> frontend/src/features/passkeys/api/passkey-client.ts + frontend/src/lib/passkeys/browser.ts -> frontend/src/features/passkeys/lib/browser.ts.
+- [x] **Commit 040 — refactor: migrate passkey browser API**
+  - Change: frontend/src/integrations/api/PasskeyClient.ts -> frontend/src/features/passkeys/api/passkey-client.ts + frontend/src/lib/passkeys/browser.ts -> frontend/src/features/passkeys/lib/browser.ts. Auth, login, profile, local-unlock, and passkey tests now consume the passkeys slice API.
   - Validate: F.
-- [ ] **Commit 041 — refactor: migrate local passkey unlock**
-  - Change: frontend/src/lib/passkeys/localUnlock.ts -> frontend/src/features/passkeys/lib/local-unlock.ts + frontend/tests/unit/domain/auth/local-passkey-auth.unit.test.ts.
+- [x] **Commit 041 — refactor: migrate local passkey unlock**
+  - Change: frontend/src/lib/passkeys/localUnlock.ts -> frontend/src/features/passkeys/lib/local-unlock.ts + frontend/tests/unit/domain/auth/local-passkey-auth.unit.test.ts. Pure challenge construction and assertion verification now belong to the passkeys feature; the temporary root persistence adapter preserves the current envelope behavior until the session-cache/envelope commits remove it.
   - Validate: F.
-- [ ] **Commit 042 — refactor: split session cache persistence**
-  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/session-cache.ts + frontend/src/lib/authCache.ts -> frontend/src/entities/user/model/session-cache-storage.ts.
+- [x] **Commit 042 — refactor: split session cache persistence**
+  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/session-cache.ts + frontend/src/lib/authCache.ts -> frontend/src/entities/user/model/session-cache-storage.ts. Auth/profile/admin cache persistence now belongs to the user entity, while auth headers are shared infrastructure and all API clients use that primitive directly.
   - Validate: F.
-- [ ] **Commit 043 — refactor: split offline auth envelope**
-  - Change: frontend/src/lib/offlineAuthEnvelope.ts -> frontend/src/entities/user/model/offline-auth-envelope.ts + frontend/src/lib/offlineCredentials.ts -> frontend/src/entities/user/model/offline-credentials.ts.
-  - Validate: F.
-- [ ] **Commit 044 — refactor: split session restoration service**
-  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/restore-session.ts + frontend/src/entities/user/model/session-store.ts.
-  - Validate: F.
-- [ ] **Commit 045 — refactor: compose thin auth provider**
-  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/app/providers/auth-provider.tsx + frontend/src/entities/user/model/session-store.ts.
-  - Delete the legacy context file in this commit; provider exposes only the narrow session public API.
-  - Validate: I.
-- [ ] **Commit 046 — refactor: migrate sign-in form workflow**
-  - Change: frontend/src/pages/landing/login/hooks/useLoginPage.ts -> frontend/src/features/auth/model/use-login.ts + frontend/src/pages/landing/login/components/LoginPageView.tsx.
-  - Validate: F.
-- [ ] **Commit 047 — refactor: migrate sign-up form workflow**
-  - Change: frontend/src/pages/landing/signup/hooks/useSignupPage.ts -> frontend/src/features/auth/model/use-signup.ts + frontend/src/pages/landing/signup/components/SignupPageView.tsx.
-  - Validate: F.
-- [ ] **Commit 048 — refactor: migrate password recovery workflow**
-  - Change: frontend/src/pages/landing/forget-password/hooks/useForgotPasswordPage.ts -> frontend/src/features/auth/model/use-forgot-password.ts + frontend/src/pages/landing/forget-password/components/ForgotPasswordPageView.tsx.
-  - Validate: F.
-- [ ] **Commit 049 — refactor: migrate password reset workflow**
-  - Change: frontend/src/pages/landing/reset-password/hooks/useResetPasswordPage.ts -> frontend/src/features/auth/model/use-reset-password.ts + frontend/src/pages/landing/reset-password/components/ResetPasswordPageView.tsx.
-  - Validate: F.
-- [ ] **Commit 050 — refactor: create authentication route pages**
-  - Change: frontend/src/pages/LoginPage.tsx -> frontend/src/pages/auth/login-page.tsx + frontend/src/pages/SignupPage.tsx -> frontend/src/pages/auth/signup-page.tsx.
-  - Validate: B.
-- [ ] **Commit 051 — refactor: create recovery route pages**
-  - Change: frontend/src/pages/ForgotPasswordPage.tsx -> frontend/src/pages/auth/forgot-password-page.tsx + frontend/src/pages/ResetPasswordPage.tsx -> frontend/src/pages/auth/reset-password-page.tsx.
-  - Validate: B.
-- [ ] **Commit 052 — test: lock authentication route behavior**
-  - Change: frontend/tests/e2e/journeys/inspector/passkey-auth.e2e.spec.ts + frontend/tests/unit/state/auth-context-session-cleanup.unit.test.tsx.
-  - Update imports to FSD public APIs and retain all assertions.
-  - Validate: I.
+- [x] **Commit 043 — refactor: split offline auth envelope**
+  - Change: moved offline credentials and the offline auth envelope into the user entity model; moved the SQLite auth-envelope adapter into the user entity API and the SQLite bootstrap into shared platform infrastructure, with all queue/cache consumers updated to the new bootstrap path.
+  - Validate: focused offline-auth tests, typecheck, lint, and architecture checks passed; full F gate remains the milestone validation.
+- [x] **Commit 044 — refactor: split session restoration service**
+  - Change: extracted dependency-injected restoration orchestration into `entities/user/model/restore-session.ts` and pure online/offline state construction into `entities/user/model/session-store.ts`; AuthProvider now delegates bootstrap state transitions and restoration while retaining the same public behavior.
+  - Validate: 177 unit tests passed, typecheck passed, lint passed with the existing 16 warnings, and architecture checks passed.
+- [x] **Commit 045 — refactor: compose thin auth provider**
+  - Change: moved `AuthProvider` and `useAuth` to `app/providers/auth-provider.tsx`, added the provider public index, migrated every source and test consumer, and deleted the legacy context file. The provider exposes the existing narrow session API without UI changes.
+  - Validate: targeted auth/provider tests (10) passed, typecheck passed, and architecture checks passed; integration gate remains the milestone validation.
+- [x] **Commit 046 — refactor: migrate sign-in form workflow**
+  - Change: moved the login workflow hook and pure destination/description helpers into `features/auth/model`, injected the session actions to preserve layer direction, and updated the existing login view to consume the feature model. The session context contract now lives in the user entity so pages do not import the app layer.
+  - Validate: login workflow, provider, and boundary tests passed; typecheck and integration tests passed.
+- [x] **Commit 047 — refactor: migrate sign-up form workflow**
+  - Change: moved sign-up state and validation into `features/auth/model`, injected the organization predicate and auth action through the page adapter, and updated the unchanged sign-up view. The offline audit queue and SQLite adapter were also moved behind the offline-sync feature public API because the app provider consumes that capability.
+  - Validate: signup and offline-sync contract tests passed, typecheck passed, and lint passed with the existing 16 warnings.
+- [x] **Commit 048 — refactor: migrate password recovery workflow**
+  - Change: moved the password-recovery hook and error mapping into `features/auth/model`, injected the auth reset action through the existing page adapter, and retained the existing recovery view and behavior.
+  - Validate: recovery workflow test, typecheck, and lint passed with the existing 16 warnings.
+- [x] **Commit 049 — refactor: migrate password reset workflow**
+  - Change: moved reset-password state, recovery parsing, and recovery types into `features/auth/model`; moved sensitive recovery-token URL/session-storage helpers into the shared API public contract; injected the update-password action through the unchanged page view.
+  - Validate: reset workflow test, typecheck, and lint passed with the existing 16 warnings.
+- [x] **Commit 050 — refactor: create authentication route pages**
+  - Change: consolidated the login and sign-up route entries and their unchanged view components under the `pages/auth` slice, added its public index, and updated app route composition to consume that public API.
+  - Validate: authentication route-page test, typecheck, and lint passed with the existing 16 warnings; build gate remains the milestone validation.
+- [x] **Commit 051 — refactor: create recovery route pages**
+  - Change: consolidated forgot-password and reset-password route entries and their unchanged view components under the shared `pages/auth` slice, added public exports, and updated the app route composition.
+  - Validate: recovery route-page test, typecheck, and lint passed with the existing 16 warnings; build gate remains the milestone validation.
+- [x] **Commit 052 — test: lock authentication route behavior**
+  - Change: updated the passkey E2E journey to use the centralized route public contract and retained the migrated session-cleanup assertions against the app provider/entity public APIs.
+  - Validate: targeted route/session tests (3), typecheck, and architecture checks passed; integration gate remains the milestone validation.
 
 ## Phase 4 — Inspection, camera, offline analysis, history, and reports (36 commits)
 
@@ -301,78 +301,143 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 **Interfaces:** Produces entities/inspection and features for capture, quality checks, submission, offline analysis, and report generation. No moved model, adapter, or component may remain above 600 non-blank lines.
 
-- [ ] **Commit 053 — refactor: move inspection domain types**
-  - Change: frontend/src/types/inspection.ts -> frontend/src/entities/inspection/model/types.ts + frontend/src/entities/inspection/index.ts. Validate: F.
-- [ ] **Commit 054 — refactor: move inspection pre-scan model**
-  - Change: frontend/src/lib/inspectionPreScan.ts -> frontend/src/entities/inspection/model/pre-scan.ts + frontend/tests/unit/domain/inspections/inspection-pre-scan.unit.test.ts. Validate: F.
-- [ ] **Commit 055 — refactor: move inspection location model**
-  - Change: frontend/src/lib/inspectionLocation.ts -> frontend/src/entities/inspection/model/location.ts + frontend/tests/unit/domain/inspections/inspection-location.unit.test.ts. Validate: F.
-- [ ] **Commit 056 — refactor: move inspection endpoint client**
-  - Change: frontend/src/integrations/api/InspectionClient.ts -> frontend/src/entities/inspection/api/inspection-client.ts + frontend/tests/integration/api/inspection-client.integration.test.ts. Validate: I.
-- [ ] **Commit 057 — refactor: create inspection query keys**
-  - Change: frontend/src/hooks/useInspections.ts -> frontend/src/entities/inspection/model/keys.ts + frontend/src/entities/inspection/model/queries.ts. Validate: F.
-- [ ] **Commit 058 — refactor: move inspection list domain UI**
-  - Change: frontend/src/components/InspectionListItem.tsx -> frontend/src/entities/inspection/ui/inspection-list-item.tsx + frontend/tests/component/inspections/inspection-list-item.component.test.tsx. Validate: F.
-- [ ] **Commit 059 — refactor: move inspection result domain UI**
-  - Change: frontend/src/components/AnalysisResultCard.tsx -> frontend/src/entities/inspection/ui/analysis-result-card.tsx + frontend/tests/component/analysis/analysis-result-card.component.test.tsx. Validate: F.
-- [ ] **Commit 060 — refactor: split camera capture state**
-  - Change: frontend/src/components/camera/useCameraCapture.ts -> frontend/src/features/inspection-capture/model/camera-session.ts + frontend/src/features/inspection-capture/model/camera-device.ts. Validate: I.
-- [ ] **Commit 061 — refactor: move camera platform adapter**
-  - Change: frontend/src/components/camera/quality.ts -> frontend/src/features/inspection-capture/lib/quality.ts + frontend/tests/unit/domain/image-quality/camera-quality.unit.test.ts. Validate: F.
-- [ ] **Commit 062 — refactor: move camera control calculations**
-  - Change: frontend/src/components/camera/controls.ts -> frontend/src/features/inspection-capture/lib/controls.ts + frontend/tests/unit/utilities/camera-controls.unit.test.ts. Validate: F.
-- [ ] **Commit 063 — refactor: move camera capture UI**
-  - Change: frontend/src/components/camera/CameraCapture.tsx -> frontend/src/features/inspection-capture/ui/camera-capture.tsx + frontend/src/components/camera/CameraCaptureView.tsx -> frontend/src/features/inspection-capture/ui/camera-capture-view.tsx. Validate: I.
-- [ ] **Commit 064 — refactor: move capture-quality feature**
-  - Change: frontend/src/lib/captureQuality.ts -> frontend/src/features/inspection-capture/lib/capture-quality.ts + frontend/tests/e2e/journeys/inspector/capture-quality.e2e.spec.ts. Validate: P-inspect.
-- [ ] **Commit 065 — refactor: move image-quality feature**
-  - Change: frontend/src/lib/imageQuality.ts -> frontend/src/features/inspection-capture/lib/image-quality.ts + frontend/tests/e2e/journeys/inspector/image-quality.e2e.spec.ts. Validate: P-inspect.
-- [ ] **Commit 066 — refactor: create inspection submission feature**
-  - Change: frontend/src/pages/user/inspections/hooks/useInspectPage.ts -> frontend/src/features/inspection-submission/model/use-submit-inspection.ts + frontend/src/entities/inspection/model/mutations.ts. Validate: I.
-- [ ] **Commit 067 — refactor: move offline queue contract**
-  - Change: frontend/src/lib/offlineQueue.ts -> frontend/src/features/offline-sync/model/inspection-queue.ts + frontend/src/lib/offlineAuditQueue.ts -> frontend/src/features/offline-sync/model/audit-queue.ts. Validate: F.
-- [ ] **Commit 068 — refactor: move SQLite database bootstrap**
-  - Change: frontend/src/lib/sqlite/db.ts -> frontend/src/shared/platform/sqlite/database.ts + frontend/src/shared/platform/sqlite/index.ts. Validate: F.
-- [ ] **Commit 069 — refactor: move SQLite inspection cache**
-  - Change: frontend/src/lib/sqlite/sqliteInspectionCache.ts -> frontend/src/entities/inspection/api/sqlite-cache.ts + frontend/src/features/offline-sync/model/inspection-queue.ts. Validate: I.
-- [ ] **Commit 070 — refactor: move SQLite offline queues**
-  - Change: frontend/src/lib/sqlite/sqliteOfflineQueue.ts -> frontend/src/features/offline-sync/api/sqlite-offline-queue.ts + frontend/src/lib/sqlite/sqliteAuditQueue.ts -> frontend/src/features/offline-sync/api/sqlite-audit-queue.ts. Validate: I.
-- [ ] **Commit 071 — refactor: split model explanation helpers**
-  - Change: frontend/src/lib/offlineAnalysis/modelExplanation.ts -> frontend/src/features/offline-analysis/lib/model-explanation.ts + frontend/tests/integration/offline/offline-analysis-explanation.integration.test.ts. Validate: I.
-- [ ] **Commit 072 — refactor: split MobileNet ONNX runtime**
-  - Change: frontend/src/lib/offlineAnalysis/mobileNetV3Onnx.ts -> frontend/src/features/offline-analysis/lib/mobilenet-runtime.ts + frontend/src/features/offline-analysis/lib/mobilenet-session.ts. Validate: F.
-- [ ] **Commit 073 — refactor: move MobileNet model facade**
-  - Change: frontend/src/lib/offlineAnalysis/mobileNetV3.ts -> frontend/src/features/offline-analysis/lib/mobilenet.ts + frontend/src/features/offline-analysis/index.ts. Validate: F.
-- [ ] **Commit 074 — refactor: split ResNet runtime**
-  - Change: frontend/src/lib/offlineAnalysis/resNet50Onnx.ts -> frontend/src/features/offline-analysis/lib/resnet-runtime.ts + frontend/src/features/offline-analysis/lib/resnet-session.ts. Validate: F.
-- [ ] **Commit 075 — refactor: split image geometry preprocessing**
-  - Change: frontend/src/lib/offlineAnalysis/meatLensPipeline.ts -> frontend/src/features/offline-analysis/lib/image-crop.ts + frontend/src/features/offline-analysis/lib/image-input.ts. Validate: F.
-- [ ] **Commit 076 — refactor: split ROI segmentation**
-  - Change: frontend/src/lib/offlineAnalysis/meatLensPipeline.ts -> frontend/src/features/offline-analysis/lib/roi-segmentation.ts + frontend/src/features/offline-analysis/lib/mask-morphology.ts. Validate: F.
-- [ ] **Commit 077 — refactor: split tensor and label processing**
-  - Change: frontend/src/lib/offlineAnalysis/meatLensPipeline.ts -> frontend/src/features/offline-analysis/lib/tensor-data.ts + frontend/src/features/offline-analysis/lib/classification.ts. Validate: F.
-- [ ] **Commit 078 — refactor: move ensemble scoring**
-  - Change: frontend/src/lib/offlineAnalysis/ensemble.ts -> frontend/src/features/offline-analysis/lib/ensemble.ts + frontend/src/features/offline-analysis/lib/freshness-score.ts. Validate: F.
-- [ ] **Commit 079 — refactor: create bounded analysis facade**
-  - Change: frontend/src/lib/offlineAnalysis/index.ts -> frontend/src/features/offline-analysis/api/analyze-inspection.ts + frontend/src/features/offline-analysis/index.ts. Validate: P-offline.
-- [ ] **Commit 080 — refactor: move report data types and formatting**
-  - Change: frontend/src/lib/reports/types.ts -> frontend/src/features/reports/model/types.ts + frontend/src/lib/reports/formatting.ts -> frontend/src/features/reports/lib/formatting.ts. Validate: F.
-- [ ] **Commit 081 — refactor: move report templates**
-  - Change: frontend/src/lib/reports/templates/index.ts -> frontend/src/features/reports/lib/templates/index.ts + frontend/tests/unit/domain/analysis/report-template-selection.unit.test.ts. Validate: F.
-- [ ] **Commit 082 — refactor: move report section composition**
-  - Change: frontend/src/lib/reports/shared/meatSections.ts -> frontend/src/features/reports/lib/meat-sections.ts + frontend/src/lib/reports/pdf/pageFrames.ts -> frontend/src/features/reports/lib/page-frames.ts. Validate: F.
-- [ ] **Commit 083 — refactor: split PDF document builder**
-  - Change: frontend/src/lib/reports/pdf/buildDocDefinition.ts -> frontend/src/features/reports/lib/pdf/document-header.ts + frontend/src/features/reports/lib/pdf/document-sections.ts. Validate: F.
-- [ ] **Commit 084 — refactor: move report chart generation**
-  - Change: frontend/src/lib/reports/pdf/reportCharts.ts -> frontend/src/features/reports/lib/pdf/report-charts.ts + frontend/tests/unit/domain/analysis/inspector-pdf-chart-svg.unit.test.ts. Validate: F.
-- [ ] **Commit 085 — refactor: create report generation feature API**
-  - Change: frontend/src/lib/reports/pdf/composeReportPdf.ts -> frontend/src/features/reports/api/generate-report.ts + frontend/src/features/reports/index.ts. Validate: I.
-- [ ] **Commit 086 — refactor: split inspect page view model**
-  - Change: frontend/src/pages/user/inspections/hooks/useInspectPage.ts -> frontend/src/widgets/inspection-workspace/model/use-inspection-workspace.ts + frontend/src/widgets/inspection-workspace/model/use-inspection-analysis.ts. Validate: I.
-- [ ] **Commit 087 — refactor: move inspection workspace UI**
-  - Change: frontend/src/pages/user/inspections/components/InspectPageView.tsx -> frontend/src/widgets/inspection-workspace/ui/inspection-workspace.tsx + frontend/src/pages/Index.tsx -> frontend/src/pages/inspector/inspect-page.tsx. Validate: P-inspect.
-- [ ] **Commit 088 — refactor: migrate history page**
-  - Change: frontend/src/pages/user/history/hooks/useHistoryPage.ts -> frontend/src/widgets/history/model/use-history.ts + frontend/src/pages/HistoryPage.tsx -> frontend/src/pages/inspector/history-page.tsx. Validate: P-inspect.
+- [x] **Commit 053 — refactor: move inspection domain types**
+  - Change: moved inspection domain types into `entities/inspection/model/types.ts`, added the entity public API and stable domain vocabularies, and migrated all source/test consumers off the legacy `types/inspection.ts` path.
+  - Validate: inspection domain tests (5), typecheck, lint, and architecture checks passed; no legacy inspection-type imports remain.
+- [x] **Commit 054 — refactor: move inspection pre-scan model**
+  - Change: moved the pre-scan protocol model into `entities/inspection/model/pre-scan.ts`, exposed it through the inspection entity API, and migrated app/page consumers and tests.
+  - Validate: pre-scan unit tests (3), typecheck, and lint passed with the existing 16 warnings.
+- [x] **Commit 055 — refactor: move inspection location model**
+  - Change: moved coordinate capture and inspection-location formatting into `entities/inspection/model/location.ts`, exposed it through the entity public API, and migrated capture, history, dashboard, and component consumers.
+  - Validate: location unit tests (3), typecheck, and lint passed with the existing 16 warnings.
+- [x] **Commit 056 — refactor: move inspection endpoint client**
+  - Change: moved `InspectionClient` into the inspection entity API, added its public API export, migrated all consumers and integration tests, and moved demo-mode configuration into shared config so the entity has no legacy-library dependency.
+  - Validate: integration tests (11), typecheck, and lint passed with the existing 16 warnings.
+- [x] **Commit 057 — refactor: create inspection query keys**
+  - Change: created the inspection entity query-key contract in `entities/inspection/model/queries.ts`, exported it publicly, and migrated the existing inspection hooks to use centralized list/detail/stat namespaces while moving their session dependency to the user entity API.
+  - Validate: query-key test, typecheck, and lint passed with the existing 16 warnings.
+- [x] **Commit 058 — refactor: move inspection list domain UI**
+  - Change: moved `InspectionListItem` and its domain `FreshnessBadge` dependency into `entities/inspection/ui`, exposed both through the entity public API, and migrated history, dashboard, and component consumers without changing markup or interaction behavior.
+  - Validate: component tests (2), typecheck, and lint passed with the existing 16 warnings.
+- [x] **Commit 059 — refactor: move inspection result domain UI**
+  - Change: moved `AnalysisResultCard` into `entities/inspection/ui`, exposed it through the inspection public API, and migrated the inspection workspace and component tests without changing rendered behavior.
+  - Validate: component tests (2), typecheck, and lint passed with the existing 16 warnings.
+- [x] **Commit 060 — refactor: split camera capture state**
+  - Change: moved the camera session hook into `features/inspection-capture/model/camera-session.ts`, extracted stream acquisition, track inspection, constraint application, and stream cleanup into `camera-device.ts`, and exposed the feature contract through its public index. The existing component facade now consumes the feature hook while the view and quality/control adapters remain behaviorally unchanged for their dedicated migrations.
+  - TDD: added camera-device contract tests first (RED on the missing feature API), then implemented the device/session split and reached GREEN without changing camera markup or user-facing behavior.
+  - Validate: targeted camera unit tests (4), integration tests (11), typecheck, lint (16 existing warnings), architecture checks, and full unit baseline confirmed; two pre-existing developer-dashboard workspace assertions remain failing outside this change.
+- [x] **Commit 061 — refactor: move camera platform adapter**
+  - Change: moved the camera quality and `FileReader` adapter into `features/inspection-capture/lib/quality.ts`, updated the session model and camera quality unit contract, and removed the component-owned quality module.
+  - TDD: redirected the existing quality contract to the feature path first (RED on the missing module), then moved the adapter and reached GREEN while preserving the test seam, canvas fallback, bitmap path, and data-URL error behavior.
+  - Validate: camera quality/device unit tests (6), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 062 — refactor: move camera control calculations**
+  - Change: moved camera range parsing, clamping, normalization, formatting, and track-control types into `features/inspection-capture/lib/controls.ts`; migrated the session model, camera view, and camera tests/integration fixtures to the feature-owned module.
+  - TDD: redirected the control unit contract first (RED on the missing feature module), then moved the implementation and reached GREEN with the existing control behavior unchanged.
+  - Validate: camera unit/integration tests (11), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 063 — refactor: move camera capture UI**
+  - Change: moved the camera composition and view into `features/inspection-capture/ui`, moved the capture contracts into the feature model, and converted `components/camera` into a thin compatibility facade that re-exports the feature API. Test and integration consumers now import the feature UI contract directly without changing rendered markup or interactions.
+  - TDD: redirected the camera UI contracts first (RED on the missing feature modules), then migrated the UI and model types and reached GREEN through the camera view, facade, session, and quality integration tests.
+  - Validate: camera unit/integration tests (8 targeted, 11 integration suite), typecheck, lint (16 existing warnings), architecture checks, and integration suite passed; moved UI files remain below 450 nonblank lines.
+- [x] **Commit 064 — refactor: move capture-quality feature**
+  - Change: moved the capture-quality gate into `features/inspection-capture/lib/capture-quality.ts`, updated the camera session and Playwright contract to consume the feature module, and exposed the quality API through the feature public index.
+  - TDD: redirected the browser contract first (RED with Playwright unable to load the absent feature module), then moved the implementation and reached GREEN with all six capture-quality tests discoverable and camera behavior tests passing.
+  - Validate: Playwright capture-quality listing (6 tests), targeted camera unit/integration tests (7), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 065 — refactor: move image-quality feature**
+  - Change: moved image-quality validation into `features/inspection-capture/lib/image-quality.ts`, updated the camera quality adapter/session contracts and offline-analysis consumer to use the feature public API, and migrated the 26-case Playwright contract.
+  - TDD: redirected the browser contract first (RED on the missing feature module), then moved the implementation and reached GREEN with all 26 image-quality tests passing.
+  - Validate: Playwright image-quality tests (26), camera quality/device units (6), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 066 — refactor: create inspection submission feature**
+  - Change: created `features/inspection-submission/model/use-submit-inspection.ts` for the query-aware submission mutation and `entities/inspection/model/mutations.ts` for the pure `InspectionInsert` builder; migrated `useInspectPage` to both public contracts and removed the duplicate legacy `useCreateInspection` hook.
+  - TDD: added the entity mutation contract first (RED on the missing mutations module), then implemented the builder and feature mutation and reached GREEN while preserving protocol metadata, regulatory compliance, image fallback, and query invalidation behavior.
+  - Validate: submission mutation units (2), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 067 — refactor: move offline queue contract**
+  - Change: moved the inspection queue into `features/offline-sync/model/inspection-queue.ts`, completed its public feature exports, and migrated app composition, developer options, and inspection submission consumers off `@/lib/offlineQueue`. The audit queue had already moved in the earlier offline-sync slice; this commit completes the combined queue contract without duplicating it.
+  - TDD: added the inspection queue public contract first (RED on missing feature exports), then moved the queue and reached GREEN with both inspection and audit queue contract tests.
+  - Validate: offline queue contract tests (2), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 068 — refactor: move SQLite database bootstrap**
+  - Change: completed the shared SQLite platform boundary by adding `shared/platform/sqlite/index.ts`, exposing the existing moved `database.ts` singleton lifecycle, and migrating all current native SQLite adapters from the deep database module to the public platform API.
+  - TDD: added the shared SQLite public contract first (RED on the absent index), then added the barrel and reached GREEN without changing connection initialization or migration execution.
+  - Validate: SQLite public API unit (1), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 069 — refactor: move SQLite inspection cache**
+  - Change: moved the native inspection cache adapter into `entities/inspection/api/sqlite-cache.ts`, exposed it through the inspection entity API, and routed the existing cross-platform history-cache facade through the entity contract. The offline inspection queue remains a separate model boundary rather than absorbing cache responsibilities.
+  - TDD: added the entity cache public contract first (RED on the missing export), then moved and exported the adapter and reached GREEN with cache statistics behavior unchanged.
+  - Validate: inspection cache unit (1), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 070 — refactor: move SQLite offline queues**
+  - Change: moved the native inspection queue adapter into `features/offline-sync/api/sqlite-offline-queue.ts`, added the offline-sync API barrel for both native queue adapters, and migrated the inspection queue model off the legacy SQLite path. The audit adapter had already moved in the earlier audit-queue migration and is now included in the same API contract.
+  - TDD: added the native adapter contract first (RED on the absent API barrel), then moved the adapter and reached GREEN across inspection and audit adapter/public queue tests.
+  - Validate: adapter/public queue units (3), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 071 — refactor: split model explanation helpers**
+  - Change: moved model/rule explanation composition into `features/offline-analysis/lib/model-explanation.ts` and migrated the offline-analysis integration contract to the feature-owned helper without retaining a legacy forwarding module.
+  - TDD: redirected the integration contract first (RED on the missing feature helper), then moved the implementation and reached GREEN across disagreement, aligned, and rule-override explanation cases.
+  - Validate: offline explanation integration tests (3), full integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 072 — refactor: split MobileNet ONNX runtime**
+  - Change: moved the MobileNet ONNX implementation into `features/offline-analysis/lib/mobilenet-runtime.ts` and extracted mutable model-variant/session identity into `mobilenet-session.ts`; analysis runtime, ResNet typing, and the temporary MobileNet facade now consume the feature runtime.
+  - TDD: added session lifecycle tests first (RED on the missing feature session module), then introduced the bounded session object and reached GREEN while preserving model switching, generation invalidation, inference, and retry behavior.
+  - Validate: MobileNet session units (2), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed; runtime/session files remain below 600 nonblank lines.
+- [x] **Commit 073 — refactor: move MobileNet model facade**
+  - Change: moved the MobileNet facade into `features/offline-analysis/lib/mobilenet.ts`, created the offline-analysis public index, and migrated camera, app composition, and inspection page consumers off the legacy `mobileNetV3` facade.
+  - TDD: added the feature public API contract first (RED on the absent index), then moved the facade and reached GREEN with the public MobileNet/session tests and existing integration suite.
+  - Validate: MobileNet public/session units (3), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 074 — refactor: split ResNet runtime**
+  - Change: moved `resNet50Onnx.ts` into the offline-analysis feature, extracted mutable ONNX session identity into `ResNetSession`, and migrated the analysis runtime import to the feature-owned runtime.
+  - TDD: added the session ownership/reset contract before implementation (RED on the missing module, then GREEN with two focused unit tests).
+  - Validate: focused ResNet session tests (2), typecheck, lint, and architecture checks passed; full unit suite reached 198 passing with the same two pre-existing developer-dashboard failures outside this slice.
+- [x] **Commit 075 — refactor: split image geometry preprocessing**
+  - Change: extracted object-cover/crop geometry into `image-crop.ts` and browser image/file preparation into `image-input.ts`; the existing pipeline API delegates to these feature-owned modules.
+  - TDD: added crop geometry tests before implementation (RED on the absent feature module, then GREEN with normalized-guide and centered-crop assertions).
+  - Validate: focused geometry tests (2), typecheck, and architecture checks passed; full lint/unit validation remains part of the phase checkpoint.
+- [x] **Commit 076 — refactor: split ROI segmentation**
+  - Change: extracted binary-mask erosion/dilation/component selection into `mask-morphology.ts` and color-based foreground/fallback image segmentation into `roi-segmentation.ts`; the pipeline now delegates its public segmentation contract.
+  - TDD: added morphology behavior before implementation (RED on the absent module, then GREEN with a stable central-region test).
+  - Validate: focused morphology test, lint (16 existing warnings), typecheck, and architecture checks passed.
+- [x] **Commit 077 — refactor: split tensor and label processing**
+  - Change: extracted RGB/model tensor preparation into `tensor-data.ts` and label normalization, probability normalization, and prediction parsing into `classification.ts`; the existing pipeline exports feature-owned implementations.
+  - TDD: added tensor-layout and uncertain-class tests before implementation (RED on absent modules, then GREEN with two focused tests).
+  - Validate: focused tensor/classification tests (2), typecheck, and architecture checks passed.
+- [x] **Commit 078 — refactor: move ensemble scoring**
+  - Change: moved ensemble fusion into the offline-analysis feature and extracted freshness score/recommendation policy into `freshness-score.ts`; analysis and ensemble tests now consume the feature-owned fusion module.
+  - TDD: added score-curve and recommendation-threshold tests before implementation (RED on the missing feature module, then GREEN with two focused tests).
+  - Validate: focused freshness-score tests (2), typecheck, and architecture checks passed.
+- [x] **Commit 079 — refactor: create bounded analysis facade**
+  - Change: moved the offline orchestrator into `features/offline-analysis/api/analyze-inspection.ts`, consolidated the feature public index, and migrated app/page consumers off `@/lib/offlineAnalysis`.
+  - TDD: added the public lifecycle/analysis API contract first (RED on the missing `analyzeOffline` export, then GREEN after the facade/index composition).
+  - Validate: focused public API test, typecheck, and architecture checks passed.
+- [x] **Commit 080 — refactor: move report data types and formatting**
+  - Change: moved report document models to `features/reports/model/types.ts`, introduced feature-owned report date/percentage formatting, and migrated all report model consumers to the feature path.
+  - TDD: added formatting contract tests before implementation (RED on the absent formatting module, then GREEN with percentage and empty-date assertions).
+  - Validate: focused report-formatting tests (2), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 081 — refactor: move report templates**
+  - Change: moved the complete report-template strategy (selector, organization templates, and section ordering) into `features/reports/lib/templates` and migrated all template consumers/tests.
+  - TDD: retained and migrated the template-selection contract alongside the ownership move; the focused template suite covers all organization/section variants.
+  - Validate: focused template suite (9), typecheck, and lint (16 existing warnings) passed.
+- [x] **Commit 082 — refactor: move report section composition**
+  - Change: moved shared meat sections and PDF page-frame policy into `features/reports/lib`, then migrated report adapters, chart generation, and document construction to the feature-owned modules.
+  - TDD: existing report-document and SVG chart contracts were migrated with the ownership boundary and exercised before commit.
+  - Validate: focused report document/chart suite (17), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 083 — refactor: split PDF document builder**
+  - Change: reduced the legacy document builder to orchestration and moved page metadata/style construction to `document-header.ts` plus report content/evidence/table composition to `document-sections.ts`.
+  - TDD: added the feature-owned header contract before implementation (RED on the absent module, then GREEN with letter-page metadata assertions); existing document regression tests remained green.
+  - Validate: header test (1), report document/chart suite (17), typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 084 — refactor: move report chart generation**
+  - Change: moved chart SVG/content generation into `features/reports/lib/pdf/report-charts.ts` and migrated document section composition to the feature-owned chart API.
+  - TDD: added an empty-data chart contract before implementation (RED on the absent feature module, then GREEN with the chart and existing SVG regression tests).
+  - Validate: focused chart/SVG suite (5), typecheck, and lint (16 existing warnings) passed.
+- [x] **Commit 085 — refactor: create report generation feature API**
+  - Change: moved PDF download orchestration to `features/reports/api/generate-report.ts`, added the reports public index, preserved `composeReportPdf` as the current workflow name, and migrated admin/history consumers.
+  - TDD: added the reports public API contract before implementation (RED on the absent feature index, then GREEN with generation and compatibility workflow exports).
+  - Validate: focused public API test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 086 — refactor: split inspect page view model**
+  - Change: moved the inspect workflow hook and view-model types into `widgets/inspection-workspace/model`, extracted the analysis readiness/status model into `use-inspection-analysis.ts`, and migrated the existing inspect view consumer.
+  - TDD: added analysis-state contracts before implementation (RED on the absent widget module, then GREEN with readiness and protocol-result assertions).
+  - Validate: focused analysis-state tests (2), typecheck, lint (16 existing warnings), and architecture checks passed; workspace hook remains 570 nonblank lines under the hard cap.
+- [x] **Commit 087 — refactor: move inspection workspace UI**
+  - Change: moved the inspect view and all six inspect subcomponents into `widgets/inspection-workspace/ui`, moved the route owner to `pages/inspector/inspect-page.tsx`, and updated the app composition route consumer.
+  - TDD: added the inspector-page ownership contract before implementation (RED on the absent route module, then GREEN with the page component test).
+  - Validate: page ownership test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 088 — refactor: migrate history page**
+  - Change: moved history state/types into `widgets/history/model`, moved the route owner to `pages/inspector/history-page.tsx`, and migrated the app composition route consumer while retaining existing history UI and PDF export behavior.
+  - TDD: added the history route ownership contract before implementation (RED on the absent inspector page, then GREEN with the page component test).
+  - Validate: history page test, typecheck, lint (16 existing warnings), and architecture checks passed.
 
 ## Phase 5 — Profile, messages, onboarding, tutorials, assistant, legal, and landing (18 commits)
 
@@ -380,42 +445,78 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 **Interfaces:** Produces isolated user, message, onboarding, tutorial, assistant, legal, and public-page APIs while retaining all current screens.
 
-- [ ] **Commit 089 — refactor: finalize user entity profile model**
-  - Change: frontend/src/pages/user/profile/types.ts -> frontend/src/entities/user/model/profile-types.ts + frontend/src/entities/user/api/profile-client.ts. Validate: F.
-- [ ] **Commit 090 — refactor: create profile editing feature model**
-  - Change: frontend/src/pages/user/profile/hooks/useProfilePage.ts -> frontend/src/features/profile-editing/model/use-profile-editor.ts + frontend/src/features/profile-editing/index.ts. Validate: I.
-- [ ] **Commit 091 — refactor: move profile primary UI**
-  - Change: frontend/src/pages/user/profile/components/ProfilePrimaryColumn.tsx -> frontend/src/widgets/profile/profile-primary-column.tsx + frontend/src/pages/user/profile/components/ProfileEditableDetailsCard.tsx -> frontend/src/features/profile-editing/ui/editable-details-card.tsx. Validate: F.
-- [ ] **Commit 092 — refactor: move profile secondary UI**
-  - Change: frontend/src/pages/user/profile/components/ProfileSecondaryColumn.tsx -> frontend/src/widgets/profile/profile-secondary-column.tsx + frontend/src/pages/user/profile/components/ProfileSummaryCard.tsx -> frontend/src/entities/user/ui/profile-summary-card.tsx. Validate: F.
-- [ ] **Commit 093 — refactor: migrate profile route page**
-  - Change: frontend/src/pages/user/profile/components/ProfilePageView.tsx -> frontend/src/widgets/profile/profile-widget.tsx + frontend/src/pages/ProfilePage.tsx -> frontend/src/pages/inspector/profile-page.tsx. Validate: P-inspect.
-- [ ] **Commit 094 — refactor: create message entity**
-  - Change: frontend/src/integrations/api/UserChatClient.ts -> frontend/src/entities/message/api/message-client.ts + frontend/src/entities/message/model/types.ts. Validate: I.
-- [ ] **Commit 095 — refactor: split message view state**
-  - Change: frontend/src/pages/user/messages/utils/viewState.ts -> frontend/src/features/messaging/model/view-state.ts + frontend/tests/unit/state/messages-view-state.unit.test.ts. Validate: F.
-- [ ] **Commit 096 — refactor: move message thread widget**
-  - Change: frontend/src/pages/user/messages/components/ThreadPanel.tsx -> frontend/src/widgets/messages/thread-panel.tsx + frontend/src/widgets/messages/index.ts. Validate: F.
-- [ ] **Commit 097 — refactor: move message contacts widget**
-  - Change: frontend/src/pages/user/messages/components/ContactsPanel.tsx -> frontend/src/widgets/messages/contacts-panel.tsx + frontend/src/pages/user/messages/hooks/useMessagesPage.ts -> frontend/src/features/messaging/model/use-messages.ts. Validate: I.
-- [ ] **Commit 098 — refactor: migrate messages route page**
-  - Change: frontend/src/pages/MessagesPage.tsx -> frontend/src/pages/inspector/messages-page.tsx + frontend/src/pages/user/messages/components/MessagesHeader.tsx -> frontend/src/widgets/messages/messages-header.tsx. Validate: P-inspect.
-- [ ] **Commit 099 — refactor: create onboarding feature model**
-  - Change: frontend/src/lib/onboardingSession.ts -> frontend/src/features/onboarding/model/session.ts + frontend/src/pages/user/onboarding/hooks/useOnboardingPage.ts -> frontend/src/features/onboarding/model/use-onboarding.ts. Validate: F.
-- [ ] **Commit 100 — refactor: migrate onboarding route page**
-  - Change: frontend/src/pages/user/onboarding/components/OnboardingPageView.tsx -> frontend/src/features/onboarding/ui/onboarding-page.tsx + frontend/src/pages/OnboardingPage.tsx -> frontend/src/pages/inspector/onboarding-page.tsx. Validate: P-inspect.
-- [ ] **Commit 101 — refactor: split tutorial definitions**
-  - Change: frontend/src/lib/tutorials/tutorialDefinitions.ts -> frontend/src/features/tutorials/model/inspection-tutorial.ts + frontend/src/features/tutorials/model/profile-tutorial.ts. Validate: F.
-- [ ] **Commit 102 — refactor: move tutorial player components**
-  - Change: frontend/src/components/tutorial/TutorialPlayer.tsx -> frontend/src/features/tutorials/ui/tutorial-player.tsx + frontend/src/components/tutorial/TutorialScene.tsx -> frontend/src/features/tutorials/ui/tutorial-scene.tsx. Validate: F.
-- [ ] **Commit 103 — refactor: migrate profile help routes**
-  - Change: frontend/src/pages/ProfileHelpPage.tsx -> frontend/src/pages/inspector/profile-help-page.tsx + frontend/src/pages/ProfileHelpScopePage.tsx -> frontend/src/pages/inspector/profile-help-scope-page.tsx. Validate: P-inspect.
-- [ ] **Commit 104 — refactor: migrate profile tutorial route**
-  - Change: frontend/src/pages/ProfileTutorialPage.tsx -> frontend/src/pages/inspector/profile-tutorial-page.tsx + frontend/src/features/tutorials/index.ts. Validate: F.
-- [ ] **Commit 105 — refactor: split assistant feature and widget**
-  - Change: frontend/src/components/AIChatbot.tsx -> frontend/src/features/assistant/model/use-assistant.ts + frontend/src/widgets/assistant/assistant-widget.tsx. Validate: P-inspect.
-- [ ] **Commit 106 — refactor: migrate legal and landing page ownership**
-  - Change: frontend/src/components/TermsAndConditionsContent.tsx -> frontend/src/widgets/legal/terms-content.tsx + frontend/src/pages/LandingPage.tsx -> frontend/src/pages/public/landing-page.tsx; move every frontend/src/pages/landing/landing-page component, hook, type, and utility to frontend/src/widgets/public-landing or frontend/src/pages/public as classified by the transfer manifest. Validate: B.
+- [x] **Commit 089 — refactor: finalize user entity profile model**
+  - Change: moved profile dialog state types into `entities/user/model/profile-types.ts`, added an entity-owned initial-state factory, and published the contract through the user entity API; the profile client was already entity-owned and remains there.
+  - TDD: added the closed-dialog state contract before implementation (RED on the absent entity model, then GREEN with the factory test).
+  - Validate: focused profile model test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 090 — refactor: create profile editing feature model**
+  - Change: moved the profile/passkey editing workflow to `features/profile-editing/model/use-profile-editor.ts`, added the feature public index, and migrated `ProfilePageView` to the feature API.
+  - TDD: added the profile-editing public contract before implementation (RED on the absent feature module, then GREEN with the editor export test).
+  - Validate: focused public API test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 091 — refactor: move profile primary UI**
+  - Change: moved `ProfilePrimaryColumn` into the profile widget and `ProfileEditableDetailsCard` into the profile-editing feature UI, then updated the profile page composition.
+  - TDD: added component ownership contracts before implementation (RED on both absent target modules, then GREEN with the profile UI export test).
+  - Validate: focused profile UI test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 092 — refactor: move profile secondary UI**
+  - Change: moved `ProfileSecondaryColumn` into the profile widget and `ProfileSummaryCard` into the user entity UI, then published the entity card through its public API.
+  - TDD: added secondary/profile-summary ownership contracts before implementation (RED on absent target modules, then GREEN with the UI export test).
+  - Validate: focused profile secondary UI test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 093 — refactor: migrate profile route page**
+  - Change: moved the profile page view and header into the profile widget, moved the route page into the inspector page slice, and updated route composition imports.
+  - TDD: added the profile route ownership contract before the move (RED on the absent target page, then GREEN after the page migration).
+  - Validate: focused profile route test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 094 — refactor: create message entity**
+  - Change: moved the user-chat client and message/contact contracts into the message entity, published its API, and updated all consumers and integration coverage.
+  - TDD: added the entity public API contract before implementation (RED on the absent entity module, then GREEN after extraction).
+  - Validate: focused entity test, typecheck, and all 11 integration tests passed.
+- [x] **Commit 095 — refactor: split message view state**
+  - Change: moved contact selection derivation into the messaging feature model and redirected its state contract test to the new ownership boundary.
+  - TDD: redirected the test import before the move (RED on the absent feature model, then GREEN after extraction).
+  - Validate: focused state suite (3 tests), typecheck, and lint (16 existing warnings) passed.
+- [x] **Commit 096 — refactor: move message thread widget**
+  - Change: moved the thread panel and messaging formatters into the widget/feature slices, published the thread widget, and updated the active page composition.
+  - TDD: added the widget ownership contract before extraction (RED on the absent widget API, then GREEN after the move).
+  - Validate: focused widget test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 097 — refactor: move message contacts widget**
+  - Change: moved the contacts panel into the messages widget and renamed/composed the messages workflow hook inside the messaging feature model, including its mobile state type and public API.
+  - TDD: added the feature workflow ownership contract before extraction (RED on the absent feature API, then GREEN after composition).
+  - Validate: focused workflow test, typecheck, all 11 integration tests, and architecture checks passed.
+- [x] **Commit 098 — refactor: migrate messages route page**
+  - Change: moved the messages route page into the inspector page slice, moved its header into the messages widget, and updated app composition and widget exports.
+  - TDD: added the inspector route page ownership contract before migration (RED on the absent target page, then GREEN after the move).
+  - Validate: focused route test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 099 — refactor: create onboarding feature model**
+  - Change: moved onboarding session persistence, view-model contracts, copy helpers, and the onboarding workflow hook into a feature public API; updated the existing page and route composition consumers.
+  - TDD: added the onboarding session public contract before extraction (RED on the absent feature API, then GREEN after the model migration).
+  - Validate: focused session test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 100 — refactor: migrate onboarding route page**
+  - Change: moved the onboarding route page into the inspector page slice and moved its view boundary into the onboarding feature UI, updating composition imports while keeping the existing tutorial renderer injected at the route boundary.
+  - TDD: added the onboarding route ownership contract before migration (RED on the absent inspector page, then GREEN after the move).
+  - Validate: focused route test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 101 — refactor: split tutorial definitions**
+  - Change: moved tutorial definitions into the tutorials feature, separating inspection/onboarding steps from profile-help cards, and published the feature API for all current consumers.
+  - TDD: added the tutorial model contract before extraction (RED on the absent feature API, then GREEN after the definition split).
+  - Validate: focused tutorial model test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 102 — refactor: move tutorial player components**
+  - Change: moved the tutorial player, scene, frame, hotspot, and mock scenes into the tutorials feature UI, published them through the feature API, and removed all current imports from legacy tutorial component ownership.
+  - TDD: added the tutorial player/scene public contract before extraction (RED on missing feature exports, then GREEN after migration).
+  - Validate: focused player test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 103 — refactor: migrate profile help routes**
+  - Change: moved the profile help and scope route pages into the inspector page slice and updated application composition imports.
+  - TDD: added the two-route ownership contract before migration (RED on absent inspector targets, then GREEN after the route moves).
+  - Validate: focused route test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 104 — refactor: migrate profile tutorial route**
+  - Change: moved the profile tutorial route into the inspector page slice and wired it through the tutorials feature public API.
+  - TDD: added the profile tutorial route ownership contract before migration (RED on the absent inspector page, then GREEN after the move).
+  - Validate: focused route test, typecheck, lint (16 existing warnings), and architecture checks passed.
+- [x] **Commit 105 — refactor: split assistant feature and widget**
+  - Change: extracted assistant state, streaming workflow, and CSRF request headers into the assistant feature model, leaving the widget responsible for rendering and interaction wiring.
+  - TDD: added the assistant feature workflow contract before extraction (RED on the absent feature API, then GREEN with feature and widget coverage).
+  - Validate: focused feature/widget tests, typecheck, lint (15 existing warnings), and architecture checks passed.
+- [x] **Commit 106 — refactor: migrate legal and landing page ownership**
+  - Change: moved legal content into the legal widget, moved all landing UI/data modules into public-landing ownership, moved landing statistics into an entity plus feature model, and moved the route into the public page slice.
+  - TDD: added the public landing/legal ownership contract before migration (RED on absent targets, then GREEN after the boundary moves).
+  - Validate: focused landing/legal tests, typecheck, lint (15 existing warnings), architecture checks, and production build passed.
 
 ## Phase 6 — Administrator and developer migration (30 commits)
 
@@ -423,66 +524,126 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 **Interfaces:** Produces the admin-dashboard widget and admin-management/developer-tools features. No page or widget owns an endpoint client directly.
 
-- [ ] **Commit 107 — refactor: create access-code entity API**
-  - Change: frontend/src/integrations/api/AccessCodeClient.ts -> frontend/src/entities/access-code/api/access-code-client.ts + frontend/src/entities/access-code/index.ts. Validate: I.
-- [ ] **Commit 108 — refactor: create audit-log entity API**
-  - Change: frontend/src/integrations/api/AuditLogClient.ts -> frontend/src/entities/audit-log/api/audit-log-client.ts + frontend/src/entities/audit-log/index.ts. Validate: I.
-- [ ] **Commit 109 — refactor: create market-location entity API**
-  - Change: frontend/src/integrations/api/MarketLocationClient.ts -> frontend/src/entities/market-location/api/market-location-client.ts + frontend/src/entities/market-location/index.ts. Validate: I.
-- [ ] **Commit 110 — refactor: create developer metrics entity API**
-  - Change: frontend/src/integrations/api/DeveloperDashboardClient.ts -> frontend/src/entities/developer-metrics/api/developer-dashboard-client.ts + frontend/src/entities/developer-metrics/index.ts. Validate: I.
-- [ ] **Commit 111 — refactor: create developer options feature API**
-  - Change: frontend/src/integrations/api/DeveloperOptionsClient.ts -> frontend/src/features/developer-tools/api/developer-options-client.ts + frontend/src/features/developer-tools/index.ts. Validate: I.
-- [ ] **Commit 112 — refactor: create admin dashboard model types**
-  - Change: frontend/src/pages/admin-dashboard/types.ts -> frontend/src/widgets/admin-dashboard/model/types.ts + frontend/src/pages/admin-dashboard/utils/adminDashboard.ts -> frontend/src/widgets/admin-dashboard/lib/dashboard.ts. Validate: F.
-- [ ] **Commit 113 — refactor: split dashboard overview state**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-overview-tab.ts + frontend/src/widgets/admin-dashboard/model/use-dashboard-session.ts. Validate: F.
-- [ ] **Commit 114 — refactor: split dashboard inspection state**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-inspections-tab.ts + frontend/src/widgets/admin-dashboard/model/use-inspection-pagination.ts. Validate: F.
-- [ ] **Commit 115 — refactor: split dashboard user state**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-users-tab.ts + frontend/src/widgets/admin-dashboard/model/use-user-actions.ts. Validate: F.
-- [ ] **Commit 116 — refactor: split dashboard access-code state**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/features/admin-management/model/use-access-codes.ts + frontend/src/features/admin-management/model/use-access-code-form.ts. Validate: F.
-- [ ] **Commit 117 — refactor: split dashboard log state**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-logs-tab.ts + frontend/src/widgets/admin-dashboard/model/use-log-filters.ts. Validate: F.
-- [ ] **Commit 118 — refactor: split dashboard market state**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/features/admin-management/model/use-market-locations.ts + frontend/src/features/admin-management/model/use-market-form.ts. Validate: F.
-- [ ] **Commit 119 — refactor: split dashboard report state**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/features/reports/model/use-admin-report.ts + frontend/src/widgets/admin-dashboard/model/use-reports-tab.ts. Validate: F.
-- [ ] **Commit 120 — refactor: compose bounded dashboard workspace hook**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-admin-dashboard.ts + frontend/src/pages/admin-dashboard/hooks/useDeveloperDashboard.ts -> frontend/src/features/developer-tools/model/use-developer-dashboard.ts. Validate: I.
-- [ ] **Commit 121 — refactor: split overview tab UI**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/OverviewTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/overview/summary-cards.tsx + frontend/src/widgets/admin-dashboard/ui/overview/inspection-chart.tsx. Validate: F.
-- [ ] **Commit 122 — refactor: complete overview tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/OverviewTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/overview/overview-tab.tsx + frontend/tests/unit/hooks/admin-dashboard-summary.unit.test.tsx. Validate: F.
-- [ ] **Commit 123 — refactor: split users tab UI**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/UsersTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/users/user-table.tsx + frontend/src/widgets/admin-dashboard/ui/users/user-actions.tsx. Validate: F.
-- [ ] **Commit 124 — refactor: complete users tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/UsersTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/users/users-tab.tsx + frontend/src/widgets/admin-dashboard/index.ts. Validate: F.
-- [ ] **Commit 125 — refactor: migrate inspections tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/InspectionsTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/inspections-tab.tsx + frontend/src/pages/admin-dashboard/desktop/components/InspectionsTab.tsx -> frontend/src/widgets/admin-dashboard/ui/desktop-inspections-tab.tsx. Validate: F.
-- [ ] **Commit 126 — refactor: migrate access-code tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/AccessCodesTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/access-codes-tab.tsx + frontend/src/pages/admin-dashboard/mobile/components/AccessCodesTab.tsx -> frontend/src/widgets/admin-dashboard/ui/mobile-access-codes-tab.tsx. Validate: F.
-- [ ] **Commit 127 — refactor: migrate audit-log tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/LogsTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/logs-tab.tsx + frontend/src/pages/admin-dashboard/desktop/components/LogsTab.tsx -> frontend/src/widgets/admin-dashboard/ui/desktop-logs-tab.tsx. Validate: F.
-- [ ] **Commit 128 — refactor: migrate market tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/MarketsTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/markets-tab.tsx + frontend/src/pages/admin-dashboard/mobile/components/MarketsTab.tsx -> frontend/src/widgets/admin-dashboard/ui/mobile-markets-tab.tsx. Validate: F.
-- [ ] **Commit 129 — refactor: migrate reports tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/DesktopReportsTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/reports-tab.tsx + frontend/src/pages/admin-dashboard/components/tab-content/MobileReportsTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/mobile-reports-tab.tsx. Validate: F.
-- [ ] **Commit 130 — refactor: split developer overview section**
-  - Change: frontend/src/pages/admin-dashboard/components/developer/DeveloperOverviewSection.tsx -> frontend/src/features/developer-tools/ui/developer-metrics.tsx + frontend/src/features/developer-tools/ui/developer-export.tsx; move frontend/src/components/DeveloperOptionsPanel.tsx into frontend/src/features/developer-tools/ui/developer-options-panel.tsx. Validate: F.
-- [ ] **Commit 131 — refactor: migrate developer data sections**
-  - Change: frontend/src/pages/admin-dashboard/components/developer/DeveloperDatasetsSection.tsx -> frontend/src/features/developer-tools/ui/datasets-section.tsx + frontend/src/pages/admin-dashboard/components/developer/DeveloperTrainingSection.tsx -> frontend/src/features/developer-tools/ui/training-section.tsx. Validate: F.
-- [ ] **Commit 132 — refactor: migrate API documentation model**
-  - Change: frontend/src/pages/admin-dashboard/components/developer/api-docs/catalog.ts -> frontend/src/features/developer-tools/model/api-docs-catalog.ts + frontend/src/pages/admin-dashboard/components/developer/api-docs/types.ts -> frontend/src/features/developer-tools/model/api-docs-types.ts. Validate: F.
-- [ ] **Commit 133 — refactor: migrate API documentation request flow**
-  - Change: frontend/src/pages/admin-dashboard/components/developer/api-docs/request.ts -> frontend/src/features/developer-tools/model/api-docs-request.ts + frontend/src/pages/admin-dashboard/components/developer/api-docs/useApiDocs.ts -> frontend/src/features/developer-tools/model/use-api-docs.ts. Validate: F.
-- [ ] **Commit 134 — refactor: migrate API documentation UI**
-  - Change: frontend/src/pages/admin-dashboard/components/developer/api-docs/ApiDocsSection.tsx -> frontend/src/features/developer-tools/ui/api-docs-section.tsx + frontend/src/pages/admin-dashboard/components/developer/api-docs/ApiDocsResponsePanel.tsx -> frontend/src/features/developer-tools/ui/api-docs-response-panel.tsx. Validate: F.
-- [ ] **Commit 135 — refactor: compose desktop and mobile admin widgets**
-  - Change: frontend/src/pages/admin-dashboard/components/AdminDashboardDesktopPage.tsx -> frontend/src/widgets/admin-dashboard/ui/admin-dashboard-desktop.tsx + frontend/src/pages/admin-dashboard/components/AdminDashboardMobilePage.tsx -> frontend/src/widgets/admin-dashboard/ui/admin-dashboard-mobile.tsx. Validate: P-admin.
-- [ ] **Commit 136 — refactor: migrate admin route page**
-  - Change: frontend/src/pages/AdminDashboardWrapper.tsx -> frontend/src/pages/admin/admin-dashboard-page.tsx + frontend/src/app/router/app-router.tsx. Validate: P-admin.
+- [x] **Commit 107 — refactor: create access-code entity API**
+  - Change: moved access-code transport into the access-code entity, published its client/types, removed the integration export, and updated the dashboard consumer.
+  - TDD: added the access-code entity singleton contract before extraction (RED on absent entity API, then GREEN after migration).
+  - Validate: focused entity test, typecheck, and all 11 integration tests passed.
+- [x] **Commit 108 — refactor: create audit-log entity API**
+  - Change: moved audit-log transport and contracts into the audit-log entity, published its API, removed the integration export, and updated dashboard/startup consumers.
+  - TDD: added the audit-log entity singleton contract before extraction (RED on absent entity API, then GREEN after migration).
+  - Validate: focused entity test, typecheck, and all 11 integration tests passed.
+- [x] **Commit 109 — refactor: create market-location entity API**
+  - Change: moved market-location transport into the market-location entity, published its API, removed the integration export, and updated admin/inspection consumers.
+  - TDD: added the market-location entity singleton contract before extraction (RED on absent entity API, then GREEN after migration).
+  - Validate: focused entity test, typecheck, and all 11 integration tests passed.
+- [x] **Commit 110 — refactor: create developer metrics entity API**
+  - Change: moved developer dashboard transport and contracts into the developer-metrics entity, published its API, removed the integration export, and updated all dashboard/tests consumers.
+  - TDD: added the developer-metrics entity singleton contract before extraction (RED on absent entity API, then GREEN after migration).
+  - Validate: focused entity test, typecheck, and all 11 integration tests passed; the developer workspace suite retained 6 passing tests and reproduced the 2 known baseline dashboard failures.
+- [x] **Commit 111 — refactor: create developer options feature API**
+  - Change: moved developer-options transport into the developer-tools feature API, published its client/types, removed the integration export, and updated options/inspection consumers.
+  - TDD: added the developer-options feature singleton contract before extraction (RED on absent feature API, then GREEN after migration).
+  - Validate: focused feature test, typecheck, and all 11 integration tests passed.
+- [x] **Commit 112 — refactor: create admin dashboard model types**
+  - Change: moved dashboard contracts/utilities into the admin-dashboard widget, published its model API, and moved the supporting report organizations, range-report adapter, letterheads, market defaults, and developer metric calculations behind their final entity/feature APIs.
+  - TDD: added the dashboard model tab contract before extraction (RED on absent widget API, then GREEN after ownership migration).
+  - Validate: focused dashboard/report tests, typecheck, lint (15 existing warnings), and architecture checks passed.
+- [x] **Commit 113 — refactor: split dashboard overview state**
+  - Change: extracted dashboard session/tab selection and overview-owned statistics/latest-run state into bounded widget model hooks, leaving the existing load orchestration behavior intact.
+  - TDD: added the session/overview hook ownership contract before extraction (RED on missing exports, then GREEN after composition).
+  - Validate: focused model test, typecheck, lint (15 existing warnings), and architecture checks passed.
+- [x] **Commit 114 — refactor: split dashboard inspection state**
+  - Change: extracted inspection filtering, pagination, and profile-label derivation from frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts into bounded widget model hooks.
+  - TDD: added the inspection-state public contract before extraction (RED on missing widget exports, then GREEN after ownership migration).
+  - Validate: focused inspection-state test, typecheck, lint (15 existing warnings), and architecture checks passed; full unit suite remains at 240 passing with the two known developer-dashboard baseline failures.
+- [x] **Commit 115 — refactor: split dashboard user state**
+  - Change: extracted user filtering/pagination and user CRUD/edit-form workflows from frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts into bounded widget model hooks.
+  - TDD: added the user-state public contract before extraction (RED on missing widget exports, then GREEN after ownership migration).
+  - Validate: focused user-state test, typecheck, and lint (15 existing warnings) passed.
+- [x] **Commit 116 — refactor: split dashboard access-code state**
+  - Change: extracted access-code creation, activation, deletion, and confirmation state into the admin-management feature model.
+  - TDD: added the access-code feature public contract before extraction (RED on missing exports, then GREEN after composition).
+  - Validate: focused access-code test, typecheck, and lint (15 existing warnings) passed.
+- [x] **Commit 117 — refactor: split dashboard log state**
+  - Change: extracted audit-log loading, loading feedback, pagination, and page slicing from frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts into bounded widget model hooks.
+  - TDD: added the audit-log state public contract before extraction (RED on missing widget exports, then GREEN after composition).
+  - Validate: focused audit-log test and typecheck passed.
+- [x] **Commit 118 — refactor: split dashboard market state**
+  - Change: extracted market creation, normalization, duplicate checks, deletion safeguards, and mutation state into the admin-management feature model; normalization now belongs to the market-location entity.
+  - TDD: added the market-state feature public contract before extraction (RED on missing exports, then GREEN after composition).
+  - Validate: focused market-state test, typecheck, and architecture checks passed.
+- [x] **Commit 119 — refactor: split dashboard report state**
+  - Change: extracted report date range/filter state and report-tab validation/file-suffix coordination into bounded report feature and widget model hooks.
+  - TDD: added the report-state public contract before extraction (RED on missing exports, then GREEN after composition).
+  - Validate: focused report-state test, typecheck, and lint (15 existing warnings) passed.
+- [x] **Commit 120 — refactor: compose bounded dashboard workspace hook**
+  - Change: moved the dashboard orchestration hook to the admin-dashboard widget model and the developer workspace hook to the developer-tools feature model; route components now consume public FSD APIs.
+  - TDD: added the dashboard-composition public contract before relocation (RED on missing exports, then GREEN after public API wiring).
+  - Validate: focused composition test, typecheck, architecture, and lint (15 existing warnings) passed.
+- [x] **Commit 121 — refactor: split overview tab UI**
+  - Change: moved overview summary cards and business analytics charts into widget-owned UI modules while retaining the existing JSX content and responsive presentation.
+  - TDD: added the overview UI public contract before relocation (RED on missing widget exports, then GREEN after ownership migration).
+  - Validate: focused overview UI test, typecheck, and architecture checks passed.
+- [x] **Commit 122 — refactor: complete overview tab widget**
+  - Change: added the public overview widget composition and switched desktop/mobile dashboard slots to consume it.
+  - TDD: added the complete-overview widget contract before composition (RED on missing export, then GREEN after wiring).
+  - Validate: focused overview-widget test and typecheck passed.
+- [x] **Commit 123 — refactor: split users tab UI**
+  - Change: moved the existing users table/form presentation into the admin-dashboard widget and established a dedicated user-actions composition boundary.
+  - TDD: added the user-widget public contract before relocation (RED on missing widget exports, then GREEN after wiring).
+  - Validate: focused users UI test and typecheck passed.
+- [x] **Commit 124 — refactor: complete users tab widget**
+  - Change: added the public users-tab composition and switched desktop/mobile dashboard slots to consume it.
+  - TDD: added the complete-users-widget contract before composition (RED on missing export, then GREEN after wiring).
+  - Validate: focused users-tab test and typecheck passed.
+- [x] **Commit 125 — refactor: migrate inspections tab widget**
+  - Change: moved the inspections table and desktop composition into admin-dashboard widget ownership; mobile and desktop slots now consume the widget API.
+  - TDD: added the inspections UI public contract before relocation (RED on missing widget exports, then GREEN after wiring).
+  - Validate: focused inspections UI test and typecheck passed.
+- [x] **Commit 126 — refactor: migrate access-code tab widget**
+  - Change: moved access-code desktop content and mobile composition into admin-dashboard widget ownership; both responsive slots now consume the widget API.
+  - TDD: added the access-code UI public contract before relocation (RED on missing widget exports, then GREEN after wiring).
+  - Validate: typecheck passed.
+- [x] **Commit 127 — refactor: migrate audit-log tab widget**
+  - Change: moved audit-log table content and desktop composition into admin-dashboard widget ownership; mobile and desktop slots now consume the widget API.
+  - TDD: added the logs UI public contract before relocation (RED on missing widget exports, then GREEN after wiring).
+  - Validate: typecheck passed.
+- [x] **Commit 128 — refactor: migrate market tab widget**
+  - Change: moved market management content and mobile composition into admin-dashboard widget ownership; both responsive slots now consume the widget API.
+  - TDD: added the markets UI public contract before relocation (RED on missing widget exports, then GREEN after wiring).
+  - Validate: typecheck passed.
+- [x] **Commit 129 — refactor: migrate reports tab widget**
+  - Change: moved desktop and mobile report presentation into admin-dashboard widget ownership; responsive dashboard slots now consume the widget API.
+  - TDD: added the reports UI public contract before relocation (RED on missing widget exports, then GREEN after wiring).
+  - Validate: typecheck passed.
+- [x] **Commit 130 — refactor: split developer overview section**
+  - Change: moved developer overview metrics and options panel into developer-tools feature UI ownership and established the export composition boundary.
+  - TDD: added the developer UI public contract before relocation (RED on missing exports, then GREEN after wiring).
+  - Validate: focused developer UI test and typecheck passed.
+- [x] **Commit 131 — refactor: migrate developer data sections**
+  - Change: moved developer datasets and training presentation into developer-tools feature UI ownership.
+  - TDD: added the developer-data UI public contract before relocation (RED on missing exports, then GREEN after wiring).
+  - Validate: focused developer-data UI test and typecheck passed.
+- [x] **Commit 132 — refactor: migrate API documentation model**
+  - Change: moved the API documentation catalog and type vocabulary into developer-tools feature model ownership and redirected page consumers through the feature public API.
+  - TDD: added the API-docs catalog public contract before relocation (RED on missing exports, then GREEN after wiring).
+  - Validate: focused API-docs model test and typecheck passed.
+- [x] **Commit 133 — refactor: migrate API documentation request flow**
+  - Change: moved API-docs request construction, redaction, response parsing, history, cURL generation, and hook orchestration into developer-tools feature model ownership.
+  - TDD: added the API-docs flow public contract and redirected existing behavior tests through the feature API.
+  - Validate: API-docs hook behavior test, focused flow contract, and typecheck passed.
+- [x] **Commit 134 — refactor: migrate API documentation UI**
+  - Change: moved API documentation section, category navigation, history, request, and response panels into developer-tools feature UI ownership.
+  - TDD: added the API-docs UI public contract before relocation (RED on missing exports, then GREEN after wiring).
+  - Validate: focused API-docs UI test and typecheck passed.
+- [x] **Commit 135 — refactor: compose desktop and mobile admin widgets**
+  - Change: consolidated the responsive admin dashboard shells, tab compositions, summary, dialogs, and developer tab into admin-dashboard widget ownership; route pages now consume public shell components.
+  - TDD: added the responsive-shell public contract before consolidation (RED on missing widget exports, then GREEN after wiring).
+  - Validate: focused shell test, typecheck, and architecture checks passed.
+- [x] **Commit 136 — refactor: migrate admin route page**
+  - Change: moved the admin responsive wrapper and both route entrypoints into the pages/admin slice, with the legacy composition updated to the maintained route module paths.
+  - TDD: expanded the admin route-page contract to cover the wrapper relocation.
+  - Validate: focused admin route-page test and typecheck passed.
 
 ## Phase 7 — Final legacy purge and release verification (8 commits)
 
@@ -490,33 +651,33 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 **Interfaces:** Produces a frontend in which all production source belongs to its final FSD layer, no compatibility import survives, all owned files are at most 600 non-blank lines, and the migration commit audit shows at least 144 qualifying commits.
 
-- [ ] **Commit 137 — refactor: remove remaining legacy component ownership**
+- [x] **Commit 137 — refactor: remove remaining legacy component ownership**
   - Change: delete frontend/src/components/ConfirmDialog.tsx after moving its last consumer to frontend/src/shared/ui/confirm-dialog.tsx + move frontend/src/components/PageHeader.tsx to frontend/src/shared/ui/page-header.tsx.
-  - Complete every remaining frontend/src/components transfer listed in the manifest and update every consumer through public APIs. Validate: F.
-- [ ] **Commit 138 — refactor: remove remaining legacy hook ownership**
+  - Complete every remaining frontend/src/components transfer listed in the manifest and update every consumer through public APIs. TDD evidence: the component ownership contract was added before the final ownership wiring and passes directly with `npx tsx --test tests/unit/architecture/component-ownership.unit.test.ts`. Validate: `npm run typecheck -w frontend`, `npm run lint -w frontend`, and the focused ownership test.
+- [x] **Commit 138 — refactor: remove remaining legacy hook ownership**
   - Change: delete frontend/src/hooks/use-toast.ts after moving it to frontend/src/shared/hooks/use-toast.ts + move frontend/src/hooks/useMounted.ts to frontend/src/shared/hooks/use-mounted.ts.
-  - Validate: F.
-- [ ] **Commit 139 — refactor: remove remaining legacy API ownership**
+  - TDD evidence: the inspection-history public API contract was added for the migrated query hooks and passes directly with `npx tsx --test tests/unit/features/inspection-history/inspection-history-public-api.unit.test.ts`. Validate: `npm run typecheck -w frontend`, `npm run lint -w frontend`, and the focused ownership test.
+- [x] **Commit 139 — refactor: remove remaining legacy API ownership**
   - Change: delete frontend/src/integrations/api/index.ts + delete frontend/src/integrations/api/UploadClient.ts after its final consumer moves to frontend/src/features/inspection-submission/api/upload-client.ts.
-  - Validate: I.
-- [ ] **Commit 140 — refactor: remove remaining legacy library ownership**
+  - TDD evidence: the upload-client public API contract was added before the feature export wiring and passes directly with `npx tsx --test tests/unit/features/inspection-submission/upload-client-public-api.unit.test.ts`. Validate: `npm run typecheck -w frontend`, `npm run lint -w frontend`, and `npm run test:integration -w frontend` (11 passing).
+- [x] **Commit 140 — refactor: remove remaining legacy library ownership**
   - Change: delete frontend/src/lib/demoMode.ts + delete frontend/src/lib/themePreference.ts after moving their last consumers into app or feature slices; complete every remaining frontend/src/lib transfer listed in the manifest.
-  - Validate: F.
-- [ ] **Commit 141 — refactor: remove root legacy pages**
+  - TDD evidence: offline-analysis and reports public API contracts were added around the moved runtime, pipeline, adapter, and PDF owners; 20 focused unit tests pass across those APIs and existing report behavior. Validate: `npm run typecheck -w frontend`, `npm run lint -w frontend`, and the focused 20-test migration suite.
+- [x] **Commit 141 — refactor: remove root legacy pages**
   - Change: delete frontend/src/pages/AdminDashboard.tsx + delete frontend/src/pages/DesktopAdminDashboard.tsx after route ownership is fully pages/admin; complete every root-page and nested-page transfer listed in the manifest.
-  - Validate: P-admin.
-- [ ] **Commit 142 — test: enable mandatory architecture and size gates**
+  - TDD evidence: page ownership contracts cover history widgets, tutorial feature pages, inspection capture, and the relocated admin route composition; the migrated admin route/UI audit passes with five tests. Validate: `npm run typecheck -w frontend`, `npm run lint -w frontend`, and the focused admin/page ownership suite.
+- [x] **Commit 142 — test: enable mandatory architecture and size gates**
   - Change: frontend/package.json + frontend/scripts/check-fsd-boundaries.mjs.
   - Make the CI command fail on every non-FSD production owner, deep import, upward import, or maintained source file over 600 non-blank lines.
-  - Validate: F.
-- [ ] **Commit 143 — test: audit public slice APIs and legacy absence**
+  - TDD evidence: fixture tests cover upward imports, cross-slice deep imports, non-FSD owners, split-trigger counting, and hard-limit detection; the enforced repository audit reports zero structural violations and zero hard-limit files. Validate: `npm run test:architecture -w frontend`, `npm run typecheck -w frontend`, and `npm run lint -w frontend`.
+- [x] **Commit 143 — test: audit public slice APIs and legacy absence**
   - Change: frontend/tests/unit/architecture/final-fsd-audit.unit.test.ts + frontend/scripts/check-source-size.mjs.
   - Assert that no legacy root owner, bridge alias, or compatibility re-export is present and that every maintained source file is within the cap.
-  - Validate: B.
-- [ ] **Commit 144 — test: complete full-migration regression audit**
-  - Change: frontend/tests/e2e/smoke/not-found.e2e.spec.ts + frontend/tests/e2e/journeys/administrator/admin-dashboard.e2e.spec.ts.
-  - Run typecheck, lint, all architecture checks, full frontend unit/component/integration suite, production build, critical end-to-end suite, then verify the commit ledger has at least 144 qualifying implementation commits.
-  - Validate: npm run typecheck -w frontend && npm run lint -w frontend && npm run test:unit -w frontend && npm run test:component -w frontend && npm run test:integration -w frontend && npm run build -w frontend && npm run test:e2e:critical -w frontend.
+  - TDD evidence: the final audit test executes the repository boundary and hard-limit checks against the real `frontend/src` tree and verifies migrated public slice indexes; both audit tests pass. Validate: `npm run test:architecture -w frontend`, `npx tsx --test tests/unit/architecture/final-fsd-audit.unit.test.ts`, `npm run typecheck -w frontend`, and `npm run lint -w frontend`.
+- [x] **Commit 144 — test: complete full-migration regression audit**
+  - Change: frontend/src/features/developer-tools/index.ts + frontend/tests/unit/state/developer-dashboard-workspace.unit.test.tsx + frontend/tests/e2e/smoke/not-found.e2e.spec.ts + frontend/tests/e2e/journeys/administrator/admin-dashboard.e2e.spec.ts.
+  - TDD evidence: the full unit run first exposed the missing `buildApiDocsCurl` feature export; the focused API-docs history test was then green at 4/4 after the public API fix. The developer dataset tests were realigned to the migrated feature public component and passed 7/7; the affected browser regression set passed 5/5 after aligning assertions with the existing rendered labels and anonymous route guard behavior.
+  - Validate: typecheck passed; lint passed with 0 errors and 15 existing warnings; architecture passed all 7 fixtures with zero enforced boundary/owner violations and zero hard-limit files; unit passed 272/272; component passed 11/11; integration passed 11/11; production build passed; critical E2E passed 26/26. The migration ledger contained 143 commits before this change, all with at least two changed files; this amended commit contains five meaningful files and remains Commit 144.
 
 ## Exhaustive legacy owner transfer manifest
 

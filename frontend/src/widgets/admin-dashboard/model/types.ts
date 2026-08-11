@@ -1,0 +1,75 @@
+import type { ReportOrganization } from "@/features/reports/model/types";
+import type { FreshnessClassification } from "@/entities/inspection";
+
+export type AdminDashboardTabKey =
+  | "overview"
+  | "users"
+  | "inspections"
+  | "codes"
+  | "markets"
+  | "reports"
+  | "logs"
+  | "developer";
+
+export type { DeveloperWorkspaceTabKey } from "@/features/developer-tools/model/types";
+
+export type RoleStat = {
+  role: string;
+  count: number;
+};
+
+export type ManagedUserForm = {
+  full_name: string;
+  email: string;
+  password: string;
+  inspector_code: string;
+  report_organization: ReportOrganization | "";
+  location: string;
+};
+
+export type ReportRow = {
+  id: string;
+  createdAt: string;
+  capturedAt: string | null;
+  inspector: string;
+  inspectorEmail: string;
+  inspectorCode: string;
+  manualLocation: string;
+  location: string;
+  locationLatitude: number | null;
+  locationLongitude: number | null;
+  profileLocation: string;
+  meatType: string;
+  classification: FreshnessClassification;
+  manualClassification?: FreshnessClassification;
+  confidenceScore: number;
+  decisionSource: string;
+  protocolSpoiledReason: string;
+  stallNumber: string;
+  certificateProof: string;
+  meatExpiryDate: string;
+  storageCorrect: string;
+  lightColorCorrect: string;
+  lightColorObserved: string;
+  areaClean: string;
+  regulatoryCompliance: string;
+  flaggedDeviations: string;
+  explanation: string;
+  inspectorNotes: string;
+  imageUrl: string | null;
+};
+
+export type ReportLocationBreakdown = {
+  location: string;
+  count: number;
+  spoiledCount: number;
+  spoiledRate: number;
+  averageConfidence: number;
+};
+
+export type ReportDailyTrendRow = {
+  date: string;
+  count: number;
+  spoiledCount: number;
+  averageConfidence: number;
+};

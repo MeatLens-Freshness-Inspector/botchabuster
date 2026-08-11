@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
-import { authClient } from "../../../../src/integrations/api/AuthClient";
-import { uploadClient } from "../../../../src/integrations/api/UploadClient";
-import { clearApiCsrfToken, setApiCsrfToken } from "../../../../src/integrations/api/apiRequest";
-import { getChatRequestHeaders } from "../../../../src/components/AIChatbot";
+import { authClient } from "../../../../src/features/auth/api/auth-client";
+import { uploadClient } from "../../../../src/features/inspection-submission";
+import { clearApiCsrfToken, setApiCsrfToken } from "../../../../src/shared/api/request";
+import { getChatRequestHeaders } from "../../../../src/features/assistant";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;

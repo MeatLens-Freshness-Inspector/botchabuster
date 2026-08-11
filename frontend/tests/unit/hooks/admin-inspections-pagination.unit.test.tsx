@@ -4,8 +4,8 @@ import { JSDOM } from "jsdom";
 import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import type { Inspection } from "../../../src/types/inspection";
-import type { AdminDashboardPageViewModel } from "../../../src/pages/admin-dashboard/hooks/useAdminDashboardPage";
+import type { Inspection } from "../../../src/entities/inspection";
+import type { AdminDashboardPageViewModel } from "../../../src/widgets/admin-dashboard";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -162,8 +162,8 @@ test("InspectionsTabContent paginates admin inspections to 10 items per page", a
   } as unknown as AdminDashboardPageViewModel;
 
   try {
-    const { default: InspectionsTabContent } = await import(
-      "../../../src/pages/admin-dashboard/components/tab-content/InspectionsTabContent"
+    const { InspectionsTab: InspectionsTabContent } = await import(
+      "../../../src/widgets/admin-dashboard"
     );
 
     await act(async () => {

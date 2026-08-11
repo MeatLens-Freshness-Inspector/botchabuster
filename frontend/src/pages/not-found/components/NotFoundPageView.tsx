@@ -1,6 +1,6 @@
 import { ArrowLeft, ChevronRight, Compass, Home, LogIn, SearchX, ShieldAlert, UserPlus } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui";
 import type { NotFoundQuickLink } from "../types";
 
 type NotFoundPageViewProps = {

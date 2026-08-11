@@ -11,3 +11,10 @@ test("renders a proper 404 page with recovery actions", async ({ page }) => {
   await expect(page.getByRole("link", { name: /go to home/i })).toBeVisible();
   await expect(page.getByRole("button", { name: /go back/i })).toBeVisible();
 });
+
+test("preserves the dashboard recovery redirect after page ownership migration", async ({ page }) => {
+  await page.goto("/dashboard");
+
+  await expect(page).toHaveURL(/\/history$/);
+  await expect(page.getByRole("heading", { name: /sign in/i })).toBeVisible();
+});

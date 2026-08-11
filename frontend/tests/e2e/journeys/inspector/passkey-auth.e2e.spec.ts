@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
+import { ROUTE_PATHS } from "../../../../src/app/router/paths";
 
 function createBuffer(values: number[]): ArrayBuffer {
   return Uint8Array.from(values).buffer;
@@ -148,12 +149,12 @@ test("signs in with a passkey from the login page", async ({ page }) => {
     });
   });
 
-  await page.goto("/login");
+  await page.goto(ROUTE_PATHS.login);
 
   await expect(page.getByRole("button", { name: /sign in with passkey/i })).toBeVisible();
   await page.getByRole("button", { name: /sign in with passkey/i }).click();
 
-  await expect(page).toHaveURL(/\/inspect$/);
+  await expect(page).toHaveURL(new RegExp(`${ROUTE_PATHS.inspect}$`));
   expect(optionsRequested).toBe(1);
   expect(verificationPayload).toContain("\"challengeId\":\"login-passkey-flow\"");
   expect(verificationPayload).toContain("\"id\":\"credential-login-1\"");
@@ -209,7 +210,7 @@ test("shows passkey management on the profile page and removes a registered devi
     });
   });
 
-  await page.goto("/profile");
+  await page.goto(ROUTE_PATHS.profile);
 
   await expect(page.getByRole("heading", { name: /passkeys and device unlock/i })).toBeVisible();
   await expect(page.getByText(/office laptop/i)).toBeVisible();

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readApiDocsResponse } from "../../../src/pages/admin-dashboard/components/developer/api-docs/response";
+import { readApiDocsResponse } from "../../../src/features/developer-tools";
 
 test("pretty-prints JSON and preserves response metadata", async () => {
   const response = new Response(JSON.stringify({ ok: true, count: 2 }), {

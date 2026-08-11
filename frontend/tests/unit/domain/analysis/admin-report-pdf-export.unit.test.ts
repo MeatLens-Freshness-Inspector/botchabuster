@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildAdminDashboardReportPdfModel } from "../../../../src/pages/admin-dashboard/utils/adminDashboard";
+import { buildAdminDashboardReportPdfModel } from "../../../../src/widgets/admin-dashboard";
 
 test("buildAdminDashboardReportPdfModel preserves the organization overview and shared meat sections", () => {
   const model = buildAdminDashboardReportPdfModel({

@@ -5,7 +5,7 @@ import React from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { act } from "react";
 
-import { Input } from "../../../src/components/ui/input";
+import { Input } from "../../../src/shared/ui";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;

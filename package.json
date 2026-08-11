@@ -20,7 +20,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test:scripts && npm run test:documentation && npm run test:fast && npm run test:backend:integration && npm run test:contract",
-    "test:fast": "npm run test:unit -w frontend && npm run test:component -w frontend && npm run test:integration -w frontend && npm run test:unit -w backend && npm run test:architecture -w backend",
+    "test:fast": "npm run test:unit -w frontend && npm run test:component -w frontend && npm run test:integration -w frontend && npm run test:architecture -w frontend && npm run test:unit -w backend && npm run test:architecture -w backend",
     "test:unit": "npm run test:unit -w frontend && npm run test:unit -w backend",
     "test:integration": "npm run test:integration -w frontend && npm run test:integration -w backend",
     "test:backend:integration": "npm run test:integration -w backend",

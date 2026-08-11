@@ -4,7 +4,8 @@ import { JSDOM } from "jsdom";
 import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { useIsDesktop } from "../../../src/hooks/use-desktop";
+import { useIsDesktop } from "../../../src/shared/hooks/use-desktop";
+import { useIsMobile } from "../../../src/shared/hooks/use-mobile";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -116,6 +117,11 @@ function DesktopProbe({ onRender }: { onRender: (value: boolean | undefined) => 
   return null;
 }
 
+function MobileProbe({ onRender }: { onRender: (value: boolean) => void }) {
+  onRender(useIsMobile());
+  return null;
+}
+
 test("useIsDesktop keeps the initial render unresolved until the media query effect runs", async () => {
   const { container, cleanup } = installDom(1440);
   const root: Root = createRoot(container);
@@ -127,6 +133,25 @@ test("useIsDesktop keeps the initial render unresolved until the media query eff
     });
 
     assert.deepEqual(renders, [undefined, true]);
+  } finally {
+    await act(async () => {
+      root.unmount();
+    });
+    cleanup();
+  }
+});
+
+test("useIsMobile preserves a false value above the mobile breakpoint", async () => {
+  const { container, cleanup } = installDom(1440);
+  const root: Root = createRoot(container);
+  const renders: boolean[] = [];
+
+  try {
+    await act(async () => {
+      root.render(<MobileProbe onRender={(value) => renders.push(value)} />);
+    });
+
+    assert.deepEqual(renders, [false, false]);
   } finally {
     await act(async () => {
       root.unmount();

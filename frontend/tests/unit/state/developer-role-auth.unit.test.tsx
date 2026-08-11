@@ -5,15 +5,16 @@ import { indexedDB as fakeIndexedDb } from "fake-indexeddb";
 import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { AuthProvider, useAuth } from "../../../src/contexts/AuthContext";
-import { authClient } from "../../../src/integrations/api/AuthClient";
-import { clearApiCsrfToken } from "../../../src/integrations/api/apiRequest";
+import { AuthProvider } from "../../../src/app/providers";
+import { useAuth } from "../../../src/entities/user";
+import { authClient } from "../../../src/features/auth/api/auth-client";
+import { clearApiCsrfToken } from "../../../src/shared/api/request";
 import {
   clearOfflineAuthEnvelope,
   loadOfflineAuthEnvelope,
   saveOfflineAuthEnvelope,
-} from "../../../src/lib/offlineAuthEnvelope";
-import { createPasswordVerifier } from "../../../src/lib/offlineCredentials";
+} from "../../../src/entities/user/model/offline-auth-envelope";
+import { createPasswordVerifier } from "../../../src/entities/user/model/offline-credentials";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;

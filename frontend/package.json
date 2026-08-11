@@ -20,6 +20,7 @@
     "test:unit": "tsx --test \"tests/unit/**/*.test.ts\" \"tests/unit/**/*.test.tsx\"",
     "test:component": "tsx --test \"tests/component/**/*.test.ts\" \"tests/component/**/*.test.tsx\"",
     "test:integration": "tsx --test \"tests/integration/**/*.test.ts\" \"tests/integration/**/*.test.tsx\"",
+    "test:architecture": "node --test \"scripts/check-fsd-boundaries.test.mjs\" \"scripts/check-source-size.test.mjs\" && node scripts/check-fsd-boundaries.mjs --enforce && node scripts/check-source-size.mjs --enforce",
     "test:e2e:critical": "playwright test tests/e2e/smoke tests/e2e/journeys/inspector/passkey-auth.e2e.spec.ts tests/e2e/journeys/inspector/meatlens-pipeline.e2e.spec.ts tests/e2e/journeys/administrator/admin-dashboard.e2e.spec.ts tests/e2e/offline/offline-analysis.e2e.spec.ts tests/e2e/security/auth-token-url-sanitization.e2e.spec.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",

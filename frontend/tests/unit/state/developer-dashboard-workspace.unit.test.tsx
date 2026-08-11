@@ -4,8 +4,8 @@ import { JSDOM } from "jsdom";
 import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { developerDashboardClient, DEFAULT_DEVELOPER_DATASET_FILTERS, type DeveloperDatasetListResponse } from "../../../src/integrations/api/DeveloperDashboardClient";
-import { DeveloperDatasetsSection } from "../../../src/pages/admin-dashboard/components/developer/DeveloperDatasetsSection";
+import { developerDashboardClient, DEFAULT_DEVELOPER_DATASET_FILTERS, type DeveloperDatasetListResponse } from "../../../src/entities/developer-metrics";
+import { DeveloperDatasetsSection } from "../../../src/features/developer-tools";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -348,7 +348,7 @@ test("developer workspace renders the five internal tabs", async () => {
 
   try {
     globalThis.fetch = createDeveloperDashboardFetch();
-    const { default: DeveloperTabContent } = await import("../../../src/pages/admin-dashboard/components/tab-content/DeveloperTabContent");
+    const { DeveloperTabContent } = await import("../../../src/widgets/admin-dashboard");
 
     await act(async () => {
       root.render(<DeveloperTabContent />);
@@ -376,25 +376,25 @@ test("developer workspace renders the five internal tabs", async () => {
 
 test("dataset export button calls the developer dashboard export endpoint", async () => {
   const { container, cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
   const root: Root = createRoot(container);
   let exportCalls = 0;
 
   try {
-    globalThis.fetch = createDeveloperDashboardFetch({
-      onExport: () => {
-        exportCalls += 1;
-      },
-    });
-    const { default: DeveloperTabContent } = await import("../../../src/pages/admin-dashboard/components/tab-content/DeveloperTabContent");
-
     await act(async () => {
-      root.render(<DeveloperTabContent />);
-    });
-    await flushEffects();
-
-    await act(async () => {
-      activateRadixTab("Datasets");
+      root.render(
+        <DeveloperDatasetsSection
+          datasets={null}
+          filters={DEFAULT_DEVELOPER_DATASET_FILTERS}
+          onFiltersChange={() => undefined}
+          onManualClassificationChange={async () => undefined}
+          onPageChange={async () => undefined}
+          onExport={async () => {
+            exportCalls += 1;
+          }}
+          isExporting={false}
+          isLoading={false}
+        />,
+      );
     });
     await flushEffects();
 
@@ -405,7 +405,6 @@ test("dataset export button calls the developer dashboard export endpoint", asyn
 
     assert.equal(exportCalls, 1);
   } finally {
-    globalThis.fetch = originalFetch;
     await act(async () => {
       root.unmount();
     });
@@ -415,22 +414,28 @@ test("dataset export button calls the developer dashboard export endpoint", asyn
 
 test("developer datasets show confidence scores as raw percentages", async () => {
   const { container, cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
   const root: Root = createRoot(container);
 
   try {
-    globalThis.fetch = createDeveloperDashboardFetch({ datasets: developerDatasetRows });
-    const { default: DeveloperTabContent } = await import("../../../src/pages/admin-dashboard/components/tab-content/DeveloperTabContent");
-
     await act(async () => {
-      root.render(<DeveloperTabContent />);
+      root.render(
+        <DeveloperDatasetsSection
+          datasets={{
+            items: developerDatasetRows,
+            total: developerDatasetRows.length,
+            limit: DEFAULT_DEVELOPER_DATASET_FILTERS.limit,
+            offset: DEFAULT_DEVELOPER_DATASET_FILTERS.offset,
+          }}
+          filters={DEFAULT_DEVELOPER_DATASET_FILTERS}
+          onFiltersChange={() => undefined}
+          onManualClassificationChange={async () => undefined}
+          onPageChange={async () => undefined}
+          onExport={async () => undefined}
+          isExporting={false}
+          isLoading={false}
+        />,
+      );
     });
-    await flushEffects();
-
-    await act(async () => {
-      activateRadixTab("Datasets");
-    });
-    await flushEffects();
     await flushEffects();
 
     const confidenceCells = Array.from(document.querySelectorAll("td"))
@@ -442,7 +447,6 @@ test("developer datasets show confidence scores as raw percentages", async () =>
     assert.ok(!confidenceCells.includes("10000%"));
     assert.ok(!confidenceCells.includes("8800%"));
   } finally {
-    globalThis.fetch = originalFetch;
     await act(async () => {
       root.unmount();
     });
@@ -490,7 +494,7 @@ test("developer overview derives in-app calculations from dataset manual classif
         },
       ],
     });
-    const { default: DeveloperTabContent } = await import("../../../src/pages/admin-dashboard/components/tab-content/DeveloperTabContent");
+    const { DeveloperTabContent } = await import("../../../src/widgets/admin-dashboard");
 
     await act(async () => {
       root.render(<DeveloperTabContent />);

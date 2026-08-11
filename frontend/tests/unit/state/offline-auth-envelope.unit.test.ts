@@ -8,7 +8,7 @@ import {
   loadOfflineAuthEnvelope,
   saveOfflineAuthEnvelope,
   updateOfflineAuthEnvelope,
-} from "../../../src/lib/offlineAuthEnvelope";
+} from "../../../src/entities/user/model/offline-auth-envelope";
 
 const originalIndexedDb = globalThis.indexedDB;
 

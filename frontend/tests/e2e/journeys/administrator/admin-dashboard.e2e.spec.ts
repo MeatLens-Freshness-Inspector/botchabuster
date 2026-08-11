@@ -83,6 +83,7 @@ test("renders the expanded business analytics section with fallback labels", asy
   await expect(page.getByText(/Average confidence trend/i)).toBeVisible();
   await expect(page.getByText(/Freshness mix by day/i)).toBeVisible();
   await expect(page.getByText(/Unspecified/i).first()).toBeVisible();
+  await expect(page.getByText(/North\s*Market/i).first()).toBeVisible();
 });
 
 test("admin can assign report header organizations when creating and editing users", async ({ page }) => {
