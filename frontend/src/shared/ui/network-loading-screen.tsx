@@ -1,6 +1,8 @@
+import React from "react";
 import { Loader2, WifiOff, ServerCrash, ShieldCheck } from "lucide-react";
 import { Button } from "@/shared/ui";
-import type { StartupNetworkStatus } from "@/hooks/useStartupNetworkCheck";
+
+export type StartupNetworkStatus = "checking" | "ready" | "offline" | "server_unreachable";
 
 type LoadingScreenStatus = StartupNetworkStatus | "auth_loading" | "profile_error";
 

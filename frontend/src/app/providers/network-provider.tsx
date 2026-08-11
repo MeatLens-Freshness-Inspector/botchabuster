@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, type ReactNode } from "react";
 import { API_BASE_URL } from "@/shared/api/base-url";
-const ENABLE_BACKEND_STARTUP_CHECK = import.meta.env.VITE_ENABLE_BACKEND_STARTUP_CHECK === "true";
+import { NetworkLoadingScreen } from "@/shared/ui/network-loading-screen";
 
-export type StartupNetworkStatus = "checking" | "ready" | "offline" | "server_unreachable";
+const ENABLE_BACKEND_STARTUP_CHECK = import.meta.env?.VITE_ENABLE_BACKEND_STARTUP_CHECK === "true";
 
 export function useStartupNetworkCheck() {
   const [status, setStatus] = useState<StartupNetworkStatus>("checking");
@@ -64,4 +64,18 @@ export function useStartupNetworkCheck() {
     status,
     retry: () => setAttempt((prev) => prev + 1),
   };
+}
+
+type NetworkProviderProps = {
+  children: ReactNode;
+};
+
+export function NetworkProvider({ children }: NetworkProviderProps) {
+  const { status, retry } = useStartupNetworkCheck();
+
+  if (status === "checking") {
+    return <NetworkLoadingScreen status={status} onRetry={retry} />;
+  }
+
+  return <>{children}</>;
 }
