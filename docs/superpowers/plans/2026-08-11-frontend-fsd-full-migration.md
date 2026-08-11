@@ -592,8 +592,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the existing users table/form presentation into the admin-dashboard widget and established a dedicated user-actions composition boundary.
   - TDD: added the user-widget public contract before relocation (RED on missing widget exports, then GREEN after wiring).
   - Validate: focused users UI test and typecheck passed.
-- [ ] **Commit 124 — refactor: complete users tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/UsersTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/users/users-tab.tsx + frontend/src/widgets/admin-dashboard/index.ts. Validate: F.
+- [x] **Commit 124 — refactor: complete users tab widget**
+  - Change: added the public users-tab composition and switched desktop/mobile dashboard slots to consume it.
+  - TDD: added the complete-users-widget contract before composition (RED on missing export, then GREEN after wiring).
+  - Validate: focused users-tab test and typecheck passed.
 - [ ] **Commit 125 — refactor: migrate inspections tab widget**
   - Change: frontend/src/pages/admin-dashboard/components/tab-content/InspectionsTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/inspections-tab.tsx + frontend/src/pages/admin-dashboard/desktop/components/InspectionsTab.tsx -> frontend/src/widgets/admin-dashboard/ui/desktop-inspections-tab.tsx. Validate: F.
 - [ ] **Commit 126 — refactor: migrate access-code tab widget**
