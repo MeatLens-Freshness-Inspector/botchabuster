@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
 import { passkeyClient, type RegisteredPasskey } from "@/features/passkeys/api";
 import { profileClient } from "@/entities/user/api";
-import { uploadClient } from "@/integrations/api/UploadClient";
+import { uploadClient } from "../../../integrations/api/UploadClient";
 import {
   canUsePasskeys,
   getDefaultPasskeyDeviceLabel,
@@ -13,18 +13,18 @@ import {
 import {
   clearStoredLocalPasskey,
   storeLocalPasskey,
-} from "@/legacy-passkey-storage";
+} from "../../../legacy-passkey-storage";
 import { applyTheme } from "@/shared/lib/theme-preference";
 import {
   createProfileDialogState,
   type ProfileDialogKey,
   type ProfileDialogState,
 } from "@/entities/user";
-import { applyLocalDeviceReady, getProfileInitials } from "../utils/profilePage";
+import { applyLocalDeviceReady, getProfileInitials } from "../../../pages/user/profile/utils/profilePage";
 
 const INITIAL_DIALOG_STATE: ProfileDialogState = createProfileDialogState();
 
-export function useProfilePage() {
+export function useProfileEditor() {
   const navigate = useNavigate();
   const {
     user,

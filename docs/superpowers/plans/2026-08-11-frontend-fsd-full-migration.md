@@ -449,8 +449,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved profile dialog state types into `entities/user/model/profile-types.ts`, added an entity-owned initial-state factory, and published the contract through the user entity API; the profile client was already entity-owned and remains there.
   - TDD: added the closed-dialog state contract before implementation (RED on the absent entity model, then GREEN with the factory test).
   - Validate: focused profile model test, typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 090 — refactor: create profile editing feature model**
-  - Change: frontend/src/pages/user/profile/hooks/useProfilePage.ts -> frontend/src/features/profile-editing/model/use-profile-editor.ts + frontend/src/features/profile-editing/index.ts. Validate: I.
+- [x] **Commit 090 — refactor: create profile editing feature model**
+  - Change: moved the profile/passkey editing workflow to `features/profile-editing/model/use-profile-editor.ts`, added the feature public index, and migrated `ProfilePageView` to the feature API.
+  - TDD: added the profile-editing public contract before implementation (RED on the absent feature module, then GREEN with the editor export test).
+  - Validate: focused public API test, typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 091 — refactor: move profile primary UI**
   - Change: frontend/src/pages/user/profile/components/ProfilePrimaryColumn.tsx -> frontend/src/widgets/profile/profile-primary-column.tsx + frontend/src/pages/user/profile/components/ProfileEditableDetailsCard.tsx -> frontend/src/features/profile-editing/ui/editable-details-card.tsx. Validate: F.
 - [ ] **Commit 092 — refactor: move profile secondary UI**

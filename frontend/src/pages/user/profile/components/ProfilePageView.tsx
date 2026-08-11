@@ -2,7 +2,7 @@ import { Loader2 } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PrivacyPolicyDialog } from "@/components/PrivacyPolicyDialog";
 import { TermsAndConditionsDialog } from "@/components/TermsAndConditionsDialog";
-import { useProfilePage } from "../hooks/useProfilePage";
+import { useProfileEditor } from "@/features/profile-editing";
 import { ProfilePageHeader } from "./ProfilePageHeader";
 import { ProfilePrimaryColumn } from "./ProfilePrimaryColumn";
 import { ProfileSecondaryColumn } from "./ProfileSecondaryColumn";
@@ -45,7 +45,7 @@ export function ProfilePageView() {
     handleRemovePasskey,
     openHelpTutorials,
     openProfileTutorial,
-  } = useProfilePage();
+  } = useProfileEditor();
 
   if (isLoading) {
     return (
