@@ -13,10 +13,10 @@ import {
   AUTH_EXPIRED_EVENT,
   clearApiCsrfToken,
   getApiCsrfToken,
-  getHttpApiErrorStatus,
   setApiCsrfToken,
   setApiSessionRefreshHandler,
 } from "@/shared/api/request";
+import { getHttpApiErrorStatus } from "@/shared/api";
 import {
   clearCachedAdmin,
   clearCachedAuth,

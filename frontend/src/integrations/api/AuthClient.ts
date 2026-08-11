@@ -1,9 +1,8 @@
 import type { ReportOrganization } from "@/lib/reportOrganizations";
 import { createAuthHeaders } from "@/lib/authCache";
-import { createHttpApiError, readApiErrorMessage } from "@/shared/api/request";
+import { createHttpApiError, fetchWithTimeout, readApiErrorMessage } from "@/shared/api";
 import { API_BASE_URL } from "@/shared/api/base-url";
 import type { Profile } from "./ProfileClient";
-import { fetchWithTimeout } from "@/shared/api";
 
 export interface AuthUser {
   id: string;

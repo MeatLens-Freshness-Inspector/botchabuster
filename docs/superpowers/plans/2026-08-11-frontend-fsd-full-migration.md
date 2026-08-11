@@ -127,7 +127,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 - [ ] **Commit 009 — refactor: establish shared API error public API**
   - Change: frontend/src/shared/api/api-error.ts + frontend/src/shared/api/index.ts.
-  - Move error-status and response-message helpers from request.ts without changing error messages.
+  - Move error-status and response-message helpers from request.ts without changing error messages, then update active consumers to the shared API public surface.
   - Validate: F.
 
 - [ ] **Commit 010 — refactor: migrate generic utility functions**

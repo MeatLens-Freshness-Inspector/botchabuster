@@ -4,3 +4,5 @@ export {
   UPLOAD_REQUEST_TIMEOUT_MS,
   fetchWithTimeout,
 } from "./fetch-with-timeout";
+export { createHttpApiError, getHttpApiErrorStatus, readApiErrorMessage } from "./api-error";
+export type { HttpApiError } from "./api-error";
