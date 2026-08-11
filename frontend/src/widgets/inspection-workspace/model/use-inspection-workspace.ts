@@ -5,7 +5,7 @@ import { buildInspectionInsert, useSubmitInspection } from "@/features/inspectio
 import { queueScan, removeScan } from "@/features/offline-sync";
 import { uploadClient } from "../../../integrations/api";
 import { developerOptionsClient } from "../../../integrations/api/DeveloperOptionsClient";
-import { marketLocationClient } from "../../../integrations/api/MarketLocationClient";
+import { marketLocationClient } from "@/entities/market-location";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import {
   clearDeveloperOptionsSession,

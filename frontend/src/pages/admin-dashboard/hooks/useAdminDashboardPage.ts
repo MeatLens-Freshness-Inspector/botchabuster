@@ -7,7 +7,7 @@ import { accessCodeClient, type AccessCode } from "@/entities/access-code";
 import { auditLogClient, type AuditLogEntry } from "@/entities/audit-log";
 import { developerDashboardClient, type DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
 import { inspectionClient } from "@/entities/inspection";
-import { marketLocationClient, type MarketLocation } from "@/integrations/api/MarketLocationClient";
+import { marketLocationClient, type MarketLocation } from "@/entities/market-location";
 import { profileClient, type Profile } from "@/entities/user/api";
 import { formatInspectionLocationLabel } from "@/entities/inspection";
 import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";

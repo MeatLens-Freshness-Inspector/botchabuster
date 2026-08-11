@@ -532,8 +532,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved audit-log transport and contracts into the audit-log entity, published its API, removed the integration export, and updated dashboard/startup consumers.
   - TDD: added the audit-log entity singleton contract before extraction (RED on absent entity API, then GREEN after migration).
   - Validate: focused entity test, typecheck, and all 11 integration tests passed.
-- [ ] **Commit 109 — refactor: create market-location entity API**
-  - Change: frontend/src/integrations/api/MarketLocationClient.ts -> frontend/src/entities/market-location/api/market-location-client.ts + frontend/src/entities/market-location/index.ts. Validate: I.
+- [x] **Commit 109 — refactor: create market-location entity API**
+  - Change: moved market-location transport into the market-location entity, published its API, removed the integration export, and updated admin/inspection consumers.
+  - TDD: added the market-location entity singleton contract before extraction (RED on absent entity API, then GREEN after migration).
+  - Validate: focused entity test, typecheck, and all 11 integration tests passed.
 - [ ] **Commit 110 — refactor: create developer metrics entity API**
   - Change: frontend/src/integrations/api/DeveloperDashboardClient.ts -> frontend/src/entities/developer-metrics/api/developer-dashboard-client.ts + frontend/src/entities/developer-metrics/index.ts. Validate: I.
 - [ ] **Commit 111 — refactor: create developer options feature API**
