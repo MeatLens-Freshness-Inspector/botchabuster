@@ -23,3 +23,5 @@ export { UserActions } from "./ui/users/user-actions";
 export { UsersTab } from "./ui/users/users-tab";
 export { default as InspectionsTab } from "./ui/inspections-tab";
 export { default as DesktopInspectionsTab } from "./ui/desktop-inspections-tab";
+export { default as AccessCodesTab } from "./ui/access-codes-tab";
+export { default as MobileAccessCodesTab } from "./ui/mobile-access-codes-tab";

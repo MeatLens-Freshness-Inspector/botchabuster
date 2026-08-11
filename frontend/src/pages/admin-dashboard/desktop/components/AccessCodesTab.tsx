@@ -1,4 +1,4 @@
-import AccessCodesTabContent from "../../components/tab-content/AccessCodesTabContent";
+import { AccessCodesTab as AccessCodesWidget } from "@/widgets/admin-dashboard";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type AccessCodesTabProps = {
@@ -6,7 +6,7 @@ type AccessCodesTabProps = {
 };
 
 const AccessCodesTab = ({ dashboard }: AccessCodesTabProps) => {
-  return <AccessCodesTabContent dashboard={dashboard} />;
+  return <AccessCodesWidget dashboard={dashboard} />;
 };
 
 export default AccessCodesTab;

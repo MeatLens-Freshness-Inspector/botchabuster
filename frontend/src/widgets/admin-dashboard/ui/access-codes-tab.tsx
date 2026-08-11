@@ -16,7 +16,7 @@ type AccessCodesTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
 };
 
-const AccessCodesTabContent = ({ dashboard }: AccessCodesTabContentProps) => {
+const AccessCodesTab = ({ dashboard }: AccessCodesTabContentProps) => {
   const {
     accessCodes,
     newCode,
@@ -160,4 +160,4 @@ const AccessCodesTabContent = ({ dashboard }: AccessCodesTabContentProps) => {
   );
 };
 
-export default AccessCodesTabContent;
+export default AccessCodesTab;

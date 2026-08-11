@@ -12,7 +12,7 @@ import AdminDashboardDialogs from "./AdminDashboardDialogs";
 import AdminDashboardSummary from "./AdminDashboardSummary";
 import { useAdminDashboard } from "@/widgets/admin-dashboard";
 import type { AdminDashboardTabKey } from "@/widgets/admin-dashboard";
-import AccessCodesTab from "../mobile/components/AccessCodesTab";
+import { MobileAccessCodesTab as AccessCodesTab } from "@/widgets/admin-dashboard";
 import DeveloperTab from "../mobile/components/DeveloperTab";
 import InspectionsTab from "../mobile/components/InspectionsTab";
 import LogsTab from "../mobile/components/LogsTab";
