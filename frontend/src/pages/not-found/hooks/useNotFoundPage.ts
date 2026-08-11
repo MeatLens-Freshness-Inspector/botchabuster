@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/app/providers";
+import { useAuth } from "@/entities/user";
 import {
   buildQuickLinks,
   formatMissingPath,

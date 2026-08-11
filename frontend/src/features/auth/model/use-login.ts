@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useAuth } from "@/app/providers";
-import { canUsePasskeys } from "@/features/passkeys/lib/browser";
+import { canUsePasskeys } from "@/features/passkeys";
 import {
   getAuthDestination,
   getErrorMessage,
-} from "../utils/loginPage";
+} from "./login";
 
-export function useLoginPage() {
+export interface LoginAuthActions {
+  canUnlockWithLocalPasskey: boolean;
+  offlineUnlockRequired: boolean;
+  signIn: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
+  signInWithPasskey: () => Promise<{ isAdmin: boolean }>;
+  unlockWithLocalPasskey: () => Promise<{ isAdmin: boolean }>;
+}
+
+export function useLoginPage(auth: LoginAuthActions) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,7 +27,7 @@ export function useLoginPage() {
     signIn,
     signInWithPasskey,
     unlockWithLocalPasskey,
-  } = useAuth();
+  } = auth;
   const navigate = useNavigate();
 
   useEffect(() => {

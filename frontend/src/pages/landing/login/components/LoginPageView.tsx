@@ -10,10 +10,12 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 import { Label } from "@/shared/ui";
-import { useLoginPage } from "../hooks/useLoginPage";
-import { getLoginDescription } from "../utils/loginPage";
+import { useAuth } from "@/entities/user";
+import { useLoginPage } from "@/features/auth/model/use-login";
+import { getLoginDescription } from "@/features/auth/model/login";
 
 const LoginPageView = () => {
+  const auth = useAuth();
   const {
     email,
     password,
@@ -26,7 +28,7 @@ const LoginPageView = () => {
     handlePasskeySignIn,
     handleLocalPasskeyUnlock,
     showOfflinePasskeyUnlock,
-  } = useLoginPage();
+  } = useLoginPage(auth);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/app/providers";
+import { useAuth } from "@/entities/user";
 import { getForgotPasswordErrorMessage } from "../utils/forgotPasswordPage";
 
 export function useForgotPasswordPage() {

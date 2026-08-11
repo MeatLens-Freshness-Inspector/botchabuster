@@ -4,7 +4,8 @@ import test from "node:test";
 
 import { findLegacyRootImportOwners } from "../../../scripts/check-fsd-boundaries.mjs";
 import { queryClient, shouldRetryQuery } from "../../../src/app/config/query-client";
-import { AuthProvider, useAuth } from "../../../src/app/providers";
+import { AuthProvider } from "../../../src/app/providers";
+import { useAuth } from "../../../src/entities/user";
 import { createHttpApiError, fetchWithTimeout } from "../../../src/shared/api";
 import { Button, Input, Label } from "../../../src/shared/ui";
 

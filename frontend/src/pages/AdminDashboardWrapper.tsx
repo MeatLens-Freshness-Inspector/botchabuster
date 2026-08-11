@@ -2,7 +2,7 @@ import { useIsDesktop } from "@/shared/hooks/use-desktop";
 import AdminDashboard from "./AdminDashboard";
 import DesktopAdminDashboard from "./DesktopAdminDashboard";
 import { BottomNav } from "@/widgets/navigation";
-import { useAuth } from "@/app/providers";
+import { useAuth } from "@/entities/user";
 
 export default function AdminDashboardWrapper() {
   const isDesktop = useIsDesktop();

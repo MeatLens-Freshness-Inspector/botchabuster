@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/app/providers";
+import { useAuth } from "@/entities/user";
 import { uploadClient } from "@/integrations/api";
 import { developerOptionsClient } from "@/integrations/api/DeveloperOptionsClient";
 import { marketLocationClient } from "@/integrations/api/MarketLocationClient";

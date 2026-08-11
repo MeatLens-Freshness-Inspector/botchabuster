@@ -26,6 +26,10 @@ export {
   type RestoreSessionDependencies,
 } from "./model/restore-session";
 export {
+  useAuth,
+  type AuthContextType,
+} from "./model/session-context";
+export {
   clearCachedAdmin,
   clearCachedAuth,
   clearCachedProfile,

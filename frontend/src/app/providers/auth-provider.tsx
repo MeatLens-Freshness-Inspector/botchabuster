@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import React, { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   authClient,
   type AuthBootstrapPayload,
@@ -8,7 +8,7 @@ import {
   type AuthUser,
 } from "@/features/auth/api";
 import { passkeyClient } from "@/features/passkeys/api";
-import { profileClient, type Profile } from "@/entities/user/api";
+import { profileClient, type Profile, type ReportOrganization } from "@/entities/user/api";
 import {
   AUTH_EXPIRED_EVENT,
   clearApiCsrfToken,
@@ -51,7 +51,6 @@ import {
   getLegacyStoredLocalPasskey,
   getStoredLocalPasskey,
 } from "@/legacy-passkey-storage";
-import type { ReportOrganization } from "@/lib/reportOrganizations";
 import type { AuthMode, ProfileStatus } from "@/entities/user";
 import {
   createAnonymousSessionState,
@@ -62,6 +61,7 @@ import {
   restoreSession,
   type SessionStoreState,
 } from "@/entities/user";
+import { AuthContext } from "@/entities/user/model/session-context";
 
 const createAuditId = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -77,40 +77,6 @@ function shouldRetainEnvelopeForUser(
 ): boolean {
   return Boolean(envelope && envelope.user.id === user.id);
 }
-
-interface AuthContextType {
-  user: AuthUser | null;
-  session: AuthSession | null;
-  profile: Profile | null;
-  isAdmin: boolean;
-  isDeveloper: boolean;
-  isLoading: boolean;
-  profileStatus: ProfileStatus;
-  authMode: AuthMode;
-  isOnlineAuthenticated: boolean;
-  offlineUnlockRequired: boolean;
-  canUnlockWithLocalPasskey: boolean;
-  retryProfileLoad: () => Promise<void>;
-  signIn: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
-  signInWithPasskey: () => Promise<{ isAdmin: boolean }>;
-  unlockWithLocalPasskey: () => Promise<{ isAdmin: boolean }>;
-  signUp: (
-    email: string,
-    password: string,
-    fullName: string,
-    accessCode: string,
-    reportOrganization: ReportOrganization,
-  ) => Promise<void>;
-  signOut: () => Promise<void>;
-  lock: () => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-  updatePasswordWithRecoveryToken: (accessToken: string, password: string) => Promise<void>;
-  updateEmail: (email: string) => Promise<void>;
-  updatePassword: (password: string) => Promise<void>;
-  setProfileState: (nextProfile: Profile | null) => void;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const initialSessionCache = createSessionCacheState();
@@ -680,8 +646,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
-}
+export { useAuth } from "@/entities/user/model/session-context";

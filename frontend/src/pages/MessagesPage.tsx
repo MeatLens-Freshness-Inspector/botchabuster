@@ -1,4 +1,4 @@
-import { useAuth } from "@/app/providers";
+import { useAuth } from "@/entities/user";
 import { MessagesHeader } from "./user/messages/components/MessagesHeader";
 import { ContactsPanel } from "./user/messages/components/ContactsPanel";
 import { ThreadPanel } from "./user/messages/components/ThreadPanel";

@@ -273,9 +273,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 045 — refactor: compose thin auth provider**
   - Change: moved `AuthProvider` and `useAuth` to `app/providers/auth-provider.tsx`, added the provider public index, migrated every source and test consumer, and deleted the legacy context file. The provider exposes the existing narrow session API without UI changes.
   - Validate: targeted auth/provider tests (10) passed, typecheck passed, and architecture checks passed; integration gate remains the milestone validation.
-- [ ] **Commit 046 — refactor: migrate sign-in form workflow**
-  - Change: frontend/src/pages/landing/login/hooks/useLoginPage.ts -> frontend/src/features/auth/model/use-login.ts + frontend/src/pages/landing/login/components/LoginPageView.tsx.
-  - Validate: F.
+- [x] **Commit 046 — refactor: migrate sign-in form workflow**
+  - Change: moved the login workflow hook and pure destination/description helpers into `features/auth/model`, injected the session actions to preserve layer direction, and updated the existing login view to consume the feature model. The session context contract now lives in the user entity so pages do not import the app layer.
+  - Validate: login workflow, provider, and boundary tests passed; typecheck and integration tests passed.
 - [ ] **Commit 047 — refactor: migrate sign-up form workflow**
   - Change: frontend/src/pages/landing/signup/hooks/useSignupPage.ts -> frontend/src/features/auth/model/use-signup.ts + frontend/src/pages/landing/signup/components/SignupPageView.tsx.
   - Validate: F.
