@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { applyApiRequestInit } from "@/integrations/api/apiRequest";
+import { applyApiRequestInit } from "@/shared/api/request";
 import {
   API_DOCS_CATEGORIES,
   API_DOCS_OPERATION_BY_ID,

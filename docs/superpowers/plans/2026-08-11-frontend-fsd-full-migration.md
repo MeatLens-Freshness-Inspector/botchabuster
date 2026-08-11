@@ -117,7 +117,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 - [ ] **Commit 007 — refactor: move request initialization into shared transport**
   - Change: frontend/src/integrations/api/apiRequest.ts -> frontend/src/shared/api/request.ts + frontend/tests/unit/utilities/api-request-timeouts.unit.test.ts.
-  - Preserve AUTH_EXPIRED_EVENT, CSRF, session refresh, and HttpApiError behavior exactly.
+  - Preserve AUTH_EXPIRED_EVENT, CSRF, session refresh, and HttpApiError behavior exactly. Update every active consumer in the same commit; do not retain a legacy forwarding module.
   - Validate: F.
 
 - [ ] **Commit 008 — refactor: move timeout fetch transport into shared**

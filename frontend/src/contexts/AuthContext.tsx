@@ -16,7 +16,7 @@ import {
   getHttpApiErrorStatus,
   setApiCsrfToken,
   setApiSessionRefreshHandler,
-} from "@/integrations/api/apiRequest";
+} from "@/shared/api/request";
 import {
   clearCachedAdmin,
   clearCachedAuth,

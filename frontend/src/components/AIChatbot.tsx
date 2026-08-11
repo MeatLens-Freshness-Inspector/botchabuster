@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { API_BASE_URL } from "@/shared/api/base-url";
-import { applyApiRequestInit, getApiCsrfToken } from "@/integrations/api/apiRequest";
+import { applyApiRequestInit, getApiCsrfToken } from "@/shared/api/request";
 import { MessageCircle, X, Send, Loader2, Bot, User } from "lucide-react";
 
 type Msg = { role: "user" | "assistant"; content: string };

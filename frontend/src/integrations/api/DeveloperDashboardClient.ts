@@ -1,6 +1,6 @@
 import { createAuthHeaders } from "@/lib/authCache";
 import type { Inspection } from "@/types/inspection";
-import { readApiErrorMessage } from "./apiRequest";
+import { readApiErrorMessage } from "@/shared/api/request";
 import { API_BASE_URL } from "@/shared/api/base-url";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 const LONG_RUNNING_REQUEST_TIMEOUT_MS = 120_000;

@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { JSDOM } from "jsdom";
 
-import { AUTH_EXPIRED_EVENT } from "../../../src/integrations/api/apiRequest";
+import { AUTH_EXPIRED_EVENT } from "../../../src/shared/api/request";
 import { inspectionClient } from "../../../src/integrations/api/InspectionClient";
 import { SESSION_STORAGE_KEY, USER_STORAGE_KEY } from "../../../src/lib/authCache";
 

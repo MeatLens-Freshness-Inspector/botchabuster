@@ -1,4 +1,4 @@
-import { applyApiRequestInit, refreshApiSessionForCsrf } from "./apiRequest";
+import { applyApiRequestInit, refreshApiSessionForCsrf } from "@/shared/api/request";
 
 export const API_REQUEST_TIMEOUT_MESSAGE = "Request timed out. Please check your connection and try again.";
 export const DEFAULT_API_REQUEST_TIMEOUT_MS = 15_000;

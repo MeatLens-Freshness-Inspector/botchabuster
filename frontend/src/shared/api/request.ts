@@ -84,7 +84,7 @@ export function getHttpApiErrorStatus(error: unknown): number | null {
 
 export async function readApiErrorMessage(response: Response, fallback: string): Promise<string> {
   try {
-    const payload = await response.json() as { error?: unknown; message?: unknown };
+    const payload = (await response.json()) as { error?: unknown; message?: unknown };
     if (typeof payload.error === "string" && payload.error.trim().length > 0) {
       return payload.error.trim();
     }
@@ -110,9 +110,6 @@ export function applyApiRequestInit(init: RequestInit = {}): RequestInit {
     headers.set("X-CSRF-Token", apiCsrfToken);
   }
 
-  // On native Android/iOS (Capacitor), cookies don't travel cross-origin and
-  // a credentialed preflight causes the server to reject the request.
-  // Use "omit" so only the Bearer token (set via createAuthHeaders) is used.
   const isNative = Capacitor.isNativePlatform();
 
   return {

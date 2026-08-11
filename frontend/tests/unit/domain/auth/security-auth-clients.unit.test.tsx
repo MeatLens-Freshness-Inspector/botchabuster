@@ -3,7 +3,7 @@ import test from "node:test";
 import { JSDOM } from "jsdom";
 import { authClient } from "../../../../src/integrations/api/AuthClient";
 import { uploadClient } from "../../../../src/integrations/api/UploadClient";
-import { clearApiCsrfToken, setApiCsrfToken } from "../../../../src/integrations/api/apiRequest";
+import { clearApiCsrfToken, setApiCsrfToken } from "../../../../src/shared/api/request";
 import { getChatRequestHeaders } from "../../../../src/components/AIChatbot";
 
 type GlobalWithDom = typeof globalThis & {

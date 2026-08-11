@@ -7,7 +7,7 @@ import {
   clearApiCsrfToken,
   setApiCsrfToken,
   setApiSessionRefreshHandler,
-} from "../../../src/integrations/api/apiRequest";
+} from "../../../src/shared/api/request";
 import { fetchWithTimeout } from "../../../src/integrations/api/fetchWithTimeout";
 
 type GlobalWithDom = typeof globalThis & {

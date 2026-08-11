@@ -7,7 +7,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { AuthProvider, useAuth } from "../../../src/contexts/AuthContext";
 import { authClient } from "../../../src/integrations/api/AuthClient";
-import { clearApiCsrfToken, getApiCsrfToken } from "../../../src/integrations/api/apiRequest";
+import { clearApiCsrfToken, getApiCsrfToken } from "../../../src/shared/api/request";
 import { createPasswordVerifier } from "../../../src/lib/offlineCredentials";
 import {
   clearOfflineAuthEnvelope,

@@ -10,7 +10,7 @@ import { authClient } from "../../../src/integrations/api/AuthClient";
 import {
   clearApiCsrfToken,
   refreshApiSessionForCsrf,
-} from "../../../src/integrations/api/apiRequest";
+} from "../../../src/shared/api/request";
 import {
   clearOfflineAuthEnvelope,
   loadOfflineAuthEnvelope,

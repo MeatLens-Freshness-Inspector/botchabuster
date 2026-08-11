@@ -1,5 +1,5 @@
 import { createAuthHeaders } from "@/lib/authCache";
-import { notifyApiAuthExpired } from "./apiRequest";
+import { notifyApiAuthExpired } from "@/shared/api/request";
 import { API_BASE_URL } from "@/shared/api/base-url";
 import { fetchWithTimeout } from "./fetchWithTimeout";
 
