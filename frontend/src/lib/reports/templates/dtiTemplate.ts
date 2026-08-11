@@ -2,7 +2,7 @@ import type {
   ReportDocumentModel,
   ReportSection,
   ReportTemplateKey,
-} from "@/lib/reports/types";
+} from "@/features/reports/model/types";
 import { reorderAdminSections } from "@/lib/reports/templates/adminSectionOrder";
 
 export const dtiTemplate = {

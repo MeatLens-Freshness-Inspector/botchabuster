@@ -1,5 +1,5 @@
 import { resolveReportOrganization } from "@/lib/reportOrganizations";
-import type { ReportTemplateKey } from "@/lib/reports/types";
+import type { ReportTemplateKey } from "@/features/reports/model/types";
 
 const REPORT_TEMPLATE_FRAME_ASSET_PATHS: Record<ReportTemplateKey, string> = {
   gcccs: "/letterheads/rendered/gcccs-page.png",

@@ -13,7 +13,7 @@ import type {
   ReportMetric,
   ReportSection,
   ReportTable,
-} from "@/lib/reports/types";
+} from "@/features/reports/model/types";
 import type {
   Content,
   ContentTable,

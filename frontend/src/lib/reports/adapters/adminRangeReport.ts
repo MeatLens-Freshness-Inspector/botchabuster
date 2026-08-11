@@ -11,7 +11,7 @@ import type {
   ReportDocumentModel,
   ReportInspectionEvidenceItem,
   ReportSection,
-} from "@/lib/reports/types";
+} from "@/features/reports/model/types";
 import { buildDeveloperInAppMetrics, type DeveloperMetricRecord } from "@/pages/admin-dashboard/utils/developerInAppMetrics";
 
 type AdminSummary = {

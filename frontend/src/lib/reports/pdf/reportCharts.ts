@@ -1,4 +1,4 @@
-import type { ReportChart } from "@/lib/reports/types";
+import type { ReportChart } from "@/features/reports/model/types";
 import type { ReportPageFrame } from "@/lib/reports/pdf/pageFrames";
 import type { Content } from "pdfmake/interfaces";
 

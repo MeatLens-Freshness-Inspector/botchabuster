@@ -1,4 +1,7 @@
-import type { ReportOrganization } from "@/lib/reportOrganizations";
+export type ReportOrganization =
+  | "dti"
+  | "city_veterinary_office_olongapo"
+  | "gordon_college_ccs";
 
 export type ReportDocumentKind = "inspector_daily" | "admin_range";
 export type ReportTemplateKey = "gcccs" | "dti" | "city_vet";

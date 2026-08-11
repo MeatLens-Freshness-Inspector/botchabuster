@@ -1,7 +1,7 @@
 import { formatInspectionLocationLabel } from "@/entities/inspection";
 import { resolveReportOrganization } from "@/lib/reportOrganizations";
 import { buildInspectorDailyReportModel } from "@/lib/reports/adapters/inspectorDailyReport";
-import type { ReportDocumentModel } from "@/lib/reports/types";
+import type { ReportDocumentModel } from "@/features/reports/model/types";
 import type {
   FreshnessClassification,
   Inspection,

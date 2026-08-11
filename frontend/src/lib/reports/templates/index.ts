@@ -5,7 +5,7 @@ import type {
   ReportDocumentModel,
   ReportSection,
   ReportTemplateKey,
-} from "@/lib/reports/types";
+} from "@/features/reports/model/types";
 
 export interface OrganizationReportTemplate {
   key: ReportTemplateKey;

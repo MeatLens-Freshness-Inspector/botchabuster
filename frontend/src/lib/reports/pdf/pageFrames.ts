@@ -1,5 +1,5 @@
 import { getReportFrameAssetPath } from "@/lib/reports/pdf/assets";
-import type { ReportTemplateKey } from "@/lib/reports/types";
+import type { ReportTemplateKey } from "@/features/reports/model/types";
 
 export interface ReportPageFrame {
   backgroundAssetPath: string;

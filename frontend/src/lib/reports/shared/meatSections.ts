@@ -2,7 +2,7 @@ import type {
   ReportMetric,
   ReportSection,
   ReportTable,
-} from "@/lib/reports/types";
+} from "@/features/reports/model/types";
 
 export function buildSharedMeatSummarySection(input: {
   totalInspections: number;

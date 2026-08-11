@@ -1,4 +1,4 @@
-import type { ReportSection } from "@/lib/reports/types";
+import type { ReportSection } from "@/features/reports/model/types";
 
 export function reorderAdminSections(
   sections: ReportSection[],

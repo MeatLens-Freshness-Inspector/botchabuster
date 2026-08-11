@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { buildReportDocDefinition } from "../../../../src/lib/reports/pdf/buildDocDefinition";
-import type { ReportDocumentModel } from "../../../../src/lib/reports/types";
+import type { ReportDocumentModel } from "../../../../src/features/reports/model/types";
 
 const sampleGcccsModel: ReportDocumentModel = {
   organization: "gordon_college_ccs",

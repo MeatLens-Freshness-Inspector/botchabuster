@@ -402,8 +402,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the offline orchestrator into `features/offline-analysis/api/analyze-inspection.ts`, consolidated the feature public index, and migrated app/page consumers off `@/lib/offlineAnalysis`.
   - TDD: added the public lifecycle/analysis API contract first (RED on the missing `analyzeOffline` export, then GREEN after the facade/index composition).
   - Validate: focused public API test, typecheck, and architecture checks passed.
-- [ ] **Commit 080 — refactor: move report data types and formatting**
-  - Change: frontend/src/lib/reports/types.ts -> frontend/src/features/reports/model/types.ts + frontend/src/lib/reports/formatting.ts -> frontend/src/features/reports/lib/formatting.ts. Validate: F.
+- [x] **Commit 080 — refactor: move report data types and formatting**
+  - Change: moved report document models to `features/reports/model/types.ts`, introduced feature-owned report date/percentage formatting, and migrated all report model consumers to the feature path.
+  - TDD: added formatting contract tests before implementation (RED on the absent formatting module, then GREEN with percentage and empty-date assertions).
+  - Validate: focused report-formatting tests (2), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 081 — refactor: move report templates**
   - Change: frontend/src/lib/reports/templates/index.ts -> frontend/src/features/reports/lib/templates/index.ts + frontend/tests/unit/domain/analysis/report-template-selection.unit.test.ts. Validate: F.
 - [ ] **Commit 082 — refactor: move report section composition**
