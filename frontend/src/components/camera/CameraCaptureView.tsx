@@ -6,7 +6,11 @@ import type { ImageQualityResult } from "../../lib/imageQuality";
 import { cn } from "@/shared/lib/utils";
 import { Button, buttonVariants } from "@/shared/ui";
 
-import { formatControlValue, type CameraControlKey, type CameraControlsState } from "./controls";
+import {
+  formatControlValue,
+  type CameraControlKey,
+  type CameraControlsState,
+} from "@/features/inspection-capture/lib/controls";
 
 export interface CameraCaptureViewProps {
   className?: string;

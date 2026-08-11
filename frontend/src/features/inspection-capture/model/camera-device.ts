@@ -6,7 +6,7 @@ import {
   type CameraControlsState,
   type ExtendedMediaTrackCapabilities,
   type ExtendedMediaTrackSettings,
-} from "../../../components/camera/controls";
+} from "../lib/controls";
 
 export interface CameraDeviceState {
   torchSupported: boolean;

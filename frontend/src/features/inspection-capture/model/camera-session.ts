@@ -20,7 +20,7 @@ import {
   type CameraControlKey,
   type CameraControlRange,
   type CameraControlsState,
-} from "../../../components/camera/controls";
+} from "../lib/controls";
 import {
   readBlobAsDataUrl,
   resolveCanvasImageQuality,

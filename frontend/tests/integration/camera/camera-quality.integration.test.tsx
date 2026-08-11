@@ -4,7 +4,7 @@ import test from "node:test";
 import React, { createRef } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { EMPTY_CAMERA_CONTROLS } from "../../../src/components/camera/controls";
+import { EMPTY_CAMERA_CONTROLS } from "../../../src/features/inspection-capture/lib/controls";
 import {
   CameraCaptureView,
   type CameraCaptureViewProps,

@@ -330,8 +330,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the camera quality and `FileReader` adapter into `features/inspection-capture/lib/quality.ts`, updated the session model and camera quality unit contract, and removed the component-owned quality module.
   - TDD: redirected the existing quality contract to the feature path first (RED on the missing module), then moved the adapter and reached GREEN while preserving the test seam, canvas fallback, bitmap path, and data-URL error behavior.
   - Validate: camera quality/device unit tests (6), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 062 — refactor: move camera control calculations**
-  - Change: frontend/src/components/camera/controls.ts -> frontend/src/features/inspection-capture/lib/controls.ts + frontend/tests/unit/utilities/camera-controls.unit.test.ts. Validate: F.
+- [x] **Commit 062 — refactor: move camera control calculations**
+  - Change: moved camera range parsing, clamping, normalization, formatting, and track-control types into `features/inspection-capture/lib/controls.ts`; migrated the session model, camera view, and camera tests/integration fixtures to the feature-owned module.
+  - TDD: redirected the control unit contract first (RED on the missing feature module), then moved the implementation and reached GREEN with the existing control behavior unchanged.
+  - Validate: camera unit/integration tests (11), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 063 — refactor: move camera capture UI**
   - Change: frontend/src/components/camera/CameraCapture.tsx -> frontend/src/features/inspection-capture/ui/camera-capture.tsx + frontend/src/components/camera/CameraCaptureView.tsx -> frontend/src/features/inspection-capture/ui/camera-capture-view.tsx. Validate: I.
 - [ ] **Commit 064 — refactor: move capture-quality feature**
