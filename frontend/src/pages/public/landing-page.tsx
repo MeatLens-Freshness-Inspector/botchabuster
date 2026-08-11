@@ -1,13 +1,15 @@
 import { useAuth } from "@/entities/user";
-import { BottomCtaSection } from "./landing/landing-page/components/BottomCtaSection";
-import { FeaturesSection } from "./landing/landing-page/components/FeaturesSection";
-import { HeroSection } from "./landing/landing-page/components/HeroSection";
-import { LandingFooter } from "./landing/landing-page/components/LandingFooter";
-import { LandingHeader } from "./landing/landing-page/components/LandingHeader";
-import { LogTicker } from "./landing/landing-page/components/LogTicker";
-import { TestimonialsSection } from "./landing/landing-page/components/TestimonialsSection";
-import { WorkflowSection } from "./landing/landing-page/components/WorkflowSection";
-import { useLandingStats } from "./landing/landing-page/hooks/useLandingStats";
+import {
+  BottomCtaSection,
+  FeaturesSection,
+  HeroSection,
+  LandingFooter,
+  LandingHeader,
+  LogTicker,
+  TestimonialsSection,
+  WorkflowSection,
+} from "@/widgets/public-landing";
+import { useLandingStats } from "@/features/public-landing";
 
 const LandingPage = () => {
   const { user } = useAuth();

@@ -35,7 +35,7 @@ import { getDeveloperOptionsFlags, getDeveloperOptionsSession, isDeveloperOption
 import { applyTheme } from "@/shared/lib/theme-preference";
 import { scrubSensitiveAuthHashFromUrl } from "@/shared/api";
 import { Capacitor } from "@capacitor/core";
-import LandingPage from "./pages/LandingPage";
+import LandingPage from "./pages/public/landing-page";
 import { LoginPage, SignupPage } from "@/pages/auth";
 import { ForgotPasswordPage, ResetPasswordPage } from "@/pages/auth";
 import InspectPage from "./pages/inspector/inspect-page";

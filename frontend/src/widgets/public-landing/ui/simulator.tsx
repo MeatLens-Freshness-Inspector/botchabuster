@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/shared/ui";
 import { Camera, RefreshCcw, ScanLine } from "lucide-react";
-import type { LandingMockSample } from "../../types";
-import { landingMockSamples } from "../utils/landingData";
+import type { LandingMockSample } from "../model/types";
+import { landingMockSamples } from "../lib/landing-data";
 
 const scanMessages = [
   "Initializing camera...",

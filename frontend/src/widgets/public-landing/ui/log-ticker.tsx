@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import { tickerItems } from "../utils/landingData";
+import { tickerItems } from "../lib/landing-data";
 
 function getTickerDotClass(result: string): string {
   if (result === "Fresh") return "bg-fresh";

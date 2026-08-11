@@ -1,4 +1,4 @@
-import { useCountUp } from "../hooks/useCountUp";
+import { useCountUp } from "../model/use-count-up";
 
 type AnimatedStatProps = {
   label: string;

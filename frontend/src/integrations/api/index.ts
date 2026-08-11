@@ -1,6 +1,5 @@
 export { AccessCodeClient, accessCodeClient, type AccessCode } from "./AccessCodeClient";
 export { MarketLocationClient, marketLocationClient, type MarketLocation } from "./MarketLocationClient";
-export { StatsClient, statsClient, type LandingPageStats } from "./StatsClient";
 export { UploadClient, uploadClient } from "./UploadClient";
 export { AuditLogClient, auditLogClient, type AuditLogEvent } from "./AuditLogClient";
 export { DeveloperOptionsClient, developerOptionsClient, type DeveloperUnlockResponse } from "./DeveloperOptionsClient";

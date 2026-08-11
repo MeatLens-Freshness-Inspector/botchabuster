@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { TermsAndConditionsContent } from "@/components/TermsAndConditionsContent";
+import { TermsAndConditionsContent } from "@/widgets/legal/terms-content";
 
 interface TermsAndConditionsDialogProps {
   open: boolean;

@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/shared/ui";
 import { ChevronRight, Sparkles } from "lucide-react";
-import type { AnimatedStatData } from "../../types";
-import { AnimatedStat } from "./AnimatedStat";
-import { Simulator } from "./Simulator";
+import type { LandingStatCard } from "@/features/public-landing";
+import { AnimatedStat } from "./animated-stat";
+import { Simulator } from "./simulator";
 
 type HeroSectionProps = {
   isSignedIn: boolean;
-  statCards: AnimatedStatData[];
+  statCards: LandingStatCard[];
 };
 
 export function HeroSection({ isSignedIn, statCards }: HeroSectionProps) {

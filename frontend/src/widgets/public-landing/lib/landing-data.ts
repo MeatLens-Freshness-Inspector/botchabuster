@@ -14,7 +14,7 @@ import type {
   LandingTestimonial,
   LandingWorkflowStep,
   TickerItem,
-} from "../../types";
+} from "../model/types";
 
 export const tickerItems: TickerItem[] = [
   { id: "t1", label: "Pork Shoulder", result: "Fresh", conf: 91, market: "Divisoria Wet Mkt", textCol: "text-fresh" },

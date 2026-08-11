@@ -513,8 +513,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: extracted assistant state, streaming workflow, and CSRF request headers into the assistant feature model, leaving the widget responsible for rendering and interaction wiring.
   - TDD: added the assistant feature workflow contract before extraction (RED on the absent feature API, then GREEN with feature and widget coverage).
   - Validate: focused feature/widget tests, typecheck, lint (15 existing warnings), and architecture checks passed.
-- [ ] **Commit 106 — refactor: migrate legal and landing page ownership**
-  - Change: frontend/src/components/TermsAndConditionsContent.tsx -> frontend/src/widgets/legal/terms-content.tsx + frontend/src/pages/LandingPage.tsx -> frontend/src/pages/public/landing-page.tsx; move every frontend/src/pages/landing/landing-page component, hook, type, and utility to frontend/src/widgets/public-landing or frontend/src/pages/public as classified by the transfer manifest. Validate: B.
+- [x] **Commit 106 — refactor: migrate legal and landing page ownership**
+  - Change: moved legal content into the legal widget, moved all landing UI/data modules into public-landing ownership, moved landing statistics into an entity plus feature model, and moved the route into the public page slice.
+  - TDD: added the public landing/legal ownership contract before migration (RED on absent targets, then GREEN after the boundary moves).
+  - Validate: focused landing/legal tests, typecheck, lint (15 existing warnings), architecture checks, and production build passed.
 
 ## Phase 6 — Administrator and developer migration (30 commits)
 

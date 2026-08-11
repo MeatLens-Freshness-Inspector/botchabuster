@@ -7,8 +7,6 @@ import {
 import { API_BASE_URL } from "@/shared/api/base-url";
 import { fetchWithTimeout } from "@/shared/api";
 
-export type { LandingPageStats } from "@/shared/config/demo-mode";
-
 export class StatsClient {
   private static instance: StatsClient;
 

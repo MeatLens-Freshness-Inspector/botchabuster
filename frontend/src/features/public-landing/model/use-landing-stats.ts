@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { statsClient } from "@/integrations/api";
-import type { AnimatedStatData } from "../../types";
+import { statsClient } from "@/entities/landing-stats";
+
+export type LandingStatCard = {
+  label: string;
+  rawValue: number;
+  suffix?: string;
+};
 
 export function useLandingStats() {
   const [inspectionCount, setInspectionCount] = useState(0);
@@ -30,7 +35,7 @@ export function useLandingStats() {
     };
   }, []);
 
-  const statCards = useMemo<AnimatedStatData[]>(
+  const statCards = useMemo<LandingStatCard[]>(
     () => [
       { rawValue: userCount, suffix: "", label: "Registered Inspectors" },
       { rawValue: inspectionCount, suffix: "", label: "Completed Inspections" },

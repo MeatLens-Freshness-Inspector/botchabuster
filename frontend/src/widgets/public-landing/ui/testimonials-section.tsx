@@ -1,5 +1,5 @@
 import { Star } from "lucide-react";
-import { landingTestimonials } from "../utils/landingData";
+import { landingTestimonials } from "../lib/landing-data";
 
 export function TestimonialsSection() {
   return (

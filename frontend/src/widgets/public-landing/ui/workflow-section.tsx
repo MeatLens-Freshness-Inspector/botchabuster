@@ -1,4 +1,4 @@
-import { landingWorkflow } from "../utils/landingData";
+import { landingWorkflow } from "../lib/landing-data";
 
 export function WorkflowSection() {
   return (

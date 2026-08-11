@@ -1,4 +1,4 @@
-import { landingFeatures } from "../utils/landingData";
+import { landingFeatures } from "../lib/landing-data";
 
 const mockConfidenceScores = [92, 88, 79, 95];
 
