@@ -34,3 +34,7 @@ export {
   inspectionClient,
   type InspectionScope,
 } from "./api";
+export {
+  inspectionKeys,
+  inspectionStatsKey,
+} from "./model/queries";

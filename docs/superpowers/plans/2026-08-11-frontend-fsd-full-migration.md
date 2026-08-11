@@ -313,8 +313,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 056 — refactor: move inspection endpoint client**
   - Change: moved `InspectionClient` into the inspection entity API, added its public API export, migrated all consumers and integration tests, and moved demo-mode configuration into shared config so the entity has no legacy-library dependency.
   - Validate: integration tests (11), typecheck, and lint passed with the existing 16 warnings.
-- [ ] **Commit 057 — refactor: create inspection query keys**
-  - Change: frontend/src/hooks/useInspections.ts -> frontend/src/entities/inspection/model/keys.ts + frontend/src/entities/inspection/model/queries.ts. Validate: F.
+- [x] **Commit 057 — refactor: create inspection query keys**
+  - Change: created the inspection entity query-key contract in `entities/inspection/model/queries.ts`, exported it publicly, and migrated the existing inspection hooks to use centralized list/detail/stat namespaces while moving their session dependency to the user entity API.
+  - Validate: query-key test, typecheck, and lint passed with the existing 16 warnings.
 - [ ] **Commit 058 — refactor: move inspection list domain UI**
   - Change: frontend/src/components/InspectionListItem.tsx -> frontend/src/entities/inspection/ui/inspection-list-item.tsx + frontend/tests/component/inspections/inspection-list-item.component.test.tsx. Validate: F.
 - [ ] **Commit 059 — refactor: move inspection result domain UI**
