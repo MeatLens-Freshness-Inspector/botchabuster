@@ -1,11 +1,11 @@
 import type { FreshnessClassification } from "@/entities/inspection";
+import { normalizeClassificationLabel } from "./classification";
 import {
   classifyRecommendation,
   computeFreshnessScore,
-  normalizeClassificationLabel,
   type FreshnessRecommendation,
-  type MeatLensModelMetadata,
-} from "./meatLensPipeline";
+} from "./freshness-score";
+import type { MeatLensModelMetadata } from "../../../lib/offlineAnalysis/meatLensPipeline";
 
 const ENSEMBLE_MOBILE_WEIGHT = 0.85;
 const ENSEMBLE_RESNET_WEIGHT = 0.15;

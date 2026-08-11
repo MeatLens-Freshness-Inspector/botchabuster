@@ -3,7 +3,7 @@ import {
   buildEnsembleAnalysisResult,
   type EnsembleFusionResult,
   type EnsembleSourcePrediction,
-} from "./ensemble";
+} from "@/features/offline-analysis/lib/ensemble";
 import {
   classifyWithMobileNetV3,
   getLoadedModelPath as getLoadedMobileNetModelPath,
