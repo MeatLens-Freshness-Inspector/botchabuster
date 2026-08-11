@@ -4,7 +4,7 @@ import { useAuth } from "@/entities/user";
 import { buildInspectionInsert, useSubmitInspection } from "@/features/inspection-submission";
 import { queueScan, removeScan } from "@/features/offline-sync";
 import { uploadClient } from "../../../integrations/api";
-import { developerOptionsClient } from "../../../integrations/api/DeveloperOptionsClient";
+import { developerOptionsClient } from "@/features/developer-tools";
 import { marketLocationClient } from "@/entities/market-location";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import {

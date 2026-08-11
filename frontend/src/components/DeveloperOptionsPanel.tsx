@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { LockKeyhole, LockOpen, Upload, Database, Trash2, RefreshCcw, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/app/providers";
-import { developerOptionsClient } from "@/integrations/api";
+import { developerOptionsClient } from "@/features/developer-tools";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
