@@ -1,9 +1,9 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { useDeveloperDashboard } from "@/features/developer-tools";
+import { DeveloperExport, DeveloperOverviewSection } from "@/features/developer-tools";
 import type { DeveloperWorkspaceTabKey } from "@/widgets/admin-dashboard";
 import { DeveloperDatasetsSection } from "../developer/DeveloperDatasetsSection";
-import { DeveloperOverviewSection } from "../developer/DeveloperOverviewSection";
 import { DeveloperSettingsSection } from "../developer/DeveloperSettingsSection";
 import { DeveloperTrainingSection } from "../developer/DeveloperTrainingSection";
 import { ApiDocsSection } from "../developer/api-docs/ApiDocsSection";
@@ -38,6 +38,7 @@ const DeveloperTabContent = () => {
           <ApiDocsSection />
         </TabsContent>
         <TabsContent value="datasets" className="mt-5">
+          <DeveloperExport>
           <DeveloperDatasetsSection
             datasets={developer.datasets}
             filters={developer.datasetFilters}
@@ -48,6 +49,7 @@ const DeveloperTabContent = () => {
             isExporting={developer.isExportingDatasets}
             isLoading={developer.isLoadingDatasets}
           />
+          </DeveloperExport>
         </TabsContent>
         <TabsContent value="training" className="mt-5">
           <DeveloperTrainingSection
