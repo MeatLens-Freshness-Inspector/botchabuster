@@ -552,8 +552,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: extracted dashboard session/tab selection and overview-owned statistics/latest-run state into bounded widget model hooks, leaving the existing load orchestration behavior intact.
   - TDD: added the session/overview hook ownership contract before extraction (RED on missing exports, then GREEN after composition).
   - Validate: focused model test, typecheck, lint (15 existing warnings), and architecture checks passed.
-- [ ] **Commit 114 — refactor: split dashboard inspection state**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-inspections-tab.ts + frontend/src/widgets/admin-dashboard/model/use-inspection-pagination.ts. Validate: F.
+- [x] **Commit 114 — refactor: split dashboard inspection state**
+  - Change: extracted inspection filtering, pagination, and profile-label derivation from frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts into bounded widget model hooks.
+  - TDD: added the inspection-state public contract before extraction (RED on missing widget exports, then GREEN after ownership migration).
+  - Validate: focused inspection-state test, typecheck, lint (15 existing warnings), and architecture checks passed; full unit suite remains at 240 passing with the two known developer-dashboard baseline failures.
 - [ ] **Commit 115 — refactor: split dashboard user state**
   - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/widgets/admin-dashboard/model/use-users-tab.ts + frontend/src/widgets/admin-dashboard/model/use-user-actions.ts. Validate: F.
 - [ ] **Commit 116 — refactor: split dashboard access-code state**

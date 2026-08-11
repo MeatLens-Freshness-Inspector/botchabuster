@@ -44,6 +44,7 @@ import {
   parsePayloadText,
   toCsvValue,
   useDashboardSession,
+  useInspectionsTab,
   useOverviewTab,
 } from "@/widgets/admin-dashboard";
 
@@ -76,9 +77,6 @@ export function useAdminDashboardPage() {
   const [pendingDeleteInspectionId, setPendingDeleteInspectionId] = useState<string | null>(null);
   const [pendingDeleteCodeId, setPendingDeleteCodeId] = useState<string | null>(null);
   const [pendingDeleteMarketId, setPendingDeleteMarketId] = useState<string | null>(null);
-  const [inspectorFilter, setInspectorFilter] = useState("");
-  const [inspectionPage, setInspectionPage] = useState(1);
-  const inspectionPageSize = 10;
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
   const [editUserForm, setEditUserForm] = useState<ManagedUserForm>({
@@ -110,10 +108,6 @@ export function useAdminDashboardPage() {
   useEffect(() => {
     void loadData();
   }, []);
-
-  useEffect(() => {
-    setInspectionPage(1);
-  }, [inspectorFilter]);
 
   const resetUserForm = () => {
     setUserForm({
@@ -325,6 +319,17 @@ export function useAdminDashboardPage() {
     return new Map(profiles.map((profile) => [profile.id, profile]));
   }, [profiles]);
 
+  const {
+    filteredInspections,
+    inspectionPage,
+    inspectionPageSize,
+    inspectorFilter,
+    paginatedInspections,
+    setInspectionPage,
+    setInspectorFilter,
+    totalInspectionPages,
+  } = useInspectionsTab(inspections, profileById);
+
   const pieData = useMemo(() => {
     return (["fresh", "not fresh", "acceptable", "warning", "spoiled"] as FreshnessClassification[]).map((c) => ({
       name: c.charAt(0).toUpperCase() + c.slice(1),
@@ -505,27 +510,6 @@ export function useAdminDashboardPage() {
       spoiled,
     }));
   }, [dailyAnalytics]);
-
-  const filteredInspections = useMemo(() => {
-    const query = inspectorFilter.trim().toLowerCase();
-    if (!query) return inspections;
-    return inspections.filter((inspection) => {
-      const profile = inspection.user_id ? profileById.get(inspection.user_id) : undefined;
-      const label = getInspectorLabel(profile).toLowerCase();
-      return label.includes(query);
-    });
-  }, [inspections, inspectorFilter, profileById]);
-
-  const totalInspectionPages = Math.max(
-    1,
-    Math.ceil(filteredInspections.length / inspectionPageSize)
-  );
-
-  const paginatedInspections = useMemo(() => {
-    const safePage = Math.min(Math.max(1, inspectionPage), totalInspectionPages);
-    const start = (safePage - 1) * inspectionPageSize;
-    return filteredInspections.slice(start, start + inspectionPageSize);
-  }, [filteredInspections, inspectionPage, inspectionPageSize, totalInspectionPages]);
 
   const filteredProfiles = useMemo(() => {
     const query = userSearchQuery.trim().toLowerCase();
