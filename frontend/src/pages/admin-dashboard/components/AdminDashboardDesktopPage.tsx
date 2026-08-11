@@ -8,7 +8,7 @@ import { useAdminDashboard } from "@/widgets/admin-dashboard";
 import type { AdminDashboardTabKey } from "@/widgets/admin-dashboard";
 import AccessCodesTab from "../desktop/components/AccessCodesTab";
 import DeveloperTab from "../desktop/components/DeveloperTab";
-import InspectionsTab from "../desktop/components/InspectionsTab";
+import { DesktopInspectionsTab as InspectionsTab } from "@/widgets/admin-dashboard";
 import LogsTab from "../desktop/components/LogsTab";
 import MarketsTab from "../desktop/components/MarketsTab";
 import OverviewTab from "../desktop/components/OverviewTab";

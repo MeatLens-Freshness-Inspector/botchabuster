@@ -596,8 +596,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: added the public users-tab composition and switched desktop/mobile dashboard slots to consume it.
   - TDD: added the complete-users-widget contract before composition (RED on missing export, then GREEN after wiring).
   - Validate: focused users-tab test and typecheck passed.
-- [ ] **Commit 125 — refactor: migrate inspections tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/InspectionsTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/inspections-tab.tsx + frontend/src/pages/admin-dashboard/desktop/components/InspectionsTab.tsx -> frontend/src/widgets/admin-dashboard/ui/desktop-inspections-tab.tsx. Validate: F.
+- [x] **Commit 125 — refactor: migrate inspections tab widget**
+  - Change: moved the inspections table and desktop composition into admin-dashboard widget ownership; mobile and desktop slots now consume the widget API.
+  - TDD: added the inspections UI public contract before relocation (RED on missing widget exports, then GREEN after wiring).
+  - Validate: focused inspections UI test and typecheck passed.
 - [ ] **Commit 126 — refactor: migrate access-code tab widget**
   - Change: frontend/src/pages/admin-dashboard/components/tab-content/AccessCodesTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/access-codes-tab.tsx + frontend/src/pages/admin-dashboard/mobile/components/AccessCodesTab.tsx -> frontend/src/widgets/admin-dashboard/ui/mobile-access-codes-tab.tsx. Validate: F.
 - [ ] **Commit 127 — refactor: migrate audit-log tab widget**

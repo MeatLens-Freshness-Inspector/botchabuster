@@ -1,4 +1,4 @@
-import InspectionsTabContent from "../../components/tab-content/InspectionsTabContent";
+import { InspectionsTab as InspectionsWidget } from "@/widgets/admin-dashboard";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type InspectionsTabProps = {
@@ -6,7 +6,7 @@ type InspectionsTabProps = {
 };
 
 const InspectionsTab = ({ dashboard }: InspectionsTabProps) => {
-  return <InspectionsTabContent dashboard={dashboard} />;
+  return <InspectionsWidget dashboard={dashboard} />;
 };
 
 export default InspectionsTab;

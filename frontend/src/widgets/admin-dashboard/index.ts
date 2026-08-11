@@ -21,3 +21,5 @@ export { OverviewTab } from "./ui/overview/overview-tab";
 export { default as UserTable } from "./ui/users/user-table";
 export { UserActions } from "./ui/users/user-actions";
 export { UsersTab } from "./ui/users/users-tab";
+export { default as InspectionsTab } from "./ui/inspections-tab";
+export { default as DesktopInspectionsTab } from "./ui/desktop-inspections-tab";

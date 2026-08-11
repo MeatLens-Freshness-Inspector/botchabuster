@@ -17,7 +17,7 @@ type InspectionsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
 };
 
-const InspectionsTabContent = ({ dashboard }: InspectionsTabContentProps) => {
+const InspectionsTab = ({ dashboard }: InspectionsTabContentProps) => {
   const {
     inspections,
     filteredInspections,
@@ -152,4 +152,4 @@ const InspectionsTabContent = ({ dashboard }: InspectionsTabContentProps) => {
   );
 };
 
-export default InspectionsTabContent;
+export default InspectionsTab;
