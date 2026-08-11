@@ -9,7 +9,7 @@ import type { AdminDashboardTabKey } from "@/widgets/admin-dashboard";
 import AccessCodesTab from "../desktop/components/AccessCodesTab";
 import DeveloperTab from "../desktop/components/DeveloperTab";
 import { DesktopInspectionsTab as InspectionsTab } from "@/widgets/admin-dashboard";
-import LogsTab from "../desktop/components/LogsTab";
+import { DesktopLogsTab as LogsTab } from "@/widgets/admin-dashboard";
 import MarketsTab from "../desktop/components/MarketsTab";
 import OverviewTab from "../desktop/components/OverviewTab";
 import ReportsTab from "../desktop/components/ReportsTab";

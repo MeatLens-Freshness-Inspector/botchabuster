@@ -25,3 +25,5 @@ export { default as InspectionsTab } from "./ui/inspections-tab";
 export { default as DesktopInspectionsTab } from "./ui/desktop-inspections-tab";
 export { default as AccessCodesTab } from "./ui/access-codes-tab";
 export { default as MobileAccessCodesTab } from "./ui/mobile-access-codes-tab";
+export { default as LogsTab } from "./ui/logs-tab";
+export { default as DesktopLogsTab } from "./ui/desktop-logs-tab";

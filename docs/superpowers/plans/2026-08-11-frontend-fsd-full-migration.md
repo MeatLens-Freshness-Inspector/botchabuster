@@ -604,8 +604,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved access-code desktop content and mobile composition into admin-dashboard widget ownership; both responsive slots now consume the widget API.
   - TDD: added the access-code UI public contract before relocation (RED on missing widget exports, then GREEN after wiring).
   - Validate: typecheck passed.
-- [ ] **Commit 127 — refactor: migrate audit-log tab widget**
-  - Change: frontend/src/pages/admin-dashboard/components/tab-content/LogsTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/logs-tab.tsx + frontend/src/pages/admin-dashboard/desktop/components/LogsTab.tsx -> frontend/src/widgets/admin-dashboard/ui/desktop-logs-tab.tsx. Validate: F.
+- [x] **Commit 127 — refactor: migrate audit-log tab widget**
+  - Change: moved audit-log table content and desktop composition into admin-dashboard widget ownership; mobile and desktop slots now consume the widget API.
+  - TDD: added the logs UI public contract before relocation (RED on missing widget exports, then GREEN after wiring).
+  - Validate: typecheck passed.
 - [ ] **Commit 128 — refactor: migrate market tab widget**
   - Change: frontend/src/pages/admin-dashboard/components/tab-content/MarketsTabContent.tsx -> frontend/src/widgets/admin-dashboard/ui/markets-tab.tsx + frontend/src/pages/admin-dashboard/mobile/components/MarketsTab.tsx -> frontend/src/widgets/admin-dashboard/ui/mobile-markets-tab.tsx. Validate: F.
 - [ ] **Commit 129 — refactor: migrate reports tab widget**

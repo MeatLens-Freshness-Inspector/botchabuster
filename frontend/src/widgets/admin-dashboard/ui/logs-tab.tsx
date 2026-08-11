@@ -40,7 +40,7 @@ type LogsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
 };
 
-const LogsTabContent = ({ dashboard }: LogsTabContentProps) => {
+const LogsTab = ({ dashboard }: LogsTabContentProps) => {
   const { logsLoading, auditLogs } = dashboard;
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -362,4 +362,4 @@ const LogsTabContent = ({ dashboard }: LogsTabContentProps) => {
   );
 };
 
-export default LogsTabContent;
+export default LogsTab;

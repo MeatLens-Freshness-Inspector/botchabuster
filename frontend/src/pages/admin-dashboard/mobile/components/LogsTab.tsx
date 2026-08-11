@@ -1,4 +1,4 @@
-import LogsTabContent from "../../components/tab-content/LogsTabContent";
+import { LogsTab as LogsWidget } from "@/widgets/admin-dashboard";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type LogsTabProps = {
@@ -6,7 +6,7 @@ type LogsTabProps = {
 };
 
 const LogsTab = ({ dashboard }: LogsTabProps) => {
-  return <LogsTabContent dashboard={dashboard} />;
+  return <LogsWidget dashboard={dashboard} />;
 };
 
 export default LogsTab;
