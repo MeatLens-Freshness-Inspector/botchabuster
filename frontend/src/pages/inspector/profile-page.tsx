@@ -1,4 +1,4 @@
-import { ProfilePageView } from "./user/profile/components/ProfilePageView";
+import { ProfilePageView } from "@/widgets/profile/profile-widget";
 
 const ProfilePage = () => {
   return <ProfilePageView />;

@@ -43,7 +43,7 @@ import HistoryPage from "./pages/inspector/history-page";
 import AdminDashboard from "./pages/AdminDashboard";
 import DesktopAdminDashboard from "./pages/DesktopAdminDashboard";
 import AdminDashboardWrapper from "./pages/AdminDashboardWrapper";
-import ProfilePage from "./pages/ProfilePage";
+import ProfilePage from "./pages/inspector/profile-page";
 import ProfileHelpPage from "./pages/ProfileHelpPage";
 import ProfileHelpScopePage from "./pages/ProfileHelpScopePage";
 import ProfileTutorialPage from "./pages/ProfileTutorialPage";

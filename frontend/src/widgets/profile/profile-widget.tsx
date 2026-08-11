@@ -1,9 +1,9 @@
 import { Loader2 } from "lucide-react";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { PrivacyPolicyDialog } from "@/components/PrivacyPolicyDialog";
-import { TermsAndConditionsDialog } from "@/components/TermsAndConditionsDialog";
+import { ConfirmDialog } from "../../components/ConfirmDialog";
+import { PrivacyPolicyDialog } from "../../components/PrivacyPolicyDialog";
+import { TermsAndConditionsDialog } from "../../components/TermsAndConditionsDialog";
 import { useProfileEditor } from "@/features/profile-editing";
-import { ProfilePageHeader } from "./ProfilePageHeader";
+import { ProfilePageHeader } from "./profile-page-header";
 import { ProfilePrimaryColumn } from "@/widgets/profile/profile-primary-column";
 import { ProfileSecondaryColumn } from "@/widgets/profile/profile-secondary-column";
 import { ProfileSummaryCard } from "@/entities/user";
