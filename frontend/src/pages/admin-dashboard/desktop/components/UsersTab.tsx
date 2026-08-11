@@ -1,4 +1,4 @@
-import UsersTabContent from "../../components/tab-content/UsersTabContent";
+import { UserTable } from "@/widgets/admin-dashboard";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type UsersTabProps = {
@@ -6,7 +6,7 @@ type UsersTabProps = {
 };
 
 const UsersTab = ({ dashboard }: UsersTabProps) => {
-  return <UsersTabContent dashboard={dashboard} />;
+  return <UserTable dashboard={dashboard} />;
 };
 
 export default UsersTab;

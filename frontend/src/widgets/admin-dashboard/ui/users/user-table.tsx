@@ -46,12 +46,13 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
+import { UserActions } from "./user-actions";
 
 type UsersTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
 };
 
-const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
+const UserTable = ({ dashboard }: UsersTabContentProps) => {
   const {
     user,
     userForm,
@@ -83,7 +84,7 @@ const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
   const endRange = Math.min(userPage * userPageSize, filteredProfiles.length);
 
   return (
-    <div className="grid min-w-0 gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+    <UserActions><div className="grid min-w-0 gap-4 xl:grid-cols-[0.95fr_1.05fr]">
       {/* Left Card: Add User */}
       <Card className="min-w-0 rounded-3xl border-border/70 bg-card/95">
         <CardHeader>
@@ -598,8 +599,8 @@ const UsersTabContent = ({ dashboard }: UsersTabContentProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </div></UserActions>
   );
 };
 
-export default UsersTabContent;
+export default UserTable;

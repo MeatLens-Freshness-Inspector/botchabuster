@@ -18,3 +18,5 @@ export {
 export { default as InspectionChart } from "./ui/overview/inspection-chart";
 export { SummaryCards } from "./ui/overview/summary-cards";
 export { OverviewTab } from "./ui/overview/overview-tab";
+export { default as UserTable } from "./ui/users/user-table";
+export { UserActions } from "./ui/users/user-actions";
