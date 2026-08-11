@@ -1,4 +1,4 @@
-import ResetPasswordPageView from "./landing/reset-password/components/ResetPasswordPageView";
+import ResetPasswordPageView from "./components/reset-password-page-view";
 
 const ResetPasswordPage = () => {
   return <ResetPasswordPageView />;

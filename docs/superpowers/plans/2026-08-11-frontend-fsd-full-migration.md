@@ -288,9 +288,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 050 — refactor: create authentication route pages**
   - Change: consolidated the login and sign-up route entries and their unchanged view components under the `pages/auth` slice, added its public index, and updated app route composition to consume that public API.
   - Validate: authentication route-page test, typecheck, and lint passed with the existing 16 warnings; build gate remains the milestone validation.
-- [ ] **Commit 051 — refactor: create recovery route pages**
-  - Change: frontend/src/pages/ForgotPasswordPage.tsx -> frontend/src/pages/auth/forgot-password-page.tsx + frontend/src/pages/ResetPasswordPage.tsx -> frontend/src/pages/auth/reset-password-page.tsx.
-  - Validate: B.
+- [x] **Commit 051 — refactor: create recovery route pages**
+  - Change: consolidated forgot-password and reset-password route entries and their unchanged view components under the shared `pages/auth` slice, added public exports, and updated the app route composition.
+  - Validate: recovery route-page test, typecheck, and lint passed with the existing 16 warnings; build gate remains the milestone validation.
 - [ ] **Commit 052 — test: lock authentication route behavior**
   - Change: frontend/tests/e2e/journeys/inspector/passkey-auth.e2e.spec.ts + frontend/tests/unit/state/auth-context-session-cleanup.unit.test.tsx.
   - Update imports to FSD public APIs and retain all assertions.
