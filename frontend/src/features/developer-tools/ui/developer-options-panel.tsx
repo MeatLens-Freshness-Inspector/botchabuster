@@ -19,7 +19,7 @@ import {
   setDeveloperOptionsFlags,
   setDeveloperOptionsSession,
   type DeveloperOptionsFlags,
-} from "@/lib/developerOptions";
+} from "@/features/developer-tools";
 import {
   clearPendingAuditLogs,
   clearPendingScans,

@@ -2,7 +2,7 @@ import { cn } from "@/shared/lib/utils";
 import {
   scopeReferencePage,
   type ScopeReferenceSection,
-} from "@/lib/help/scopeDelimitationsContent";
+} from "./scope-reference";
 
 interface ScopeDelimitationsContentProps {
   className?: string;

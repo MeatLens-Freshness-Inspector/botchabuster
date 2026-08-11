@@ -1,4 +1,4 @@
-import type { CapturedImagePayload } from "@/components/CameraCapture";
+import type { CapturedImagePayload } from "@/features/inspection-capture";
 import { DEFAULT_MARKET_LOCATIONS } from "@/entities/market-location";
 import type {
   AnalysisResult,

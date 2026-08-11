@@ -1,7 +1,9 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ScopeDelimitationsContent } from "@/components/help/ScopeDelimitationsContent";
-import { scopeReferencePage } from "@/lib/help/scopeDelimitationsContent";
+import {
+  ScopeDelimitationsContent,
+  scopeReferencePage,
+} from "@/widgets/legal";
 
 const ProfileHelpScopePage = () => {
   const navigate = useNavigate();

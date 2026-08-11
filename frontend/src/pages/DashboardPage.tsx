@@ -1,5 +1,5 @@
-import { PageHeader } from "@/components/PageHeader";
-import { MetricCard } from "@/components/MetricCard";
+import { PageHeader } from "@/shared/ui/page-header";
+import { MetricCard } from "@/shared/ui/metric-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { useInspectionStats } from "@/hooks/useInspections";
 import { Loader2 } from "lucide-react";

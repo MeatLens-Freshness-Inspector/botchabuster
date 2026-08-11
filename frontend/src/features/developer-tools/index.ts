@@ -4,6 +4,23 @@ export {
 } from "./api/developer-options-client";
 export type { DeveloperUnlockResponse } from "./api/developer-options-client";
 export { buildDeveloperInAppMetrics } from "./lib/in-app-metrics";
+export {
+  clearDeveloperAnalysisSnapshot,
+  clearDeveloperOptionsSession,
+  DEFAULT_DEVELOPER_OPTIONS_FLAGS,
+  getDeveloperAnalysisSnapshot,
+  getDeveloperOptionsFlags,
+  getDeveloperOptionsSession,
+  isDeveloperOptionsSessionExpired,
+  saveDeveloperAnalysisSnapshot,
+  setDeveloperOptionsFlags,
+  setDeveloperOptionsSession,
+} from "./model/developer-options-storage";
+export type {
+  DeveloperAnalysisSnapshot,
+  DeveloperOptionsFlags,
+  DeveloperOptionsSession,
+} from "./model/developer-options-storage";
 export { useDeveloperDashboard } from "./model/use-developer-dashboard";
 export { DeveloperExport } from "./ui/developer-export";
 export { DeveloperOptionsPanel } from "./ui/developer-options-panel";

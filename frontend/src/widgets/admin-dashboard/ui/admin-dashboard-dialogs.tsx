@@ -1,4 +1,4 @@
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
 import { Dialog, DialogContent } from "@/shared/ui/dialog";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 

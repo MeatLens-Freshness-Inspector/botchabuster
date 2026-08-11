@@ -4,18 +4,18 @@ import { useAuth } from "@/entities/user";
 import { buildInspectionInsert, useSubmitInspection } from "@/features/inspection-submission";
 import { queueScan, removeScan } from "@/features/offline-sync";
 import { uploadClient } from "../../../integrations/api";
-import { developerOptionsClient } from "@/features/developer-tools";
-import { marketLocationClient } from "@/entities/market-location";
-import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import {
   clearDeveloperOptionsSession,
   DEFAULT_DEVELOPER_OPTIONS_FLAGS,
+  developerOptionsClient,
   getDeveloperOptionsFlags,
   getDeveloperOptionsSession,
   isDeveloperOptionsSessionExpired,
   saveDeveloperAnalysisSnapshot,
   type DeveloperOptionsFlags,
-} from "../../../lib/developerOptions";
+} from "@/features/developer-tools";
+import { marketLocationClient } from "@/entities/market-location";
+import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import {
   PROTOCOL_SPOILED_REASON,
   buildProtocolSpoiledAnalysisResult,
@@ -44,7 +44,7 @@ import {
   type InspectionCoordinates,
 } from "@/entities/inspection";
 import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
-import type { CapturedImagePayload } from "../../../components/CameraCapture";
+import type { CapturedImagePayload } from "@/features/inspection-capture";
 import type { InspectPageViewModel, InspectionSaveStatus } from "./types";
 import { useInspectionAnalysis } from "./use-inspection-analysis";
 import {

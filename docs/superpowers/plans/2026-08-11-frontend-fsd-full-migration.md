@@ -651,9 +651,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 **Interfaces:** Produces a frontend in which all production source belongs to its final FSD layer, no compatibility import survives, all owned files are at most 600 non-blank lines, and the migration commit audit shows at least 144 qualifying commits.
 
-- [ ] **Commit 137 — refactor: remove remaining legacy component ownership**
+- [x] **Commit 137 — refactor: remove remaining legacy component ownership**
   - Change: delete frontend/src/components/ConfirmDialog.tsx after moving its last consumer to frontend/src/shared/ui/confirm-dialog.tsx + move frontend/src/components/PageHeader.tsx to frontend/src/shared/ui/page-header.tsx.
-  - Complete every remaining frontend/src/components transfer listed in the manifest and update every consumer through public APIs. Validate: F.
+  - Complete every remaining frontend/src/components transfer listed in the manifest and update every consumer through public APIs. TDD evidence: the component ownership contract was added before the final ownership wiring and passes directly with `npx tsx --test tests/unit/architecture/component-ownership.unit.test.ts`. Validate: `npm run typecheck -w frontend`, `npm run lint -w frontend`, and the focused ownership test.
 - [ ] **Commit 138 — refactor: remove remaining legacy hook ownership**
   - Change: delete frontend/src/hooks/use-toast.ts after moving it to frontend/src/shared/hooks/use-toast.ts + move frontend/src/hooks/useMounted.ts to frontend/src/shared/hooks/use-mounted.ts.
   - Validate: F.

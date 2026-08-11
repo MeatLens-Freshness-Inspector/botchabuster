@@ -20,8 +20,8 @@ import {
 } from "@/shared/ui/select";
 import { REPORT_ORGANIZATION_OPTIONS, isReportOrganization } from "@/features/reports";
 import { useAuth } from "@/entities/user";
-import { TermsAndConditionsDialog } from "@/components/TermsAndConditionsDialog";
-import { PrivacyPolicyDialog } from "@/components/PrivacyPolicyDialog";
+import { TermsAndConditionsDialog } from "@/widgets/legal/terms-and-conditions-dialog";
+import { PrivacyPolicyDialog } from "@/widgets/legal/privacy-policy-dialog";
 import { useSignupPage } from "@/features/auth";
 
 const SignupPageView = () => {

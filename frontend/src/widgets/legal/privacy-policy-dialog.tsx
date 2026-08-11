@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { PrivacyPolicyContent } from "@/components/PrivacyPolicyContent";
+import { PrivacyPolicyContent } from "./privacy-policy-content";
 
 interface PrivacyPolicyDialogProps {
   open: boolean;

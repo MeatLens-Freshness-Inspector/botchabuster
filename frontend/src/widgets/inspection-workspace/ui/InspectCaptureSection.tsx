@@ -1,4 +1,4 @@
-import { CameraCapture, type CapturedImagePayload } from "../../../components/CameraCapture";
+import { CameraCapture, type CapturedImagePayload } from "@/features/inspection-capture";
 import { Button } from "@/shared/ui";
 import { Label } from "@/shared/ui";
 import {

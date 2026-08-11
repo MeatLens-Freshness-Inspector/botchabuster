@@ -31,7 +31,11 @@ import {
 import { PROTOCOL_SPOILED_REASON, buildProtocolSpoiledAnalysisResult } from "@/entities/inspection";
 import { analyzeOffline, prewarmModel, setActiveAnalysisMode } from "@/features/offline-analysis";
 import { setActiveMobileNetModelVariant } from "@/features/offline-analysis";
-import { getDeveloperOptionsFlags, getDeveloperOptionsSession, isDeveloperOptionsSessionExpired } from "@/lib/developerOptions";
+import {
+  getDeveloperOptionsFlags,
+  getDeveloperOptionsSession,
+  isDeveloperOptionsSessionExpired,
+} from "@/features/developer-tools";
 import { applyTheme } from "@/shared/lib/theme-preference";
 import { scrubSensitiveAuthHashFromUrl } from "@/shared/api";
 import { Capacitor } from "@capacitor/core";

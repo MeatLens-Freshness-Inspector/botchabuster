@@ -12,7 +12,7 @@ import {
 } from "../../../lib/offlineAnalysis/meatLensPipeline";
 import { getActiveModelPreprocessContract } from "@/features/offline-analysis";
 
-import { GUIDE_BOX_SIZE_RATIO, PREVIEW_EXPORT_QUALITY } from "../../../components/camera/constants";
+import { GUIDE_BOX_SIZE_RATIO, PREVIEW_EXPORT_QUALITY } from "./camera-constants";
 import {
   clampToRange,
   type AdvancedCameraConstraints,
