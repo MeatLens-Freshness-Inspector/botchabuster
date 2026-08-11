@@ -620,8 +620,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved developer overview metrics and options panel into developer-tools feature UI ownership and established the export composition boundary.
   - TDD: added the developer UI public contract before relocation (RED on missing exports, then GREEN after wiring).
   - Validate: focused developer UI test and typecheck passed.
-- [ ] **Commit 131 — refactor: migrate developer data sections**
-  - Change: frontend/src/pages/admin-dashboard/components/developer/DeveloperDatasetsSection.tsx -> frontend/src/features/developer-tools/ui/datasets-section.tsx + frontend/src/pages/admin-dashboard/components/developer/DeveloperTrainingSection.tsx -> frontend/src/features/developer-tools/ui/training-section.tsx. Validate: F.
+- [x] **Commit 131 — refactor: migrate developer data sections**
+  - Change: moved developer datasets and training presentation into developer-tools feature UI ownership.
+  - TDD: added the developer-data UI public contract before relocation (RED on missing exports, then GREEN after wiring).
+  - Validate: focused developer-data UI test and typecheck passed.
 - [ ] **Commit 132 — refactor: migrate API documentation model**
   - Change: frontend/src/pages/admin-dashboard/components/developer/api-docs/catalog.ts -> frontend/src/features/developer-tools/model/api-docs-catalog.ts + frontend/src/pages/admin-dashboard/components/developer/api-docs/types.ts -> frontend/src/features/developer-tools/model/api-docs-types.ts. Validate: F.
 - [ ] **Commit 133 — refactor: migrate API documentation request flow**

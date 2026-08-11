@@ -1,11 +1,14 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { useDeveloperDashboard } from "@/features/developer-tools";
-import { DeveloperExport, DeveloperOverviewSection } from "@/features/developer-tools";
+import {
+  DeveloperDatasetsSection,
+  DeveloperExport,
+  DeveloperOverviewSection,
+  DeveloperTrainingSection,
+} from "@/features/developer-tools";
 import type { DeveloperWorkspaceTabKey } from "@/widgets/admin-dashboard";
-import { DeveloperDatasetsSection } from "../developer/DeveloperDatasetsSection";
 import { DeveloperSettingsSection } from "../developer/DeveloperSettingsSection";
-import { DeveloperTrainingSection } from "../developer/DeveloperTrainingSection";
 import { ApiDocsSection } from "../developer/api-docs/ApiDocsSection";
 
 const DeveloperTabContent = () => {
