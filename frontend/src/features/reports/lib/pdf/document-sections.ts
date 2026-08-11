@@ -1,5 +1,5 @@
 import { getReportOrganizationLabel } from "../../../../lib/reportOrganizations";
-import { buildReportChartContent } from "../../../../lib/reports/pdf/reportCharts";
+import { buildReportChartContent } from "./report-charts";
 import type { Content, ContentTable } from "pdfmake/interfaces";
 import type {
   ReportDetailRow,
