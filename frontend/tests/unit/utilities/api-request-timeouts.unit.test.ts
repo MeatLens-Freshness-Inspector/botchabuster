@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
 import { authClient } from "../../../src/features/auth/api/auth-client";
-import { uploadClient } from "../../../src/integrations/api/UploadClient";
+import { uploadClient } from "../../../src/features/inspection-submission";
 import {
   clearApiCsrfToken,
   setApiCsrfToken,

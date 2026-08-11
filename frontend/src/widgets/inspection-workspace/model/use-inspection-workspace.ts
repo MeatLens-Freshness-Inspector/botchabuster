@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
-import { buildInspectionInsert, useSubmitInspection } from "@/features/inspection-submission";
+import {
+  buildInspectionInsert,
+  uploadClient,
+  useSubmitInspection,
+} from "@/features/inspection-submission";
 import { queueScan, removeScan } from "@/features/offline-sync";
-import { uploadClient } from "../../../integrations/api";
 import {
   clearDeveloperOptionsSession,
   DEFAULT_DEVELOPER_OPTIONS_FLAGS,

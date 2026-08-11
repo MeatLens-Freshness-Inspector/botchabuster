@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
 import { passkeyClient, type RegisteredPasskey } from "@/features/passkeys/api";
 import { profileClient } from "@/entities/user/api";
-import { uploadClient } from "../../../integrations/api/UploadClient";
+import { uploadClient } from "@/features/inspection-submission";
 import {
   canUsePasskeys,
   getDefaultPasskeyDeviceLabel,

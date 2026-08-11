@@ -19,7 +19,7 @@ import { OnboardingRoute as OnboardingRouteGuard, type OnboardingRouteProps } fr
 import { AppLayout } from "@/app/layouts/app-layout";
 import { PublicLayout } from "@/app/layouts/public-layout";
 import { hasSkippedOnboardingForSession } from "@/features/onboarding";
-import { uploadClient } from "@/integrations/api/UploadClient";
+import { uploadClient } from "@/features/inspection-submission";
 import { inspectionClient } from "@/entities/inspection";
 import { auditLogClient } from "@/entities/audit-log";
 import {
