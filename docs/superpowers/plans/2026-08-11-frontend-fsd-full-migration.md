@@ -501,8 +501,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the tutorial player, scene, frame, hotspot, and mock scenes into the tutorials feature UI, published them through the feature API, and removed all current imports from legacy tutorial component ownership.
   - TDD: added the tutorial player/scene public contract before extraction (RED on missing feature exports, then GREEN after migration).
   - Validate: focused player test, typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 103 — refactor: migrate profile help routes**
-  - Change: frontend/src/pages/ProfileHelpPage.tsx -> frontend/src/pages/inspector/profile-help-page.tsx + frontend/src/pages/ProfileHelpScopePage.tsx -> frontend/src/pages/inspector/profile-help-scope-page.tsx. Validate: P-inspect.
+- [x] **Commit 103 — refactor: migrate profile help routes**
+  - Change: moved the profile help and scope route pages into the inspector page slice and updated application composition imports.
+  - TDD: added the two-route ownership contract before migration (RED on absent inspector targets, then GREEN after the route moves).
+  - Validate: focused route test, typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 104 — refactor: migrate profile tutorial route**
   - Change: frontend/src/pages/ProfileTutorialPage.tsx -> frontend/src/pages/inspector/profile-tutorial-page.tsx + frontend/src/features/tutorials/index.ts. Validate: F.
 - [ ] **Commit 105 — refactor: split assistant feature and widget**
