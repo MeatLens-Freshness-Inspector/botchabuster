@@ -3,7 +3,7 @@ import { TooltipProvider } from "@/shared/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { BottomNav } from "@/widgets/navigation";
 import { AssistantWidget } from "@/widgets/assistant";
-import { OfflineBanner } from "@/components/OfflineBanner";
+import { OfflineBanner } from "@/widgets/navigation";
 import { OfflineSyncManager } from "@/components/OfflineSyncManager";
 import { InactivityGuard } from "@/components/InactivityGuard";
 import { QueryProvider } from "@/app/providers/query-provider";

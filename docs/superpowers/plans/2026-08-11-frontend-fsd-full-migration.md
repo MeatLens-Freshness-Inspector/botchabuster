@@ -220,8 +220,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 030 — refactor: migrate assistant widget shell**
   - Change: frontend/src/components/AIChatbot.tsx -> frontend/src/widgets/assistant/assistant-widget.tsx + frontend/src/widgets/assistant/index.ts. Authentication state is supplied by the root adapter and request-header behavior remains covered through the widget public API.
   - Validate: F.
-- [ ] **Commit 031 — refactor: migrate offline status widget**
-  - Change: frontend/src/components/OfflineBanner.tsx -> frontend/src/widgets/navigation/offline-banner.tsx + frontend/src/app/App.tsx.
+- [x] **Commit 031 — refactor: migrate offline status widget**
+  - Change: frontend/src/components/OfflineBanner.tsx -> frontend/src/widgets/navigation/offline-banner.tsx + frontend/src/App.tsx. The optional initial-state input is test-only determinism; browser event handling and markup remain unchanged.
   - Validate: F.
 - [ ] **Commit 032 — refactor: isolate offline synchronization feature**
   - Change: frontend/src/components/OfflineSyncManager.tsx -> frontend/src/features/offline-sync/ui/offline-sync-manager.tsx + frontend/src/features/offline-sync/index.ts.
