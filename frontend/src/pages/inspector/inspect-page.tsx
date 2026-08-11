@@ -1,4 +1,4 @@
-import InspectPageView from "./user/inspections/components/InspectPageView";
+import InspectPageView from "@/widgets/inspection-workspace/ui/inspection-workspace";
 
 const InspectPage = () => {
   return <InspectPageView />;

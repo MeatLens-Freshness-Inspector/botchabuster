@@ -1,4 +1,4 @@
-import { useInspectionWorkspace as useInspectPage } from "@/widgets/inspection-workspace/model/use-inspection-workspace";
+import { useInspectionWorkspace as useInspectPage } from "../model/use-inspection-workspace";
 import { InspectActionsSection } from "./InspectActionsSection";
 import { InspectAnalysisSection } from "./InspectAnalysisSection";
 import { InspectCaptureSection } from "./InspectCaptureSection";

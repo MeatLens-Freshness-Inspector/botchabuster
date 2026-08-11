@@ -430,8 +430,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the inspect workflow hook and view-model types into `widgets/inspection-workspace/model`, extracted the analysis readiness/status model into `use-inspection-analysis.ts`, and migrated the existing inspect view consumer.
   - TDD: added analysis-state contracts before implementation (RED on the absent widget module, then GREEN with readiness and protocol-result assertions).
   - Validate: focused analysis-state tests (2), typecheck, lint (16 existing warnings), and architecture checks passed; workspace hook remains 570 nonblank lines under the hard cap.
-- [ ] **Commit 087 — refactor: move inspection workspace UI**
-  - Change: frontend/src/pages/user/inspections/components/InspectPageView.tsx -> frontend/src/widgets/inspection-workspace/ui/inspection-workspace.tsx + frontend/src/pages/Index.tsx -> frontend/src/pages/inspector/inspect-page.tsx. Validate: P-inspect.
+- [x] **Commit 087 — refactor: move inspection workspace UI**
+  - Change: moved the inspect view and all six inspect subcomponents into `widgets/inspection-workspace/ui`, moved the route owner to `pages/inspector/inspect-page.tsx`, and updated the app composition route consumer.
+  - TDD: added the inspector-page ownership contract before implementation (RED on the absent route module, then GREEN with the page component test).
+  - Validate: page ownership test, typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 088 — refactor: migrate history page**
   - Change: frontend/src/pages/user/history/hooks/useHistoryPage.ts -> frontend/src/widgets/history/model/use-history.ts + frontend/src/pages/HistoryPage.tsx -> frontend/src/pages/inspector/history-page.tsx. Validate: P-inspect.
 

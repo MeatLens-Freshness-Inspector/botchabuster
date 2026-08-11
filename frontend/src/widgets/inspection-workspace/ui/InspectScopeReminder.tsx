@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   inspectScopeReminder,
   scopeReferencePath,
-} from "@/lib/help/scopeDelimitationsContent";
+} from "../../../lib/help/scopeDelimitationsContent";
 
 export function InspectScopeReminder() {
   return (

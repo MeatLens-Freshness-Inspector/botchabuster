@@ -10,7 +10,9 @@ export {
 
 export {
   analyzeOffline,
+  getMockOfflineAnalysisResult,
   getActiveAnalysisMode,
+  hasMockOfflineAnalysisResult,
   isModelReady,
   loadActiveAnalysisModel,
   prewarmModel,
