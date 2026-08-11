@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ProtectedRoute, AdminRoute, OnboardingRoute } from "@/components/ProtectedRoute";
@@ -8,10 +7,10 @@ import { AIChatbot } from "@/components/AIChatbot";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { OfflineSyncManager } from "@/components/OfflineSyncManager";
 import { InactivityGuard } from "@/components/InactivityGuard";
-import { applyTheme } from "@/lib/themePreference";
 import { QueryProvider } from "@/app/providers/query-provider";
 import { NotificationProvider } from "@/app/providers/notification-provider";
 import { NetworkProvider } from "@/app/providers/network-provider";
+import { ThemeController } from "@/app/providers/theme-controller";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -41,22 +40,9 @@ function AppLayout({ children }: { children: React.ReactNode }) {
 }
 
 function ThemeRouteController() {
-  const location = useLocation();
   const { user, profile } = useAuth();
 
-  useEffect(() => {
-    const forceLightPaths = new Set(["/", "/signup", "/login", "/forgot-password", "/reset-password", "/onboarding"]);
-    const forceLight = forceLightPaths.has(location.pathname);
-    if (forceLight) {
-      applyTheme(false);
-      return;
-    }
-
-    const isDarkMode = Boolean(user && profile?.is_dark_mode);
-    applyTheme(isDarkMode);
-  }, [location.pathname, user, profile?.is_dark_mode]);
-
-  return null;
+  return <ThemeController isAuthenticated={Boolean(user)} isDarkMode={profile?.is_dark_mode} />;
 }
 
 const App = () => {

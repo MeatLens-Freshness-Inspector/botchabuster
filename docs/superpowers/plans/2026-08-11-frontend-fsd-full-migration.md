@@ -191,8 +191,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 021 — refactor: extract startup network provider**
   - Change: frontend/src/hooks/useStartupNetworkCheck.ts -> frontend/src/app/providers/network-provider.tsx + frontend/src/components/NetworkLoadingScreen.tsx -> frontend/src/shared/ui/network-loading-screen.tsx.
   - Validate: F.
-- [ ] **Commit 022 — refactor: extract theme route controller**
-  - Change: frontend/src/App.tsx + frontend/src/app/providers/theme-controller.tsx.
+- [x] **Commit 022 — refactor: extract theme route controller**
+  - Change: frontend/src/App.tsx + frontend/src/app/providers/theme-controller.tsx + move frontend/src/lib/themePreference.ts to frontend/src/shared/lib/theme-preference.ts so app and profile consumers use the shared theme helper.
   - Preserve force-light routes and profile dark-mode behavior.
   - Validate: F.
 - [ ] **Commit 023 — refactor: define route path constants**

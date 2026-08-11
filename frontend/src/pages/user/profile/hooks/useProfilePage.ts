@@ -14,7 +14,7 @@ import {
   clearStoredLocalPasskey,
   storeLocalPasskey,
 } from "@/lib/passkeys/localUnlock";
-import { applyTheme } from "@/lib/themePreference";
+import { applyTheme } from "@/shared/lib/theme-preference";
 import type { ProfileDialogKey, ProfileDialogState } from "../types";
 import { applyLocalDeviceReady, getProfileInitials } from "../utils/profilePage";
 
