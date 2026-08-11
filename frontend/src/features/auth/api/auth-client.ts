@@ -3,22 +3,9 @@ import { createAuthHeaders } from "@/shared/api/auth-headers";
 import { createHttpApiError, fetchWithTimeout, readApiErrorMessage } from "@/shared/api";
 import { API_BASE_URL } from "@/shared/api/base-url";
 import type { Profile } from "@/entities/user/api/profile-client";
+import type { AuthPrimaryRole, AuthRole, AuthSession, AuthUser } from "@/entities/user";
 
-export interface AuthUser {
-  id: string;
-  email: string | null;
-}
-
-export interface AuthSession {
-  access_token: string | null;
-  refresh_token: string | null;
-  token_type: string | null;
-  expires_in: number | null;
-  expires_at: number | null;
-}
-
-export type AuthRole = "developer" | "admin" | "moderator" | "user";
-export type AuthPrimaryRole = "developer" | "admin" | "inspector";
+export type { AuthPrimaryRole, AuthRole, AuthSession, AuthUser } from "@/entities/user";
 
 export interface AuthBootstrapPayload {
   user: AuthUser;

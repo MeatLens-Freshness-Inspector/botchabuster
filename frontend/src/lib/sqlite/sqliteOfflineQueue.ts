@@ -17,7 +17,7 @@ import type {
   InspectionDecisionSource,
   MeatType,
 } from "@/types/inspection";
-import { openDb } from "./db";
+import { openDb } from "@/shared/platform/sqlite/database";
 
 // ---------------------------------------------------------------------------
 // Types (mirrors offlineQueue.ts exactly)

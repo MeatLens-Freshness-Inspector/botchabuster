@@ -1,9 +1,9 @@
 import { Capacitor } from "@capacitor/core";
-import type { AuthPrimaryRole, AuthRole, AuthUser } from "@/features/auth/api/auth-client";
+import type { AuthPrimaryRole, AuthRole, AuthUser } from "./session-types";
 import type { Profile } from "@/entities/user/api/profile-client";
-import type { PasswordVerifierRecord } from "@/lib/offlineCredentials";
-import type { StoredLocalPasskey } from "@/features/passkeys/lib/local-unlock";
-import * as sqliteImpl from "@/lib/sqlite/sqliteAuthEnvelope";
+import type { PasswordVerifierRecord } from "./offline-credentials";
+import type { StoredLocalPasskey } from "./offline-passkey";
+import * as sqliteImpl from "../api/sqlite-auth-envelope";
 
 const isNative = () => Capacitor.isNativePlatform();
 

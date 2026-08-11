@@ -8,11 +8,11 @@
  * Migration: android/sql/migrations/003_create_offline_auth_envelope.sql
  */
 
-import type { AuthPrimaryRole, AuthRole, AuthUser } from "@/features/auth/api/auth-client";
+import type { AuthPrimaryRole, AuthRole, AuthUser } from "@/entities/user";
 import type { Profile } from "@/entities/user/api/profile-client";
-import type { PasswordVerifierRecord } from "@/lib/offlineCredentials";
-import type { StoredLocalPasskey } from "@/features/passkeys/lib/local-unlock";
-import { openDb } from "./db";
+import type { PasswordVerifierRecord } from "@/entities/user/model/offline-credentials";
+import type { StoredLocalPasskey } from "@/entities/user/model/offline-passkey";
+import { openDb } from "@/shared/platform/sqlite/database";
 
 // ---------------------------------------------------------------------------
 // Types (mirrors offlineAuthEnvelope.ts exactly)

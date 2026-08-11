@@ -2,17 +2,9 @@ import type {
   AuthenticationOptionsJSON,
   AuthenticationResponseJSON,
 } from "@/features/passkeys/api/passkey-client";
+import type { StoredLocalPasskey } from "@/entities/user/model/offline-passkey";
 
-export interface StoredLocalPasskey {
-  credentialId: string;
-  publicKey: string;
-  publicKeyAlgorithm: number;
-  transports: AuthenticatorTransport[];
-  deviceLabel: string;
-  rpId: string;
-  counter: number;
-  isAdmin: boolean;
-}
+export type { StoredLocalPasskey } from "@/entities/user/model/offline-passkey";
 
 interface VerifyLocalPasskeyAssertionInput {
   storedCredential: StoredLocalPasskey;

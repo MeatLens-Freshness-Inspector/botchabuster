@@ -9,7 +9,7 @@
  */
 
 import type { FreshnessClassification, Inspection } from "@/types/inspection";
-import { openDb } from "./db";
+import { openDb } from "@/shared/platform/sqlite/database";
 
 // ---------------------------------------------------------------------------
 // Types (mirrors inspectionHistoryCache.ts exactly)

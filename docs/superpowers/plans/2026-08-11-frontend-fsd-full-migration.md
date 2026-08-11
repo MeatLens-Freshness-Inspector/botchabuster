@@ -264,9 +264,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 042 — refactor: split session cache persistence**
   - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/session-cache.ts + frontend/src/lib/authCache.ts -> frontend/src/entities/user/model/session-cache-storage.ts. Auth/profile/admin cache persistence now belongs to the user entity, while auth headers are shared infrastructure and all API clients use that primitive directly.
   - Validate: F.
-- [ ] **Commit 043 — refactor: split offline auth envelope**
-  - Change: frontend/src/lib/offlineAuthEnvelope.ts -> frontend/src/entities/user/model/offline-auth-envelope.ts + frontend/src/lib/offlineCredentials.ts -> frontend/src/entities/user/model/offline-credentials.ts.
-  - Validate: F.
+- [x] **Commit 043 — refactor: split offline auth envelope**
+  - Change: moved offline credentials and the offline auth envelope into the user entity model; moved the SQLite auth-envelope adapter into the user entity API and the SQLite bootstrap into shared platform infrastructure, with all queue/cache consumers updated to the new bootstrap path.
+  - Validate: focused offline-auth tests, typecheck, lint, and architecture checks passed; full F gate remains the milestone validation.
 - [ ] **Commit 044 — refactor: split session restoration service**
   - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/restore-session.ts + frontend/src/entities/user/model/session-store.ts.
   - Validate: F.

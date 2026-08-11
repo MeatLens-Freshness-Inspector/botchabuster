@@ -26,3 +26,18 @@ export {
   setCachedAuth,
   setCachedProfile,
 } from "./model/session-cache-storage";
+export {
+  clearOfflineAuthEnvelope,
+  getOfflineAuthEnvelopeSnapshot,
+  isOfflineAuthExpired,
+  loadOfflineAuthEnvelope,
+  saveOfflineAuthEnvelope,
+  updateOfflineAuthEnvelope,
+  type OfflineAuthEnvelope,
+} from "./model/offline-auth-envelope";
+export {
+  createPasswordVerifier,
+  verifyPasswordVerifier,
+  type PasswordVerifierRecord,
+} from "./model/offline-credentials";
+export type { StoredLocalPasskey } from "./model/offline-passkey";

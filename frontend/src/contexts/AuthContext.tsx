@@ -28,7 +28,7 @@ import {
   createPasswordVerifier,
   readLegacyOfflineCredential,
   verifyPasswordVerifier,
-} from "@/lib/offlineCredentials";
+} from "@/entities/user/model/offline-credentials";
 import { queueAuditLog } from "@/lib/offlineAuditQueue";
 import {
   clearOfflineAuthEnvelope,
@@ -37,7 +37,7 @@ import {
   saveOfflineAuthEnvelope,
   updateOfflineAuthEnvelope,
   type OfflineAuthEnvelope,
-} from "@/lib/offlineAuthEnvelope";
+} from "@/entities/user/model/offline-auth-envelope";
 import { startPasskeyAuthentication } from "@/features/passkeys/lib/browser";
 import {
   createLocalPasskeyAuthenticationOptions,

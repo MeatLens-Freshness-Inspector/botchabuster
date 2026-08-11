@@ -14,7 +14,7 @@ import {
 import {
   clearOfflineAuthEnvelope,
   loadOfflineAuthEnvelope,
-} from "../../../src/lib/offlineAuthEnvelope";
+} from "../../../src/entities/user/model/offline-auth-envelope";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;

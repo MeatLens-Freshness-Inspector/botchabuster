@@ -12,8 +12,8 @@ import {
   clearOfflineAuthEnvelope,
   loadOfflineAuthEnvelope,
   saveOfflineAuthEnvelope,
-} from "../../../src/lib/offlineAuthEnvelope";
-import { createPasswordVerifier } from "../../../src/lib/offlineCredentials";
+} from "../../../src/entities/user/model/offline-auth-envelope";
+import { createPasswordVerifier } from "../../../src/entities/user/model/offline-credentials";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;

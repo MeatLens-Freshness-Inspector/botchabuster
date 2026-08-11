@@ -8,12 +8,12 @@ import { createRoot, type Root } from "react-dom/client";
 import { AuthProvider, useAuth } from "../../../src/contexts/AuthContext";
 import { authClient } from "../../../src/features/auth/api/auth-client";
 import { clearApiCsrfToken, getApiCsrfToken } from "../../../src/shared/api/request";
-import { createPasswordVerifier } from "../../../src/lib/offlineCredentials";
+import { createPasswordVerifier } from "../../../src/entities/user/model/offline-credentials";
 import {
   clearOfflineAuthEnvelope,
   loadOfflineAuthEnvelope,
   saveOfflineAuthEnvelope,
-} from "../../../src/lib/offlineAuthEnvelope";
+} from "../../../src/entities/user/model/offline-auth-envelope";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;

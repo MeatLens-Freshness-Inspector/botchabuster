@@ -1,7 +1,7 @@
 import {
   getOfflineAuthEnvelopeSnapshot,
   updateOfflineAuthEnvelope,
-} from "@/lib/offlineAuthEnvelope";
+} from "@/entities/user/model/offline-auth-envelope";
 import type { StoredLocalPasskey } from "@/features/passkeys/lib/local-unlock";
 
 export const LOCAL_PASSKEY_STORAGE_KEY = "meatlens-local-passkey";
