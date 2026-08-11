@@ -7,7 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@/components/ui/sheet";
+} from "@/shared/ui/sheet";
 import { ChevronRight, Fingerprint, Menu } from "lucide-react";
 
 type LandingHeaderProps = {

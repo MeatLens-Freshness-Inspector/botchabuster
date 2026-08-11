@@ -155,8 +155,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Keep the lightweight shared/ui barrel free of the browser-sensitive dialog module; use shared/ui/dialog.tsx as its dedicated public entry and shared/ui/form.tsx/shared/ui/label.tsx as the form public entries.
   - Validate: F.
 
-- [ ] **Commit 015 — refactor: decompose shared sidebar primitive**
-  - Change: frontend/src/components/ui/sidebar.tsx -> frontend/src/shared/ui/sidebar/sidebar-provider.tsx + frontend/src/shared/ui/sidebar/sidebar-layout.tsx.
+- [x] **Commit 015 — refactor: decompose shared sidebar primitive**
+  - Change: frontend/src/components/ui/sidebar.tsx -> frontend/src/shared/ui/sidebar/sidebar-provider.tsx + frontend/src/shared/ui/sidebar/sidebar-layout.tsx + frontend/src/shared/ui/sidebar/sidebar-menu.tsx; move the sidebar’s generic separator, sheet, skeleton, and tooltip dependencies into shared UI public modules in the same commit.
   - Keep the public Sidebar exports stable through frontend/src/shared/ui/sidebar/index.ts; the resulting maintained files must each be below 450 non-blank lines.
   - Validate: F.
 
