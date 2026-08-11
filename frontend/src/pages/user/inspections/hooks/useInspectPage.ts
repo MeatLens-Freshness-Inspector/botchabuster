@@ -42,7 +42,7 @@ import {
   requestCurrentCoordinates,
   type CoordinateCaptureStatus,
   type InspectionCoordinates,
-} from "@/lib/inspectionLocation";
+} from "@/entities/inspection";
 import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
 import type { CapturedImagePayload } from "@/components/CameraCapture";
 import type { InspectPageViewModel, InspectionSaveStatus } from "../types";

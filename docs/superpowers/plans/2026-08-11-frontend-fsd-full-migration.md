@@ -307,8 +307,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 054 — refactor: move inspection pre-scan model**
   - Change: moved the pre-scan protocol model into `entities/inspection/model/pre-scan.ts`, exposed it through the inspection entity API, and migrated app/page consumers and tests.
   - Validate: pre-scan unit tests (3), typecheck, and lint passed with the existing 16 warnings.
-- [ ] **Commit 055 — refactor: move inspection location model**
-  - Change: frontend/src/lib/inspectionLocation.ts -> frontend/src/entities/inspection/model/location.ts + frontend/tests/unit/domain/inspections/inspection-location.unit.test.ts. Validate: F.
+- [x] **Commit 055 — refactor: move inspection location model**
+  - Change: moved coordinate capture and inspection-location formatting into `entities/inspection/model/location.ts`, exposed it through the entity public API, and migrated capture, history, dashboard, and component consumers.
+  - Validate: location unit tests (3), typecheck, and lint passed with the existing 16 warnings.
 - [ ] **Commit 056 — refactor: move inspection endpoint client**
   - Change: frontend/src/integrations/api/InspectionClient.ts -> frontend/src/entities/inspection/api/inspection-client.ts + frontend/tests/integration/api/inspection-client.integration.test.ts. Validate: I.
 - [ ] **Commit 057 — refactor: create inspection query keys**

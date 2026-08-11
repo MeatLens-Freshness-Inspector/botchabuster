@@ -9,7 +9,7 @@ import { developerDashboardClient, type DeveloperOverviewMetricPoint } from "@/i
 import { inspectionClient } from "@/integrations/api/InspectionClient";
 import { marketLocationClient, type MarketLocation } from "@/integrations/api/MarketLocationClient";
 import { profileClient, type Profile } from "@/entities/user/api";
-import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
+import { formatInspectionLocationLabel } from "@/entities/inspection";
 import { DEFAULT_MARKET_LOCATIONS } from "@/lib/marketLocations";
 import {
   getReportOrganizationLabel,

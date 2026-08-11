@@ -4,7 +4,7 @@ import { FreshnessBadge } from "@/components/FreshnessBadge";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Dialog, DialogContent } from "@/shared/ui/dialog";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
-import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
+import { formatInspectionLocationLabel } from "@/entities/inspection";
 import { cn } from "@/shared/lib/utils";
 import { format } from "date-fns";
 import { MapPin, Hash } from "lucide-react";

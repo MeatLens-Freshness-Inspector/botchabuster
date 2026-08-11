@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/shared/ui/dialog";
 import { getConfidenceFillClass, getConfidenceTextClass } from "@/shared/lib/confidence-level";
-import { formatInspectionLocationLabel } from "@/lib/inspectionLocation";
+import { formatInspectionLocationLabel } from "@/entities/inspection";
 import { cn } from "@/shared/lib/utils";
 import { format } from "date-fns";
 import {

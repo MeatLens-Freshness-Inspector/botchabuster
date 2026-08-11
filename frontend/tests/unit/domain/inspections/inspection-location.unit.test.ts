@@ -5,7 +5,7 @@ import {
   formatInspectionLocationLabel,
   getCoordinateStatusText,
   requestCurrentCoordinates,
-} from "../../../../src/lib/inspectionLocation";
+} from "../../../../src/entities/inspection/model/location";
 
 test("requestCurrentCoordinates resolves the current GPS position", async () => {
   Object.defineProperty(globalThis, "navigator", {

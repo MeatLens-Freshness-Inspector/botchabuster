@@ -20,3 +20,12 @@ export {
   type InspectionPreScanChoice,
   type InspectionPreScanForm,
 } from "./model/pre-scan";
+export {
+  formatCoordinateValue,
+  formatInspectionCoordinateLabel,
+  formatInspectionLocationLabel,
+  getCoordinateStatusText,
+  requestCurrentCoordinates,
+  type CoordinateCaptureStatus,
+  type InspectionCoordinates,
+} from "./model/location";
