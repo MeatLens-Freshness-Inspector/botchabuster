@@ -21,7 +21,7 @@ import { PublicLayout } from "@/app/layouts/public-layout";
 import { hasSkippedOnboardingForSession } from "@/features/onboarding";
 import { uploadClient } from "@/integrations/api/UploadClient";
 import { inspectionClient } from "@/entities/inspection";
-import { auditLogClient } from "@/integrations/api/AuditLogClient";
+import { auditLogClient } from "@/entities/audit-log";
 import {
   getPendingAuditLogs,
   getPendingScans,
