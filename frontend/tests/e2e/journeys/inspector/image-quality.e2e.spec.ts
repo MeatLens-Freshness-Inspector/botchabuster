@@ -16,7 +16,7 @@ import {
   validateImageQuality,
   type ImageQualityIssue,
   type ImageQualityResult,
-} from "../../../../src/lib/imageQuality";
+} from "../../../../src/features/inspection-capture/lib/image-quality";
 
 // ---------------------------------------------------------------------------
 // Helpers â€” synthetic ImageData builders

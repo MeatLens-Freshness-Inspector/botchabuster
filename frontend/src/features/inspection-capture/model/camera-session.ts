@@ -3,7 +3,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 
 import { assessFileQuality } from "../lib/capture-quality";
-import { type ImageQualityResult } from "../../../lib/imageQuality";
+import { type ImageQualityResult } from "../lib/image-quality";
 import {
   createModelInputImageFile,
   DEFAULT_MEATLENS_INPUT_SIZE,

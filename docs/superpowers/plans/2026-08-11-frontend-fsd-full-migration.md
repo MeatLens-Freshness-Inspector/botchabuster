@@ -342,8 +342,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the capture-quality gate into `features/inspection-capture/lib/capture-quality.ts`, updated the camera session and Playwright contract to consume the feature module, and exposed the quality API through the feature public index.
   - TDD: redirected the browser contract first (RED with Playwright unable to load the absent feature module), then moved the implementation and reached GREEN with all six capture-quality tests discoverable and camera behavior tests passing.
   - Validate: Playwright capture-quality listing (6 tests), targeted camera unit/integration tests (7), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 065 — refactor: move image-quality feature**
-  - Change: frontend/src/lib/imageQuality.ts -> frontend/src/features/inspection-capture/lib/image-quality.ts + frontend/tests/e2e/journeys/inspector/image-quality.e2e.spec.ts. Validate: P-inspect.
+- [x] **Commit 065 — refactor: move image-quality feature**
+  - Change: moved image-quality validation into `features/inspection-capture/lib/image-quality.ts`, updated the camera quality adapter/session contracts and offline-analysis consumer to use the feature public API, and migrated the 26-case Playwright contract.
+  - TDD: redirected the browser contract first (RED on the missing feature module), then moved the implementation and reached GREEN with all 26 image-quality tests passing.
+  - Validate: Playwright image-quality tests (26), camera quality/device units (6), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 066 — refactor: create inspection submission feature**
   - Change: frontend/src/pages/user/inspections/hooks/useInspectPage.ts -> frontend/src/features/inspection-submission/model/use-submit-inspection.ts + frontend/src/entities/inspection/model/mutations.ts. Validate: I.
 - [ ] **Commit 067 — refactor: move offline queue contract**

@@ -1,7 +1,7 @@
 import {
   validateImageQuality,
   type ImageQualityResult,
-} from "../../../lib/imageQuality";
+} from "./image-quality";
 
 interface ImageQualityTestWindow extends Window {
   __mockImageQualityResult?: ImageQualityResult;

@@ -16,7 +16,7 @@ import {
   setActiveAnalysisMode,
 } from "./analysisRuntime";
 import { type SquareGuideBox } from "./meatLensPipeline";
-import { validateImageQuality, type ImageQualityResult } from "@/lib/imageQuality";
+import { validateImageQuality, type ImageQualityResult } from "@/features/inspection-capture";
 
 export {
   getActiveAnalysisMode,

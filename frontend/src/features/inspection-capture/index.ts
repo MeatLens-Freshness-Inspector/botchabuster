@@ -18,6 +18,15 @@ export {
   type CaptureQualityResult,
   type ForegroundPresenceDecision,
 } from "./lib/capture-quality";
+export {
+  calculateBrightness,
+  calculateSharpness,
+  validateImageQuality,
+  validateImageResolution,
+  type ImageQualityIssue,
+  type ImageQualityResult,
+  type ImageQualityStatus,
+} from "./lib/image-quality";
 export { CameraCapture } from "./ui/camera-capture";
 export { CameraCaptureView } from "./ui/camera-capture-view";
 export type {
