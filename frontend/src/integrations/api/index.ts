@@ -3,7 +3,6 @@ export { AccessCodeClient, accessCodeClient, type AccessCode } from "./AccessCod
 export { MarketLocationClient, marketLocationClient, type MarketLocation } from "./MarketLocationClient";
 export { StatsClient, statsClient, type LandingPageStats } from "./StatsClient";
 export { UploadClient, uploadClient } from "./UploadClient";
-export { AuthClient, authClient, type AuthUser, type AuthSession } from "./AuthClient";
 export {
   PasskeyClient,
   passkeyClient,

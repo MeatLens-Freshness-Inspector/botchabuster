@@ -4,7 +4,7 @@
  * All API calls are short-circuited and return realistic mock data.
  */
 
-import type { AuthUser, AuthSession } from "@/integrations/api/AuthClient";
+import type { AuthUser, AuthSession } from "@/features/auth/api/auth-client";
 import type { Profile } from "@/entities/user/api/profile-client";
 import type { Inspection, AnalysisResult } from "@/types/inspection";
 import type { LandingPageStats } from "@/integrations/api/StatsClient";

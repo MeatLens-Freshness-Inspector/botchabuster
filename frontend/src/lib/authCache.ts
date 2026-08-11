@@ -1,4 +1,4 @@
-import type { AuthSession, AuthUser } from "@/integrations/api/AuthClient";
+import type { AuthSession, AuthUser } from "@/features/auth/api/auth-client";
 import { readJson } from "@/shared/lib/storage";
 import type { Profile } from "@/entities/user/api/profile-client";
 export { createAuthHeaders } from "@/shared/api/auth-headers";

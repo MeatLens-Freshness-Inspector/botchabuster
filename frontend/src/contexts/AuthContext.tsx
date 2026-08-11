@@ -6,7 +6,7 @@ import {
   type AuthRole,
   type AuthSession,
   type AuthUser,
-} from "@/integrations/api/AuthClient";
+} from "@/features/auth/api";
 import { passkeyClient } from "@/integrations/api/PasskeyClient";
 import { profileClient, type Profile } from "@/entities/user/api";
 import {

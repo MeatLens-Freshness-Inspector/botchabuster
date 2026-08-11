@@ -1,5 +1,5 @@
-import type { ReportOrganization } from "@/lib/reportOrganizations";
-import { createAuthHeaders } from "@/lib/authCache";
+import type { ReportOrganization } from "@/entities/user/api/profile-client";
+import { createAuthHeaders } from "@/shared/api/auth-headers";
 import { createHttpApiError, fetchWithTimeout, readApiErrorMessage } from "@/shared/api";
 import { API_BASE_URL } from "@/shared/api/base-url";
 import type { Profile } from "@/entities/user/api/profile-client";

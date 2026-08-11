@@ -1,8 +1,4 @@
 export {
-  InactivityGuard,
-  type InactivityGuardProps,
-} from "./ui/inactivity-guard";
-export {
   AuthClient,
   authClient,
   type AuthBootstrapPayload,
@@ -10,4 +6,4 @@ export {
   type AuthRole,
   type AuthSession,
   type AuthUser,
-} from "./api";
+} from "./auth-client";

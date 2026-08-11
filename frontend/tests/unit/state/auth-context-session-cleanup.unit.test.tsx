@@ -6,7 +6,7 @@ import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { AuthProvider, useAuth } from "../../../src/contexts/AuthContext";
-import { authClient } from "../../../src/integrations/api/AuthClient";
+import { authClient } from "../../../src/features/auth/api/auth-client";
 import {
   clearApiCsrfToken,
   refreshApiSessionForCsrf,

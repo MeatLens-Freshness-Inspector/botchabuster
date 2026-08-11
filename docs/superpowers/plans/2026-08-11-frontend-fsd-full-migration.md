@@ -252,8 +252,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 038 — refactor: migrate profile read API**
   - Change: frontend/src/integrations/api/ProfileClient.ts -> frontend/src/entities/user/api/profile-client.ts + frontend/src/entities/user/api/index.ts. All current profile consumers now use the entity API; shared auth-header ownership prevents the entity client from importing legacy cache code.
   - Validate: I.
-- [ ] **Commit 039 — refactor: migrate authentication API**
-  - Change: frontend/src/integrations/api/AuthClient.ts -> frontend/src/features/auth/api/auth-client.ts + frontend/src/features/auth/index.ts.
+- [x] **Commit 039 — refactor: migrate authentication API**
+  - Change: frontend/src/integrations/api/AuthClient.ts -> frontend/src/features/auth/api/auth-client.ts + frontend/src/features/auth/index.ts. Auth state consumers, offline persistence types, passkey typing, and security tests now depend on the auth feature API.
   - Validate: F.
 - [ ] **Commit 040 — refactor: migrate passkey browser API**
   - Change: frontend/src/integrations/api/PasskeyClient.ts -> frontend/src/features/passkeys/api/passkey-client.ts + frontend/src/lib/passkeys/browser.ts -> frontend/src/features/passkeys/lib/browser.ts.

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
-import { authClient } from "../../../../src/integrations/api/AuthClient";
+import { authClient } from "../../../../src/features/auth/api/auth-client";
 import { uploadClient } from "../../../../src/integrations/api/UploadClient";
 import { clearApiCsrfToken, setApiCsrfToken } from "../../../../src/shared/api/request";
 import { getChatRequestHeaders } from "../../../../src/widgets/assistant";
