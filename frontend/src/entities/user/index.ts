@@ -57,3 +57,8 @@ export {
   type PasswordVerifierRecord,
 } from "./model/offline-credentials";
 export type { StoredLocalPasskey } from "./model/offline-passkey";
+export {
+  createProfileDialogState,
+  type ProfileDialogKey,
+  type ProfileDialogState,
+} from "./model/profile-types";

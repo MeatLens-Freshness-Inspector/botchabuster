@@ -15,14 +15,14 @@ import {
   storeLocalPasskey,
 } from "@/legacy-passkey-storage";
 import { applyTheme } from "@/shared/lib/theme-preference";
-import type { ProfileDialogKey, ProfileDialogState } from "../types";
+import {
+  createProfileDialogState,
+  type ProfileDialogKey,
+  type ProfileDialogState,
+} from "@/entities/user";
 import { applyLocalDeviceReady, getProfileInitials } from "../utils/profilePage";
 
-const INITIAL_DIALOG_STATE: ProfileDialogState = {
-  showPrivacyDialog: false,
-  showSignOutConfirm: false,
-  showTermsDialog: false,
-};
+const INITIAL_DIALOG_STATE: ProfileDialogState = createProfileDialogState();
 
 export function useProfilePage() {
   const navigate = useNavigate();

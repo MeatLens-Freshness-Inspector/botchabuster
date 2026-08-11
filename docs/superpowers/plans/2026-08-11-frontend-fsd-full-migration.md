@@ -445,8 +445,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 **Interfaces:** Produces isolated user, message, onboarding, tutorial, assistant, legal, and public-page APIs while retaining all current screens.
 
-- [ ] **Commit 089 — refactor: finalize user entity profile model**
-  - Change: frontend/src/pages/user/profile/types.ts -> frontend/src/entities/user/model/profile-types.ts + frontend/src/entities/user/api/profile-client.ts. Validate: F.
+- [x] **Commit 089 — refactor: finalize user entity profile model**
+  - Change: moved profile dialog state types into `entities/user/model/profile-types.ts`, added an entity-owned initial-state factory, and published the contract through the user entity API; the profile client was already entity-owned and remains there.
+  - TDD: added the closed-dialog state contract before implementation (RED on the absent entity model, then GREEN with the factory test).
+  - Validate: focused profile model test, typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 090 — refactor: create profile editing feature model**
   - Change: frontend/src/pages/user/profile/hooks/useProfilePage.ts -> frontend/src/features/profile-editing/model/use-profile-editor.ts + frontend/src/features/profile-editing/index.ts. Validate: I.
 - [ ] **Commit 091 — refactor: move profile primary UI**

@@ -5,3 +5,11 @@ export type ProfileDialogState = {
 };
 
 export type ProfileDialogKey = keyof ProfileDialogState;
+
+export function createProfileDialogState(): ProfileDialogState {
+  return {
+    showPrivacyDialog: false,
+    showSignOutConfirm: false,
+    showTermsDialog: false,
+  };
+}
