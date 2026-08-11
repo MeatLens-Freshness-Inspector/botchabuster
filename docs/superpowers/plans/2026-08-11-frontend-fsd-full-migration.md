@@ -670,10 +670,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: frontend/package.json + frontend/scripts/check-fsd-boundaries.mjs.
   - Make the CI command fail on every non-FSD production owner, deep import, upward import, or maintained source file over 600 non-blank lines.
   - TDD evidence: fixture tests cover upward imports, cross-slice deep imports, non-FSD owners, split-trigger counting, and hard-limit detection; the enforced repository audit reports zero structural violations and zero hard-limit files. Validate: `npm run test:architecture -w frontend`, `npm run typecheck -w frontend`, and `npm run lint -w frontend`.
-- [ ] **Commit 143 — test: audit public slice APIs and legacy absence**
+- [x] **Commit 143 — test: audit public slice APIs and legacy absence**
   - Change: frontend/tests/unit/architecture/final-fsd-audit.unit.test.ts + frontend/scripts/check-source-size.mjs.
   - Assert that no legacy root owner, bridge alias, or compatibility re-export is present and that every maintained source file is within the cap.
-  - Validate: B.
+  - TDD evidence: the final audit test executes the repository boundary and hard-limit checks against the real `frontend/src` tree and verifies migrated public slice indexes; both audit tests pass. Validate: `npm run test:architecture -w frontend`, `npx tsx --test tests/unit/architecture/final-fsd-audit.unit.test.ts`, `npm run typecheck -w frontend`, and `npm run lint -w frontend`.
 - [ ] **Commit 144 — test: complete full-migration regression audit**
   - Change: frontend/tests/e2e/smoke/not-found.e2e.spec.ts + frontend/tests/e2e/journeys/administrator/admin-dashboard.e2e.spec.ts.
   - Run typecheck, lint, all architecture checks, full frontend unit/component/integration suite, production build, critical end-to-end suite, then verify the commit ledger has at least 144 qualifying implementation commits.

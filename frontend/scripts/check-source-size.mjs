@@ -58,6 +58,11 @@ export async function findSourceSizeViolations(
   return violations.sort((left, right) => left.file.localeCompare(right.file));
 }
 
+export async function findHardLimitViolations(rootDir, options = {}) {
+  const violations = await findSourceSizeViolations(rootDir, options);
+  return violations.filter((violation) => violation.rule === "hard-limit");
+}
+
 const isDirectExecution =
   process.argv[1] &&
   path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
@@ -69,7 +74,7 @@ if (isDirectExecution) {
 
   if (
     process.argv.includes("--enforce") &&
-    violations.some((violation) => violation.rule === "hard-limit")
+    (await findHardLimitViolations(rootDir)).length > 0
   ) {
     process.exitCode = 1;
   }
