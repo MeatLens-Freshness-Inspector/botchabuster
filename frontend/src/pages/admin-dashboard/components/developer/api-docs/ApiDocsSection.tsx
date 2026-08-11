@@ -5,7 +5,7 @@ import { ApiDocsCategoryNav } from "./ApiDocsCategoryNav";
 import { ApiDocsHistoryPanel } from "./ApiDocsHistoryPanel";
 import { ApiDocsRequestPanel } from "./ApiDocsRequestPanel";
 import { ApiDocsResponsePanel } from "./ApiDocsResponsePanel";
-import { useApiDocs } from "./useApiDocs";
+import { useApiDocs } from "@/features/developer-tools";
 
 export function ApiDocsSection() {
   const apiDocs = useApiDocs();

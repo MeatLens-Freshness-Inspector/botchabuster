@@ -1,6 +1,6 @@
 import { createAuthHeaders } from "@/shared/api/auth-headers";
 import { API_BASE_URL } from "@/shared/api/base-url";
-import { redactJsonText, redactRecord, sanitizeUrl } from "./redaction";
+import { redactJsonText, redactRecord, sanitizeUrl } from "./api-docs-redaction";
 import type {
   ApiDocsBodyField,
   ApiDocsEditorValues,

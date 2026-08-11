@@ -4,10 +4,9 @@ import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { JSDOM } from "jsdom";
-import { API_DOCS_OPERATIONS } from "../../../src/pages/admin-dashboard/components/developer/api-docs/catalog";
-import { createDefaultApiDocsEditorValues } from "../../../src/pages/admin-dashboard/components/developer/api-docs/request";
+import { API_DOCS_OPERATIONS, createDefaultApiDocsEditorValues } from "../../../src/features/developer-tools";
 import { ApiDocsRequestPanel } from "../../../src/pages/admin-dashboard/components/developer/api-docs/ApiDocsRequestPanel";
-import type { ApiDocsEditorValues } from "../../../src/pages/admin-dashboard/components/developer/api-docs/types";
+import type { ApiDocsEditorValues } from "../../../src/features/developer-tools";
 
 type GlobalWithDom = typeof globalThis & { window: Window & typeof globalThis; document: Document };
 

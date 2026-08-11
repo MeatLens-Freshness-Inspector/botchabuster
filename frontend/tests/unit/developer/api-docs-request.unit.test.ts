@@ -4,8 +4,8 @@ import {
   buildApiDocsRequest,
   createDefaultApiDocsEditorValues,
   validateApiDocsEditor,
-} from "../../../src/pages/admin-dashboard/components/developer/api-docs/request";
-import type { ApiDocsOperation } from "../../../src/pages/admin-dashboard/components/developer/api-docs/types";
+} from "../../../src/features/developer-tools";
+import type { ApiDocsOperation } from "../../../src/features/developer-tools";
 
 const operationWithPathAndQuery: ApiDocsOperation = {
   id: "inspection-get",

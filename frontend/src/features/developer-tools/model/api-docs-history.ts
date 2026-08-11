@@ -1,7 +1,7 @@
 import type { ApiDocsEditorValues } from "@/features/developer-tools";
-import type { ApiDocsRequest } from "./request";
+import type { ApiDocsRequest } from "./api-docs-request";
 import type { ApiDocsOperation } from "@/features/developer-tools";
-import { redactHeaders, redactJsonText, redactRecord } from "./redaction";
+import { redactHeaders, redactJsonText, redactRecord } from "./api-docs-redaction";
 
 export const API_DOCS_HISTORY_STORAGE_KEY = "meatlens-api-docs-history";
 const MAX_HISTORY_ENTRIES = 20;

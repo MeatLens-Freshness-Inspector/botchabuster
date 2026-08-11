@@ -3,7 +3,7 @@ import { Check, Clipboard, Clock3, Code2, Copy, Download, FileText, HardDrive, L
 import { Button } from "@/shared/ui";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { cn } from "@/shared/lib/utils";
-import type { ApiDocsResponse } from "./response";
+import type { ApiDocsResponse } from "@/features/developer-tools";
 
 type ApiDocsResponsePanelProps = {
   response: ApiDocsResponse | null;

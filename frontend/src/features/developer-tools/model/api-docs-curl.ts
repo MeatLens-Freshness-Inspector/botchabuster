@@ -1,5 +1,5 @@
-import type { ApiDocsRequest } from "./request";
-import { redactHeaders } from "./redaction";
+import type { ApiDocsRequest } from "./api-docs-request";
+import { redactHeaders } from "./api-docs-redaction";
 
 const PROTECTED_HEADERS = new Set(["authorization", "x-csrf-token"]);
 

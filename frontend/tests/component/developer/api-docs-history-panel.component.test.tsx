@@ -5,7 +5,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { JSDOM } from "jsdom";
 import { ApiDocsHistoryPanel } from "../../../src/pages/admin-dashboard/components/developer/api-docs/ApiDocsHistoryPanel";
-import type { ApiDocsHistoryEntry } from "../../../src/pages/admin-dashboard/components/developer/api-docs/history";
+import type { ApiDocsHistoryEntry } from "../../../src/features/developer-tools";
 
 type GlobalWithDom = typeof globalThis & { window: Window & typeof globalThis; document: Document };
 

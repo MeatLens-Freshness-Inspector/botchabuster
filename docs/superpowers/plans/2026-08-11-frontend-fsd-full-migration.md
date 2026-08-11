@@ -628,8 +628,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the API documentation catalog and type vocabulary into developer-tools feature model ownership and redirected page consumers through the feature public API.
   - TDD: added the API-docs catalog public contract before relocation (RED on missing exports, then GREEN after wiring).
   - Validate: focused API-docs model test and typecheck passed.
-- [ ] **Commit 133 — refactor: migrate API documentation request flow**
-  - Change: frontend/src/pages/admin-dashboard/components/developer/api-docs/request.ts -> frontend/src/features/developer-tools/model/api-docs-request.ts + frontend/src/pages/admin-dashboard/components/developer/api-docs/useApiDocs.ts -> frontend/src/features/developer-tools/model/use-api-docs.ts. Validate: F.
+- [x] **Commit 133 — refactor: migrate API documentation request flow**
+  - Change: moved API-docs request construction, redaction, response parsing, history, cURL generation, and hook orchestration into developer-tools feature model ownership.
+  - TDD: added the API-docs flow public contract and redirected existing behavior tests through the feature API.
+  - Validate: API-docs hook behavior test, focused flow contract, and typecheck passed.
 - [ ] **Commit 134 — refactor: migrate API documentation UI**
   - Change: frontend/src/pages/admin-dashboard/components/developer/api-docs/ApiDocsSection.tsx -> frontend/src/features/developer-tools/ui/api-docs-section.tsx + frontend/src/pages/admin-dashboard/components/developer/api-docs/ApiDocsResponsePanel.tsx -> frontend/src/features/developer-tools/ui/api-docs-response-panel.tsx. Validate: F.
 - [ ] **Commit 135 — refactor: compose desktop and mobile admin widgets**

@@ -5,7 +5,7 @@ import {
   API_DOCS_OPERATION_BY_ID,
   API_DOCS_OPERATIONS,
 } from "@/features/developer-tools";
-import { buildApiDocsCurl } from "./curl";
+import { buildApiDocsCurl } from "./api-docs-curl";
 import {
   clearApiDocsHistory,
   loadApiDocsHistory,
@@ -13,15 +13,15 @@ import {
   toApiDocsHistoryEntry,
   toApiDocsReplayValues,
   type ApiDocsHistoryEntry,
-} from "./history";
+} from "./api-docs-history";
 import {
   buildApiDocsRequest,
   createDefaultApiDocsEditorValues,
-} from "./request";
+} from "./api-docs-request";
 import {
   readApiDocsResponse,
   type ApiDocsResponse,
-} from "./response";
+} from "./api-docs-response";
 import type {
   ApiDocsEditorValues,
   ApiDocsOperation,
