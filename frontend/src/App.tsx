@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/shared/ui/sonner";
 import { Toaster } from "@/shared/ui/toaster";
@@ -14,7 +13,7 @@ import { OfflineSyncManager } from "@/components/OfflineSyncManager";
 import { InactivityGuard } from "@/components/InactivityGuard";
 import { useStartupNetworkCheck } from "@/hooks/useStartupNetworkCheck";
 import { applyTheme } from "@/lib/themePreference";
-import { queryClient } from "@/app/config/query-client";
+import { QueryProvider } from "@/app/providers/query-provider";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -77,7 +76,7 @@ function ThemeRouteController() {
 
 const App = () => {
   return (
-  <QueryClientProvider client={queryClient}>
+  <QueryProvider>
     <OfflineBanner />
     <TooltipProvider>
       <Toaster />
@@ -116,7 +115,7 @@ const App = () => {
         </NetworkStartupGate>
       </BrowserRouter>
     </TooltipProvider>
-  </QueryClientProvider>
+  </QueryProvider>
   );
 };
 

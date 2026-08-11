@@ -182,7 +182,7 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 **Interfaces:** Produces app/App, app/router, app/providers, and widget public APIs. Existing URL strings and guard outcomes remain byte-for-byte identical.
 
-- [ ] **Commit 019 — refactor: extract query provider**
+- [x] **Commit 019 — refactor: extract query provider**
   - Change: frontend/src/App.tsx -> frontend/src/app/providers/query-provider.tsx + frontend/src/app/App.tsx.
   - Validate: F.
 - [ ] **Commit 020 — refactor: extract notification provider**
