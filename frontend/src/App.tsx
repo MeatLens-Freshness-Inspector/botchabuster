@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { AdminRoute, OnboardingRoute } from "@/components/ProtectedRoute";
+import { OnboardingRoute } from "@/components/ProtectedRoute";
 import { BottomNav } from "@/components/BottomNav";
 import { AIChatbot } from "@/components/AIChatbot";
 import { OfflineBanner } from "@/components/OfflineBanner";
@@ -13,6 +13,7 @@ import { NetworkProvider } from "@/app/providers/network-provider";
 import { ThemeController } from "@/app/providers/theme-controller";
 import { ROUTE_PATHS } from "@/app/router/paths";
 import { ProtectedRoute as ProtectedRouteGuard, type ProtectedRouteProps } from "@/app/router/guards/protected-route";
+import { AdminRoute as AdminRouteGuard, type AdminRouteProps } from "@/app/router/guards/admin-route";
 import { hasSkippedOnboardingForSession } from "@/lib/onboardingSession";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
@@ -66,6 +67,12 @@ function AuthProtectedRoute({ children }: Pick<ProtectedRouteProps, "children">)
   );
 }
 
+function AuthAdminRoute({ children }: Pick<AdminRouteProps, "children">) {
+  const { user, isAdmin, isLoading } = useAuth();
+
+  return <AdminRouteGuard user={user} isAdmin={isAdmin} isLoading={isLoading}>{children}</AdminRouteGuard>;
+}
+
 const App = () => {
   return (
     <QueryProvider>
@@ -98,7 +105,7 @@ const App = () => {
                   <Route path={ROUTE_PATHS.profileHelpScope} element={<AuthProtectedRoute><AppLayout><ProfileHelpScopePage /></AppLayout></AuthProtectedRoute>} />
 
                   {/* Admin routes */}
-                  <Route path={ROUTE_PATHS.admin} element={<AdminRoute><AdminDashboardWrapper /></AdminRoute>} />
+                  <Route path={ROUTE_PATHS.admin} element={<AuthAdminRoute><AdminDashboardWrapper /></AuthAdminRoute>} />
 
                   <Route path={ROUTE_PATHS.notFound} element={<NotFound />} />
                 </Routes>
