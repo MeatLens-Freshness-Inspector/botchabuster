@@ -13,6 +13,7 @@ Refactor the MeatLens frontend into a scalable Feature-Sliced Design (FSD) archi
 - Migrate in independently releasable slices. A phase is complete only after its targeted validation passes and its compatibility boundary is explicit.
 - This is a full-scale migration, not a partial reorganization. The completed frontend contains only the FSD architecture defined here; it retains no legacy architectural layer, legacy root ownership, compatibility facade, or legacy import alias.
 - The implementation must produce at least 140 qualifying migration commits after this design phase. A qualifying commit changes at least two non-empty files, delivers one independently verifiable architectural or behavior-preserving refactor unit, and is neither empty, single-file, merge-only, lockfile-only, formatting-only, nor created solely to increase the count.
+- Production source files use a 450-line split trigger and an absolute 600 non-blank-line limit. The limit applies to React components, hooks, contexts, classes, services, modules, and configuration with executable logic; generated, vendored, and third-party source is excluded only when it is not maintained by this project.
 
 ## Target architecture
 
@@ -75,6 +76,8 @@ React components, hooks, route composition, view state, and simple transformatio
 
 Use classes only when they materially improve encapsulation, lifecycle ownership, or testability for stateful infrastructure and domain services. Suitable candidates include offline queues, SQLite/Capacitor persistence adapters, API-client adapters with configurable dependencies, report builders, and local-inference pipeline orchestration. Each class must expose a narrow interface, receive dependencies explicitly, and remain outside React rendering code. Functional modules remain the default when a class adds no meaningful boundary.
 
+No class, context, hook, component, service, or module may become a god object. At 450 non-blank lines, the owner must split it by a real responsibility boundary before adding further behavior; no maintained production file may exceed 600 non-blank lines. A context coordinates provider wiring and exposes a narrow state contract, but does not combine authentication, profile fetching, cache persistence, passkeys, route decisions, and unrelated mutations in one module. The current oversized administrator, authentication, inspection, and offline-analysis modules are explicit decomposition targets, not exceptions.
+
 ## Dependency rules
 
 - `app` may import from every lower layer.
@@ -94,7 +97,8 @@ The dependency rules will be checked through ESLint restricted-import rules and 
 - Enable the runner to discover both the existing top-level tests and colocated slice tests during the transition.
 - Move unit and component tests with the slice they verify once that slice is stable. Keep cross-slice integration and Playwright end-to-end journeys in the shared `tests/` hierarchy.
 - Add focused regression coverage whenever a large module is split, concentrating on public API compatibility, query/mutation behavior, offline persistence boundaries, route guards, and import-boundary rules.
-- Validate each migration phase with typecheck, lint, targeted unit/component/integration tests, a production build, and the affected critical Playwright journey. The final phase runs the full frontend suite.
+- Add an automated non-blank-line source-size check. It fails at more than 600 lines and reports files at or above the 450-line split trigger for mandatory review before the phase can continue.
+- Validate each migration phase with typecheck, lint, the source-size and architecture checks, targeted unit/component/integration tests, a production build, and the affected critical Playwright journey. The final phase runs the full frontend suite.
 
 ## Migration sequence
 
@@ -116,4 +120,4 @@ No legacy root ownership remains at completion: production code will not be owne
 
 ## Definition of done
 
-The refactor is complete when all production frontend code belongs to an FSD layer and public slice API; route pages are composition-only; dependency direction and public import rules are automatically checked; no compatibility exports, legacy aliases, or obsolete root folders remain; and typecheck, lint, production build, existing behavior tests, and critical end-to-end journeys pass with no intentional UI or UX changes. The final migration audit confirms at least 140 qualifying commits, each modifying at least two non-empty files and representing a meaningful, independently verified change.
+The refactor is complete when all production frontend code belongs to an FSD layer and public slice API; route pages are composition-only; dependency direction and public import rules are automatically checked; no compatibility exports, legacy aliases, or obsolete root folders remain; no maintained production source file exceeds 600 non-blank lines; and typecheck, lint, production build, existing behavior tests, source-size checks, and critical end-to-end journeys pass with no intentional UI or UX changes. The final migration audit confirms at least 140 qualifying commits, each modifying at least two non-empty files and representing a meaningful, independently verified change.
