@@ -16,6 +16,11 @@ import {
   parsePrediction as parseFeaturePrediction,
   resolveOutputLabels as resolveFeatureOutputLabels,
 } from "@/features/offline-analysis/lib/classification";
+export {
+  classifyRecommendation,
+  computeFreshnessScore,
+  type FreshnessRecommendation,
+} from "./freshness-score";
 
 export {
   resolveCenteredObjectCoverGuideBox,
@@ -65,8 +70,6 @@ export interface MeatLensModelMetadata {
 }
 
 export type ModelPreprocessMode = "mobilenet_v3" | "efficientnet" | "resnet50" | "identity";
-
-export type FreshnessRecommendation = "Good for Consumption" | "Consume Immediately" | "Not Suitable";
 
 export const DEFAULT_MEATLENS_INPUT_SIZE = 224;
 const RESNET_MEAN_BGR = {
@@ -692,57 +695,3 @@ export const normalizeClassificationLabel = normalizeFeatureClassificationLabel;
 export const resolveOutputLabels = resolveFeatureOutputLabels;
 export const normalizeModelProbabilities = normalizeFeatureModelProbabilities;
 export const parsePrediction = parseFeaturePrediction;
-
-function mapToScoringClass(
-  classification: FreshnessClassification
-): "fresh" | "acceptable" | "not fresh" | "warning" | "spoiled" {
-  if (classification === "fresh") {
-    return "fresh";
-  }
-
-  if (classification === "acceptable") {
-    return "acceptable";
-  }
-
-  if (classification === "warning") {
-    return "warning";
-  }
-
-  if (classification === "spoiled") {
-    return "spoiled";
-  }
-
-  return "not fresh";
-}
-
-export function computeFreshnessScore(predictedClass: string, confidence: number): number {
-  const boundedConfidence = clamp(confidence, 0, 1);
-  const normalizedClass = mapToScoringClass(normalizeClassificationLabel(predictedClass));
-
-  let score: number;
-  if (normalizedClass === "fresh") {
-    score = 70 + 30 * boundedConfidence;
-  } else if (normalizedClass === "acceptable") {
-    score = 60 + 20 * boundedConfidence;
-  } else if (normalizedClass === "not fresh") {
-    score = 40 + 20 * boundedConfidence;
-  } else if (normalizedClass === "warning") {
-    score = 20 + 20 * boundedConfidence;
-  } else {
-    score = 20 - 20 * boundedConfidence;
-  }
-
-  return clamp(score, 0, 100);
-}
-
-export function classifyRecommendation(score: number): FreshnessRecommendation {
-  if (score >= 70) {
-    return "Good for Consumption";
-  }
-
-  if (score >= 40) {
-    return "Consume Immediately";
-  }
-
-  return "Not Suitable";
-}

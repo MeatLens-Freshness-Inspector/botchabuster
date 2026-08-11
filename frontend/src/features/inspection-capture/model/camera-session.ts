@@ -9,7 +9,7 @@ import {
   DEFAULT_MEATLENS_INPUT_SIZE,
   resolveCenteredObjectCoverGuideBox,
   type SquareGuideBox,
-} from "../../../lib/offlineAnalysis/meatLensPipeline";
+} from "@/features/offline-analysis";
 import { getActiveModelPreprocessContract } from "@/features/offline-analysis";
 
 import { GUIDE_BOX_SIZE_RATIO, PREVIEW_EXPORT_QUALITY } from "./camera-constants";

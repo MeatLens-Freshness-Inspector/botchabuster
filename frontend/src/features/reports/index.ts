@@ -10,6 +10,9 @@ export {
   REPORT_ORGANIZATION_OPTIONS,
 } from "./model/organizations";
 export { buildAdminRangeReportModel } from "./lib/adapters/admin-range-report";
+export { buildInspectorDailyReportModel } from "./lib/adapters/inspector-daily-report";
+export { buildReportDocDefinition } from "./lib/pdf/build-doc-definition";
+export { loadPdfMake } from "./lib/pdf/runtime";
 export {
   getReportLetterheadAssetPath,
   getReportLetterheadAssetUrl,

@@ -1,7 +1,7 @@
 import type { ChangeEventHandler, RefObject } from "react";
 
 import type { ImageQualityResult } from "../lib/image-quality";
-import type { SquareGuideBox } from "../../../lib/offlineAnalysis/meatLensPipeline";
+import type { SquareGuideBox } from "@/features/offline-analysis";
 
 import type { CameraControlKey, CameraControlsState } from "../lib/controls";
 

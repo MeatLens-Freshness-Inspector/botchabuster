@@ -13,7 +13,7 @@ import {
   type FreshnessRecommendation,
   type MeatLensModelMetadata,
   type SquareGuideBox,
-} from "../../../lib/offlineAnalysis/meatLensPipeline";
+} from "./meat-lens-pipeline";
 import {
   MobileNetSession,
   type MobileNetModelVariant,

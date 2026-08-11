@@ -660,9 +660,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 139 — refactor: remove remaining legacy API ownership**
   - Change: delete frontend/src/integrations/api/index.ts + delete frontend/src/integrations/api/UploadClient.ts after its final consumer moves to frontend/src/features/inspection-submission/api/upload-client.ts.
   - TDD evidence: the upload-client public API contract was added before the feature export wiring and passes directly with `npx tsx --test tests/unit/features/inspection-submission/upload-client-public-api.unit.test.ts`. Validate: `npm run typecheck -w frontend`, `npm run lint -w frontend`, and `npm run test:integration -w frontend` (11 passing).
-- [ ] **Commit 140 — refactor: remove remaining legacy library ownership**
+- [x] **Commit 140 — refactor: remove remaining legacy library ownership**
   - Change: delete frontend/src/lib/demoMode.ts + delete frontend/src/lib/themePreference.ts after moving their last consumers into app or feature slices; complete every remaining frontend/src/lib transfer listed in the manifest.
-  - Validate: F.
+  - TDD evidence: offline-analysis and reports public API contracts were added around the moved runtime, pipeline, adapter, and PDF owners; 20 focused unit tests pass across those APIs and existing report behavior. Validate: `npm run typecheck -w frontend`, `npm run lint -w frontend`, and the focused 20-test migration suite.
 - [ ] **Commit 141 — refactor: remove root legacy pages**
   - Change: delete frontend/src/pages/AdminDashboard.tsx + delete frontend/src/pages/DesktopAdminDashboard.tsx after route ownership is fully pages/admin; complete every root-page and nested-page transfer listed in the manifest.
   - Validate: P-admin.

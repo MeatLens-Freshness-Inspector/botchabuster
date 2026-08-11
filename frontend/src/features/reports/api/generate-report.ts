@@ -1,5 +1,5 @@
-import { buildReportDocDefinition } from "../../../lib/reports/pdf/buildDocDefinition";
-import { loadPdfMake } from "../../../lib/reports/pdf/runtime";
+import { buildReportDocDefinition } from "../lib/pdf/build-doc-definition";
+import { loadPdfMake } from "../lib/pdf/runtime";
 import type { ReportDocumentModel } from "@/features/reports/model/types";
 
 export async function generateReport(

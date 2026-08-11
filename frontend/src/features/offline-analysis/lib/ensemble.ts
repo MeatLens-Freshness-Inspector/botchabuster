@@ -5,7 +5,7 @@ import {
   computeFreshnessScore,
   type FreshnessRecommendation,
 } from "./freshness-score";
-import type { MeatLensModelMetadata } from "../../../lib/offlineAnalysis/meatLensPipeline";
+import type { MeatLensModelMetadata } from "./meat-lens-pipeline";
 
 const ENSEMBLE_MOBILE_WEIGHT = 0.85;
 const ENSEMBLE_RESNET_WEIGHT = 0.15;

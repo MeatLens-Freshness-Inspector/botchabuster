@@ -1,7 +1,7 @@
 /**
  * SQLite-backed implementation of the offline auth envelope store.
  *
- * API is intentionally identical to lib/offlineAuthEnvelope.ts so
+ * API is intentionally identical to the browser offline-auth envelope so
  * the platform branch in that file is a one-liner swap.
  *
  * Schema: offline_auth_envelope (single-row, key = 'current')
@@ -15,7 +15,7 @@ import type { StoredLocalPasskey } from "@/entities/user/model/offline-passkey";
 import { openDb } from "@/shared/platform/sqlite";
 
 // ---------------------------------------------------------------------------
-// Types (mirrors offlineAuthEnvelope.ts exactly)
+// Types shared with the browser offline-auth envelope.
 // ---------------------------------------------------------------------------
 
 export interface OfflineAuthEnvelope {

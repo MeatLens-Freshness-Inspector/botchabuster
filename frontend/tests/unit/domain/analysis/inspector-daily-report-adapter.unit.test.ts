@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { formatDateTime as formatReportDateTime } from "../../../../src/shared/lib/date-time";
-import { buildInspectorDailyReportModel } from "../../../../src/lib/reports/adapters/inspectorDailyReport";
+import { buildInspectorDailyReportModel } from "../../../../src/features/reports";
 
 const sampleInspection = {
   id: "inspection-1",

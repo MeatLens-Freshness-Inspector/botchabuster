@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildInspectorDailyReportModel } from "../../../../src/lib/reports/adapters/inspectorDailyReport";
+import { buildInspectorDailyReportModel } from "../../../../src/features/reports";
 
 // commit 01: report-graphs section must be present
 // commit 02: classification breakdown points

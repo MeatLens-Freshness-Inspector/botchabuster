@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildReportDocDefinition } from "../../../../src/lib/reports/pdf/buildDocDefinition";
+import { buildReportDocDefinition } from "../../../../src/features/reports";
 import type { ReportDocumentModel } from "../../../../src/features/reports/model/types";
 
 // commit 07: dti inspector renders SVG graphs

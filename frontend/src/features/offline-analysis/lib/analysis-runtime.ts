@@ -17,7 +17,7 @@ import {
   isResNet50Ready,
   loadResNet50Model,
 } from "@/features/offline-analysis/lib/resnet-runtime";
-import type { FreshnessRecommendation, SquareGuideBox } from "./meatLensPipeline";
+import type { FreshnessRecommendation, SquareGuideBox } from "./meat-lens-pipeline";
 
 export type AnalysisMode = "ensemble" | "mobilenetv3";
 
