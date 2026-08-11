@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/shared/ui/card";
 import { Label } from "@/shared/ui";
 import { useLoginPage } from "../hooks/useLoginPage";
 import { getLoginDescription } from "../utils/loginPage";

@@ -8,16 +8,16 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/shared/ui/card";
 import { Label } from "@/shared/ui";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/shared/ui/checkbox";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 import { REPORT_ORGANIZATION_OPTIONS } from "@/lib/reportOrganizations";
 import { TermsAndConditionsDialog } from "@/components/TermsAndConditionsDialog";
 import { PrivacyPolicyDialog } from "@/components/PrivacyPolicyDialog";

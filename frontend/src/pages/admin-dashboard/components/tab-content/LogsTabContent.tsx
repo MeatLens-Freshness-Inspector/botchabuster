@@ -20,15 +20,15 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/shared/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { SmartPagination } from "@/components/ui/SmartPagination";
+} from "@/shared/ui/select";
+import { SmartPagination } from "@/shared/ui/SmartPagination";
 import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
 import {
   parsePayloadActor,

@@ -1,5 +1,5 @@
 import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { useDeveloperDashboard } from "../../hooks/useDeveloperDashboard";
 import type { DeveloperWorkspaceTabKey } from "../../types";
 import { DeveloperDatasetsSection } from "../developer/DeveloperDatasetsSection";

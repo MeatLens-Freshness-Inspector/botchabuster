@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/shared/ui/card";
 import type { TutorialStepDefinition } from "@/lib/tutorials/tutorialDefinitions";
 import { MockPhoneFrame } from "@/components/tutorial/MockPhoneFrame";
 import { TutorialScene } from "@/components/tutorial/TutorialScene";

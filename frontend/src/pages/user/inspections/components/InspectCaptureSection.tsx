@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 import { Loader2, ScanLine, TestTube2 } from "lucide-react";
 
 type InspectCaptureSectionProps = {

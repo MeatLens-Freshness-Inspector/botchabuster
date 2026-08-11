@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/PageHeader";
 import { MetricCard } from "@/components/MetricCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { useInspectionStats } from "@/hooks/useInspections";
 import { Loader2 } from "lucide-react";
 import type { FreshnessClassification } from "@/types/inspection";

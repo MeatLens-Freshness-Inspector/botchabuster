@@ -1,7 +1,7 @@
 import React from "react";
 import { UploadCloud } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui";
 import type { TrainingRunRecord } from "@/integrations/api/DeveloperDashboardClient";
 

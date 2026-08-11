@@ -2,7 +2,7 @@ import React from "react";
 import { Download, ImageIcon, RotateCcw, Search, Sparkles } from "lucide-react";
 import { FreshnessBadge } from "@/components/FreshnessBadge";
 import { Button } from "@/shared/ui";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui";
 import {
   Table,
@@ -11,7 +11,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/shared/ui/table";
 import type {
   DeveloperDatasetFilterState,
   DeveloperDatasetListResponse,

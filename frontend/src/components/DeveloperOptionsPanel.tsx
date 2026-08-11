@@ -3,11 +3,11 @@ import { LockKeyhole, LockOpen, Upload, Database, Trash2, RefreshCcw, FlaskConic
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { developerOptionsClient } from "@/integrations/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/shared/ui/switch";
 import {
   clearDeveloperAnalysisSnapshot,
   clearDeveloperOptionsSession,

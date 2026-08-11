@@ -1,7 +1,7 @@
 import type { RefObject } from "react";
 import { ArrowLeft, Loader2, Send } from "lucide-react";
 import { Button } from "@/shared/ui";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/shared/ui/card";
 import { Input } from "@/shared/ui";
 import type {
   UserChatContact,

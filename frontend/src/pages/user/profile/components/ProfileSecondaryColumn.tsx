@@ -1,6 +1,6 @@
 import { LogOut, Moon, Sun } from "lucide-react";
 import { Button } from "@/shared/ui";
-import { Switch } from "@/components/ui/switch";
+import { Switch } from "@/shared/ui/switch";
 
 type ProfileSecondaryColumnProps = {
   isLightMode: boolean;

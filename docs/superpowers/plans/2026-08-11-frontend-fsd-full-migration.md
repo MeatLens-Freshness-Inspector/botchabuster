@@ -160,8 +160,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Keep the public Sidebar exports stable through frontend/src/shared/ui/sidebar/index.ts; the resulting maintained files must each be below 450 non-blank lines.
   - Validate: F.
 
-- [ ] **Commit 016 — refactor: migrate remaining maintained shared UI**
-  - Change: frontend/src/components/ui/sonner.tsx -> frontend/src/shared/ui/sonner.tsx + frontend/src/components/ui/toaster.tsx -> frontend/src/shared/ui/toaster.tsx; move every remaining maintained frontend/src/components/ui/*.tsx primitive to frontend/src/shared/ui in the same commit.
+- [x] **Commit 016 — refactor: migrate remaining maintained shared UI**
+  - Change: frontend/src/components/ui/sonner.tsx -> frontend/src/shared/ui/sonner.tsx + frontend/src/components/ui/toaster.tsx -> frontend/src/shared/ui/toaster.tsx; move every remaining maintained frontend/src/components/ui/*.tsx primitive to frontend/src/shared/ui in the same commit, and move frontend/src/hooks/use-toast.ts to frontend/src/shared/ui/use-toast.ts.
+  - Delete the obsolete frontend/src/components/ui/use-toast.ts forwarding module and update all consumers through shared UI public modules.
   - Update the app provider consumer without changing notification rendering.
   - Validate: F.
 

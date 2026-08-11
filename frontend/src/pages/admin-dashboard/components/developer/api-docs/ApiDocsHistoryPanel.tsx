@@ -1,7 +1,7 @@
 import React from "react";
 import { Clock3, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { cn } from "@/shared/lib/utils";
 import type { ApiDocsHistoryEntry } from "./history";
 

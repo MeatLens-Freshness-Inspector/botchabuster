@@ -1,5 +1,5 @@
 import type { ChangeEventHandler } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";

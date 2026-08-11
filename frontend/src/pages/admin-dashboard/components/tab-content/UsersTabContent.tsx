@@ -21,13 +21,13 @@ import {
   type ReportOrganization,
 } from "@/lib/reportOrganizations";
 import { Button } from "@/shared/ui";
-import { SmartPagination } from "@/components/ui/SmartPagination";
+import { SmartPagination } from "@/shared/ui/SmartPagination";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/shared/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -44,7 +44,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
 
 type UsersTabContentProps = {

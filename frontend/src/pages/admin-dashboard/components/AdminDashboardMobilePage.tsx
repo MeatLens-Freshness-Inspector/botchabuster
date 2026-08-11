@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 import AdminDashboardDialogs from "./AdminDashboardDialogs";
 import AdminDashboardSummary from "./AdminDashboardSummary";
 import { useAdminDashboardPage } from "../hooks/useAdminDashboardPage";

@@ -11,9 +11,9 @@ import {
   YAxis,
 } from "recharts";
 import { Activity, BarChart3, CheckCircle2, Crosshair, Layers, Scale, Sparkles, Target, AlertTriangle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/shared/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/shared/ui/card";
+import { Progress } from "@/shared/ui/progress";
 import {
   Table,
   TableBody,
@@ -21,7 +21,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/shared/ui/table";
 import type {
   DeveloperOverviewMetricPoint,
   DeveloperOverviewResponse,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Device, DeviceInfo } from '@capacitor/device';
 import { Network, ConnectionStatus } from '@capacitor/network';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { CheckCircle2, XCircle, HelpCircle } from 'lucide-react';
 
 interface SpecStatus {

@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { BarChart3 } from "lucide-react";
 import type { FreshnessClassification } from "@/types/inspection";
 import type { HistoryMonthlyCount } from "../types";

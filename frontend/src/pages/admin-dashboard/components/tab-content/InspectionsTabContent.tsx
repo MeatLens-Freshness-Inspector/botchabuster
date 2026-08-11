@@ -7,9 +7,9 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@/shared/ui/card";
 import { Input } from "@/shared/ui";
-import { SmartPagination } from "@/components/ui/SmartPagination";
+import { SmartPagination } from "@/shared/ui/SmartPagination";
 import type { AdminDashboardPageViewModel } from "../../hooks/useAdminDashboardPage";
 import { getInspectorLabel } from "../../utils/adminDashboard";
 

@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from "react";
 import { AlertTriangle, Plus, RotateCcw, Send, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/shared/ui/textarea";
 import { cn } from "@/shared/lib/utils";
 import type {
   ApiDocsEditorValues,
