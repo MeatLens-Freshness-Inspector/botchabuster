@@ -1,114 +1,22 @@
-import React from "react";
-import { useState, useRef, useEffect } from "react";
-import { Button } from "@/shared/ui";
-import { Input } from "@/shared/ui";
-import { API_BASE_URL } from "@/shared/api/base-url";
-import { applyApiRequestInit, getApiCsrfToken } from "@/shared/api/request";
-import { MessageCircle, X, Send, Loader2, Bot, User } from "lucide-react";
-
-type Msg = { role: "user" | "assistant"; content: string };
-
-const CHAT_URL = `${API_BASE_URL}/chat`;
-
-export function getChatRequestHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-
-  const csrfToken = getApiCsrfToken();
-  if (csrfToken) {
-    headers["X-CSRF-Token"] = csrfToken;
-  }
-
-  return headers;
-}
+import { Bot, Loader2, MessageCircle, Send, User, X } from "lucide-react";
+import { Button, Input } from "@/shared/ui";
+import { useAssistant } from "@/features/assistant";
 
 export type AssistantWidgetProps = {
   isOnlineAuthenticated: boolean;
 };
 
 export function AssistantWidget({ isOnlineAuthenticated }: AssistantWidgetProps) {
-  const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "Hi! I'm MeatLens AI. Ask me about meat freshness, food safety, or how to use the app." },
-  ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
-
-  const send = async () => {
-    const text = input.trim();
-    if (!text || loading) return;
-    const userMsg: Msg = { role: "user", content: text };
-    setInput("");
-    setMessages((prev) => [...prev, userMsg]);
-    setLoading(true);
-
-    let assistantSoFar = "";
-    const allMessages = [...messages, userMsg];
-
-    try {
-      const resp = await fetch(CHAT_URL, applyApiRequestInit({
-        method: "POST",
-        headers: getChatRequestHeaders(),
-        body: JSON.stringify({ messages: allMessages.map((m) => ({ role: m.role, content: m.content })) }),
-      }));
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: "Request failed" }));
-        setMessages((prev) => [...prev, { role: "assistant", content: `⚠️ ${err.error || "Something went wrong."}` }]);
-        setLoading(false);
-        return;
-      }
-
-      const reader = resp.body?.getReader();
-      if (!reader) throw new Error("No stream");
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        let idx: number;
-        while ((idx = buffer.indexOf("\n")) !== -1) {
-          let line = buffer.slice(0, idx);
-          buffer = buffer.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const json = line.slice(6).trim();
-          if (json === "[DONE]") break;
-          try {
-            const parsed = JSON.parse(json);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              assistantSoFar += content;
-              setMessages((prev) => {
-                const last = prev[prev.length - 1];
-                if (last?.role === "assistant" && prev.length > allMessages.length) {
-                  return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
-                }
-                return [...prev, { role: "assistant", content: assistantSoFar }];
-              });
-            }
-          } catch {
-            buffer = line + "\n" + buffer;
-            break;
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Chat error:", e);
-      setMessages((prev) => [...prev, { role: "assistant", content: "⚠️ Connection error. Please try again." }]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    input,
+    loading,
+    messages,
+    open,
+    scrollRef,
+    send,
+    setInput,
+    setOpen,
+  } = useAssistant();
 
   if (!isOnlineAuthenticated) {
     return null;
@@ -133,7 +41,6 @@ export function AssistantWidget({ isOnlineAuthenticated }: AssistantWidgetProps)
       className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+5rem)] left-3 right-3 z-50 flex w-[calc(100vw-1.5rem)] max-w-[380px] flex-col rounded-xl border border-border bg-card shadow-2xl sm:bottom-20 sm:left-auto sm:right-4 sm:w-[380px]"
       style={{ height: "min(500px, calc(100dvh - 7.5rem - env(safe-area-inset-bottom, 0px)))" }}
     >
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <Bot className="h-5 w-5 text-primary" />
@@ -144,25 +51,24 @@ export function AssistantWidget({ isOnlineAuthenticated }: AssistantWidgetProps)
         </button>
       </div>
 
-      {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
-        {messages.map((m, i) => (
-          <div key={i} className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            {m.role === "assistant" && (
+      <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-3">
+        {messages.map((message, index) => (
+          <div key={index} className={`flex gap-2 ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+            {message.role === "assistant" && (
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
                 <Bot className="h-4 w-4 text-primary" />
               </div>
             )}
             <div
               className={`max-w-[80%] rounded-lg px-3 py-2 text-sm leading-relaxed ${
-                m.role === "user"
+                message.role === "user"
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary text-secondary-foreground"
               } break-words`}
             >
-              {m.content}
+              {message.content}
             </div>
-            {m.role === "user" && (
+            {message.role === "user" && (
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
                 <User className="h-4 w-4 text-muted-foreground" />
               </div>
@@ -181,15 +87,17 @@ export function AssistantWidget({ isOnlineAuthenticated }: AssistantWidgetProps)
         )}
       </div>
 
-      {/* Input */}
       <div className="border-t border-border p-3">
         <form
-          onSubmit={(e) => { e.preventDefault(); send(); }}
+          onSubmit={(event) => {
+            event.preventDefault();
+            void send();
+          }}
           className="flex gap-2"
         >
           <Input
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(event) => setInput(event.target.value)}
             placeholder="Ask about meat safety..."
             className="flex-1 text-sm"
             disabled={loading}

@@ -509,8 +509,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the profile tutorial route into the inspector page slice and wired it through the tutorials feature public API.
   - TDD: added the profile tutorial route ownership contract before migration (RED on the absent inspector page, then GREEN after the move).
   - Validate: focused route test, typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 105 — refactor: split assistant feature and widget**
-  - Change: frontend/src/components/AIChatbot.tsx -> frontend/src/features/assistant/model/use-assistant.ts + frontend/src/widgets/assistant/assistant-widget.tsx. Validate: P-inspect.
+- [x] **Commit 105 — refactor: split assistant feature and widget**
+  - Change: extracted assistant state, streaming workflow, and CSRF request headers into the assistant feature model, leaving the widget responsible for rendering and interaction wiring.
+  - TDD: added the assistant feature workflow contract before extraction (RED on the absent feature API, then GREEN with feature and widget coverage).
+  - Validate: focused feature/widget tests, typecheck, lint (15 existing warnings), and architecture checks passed.
 - [ ] **Commit 106 — refactor: migrate legal and landing page ownership**
   - Change: frontend/src/components/TermsAndConditionsContent.tsx -> frontend/src/widgets/legal/terms-content.tsx + frontend/src/pages/LandingPage.tsx -> frontend/src/pages/public/landing-page.tsx; move every frontend/src/pages/landing/landing-page component, hook, type, and utility to frontend/src/widgets/public-landing or frontend/src/pages/public as classified by the transfer manifest. Validate: B.
 
