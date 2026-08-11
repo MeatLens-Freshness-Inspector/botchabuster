@@ -15,6 +15,7 @@ import { ProtectedRoute as ProtectedRouteGuard, type ProtectedRouteProps } from 
 import { AdminRoute as AdminRouteGuard, type AdminRouteProps } from "@/app/router/guards/admin-route";
 import { OnboardingRoute as OnboardingRouteGuard, type OnboardingRouteProps } from "@/app/router/guards/onboarding-route";
 import { AppLayout } from "@/app/layouts/app-layout";
+import { PublicLayout } from "@/app/layouts/public-layout";
 import { hasSkippedOnboardingForSession } from "@/lib/onboardingSession";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
@@ -95,11 +96,11 @@ const App = () => {
                 <ThemeRouteController />
                 <Routes>
                   {/* Public routes */}
-                  <Route path={ROUTE_PATHS.landing} element={<LandingPage />} />
-                  <Route path={ROUTE_PATHS.login} element={<LoginPage />} />
-                  <Route path={ROUTE_PATHS.signup} element={<SignupPage />} />
-                  <Route path={ROUTE_PATHS.forgotPassword} element={<ForgotPasswordPage />} />
-                  <Route path={ROUTE_PATHS.resetPassword} element={<ResetPasswordPage />} />
+                  <Route path={ROUTE_PATHS.landing} element={<PublicLayout><LandingPage /></PublicLayout>} />
+                  <Route path={ROUTE_PATHS.login} element={<PublicLayout><LoginPage /></PublicLayout>} />
+                  <Route path={ROUTE_PATHS.signup} element={<PublicLayout><SignupPage /></PublicLayout>} />
+                  <Route path={ROUTE_PATHS.forgotPassword} element={<PublicLayout><ForgotPasswordPage /></PublicLayout>} />
+                  <Route path={ROUTE_PATHS.resetPassword} element={<PublicLayout><ResetPasswordPage /></PublicLayout>} />
                   <Route path={ROUTE_PATHS.onboarding} element={<AuthOnboardingRoute><OnboardingPage /></AuthOnboardingRoute>} />
 
                   {/* Protected app routes */}

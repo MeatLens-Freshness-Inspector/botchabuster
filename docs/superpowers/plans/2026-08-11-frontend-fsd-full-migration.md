@@ -211,8 +211,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 027 — refactor: create signed-in app layout**
   - Change: frontend/src/App.tsx + frontend/src/app/layouts/app-layout.tsx. The app layout owns stable screen/navigation/assistant ordering through slots while the remaining legacy widgets are migrated in later commits.
   - Validate: F.
-- [ ] **Commit 028 — refactor: create public app layout**
-  - Change: frontend/src/app/App.tsx + frontend/src/app/layouts/public-layout.tsx.
+- [x] **Commit 028 — refactor: create public app layout**
+  - Change: frontend/src/App.tsx + frontend/src/app/layouts/public-layout.tsx. Public routes now use a transparent layout slot while the root composition remains temporary until the router extraction.
   - Validate: F.
 - [ ] **Commit 029 — refactor: migrate bottom navigation widget**
   - Change: frontend/src/components/BottomNav.tsx -> frontend/src/widgets/navigation/bottom-nav.tsx + frontend/src/widgets/navigation/index.ts.
