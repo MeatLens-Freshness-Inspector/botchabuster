@@ -1,4 +1,4 @@
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/app/providers";
 import { BottomCtaSection } from "./landing/landing-page/components/BottomCtaSection";
 import { FeaturesSection } from "./landing/landing-page/components/FeaturesSection";
 import { HeroSection } from "./landing/landing-page/components/HeroSection";

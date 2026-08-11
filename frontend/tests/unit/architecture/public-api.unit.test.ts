@@ -4,6 +4,7 @@ import test from "node:test";
 
 import { findLegacyRootImportOwners } from "../../../scripts/check-fsd-boundaries.mjs";
 import { queryClient, shouldRetryQuery } from "../../../src/app/config/query-client";
+import { AuthProvider, useAuth } from "../../../src/app/providers";
 import { createHttpApiError, fetchWithTimeout } from "../../../src/shared/api";
 import { Button, Input, Label } from "../../../src/shared/ui";
 
@@ -17,17 +18,12 @@ test("foundation public modules expose app and shared contracts", () => {
   assert.ok(Button);
   assert.ok(Input);
   assert.ok(Label);
+  assert.ok(AuthProvider);
+  assert.equal(typeof useAuth, "function");
 });
 
 test("foundation boundary audit reports remaining legacy-root import owners", async () => {
   const owners = await findLegacyRootImportOwners(sourceRoot);
 
-  assert.ok(
-    owners.some(
-      (owner) =>
-        owner.file === "legacy-app-composition.tsx" &&
-        owner.importPath === "@/contexts/AuthContext" &&
-        owner.owner === "contexts",
-    ),
-  );
+  assert.equal(owners.some((owner) => owner.owner === "contexts"), false);
 });

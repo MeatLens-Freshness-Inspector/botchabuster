@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/app/providers";
 import { clearStoredRecoveryAccessToken } from "@/lib/authUrlHash";
 import {
   getResetPasswordErrorMessage,

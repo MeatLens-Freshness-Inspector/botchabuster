@@ -270,10 +270,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 044 — refactor: split session restoration service**
   - Change: extracted dependency-injected restoration orchestration into `entities/user/model/restore-session.ts` and pure online/offline state construction into `entities/user/model/session-store.ts`; AuthProvider now delegates bootstrap state transitions and restoration while retaining the same public behavior.
   - Validate: 177 unit tests passed, typecheck passed, lint passed with the existing 16 warnings, and architecture checks passed.
-- [ ] **Commit 045 — refactor: compose thin auth provider**
-  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/app/providers/auth-provider.tsx + frontend/src/entities/user/model/session-store.ts.
-  - Delete the legacy context file in this commit; provider exposes only the narrow session public API.
-  - Validate: I.
+- [x] **Commit 045 — refactor: compose thin auth provider**
+  - Change: moved `AuthProvider` and `useAuth` to `app/providers/auth-provider.tsx`, added the provider public index, migrated every source and test consumer, and deleted the legacy context file. The provider exposes the existing narrow session API without UI changes.
+  - Validate: targeted auth/provider tests (10) passed, typecheck passed, and architecture checks passed; integration gate remains the milestone validation.
 - [ ] **Commit 046 — refactor: migrate sign-in form workflow**
   - Change: frontend/src/pages/landing/login/hooks/useLoginPage.ts -> frontend/src/features/auth/model/use-login.ts + frontend/src/pages/landing/login/components/LoginPageView.tsx.
   - Validate: F.

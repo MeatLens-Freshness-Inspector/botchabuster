@@ -1,6 +1,6 @@
 import { BrowserRouter } from "react-router-dom";
 import { TooltipProvider } from "@/shared/ui/tooltip";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/app/providers";
 import { BottomNav } from "@/widgets/navigation";
 import { AssistantWidget } from "@/widgets/assistant";
 import { OfflineBanner } from "@/widgets/navigation";

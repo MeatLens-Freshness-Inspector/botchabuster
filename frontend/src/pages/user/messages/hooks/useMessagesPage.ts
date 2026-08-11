@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/app/providers";
 import { useIsDesktop } from "@/shared/hooks/use-desktop";
 import {
   userChatClient,

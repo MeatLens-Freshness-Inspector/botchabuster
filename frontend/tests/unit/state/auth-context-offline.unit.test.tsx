@@ -5,7 +5,7 @@ import { indexedDB as fakeIndexedDb } from "fake-indexeddb";
 import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { AuthProvider, useAuth } from "../../../src/contexts/AuthContext";
+import { AuthProvider, useAuth } from "../../../src/app/providers";
 import { authClient } from "../../../src/features/auth/api/auth-client";
 import { clearApiCsrfToken, getApiCsrfToken } from "../../../src/shared/api/request";
 import { createPasswordVerifier } from "../../../src/entities/user/model/offline-credentials";

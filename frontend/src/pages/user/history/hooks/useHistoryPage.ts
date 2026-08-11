@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/app/providers";
 import { useInspections } from "@/hooks/useInspections";
 import { composeReportPdf } from "@/lib/reports/pdf/composeReportPdf";
 import type { FreshnessClassification, Inspection } from "@/types/inspection";

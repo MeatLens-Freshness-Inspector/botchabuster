@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/app/providers";
 import { inspectionClient } from "@/integrations/api";
 import { API_REQUEST_TIMEOUT_MESSAGE } from "@/shared/api";
 import {
