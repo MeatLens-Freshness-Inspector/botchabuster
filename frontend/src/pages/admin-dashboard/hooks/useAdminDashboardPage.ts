@@ -6,7 +6,7 @@ import { useIsMobile } from "@/shared/hooks/use-mobile";
 import { accessCodeClient, type AccessCode } from "@/integrations/api/AccessCodeClient";
 import { auditLogClient, type AuditLogEntry } from "@/integrations/api/AuditLogClient";
 import { developerDashboardClient, type DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
-import { inspectionClient } from "@/integrations/api/InspectionClient";
+import { inspectionClient } from "@/entities/inspection";
 import { marketLocationClient, type MarketLocation } from "@/integrations/api/MarketLocationClient";
 import { profileClient, type Profile } from "@/entities/user/api";
 import { formatInspectionLocationLabel } from "@/entities/inspection";

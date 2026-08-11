@@ -1,4 +1,3 @@
-export { InspectionClient, inspectionClient } from "./InspectionClient";
 export { AccessCodeClient, accessCodeClient, type AccessCode } from "./AccessCodeClient";
 export { MarketLocationClient, marketLocationClient, type MarketLocation } from "./MarketLocationClient";
 export { StatsClient, statsClient, type LandingPageStats } from "./StatsClient";

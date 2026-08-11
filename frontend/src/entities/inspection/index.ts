@@ -29,3 +29,8 @@ export {
   type CoordinateCaptureStatus,
   type InspectionCoordinates,
 } from "./model/location";
+export {
+  InspectionClient,
+  inspectionClient,
+  type InspectionScope,
+} from "./api";

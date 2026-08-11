@@ -20,7 +20,7 @@ import { AppLayout } from "@/app/layouts/app-layout";
 import { PublicLayout } from "@/app/layouts/public-layout";
 import { hasSkippedOnboardingForSession } from "@/lib/onboardingSession";
 import { uploadClient } from "@/integrations/api/UploadClient";
-import { inspectionClient } from "@/integrations/api/InspectionClient";
+import { inspectionClient } from "@/entities/inspection";
 import { auditLogClient } from "@/integrations/api/AuditLogClient";
 import { getPendingScans, removeScan } from "@/lib/offlineQueue";
 import { getPendingAuditLogs, removeAuditLog } from "@/features/offline-sync";

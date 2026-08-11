@@ -1,5 +1,5 @@
 import type { Inspection, InspectionInsert } from "@/entities/inspection";
-import { IS_DEMO_MODE, demoDelay, DEMO_INSPECTIONS, DEMO_STATS } from "@/lib/demoMode";
+import { IS_DEMO_MODE, demoDelay, DEMO_INSPECTIONS, DEMO_STATS } from "@/shared/config/demo-mode";
 import { createAuthHeaders } from "@/shared/api/auth-headers";
 import { notifyApiAuthExpired } from "@/shared/api/request";
 import { API_BASE_URL } from "@/shared/api/base-url";

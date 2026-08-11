@@ -1,12 +1,13 @@
-import { IS_DEMO_MODE, demoDelay, DEMO_LANDING_STATS } from "@/lib/demoMode";
+import {
+  IS_DEMO_MODE,
+  demoDelay,
+  DEMO_LANDING_STATS,
+  type LandingPageStats,
+} from "@/shared/config/demo-mode";
 import { API_BASE_URL } from "@/shared/api/base-url";
 import { fetchWithTimeout } from "@/shared/api";
 
-export interface LandingPageStats {
-  inspectionCount: number;
-  userCount: number;
-  freshRate: number;
-}
+export type { LandingPageStats } from "@/shared/config/demo-mode";
 
 export class StatsClient {
   private static instance: StatsClient;
