@@ -1,5 +1,5 @@
 import { useAuth } from "@/entities/user";
-import { MessagesHeader } from "./user/messages/components/MessagesHeader";
+import { MessagesHeader } from "@/widgets/messages";
 import { ThreadPanel } from "@/widgets/messages";
 import { ContactsPanel } from "@/widgets/messages";
 import { useMessages } from "@/features/messaging";
