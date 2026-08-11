@@ -291,10 +291,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 051 — refactor: create recovery route pages**
   - Change: consolidated forgot-password and reset-password route entries and their unchanged view components under the shared `pages/auth` slice, added public exports, and updated the app route composition.
   - Validate: recovery route-page test, typecheck, and lint passed with the existing 16 warnings; build gate remains the milestone validation.
-- [ ] **Commit 052 — test: lock authentication route behavior**
-  - Change: frontend/tests/e2e/journeys/inspector/passkey-auth.e2e.spec.ts + frontend/tests/unit/state/auth-context-session-cleanup.unit.test.tsx.
-  - Update imports to FSD public APIs and retain all assertions.
-  - Validate: I.
+- [x] **Commit 052 — test: lock authentication route behavior**
+  - Change: updated the passkey E2E journey to use the centralized route public contract and retained the migrated session-cleanup assertions against the app provider/entity public APIs.
+  - Validate: targeted route/session tests (3), typecheck, and architecture checks passed; integration gate remains the milestone validation.
 
 ## Phase 4 — Inspection, camera, offline analysis, history, and reports (36 commits)
 
