@@ -485,8 +485,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the messages route page into the inspector page slice, moved its header into the messages widget, and updated app composition and widget exports.
   - TDD: added the inspector route page ownership contract before migration (RED on the absent target page, then GREEN after the move).
   - Validate: focused route test, typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 099 — refactor: create onboarding feature model**
-  - Change: frontend/src/lib/onboardingSession.ts -> frontend/src/features/onboarding/model/session.ts + frontend/src/pages/user/onboarding/hooks/useOnboardingPage.ts -> frontend/src/features/onboarding/model/use-onboarding.ts. Validate: F.
+- [x] **Commit 099 — refactor: create onboarding feature model**
+  - Change: moved onboarding session persistence, view-model contracts, copy helpers, and the onboarding workflow hook into a feature public API; updated the existing page and route composition consumers.
+  - TDD: added the onboarding session public contract before extraction (RED on the absent feature API, then GREEN after the model migration).
+  - Validate: focused session test, typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 100 — refactor: migrate onboarding route page**
   - Change: frontend/src/pages/user/onboarding/components/OnboardingPageView.tsx -> frontend/src/features/onboarding/ui/onboarding-page.tsx + frontend/src/pages/OnboardingPage.tsx -> frontend/src/pages/inspector/onboarding-page.tsx. Validate: P-inspect.
 - [ ] **Commit 101 — refactor: split tutorial definitions**

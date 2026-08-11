@@ -1,8 +1,8 @@
 import { OnboardingPageView } from "./user/onboarding/components/OnboardingPageView";
-import { useOnboardingPage } from "./user/onboarding/hooks/useOnboardingPage";
+import { useOnboarding } from "@/features/onboarding";
 
 const OnboardingPage = () => {
-  const onboardingPage = useOnboardingPage();
+  const onboardingPage = useOnboarding();
 
   return <OnboardingPageView {...onboardingPage} />;
 };

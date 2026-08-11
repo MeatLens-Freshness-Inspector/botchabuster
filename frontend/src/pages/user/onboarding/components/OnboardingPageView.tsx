@@ -1,11 +1,11 @@
 import { TutorialPlayer } from "@/components/tutorial/TutorialPlayer";
 import { firstRunOnboardingSteps } from "@/lib/tutorials/tutorialDefinitions";
-import type { OnboardingPageViewModel } from "../types";
+import type { OnboardingPageViewModel } from "@/features/onboarding";
 import {
   ONBOARDING_COMPLETION_BODY,
   ONBOARDING_COMPLETION_TITLE,
   ONBOARDING_FINISH_LABEL,
-} from "../utils/onboardingPage";
+} from "@/features/onboarding";
 
 type OnboardingPageViewProps = OnboardingPageViewModel;
 

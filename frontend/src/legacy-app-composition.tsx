@@ -18,7 +18,7 @@ import { AdminRoute as AdminRouteGuard, type AdminRouteProps } from "@/app/route
 import { OnboardingRoute as OnboardingRouteGuard, type OnboardingRouteProps } from "@/app/router/guards/onboarding-route";
 import { AppLayout } from "@/app/layouts/app-layout";
 import { PublicLayout } from "@/app/layouts/public-layout";
-import { hasSkippedOnboardingForSession } from "@/lib/onboardingSession";
+import { hasSkippedOnboardingForSession } from "@/features/onboarding";
 import { uploadClient } from "@/integrations/api/UploadClient";
 import { inspectionClient } from "@/entities/inspection";
 import { auditLogClient } from "@/integrations/api/AuditLogClient";

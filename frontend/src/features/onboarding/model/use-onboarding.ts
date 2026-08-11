@@ -6,14 +6,14 @@ import { profileClient } from "@/entities/user/api";
 import {
   clearOnboardingSkippedForSession,
   markOnboardingSkippedForSession,
-} from "@/lib/onboardingSession";
-import type { OnboardingPageViewModel } from "../types";
+} from "./session";
+import type { OnboardingPageViewModel } from "./types";
 import {
   getOnboardingErrorMessage,
   ONBOARDING_SECONDARY_ACTION_LABEL,
-} from "../utils/onboardingPage";
+} from "../lib/onboarding-copy";
 
-export function useOnboardingPage(): OnboardingPageViewModel {
+export function useOnboarding(): OnboardingPageViewModel {
   const navigate = useNavigate();
   const { user, setProfileState } = useAuth();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
