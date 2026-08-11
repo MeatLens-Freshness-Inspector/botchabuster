@@ -1,8 +1,8 @@
-import type { TutorialStepDefinition } from "@/features/tutorials";
-import { SafetyMockScene } from "@/components/tutorial/scenes/SafetyMockScene";
-import { ProfileMockScene } from "@/components/tutorial/scenes/ProfileMockScene";
-import { InspectMockScene } from "@/components/tutorial/scenes/InspectMockScene";
-import { HistoryMockScene } from "@/components/tutorial/scenes/HistoryMockScene";
+import type { TutorialStepDefinition } from "../model/inspection-tutorial";
+import { SafetyMockScene } from "./scenes/safety-mock-scene";
+import { ProfileMockScene } from "./scenes/profile-mock-scene";
+import { InspectMockScene } from "./scenes/inspect-mock-scene";
+import { HistoryMockScene } from "./scenes/history-mock-scene";
 
 interface TutorialSceneProps {
   step: TutorialStepDefinition;

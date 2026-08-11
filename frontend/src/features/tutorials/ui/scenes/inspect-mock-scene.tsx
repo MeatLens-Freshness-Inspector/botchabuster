@@ -1,6 +1,6 @@
 import { Microscope, Camera, ScanLine, Save, MapPin, ChevronDown } from "lucide-react";
-import { MockHotspot } from "@/components/tutorial/MockHotspot";
-import type { TutorialStepDefinition } from "@/features/tutorials";
+import { MockHotspot } from "../mock-hotspot";
+import type { TutorialStepDefinition } from "../../model/inspection-tutorial";
 
 interface InspectMockSceneProps {
   step: TutorialStepDefinition;

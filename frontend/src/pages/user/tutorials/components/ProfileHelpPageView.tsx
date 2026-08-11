@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { TutorialPlayer } from "@/components/tutorial/TutorialPlayer";
+import { TutorialPlayer } from "@/features/tutorials";
 import type { ProfileHelpPageViewModel } from "../types";
 import {
   PROFILE_HELP_DESCRIPTION,

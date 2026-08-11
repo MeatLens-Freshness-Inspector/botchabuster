@@ -8,9 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import type { TutorialStepDefinition } from "@/features/tutorials";
-import { MockPhoneFrame } from "@/components/tutorial/MockPhoneFrame";
-import { TutorialScene } from "@/components/tutorial/TutorialScene";
+import type { TutorialStepDefinition } from "../model/inspection-tutorial";
+import { MockPhoneFrame } from "./mock-phone-frame";
+import { TutorialScene } from "./tutorial-scene";
 
 interface TutorialPlayerProps {
   steps: TutorialStepDefinition[];

@@ -1,4 +1,4 @@
-import { TutorialPlayer } from "@/components/tutorial/TutorialPlayer";
+import { TutorialPlayer } from "@/features/tutorials";
 import { firstRunOnboardingSteps } from "@/features/tutorials";
 import type { ProfileTutorialPageViewModel } from "../types";
 import {

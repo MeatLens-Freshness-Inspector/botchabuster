@@ -18,3 +18,5 @@ export type {
   HelpReferenceCardDefinition,
   HelpTutorialCardDefinition,
 } from "./model/profile-tutorial";
+export { TutorialPlayer } from "./ui/tutorial-player";
+export { TutorialScene } from "./ui/tutorial-scene";
