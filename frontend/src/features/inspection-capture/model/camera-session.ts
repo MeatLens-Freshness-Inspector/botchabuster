@@ -2,7 +2,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 
 import { toast } from "sonner";
 
-import { assessFileQuality } from "../../../lib/captureQuality";
+import { assessFileQuality } from "../lib/capture-quality";
 import { type ImageQualityResult } from "../../../lib/imageQuality";
 import {
   createModelInputImageFile,

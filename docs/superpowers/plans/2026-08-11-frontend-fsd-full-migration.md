@@ -338,8 +338,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved the camera composition and view into `features/inspection-capture/ui`, moved the capture contracts into the feature model, and converted `components/camera` into a thin compatibility facade that re-exports the feature API. Test and integration consumers now import the feature UI contract directly without changing rendered markup or interactions.
   - TDD: redirected the camera UI contracts first (RED on the missing feature modules), then migrated the UI and model types and reached GREEN through the camera view, facade, session, and quality integration tests.
   - Validate: camera unit/integration tests (8 targeted, 11 integration suite), typecheck, lint (16 existing warnings), architecture checks, and integration suite passed; moved UI files remain below 450 nonblank lines.
-- [ ] **Commit 064 — refactor: move capture-quality feature**
-  - Change: frontend/src/lib/captureQuality.ts -> frontend/src/features/inspection-capture/lib/capture-quality.ts + frontend/tests/e2e/journeys/inspector/capture-quality.e2e.spec.ts. Validate: P-inspect.
+- [x] **Commit 064 — refactor: move capture-quality feature**
+  - Change: moved the capture-quality gate into `features/inspection-capture/lib/capture-quality.ts`, updated the camera session and Playwright contract to consume the feature module, and exposed the quality API through the feature public index.
+  - TDD: redirected the browser contract first (RED with Playwright unable to load the absent feature module), then moved the implementation and reached GREEN with all six capture-quality tests discoverable and camera behavior tests passing.
+  - Validate: Playwright capture-quality listing (6 tests), targeted camera unit/integration tests (7), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 065 — refactor: move image-quality feature**
   - Change: frontend/src/lib/imageQuality.ts -> frontend/src/features/inspection-capture/lib/image-quality.ts + frontend/tests/e2e/journeys/inspector/image-quality.e2e.spec.ts. Validate: P-inspect.
 - [ ] **Commit 066 — refactor: create inspection submission feature**

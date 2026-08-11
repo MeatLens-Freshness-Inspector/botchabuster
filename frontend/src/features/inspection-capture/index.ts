@@ -8,6 +8,16 @@ export {
   type CameraDeviceState,
 } from "./model/camera-device";
 export { useCameraCapture } from "./model/camera-session";
+export {
+  assessCanvasQuality,
+  assessFileQuality,
+  evaluateBlur,
+  evaluateForegroundPresence,
+  getAdaptiveBlurThreshold,
+  type BlurDecision,
+  type CaptureQualityResult,
+  type ForegroundPresenceDecision,
+} from "./lib/capture-quality";
 export { CameraCapture } from "./ui/camera-capture";
 export { CameraCaptureView } from "./ui/camera-capture-view";
 export type {
