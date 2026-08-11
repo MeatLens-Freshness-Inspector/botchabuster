@@ -3,7 +3,7 @@ import { format, subDays, startOfDay, endOfDay, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
-import { accessCodeClient, type AccessCode } from "@/integrations/api/AccessCodeClient";
+import { accessCodeClient, type AccessCode } from "@/entities/access-code";
 import { auditLogClient, type AuditLogEntry } from "@/integrations/api/AuditLogClient";
 import { developerDashboardClient, type DeveloperOverviewMetricPoint } from "@/integrations/api/DeveloperDashboardClient";
 import { inspectionClient } from "@/entities/inspection";

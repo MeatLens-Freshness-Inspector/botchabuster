@@ -524,8 +524,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 
 **Interfaces:** Produces the admin-dashboard widget and admin-management/developer-tools features. No page or widget owns an endpoint client directly.
 
-- [ ] **Commit 107 — refactor: create access-code entity API**
-  - Change: frontend/src/integrations/api/AccessCodeClient.ts -> frontend/src/entities/access-code/api/access-code-client.ts + frontend/src/entities/access-code/index.ts. Validate: I.
+- [x] **Commit 107 — refactor: create access-code entity API**
+  - Change: moved access-code transport into the access-code entity, published its client/types, removed the integration export, and updated the dashboard consumer.
+  - TDD: added the access-code entity singleton contract before extraction (RED on absent entity API, then GREEN after migration).
+  - Validate: focused entity test, typecheck, and all 11 integration tests passed.
 - [ ] **Commit 108 — refactor: create audit-log entity API**
   - Change: frontend/src/integrations/api/AuditLogClient.ts -> frontend/src/entities/audit-log/api/audit-log-client.ts + frontend/src/entities/audit-log/index.ts. Validate: I.
 - [ ] **Commit 109 — refactor: create market-location entity API**
