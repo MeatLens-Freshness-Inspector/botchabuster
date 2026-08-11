@@ -267,9 +267,9 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 043 — refactor: split offline auth envelope**
   - Change: moved offline credentials and the offline auth envelope into the user entity model; moved the SQLite auth-envelope adapter into the user entity API and the SQLite bootstrap into shared platform infrastructure, with all queue/cache consumers updated to the new bootstrap path.
   - Validate: focused offline-auth tests, typecheck, lint, and architecture checks passed; full F gate remains the milestone validation.
-- [ ] **Commit 044 — refactor: split session restoration service**
-  - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/entities/user/model/restore-session.ts + frontend/src/entities/user/model/session-store.ts.
-  - Validate: F.
+- [x] **Commit 044 — refactor: split session restoration service**
+  - Change: extracted dependency-injected restoration orchestration into `entities/user/model/restore-session.ts` and pure online/offline state construction into `entities/user/model/session-store.ts`; AuthProvider now delegates bootstrap state transitions and restoration while retaining the same public behavior.
+  - Validate: 177 unit tests passed, typecheck passed, lint passed with the existing 16 warnings, and architecture checks passed.
 - [ ] **Commit 045 — refactor: compose thin auth provider**
   - Change: frontend/src/contexts/AuthContext.tsx -> frontend/src/app/providers/auth-provider.tsx + frontend/src/entities/user/model/session-store.ts.
   - Delete the legacy context file in this commit; provider exposes only the narrow session public API.

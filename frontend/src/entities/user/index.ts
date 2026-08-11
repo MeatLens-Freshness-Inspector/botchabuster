@@ -14,6 +14,18 @@ export {
   type SessionCacheState,
 } from "./model/session-cache";
 export {
+  createAnonymousSessionState,
+  createOfflineAuthenticatedSessionState,
+  createOfflineLockedSessionState,
+  createOnlineAuthenticatedSessionState,
+  type OnlineSessionStateInput,
+  type SessionStoreState,
+} from "./model/session-store";
+export {
+  restoreSession,
+  type RestoreSessionDependencies,
+} from "./model/restore-session";
+export {
   clearCachedAdmin,
   clearCachedAuth,
   clearCachedProfile,

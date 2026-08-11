@@ -53,7 +53,15 @@ import {
 } from "@/legacy-passkey-storage";
 import type { ReportOrganization } from "@/lib/reportOrganizations";
 import type { AuthMode, ProfileStatus } from "@/entities/user";
-import { createSessionCacheState } from "@/entities/user";
+import {
+  createAnonymousSessionState,
+  createOfflineAuthenticatedSessionState,
+  createOfflineLockedSessionState,
+  createOnlineAuthenticatedSessionState,
+  createSessionCacheState,
+  restoreSession,
+  type SessionStoreState,
+} from "@/entities/user";
 
 const createAuditId = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -117,6 +125,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [offlineUnlockRequired, setOfflineUnlockRequiredState] = useState(false);
   const mountedRef = useRef(true);
 
+  const applySessionState = useCallback((nextState: SessionStoreState) => {
+    setUser(nextState.user);
+    setSession(nextState.session);
+    setProfile(nextState.profile);
+    setIsAdmin(nextState.isAdmin);
+    setIsDeveloper(nextState.isDeveloper);
+    setProfileStatus(nextState.profileStatus);
+    setOfflineUnlockRequiredState(nextState.offlineUnlockRequired);
+    setAuthMode(nextState.authMode);
+  }, []);
+
   const clearLegacyAuthArtifacts = useCallback(() => {
     clearLegacyOfflineCredential();
     clearLegacyStoredLocalPasskey();
@@ -133,40 +152,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearCachedAuth();
     clearCachedProfile();
     clearCachedAdmin();
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setIsAdmin(false);
-    setIsDeveloper(false);
-    setProfileStatus("idle");
-    setOfflineUnlockRequiredState(false);
-    setAuthMode(nextMode);
-  }, []);
+    applySessionState(createAnonymousSessionState(nextMode));
+  }, [applySessionState]);
 
   const applyOfflineAuthenticatedState = useCallback((envelope: OfflineAuthEnvelope) => {
     clearApiCsrfToken();
-    setUser(envelope.user);
-    setSession(null);
-    setProfile(envelope.profile);
-    setIsAdmin(envelope.isAdmin);
-    setIsDeveloper(envelope.isDeveloper);
-    setProfileStatus("ready");
-    setOfflineUnlockRequiredState(false);
-    setAuthMode("offline-authenticated");
-  }, []);
+    applySessionState(createOfflineAuthenticatedSessionState(envelope));
+  }, [applySessionState]);
 
   const applyOnlineAuthenticatedState = useCallback((payload: AuthBootstrapPayload) => {
     setApiCsrfToken(payload.csrfToken);
     setCachedAuth(payload.user, payload.session);
-    setUser(payload.user);
-    setSession(payload.session);
-    setProfile(payload.profile);
-    setIsAdmin(payload.isAdmin);
-    setIsDeveloper(payload.isDeveloper);
-    setProfileStatus("ready");
-    setOfflineUnlockRequiredState(false);
-    setAuthMode("online-authenticated");
-  }, []);
+    applySessionState(createOnlineAuthenticatedSessionState(payload));
+  }, [applySessionState]);
 
   const loadValidOfflineEnvelope = useCallback(async (): Promise<OfflineAuthEnvelope | null> => {
     const envelope = await loadOfflineAuthEnvelope();
@@ -196,14 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     clearApiCsrfToken();
-    setUser(null);
-    setSession(null);
-    setProfile(null);
-    setIsAdmin(false);
-    setIsDeveloper(false);
-    setProfileStatus("idle");
-    setOfflineUnlockRequiredState(true);
-    setAuthMode("offline-locked");
+    applySessionState(createOfflineLockedSessionState());
 
     const nextEnvelope = await updateOfflineAuthEnvelope((currentEnvelope) => {
       const baseEnvelope = currentEnvelope ?? envelope;
@@ -214,7 +205,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return nextEnvelope ?? optimisticEnvelope;
-  }, []);
+  }, [applySessionState]);
 
   const unlockFromOfflineEnvelope = useCallback(async (
     envelope: OfflineAuthEnvelope,
@@ -357,39 +348,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const restoreAuth = async () => {
       setIsLoading(true);
       setAuthMode("bootstrapping");
-      clearLegacyLiveAuthArtifacts();
+      await restoreSession({
+        isOnline: () => navigator.onLine,
+        clearLegacyLiveAuthArtifacts,
+        loadValidOfflineEnvelope,
+        lockToOfflineEnvelope,
+        clearInMemoryAuthState,
+        getSession: () => authClient.getSession(),
+        applyOnlineBootstrap,
+        reportBootstrapError: (error) => console.error("Failed to bootstrap online session:", error),
+      });
 
-      const validEnvelope = await loadValidOfflineEnvelope();
-
-      if (!navigator.onLine) {
-        if (validEnvelope) {
-          await lockToOfflineEnvelope(validEnvelope);
-        } else {
-          clearInMemoryAuthState("anonymous");
-        }
-
-        if (mountedRef.current) {
-          setIsLoading(false);
-        }
-        return;
-      }
-
-      try {
-        const payload = await authClient.getSession();
-        await applyOnlineBootstrap(payload);
-      } catch (error) {
-        if (validEnvelope) {
-          await lockToOfflineEnvelope(validEnvelope);
-        } else if (getHttpApiErrorStatus(error) === 401) {
-          clearInMemoryAuthState("anonymous");
-        } else {
-          console.error("Failed to bootstrap online session:", error);
-          clearInMemoryAuthState("expired");
-        }
-      } finally {
-        if (mountedRef.current) {
-          setIsLoading(false);
-        }
+      if (mountedRef.current) {
+        setIsLoading(false);
       }
     };
 
