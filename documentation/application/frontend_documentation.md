@@ -1,31 +1,51 @@
-# Frontend documentation
+# Frontend Documentation
 
 ## Overview
 
-The frontend is a React 18 + TypeScript application built with Vite. It runs in the browser and through Capacitor, performs MobileNetV3 ONNX inference locally, and communicates with the Express backend through typed API clients.
+The frontend is a React 18 + TypeScript application built with Vite and packaged for browser and Capacitor environments. It performs MobileNetV3 ONNX inference locally, supports offline workflows, and communicates with the Express backend through typed clients.
+
+The frontend has completed a full Feature-Sliced Design (FSD) migration. The migration is structural only: UI/UX behavior and visual presentation remain owned by the existing page, widget, feature, and shared UI implementations. There is no supported legacy frontend architecture.
+
+For the complete tracked source/configuration inventory, see [Frontend folder structure](../frontend/folder-structure.md).
 
 ## Source layout
 
 ```text
 frontend/src/
-├── components/       # reusable UI and security-aware controls
-├── pages/            # route-level screens and workflows
-├── contexts/         # auth, inspection, and application state
-├── hooks/            # reusable state/effect hooks
-├── integrations/     # backend API clients and Supabase/Capacitor adapters
-├── lib/              # model, offline, developer-option, and transport helpers
-├── types/            # frontend transport/domain types
-└── App.tsx           # root router and providers
+|-- app/       # composition, providers, layouts, routing, guards, global styles
+|-- pages/     # route-level screens
+|-- widgets/   # reusable page-scale compositions
+|-- features/  # user-facing workflows and interactions
+|-- entities/  # business concepts, API clients, caches, and domain types
+|-- shared/    # reusable UI, platform adapters, transport, and utilities
+|-- test/      # shared test setup
+|-- main.tsx   # browser entry point
+\-- vite-env.d.ts
 ```
+
+### Layer responsibilities
+
+- **app** composes the application and owns route registration, providers, layouts, guards, and global styles.
+- **pages** represent route-level screens and assemble widgets and features for a route.
+- **widgets** represent reusable page-scale sections or shells.
+- **features** represent user intent and workflows, such as signing in, capturing an inspection, submitting analysis, editing a profile, or using developer tools.
+- **entities** represent business concepts and their stable data contracts, including typed clients and cache adapters.
+- **shared** contains generic UI primitives, transport/platform integrations, storage, and utilities that do not own product-specific behavior.
+
+Use a slice's public `index.ts` when one exists. Do not import private implementation files across slices. The dependency direction is from application composition toward lower-level reusable slices; lower layers must not import pages or widgets.
+
+## Security and transport
 
 The client does not contain the Supabase service key. Browser requests use `VITE_API_BASE_URL`, credentialed cookies, and the CSRF token returned by the backend auth bootstrap. Native clients may use the bearer-token transport.
 
+Keep credentials, authorization headers, CSRF tokens, and sensitive response data out of API Docs cURL/history output. Redaction behavior is covered by the developer-tools tests.
+
 ## Local development
 
-```bash
+```powershell
 npm install
 Copy-Item frontend/.env.example frontend/.env
-npm run dev -w frontend
+npm run dev:frontend
 ```
 
 Set:
@@ -36,54 +56,47 @@ VITE_API_BASE_URL=http://localhost:3001/api
 
 The default Vite URL is `http://localhost:8080`.
 
-## Model pipeline
+## Model and offline pipeline
 
-The frontend build runs `scripts/sync-onnx-model.mjs` and `scripts/check-netlify-preflight.mjs`. These steps ensure that the MobileNetV3 ONNX artifact and metadata are available under `frontend/public/model` before deployment.
-
-The inspection flow is:
+The frontend build synchronizes the ONNX model before Vite starts. The inspection flow is:
 
 ```text
 capture/select image
-  → crop and resize
-  → MobileNetV3 ONNX inference
-  → freshness score and recommendation
-  → authenticated image upload
-  → inspection record persistence
+  -> crop and resize
+  -> local MobileNetV3 ONNX inference
+  -> freshness score and recommendation
+  -> authenticated image upload
+  -> inspection record persistence
 ```
 
-The backend remains the source of truth for users, roles, inspections, audit data, and server-side policy checks.
+Offline analysis and sync are isolated in their owning features. The backend remains the source of truth for users, roles, inspections, audit data, and server-side policy checks.
 
 ## API Docs workspace
 
-Developer accounts have an API Docs tab in the developer settings workspace. Its typed catalog mirrors the registered backend operations across authentication, analysis, access codes, inspections, profiles, statistics, uploads, chat, markets, audit logs, developer options, developer dashboard, and user chat.
-
-When a backend route changes, update the catalog at:
+Developer accounts have an API Docs tab in the developer settings workspace. Its typed catalog is owned by:
 
 ```text
-frontend/src/pages/admin-dashboard/components/developer/api-docs/catalog.ts
+frontend/src/features/developer-tools/model/api-docs-catalog.ts
 ```
 
-Keep its route-audit test synchronized. The editor must not expose authorization or CSRF secrets in cURL/history output.
+When a backend route changes, update that catalog and its route-audit tests. The editor must not expose authorization or CSRF secrets in cURL/history output.
 
-## Commands
+## Verification commands
 
-```bash
+```powershell
 # from the repository root
-npm run dev:frontend
-npm run build -w frontend
 npm run typecheck -w frontend
+npm run lint -w frontend
 npm run test:unit -w frontend
 npm run test:component -w frontend
 npm run test:integration -w frontend
+npm run test:architecture -w frontend
+npm run build -w frontend
 npm run test:e2e:critical -w frontend
 npm run test:contract
 ```
 
-The frontend `pretest` hook builds the backend first so integration and end-to-end tests exercise the current API contract. The repository-level contract suite (`npm run test:contract`) then checks auth bootstrap, inspection-list, error-envelope, and analysis-result schemas across both workspaces.
-
-For the normal CI fast path, run `npm run test:fast`; it includes frontend unit/component/integration tests, backend unit and architecture tests, and script checks. Contract tests run as a separate root gate.
-
-The workflow also validates documentation links for every relevant change. A final quality-gate job records the result of each frontend, backend, contract, build, and end-to-end lane; skipped lanes are expected when path classification shows they are out of scope, while failures and cancellations fail the workflow.
+The frontend `pretest` hook builds the backend first so integration and end-to-end tests exercise the current API contract. The repository-level contract suite checks auth bootstrap, inspection-list, error-envelope, and analysis-result schemas across both workspaces.
 
 ## Deployment
 

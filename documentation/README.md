@@ -15,6 +15,7 @@ This directory documents the current MeatLens monorepo. The backend is a modular
 
 - [Backend documentation](application/backend_documentation.md)
 - [Frontend documentation](application/frontend_documentation.md)
+- [Frontend folder structure](frontend/folder-structure.md)
 
 ## Scope and source of truth
 
