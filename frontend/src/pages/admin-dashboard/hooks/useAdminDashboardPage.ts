@@ -13,6 +13,7 @@ import {
   getReportOrganizationLabel,
 } from "@/features/reports";
 import { useAccessCodeForm, useAccessCodes } from "@/features/admin-management";
+import { useMarketForm, useMarketLocations } from "@/features/admin-management";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { composeReportPdf } from "@/features/reports";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
@@ -37,7 +38,6 @@ import {
   getInspectorLabel,
   getLocationLabel,
   getOptionalText,
-  normalizeMarketName,
   parsePayloadActor,
   parsePayloadSource,
   parsePayloadText,
@@ -72,12 +72,12 @@ export function useAdminDashboardPage() {
   const [accessCodes, setAccessCodes] = useState<AccessCode[]>([]);
   const [marketLocations, setMarketLocations] = useState<MarketLocation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newMarketName, setNewMarketName] = useState("");
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [pendingDeleteInspectionId, setPendingDeleteInspectionId] = useState<string | null>(null);
   const accessCodeForm = useAccessCodeForm({ setAccessCodes });
   const accessCodesState = useAccessCodes({ setAccessCodes });
-  const [pendingDeleteMarketId, setPendingDeleteMarketId] = useState<string | null>(null);
+  const marketForm = useMarketForm({ marketLocations, setMarketLocations });
+  const marketLocationsState = useMarketLocations({ marketLocations, setMarketLocations });
   const [reportStartDate, setReportStartDate] = useState(() => format(subDays(new Date(), REPORT_DEFAULT_RANGE_DAYS - 1), "yyyy-MM-dd"));
   const [reportEndDate, setReportEndDate] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const usersTab = useUsersTab(profiles);
@@ -812,54 +812,6 @@ export function useAdminDashboardPage() {
     }
   };
 
-  const handleCreateMarket = async () => {
-    const normalizedName = normalizeMarketName(newMarketName);
-    if (!normalizedName) {
-      toast.error("Market name cannot be empty");
-      return;
-    }
-
-    const alreadyExists = marketLocations.some(
-      (market) => market.name.localeCompare(normalizedName, undefined, { sensitivity: "accent" }) === 0
-    );
-    if (alreadyExists) {
-      toast.error("Market already exists");
-      return;
-    }
-
-    try {
-      const created = await marketLocationClient.create(normalizedName);
-      setMarketLocations((prev) => [...prev, created].sort((left, right) => left.name.localeCompare(right.name)));
-      setNewMarketName("");
-      toast.success("Market added");
-    } catch {
-      toast.error("Failed to add market");
-    }
-  };
-
-  const handleDeleteMarket = async (id: string) => {
-    if (marketLocations.length <= 1) {
-      toast.error("At least one market location is required");
-      return;
-    }
-
-    setPendingDeleteMarketId(id);
-  };
-
-  const confirmDeleteMarket = async () => {
-    const id = pendingDeleteMarketId;
-    if (!id) return;
-    setPendingDeleteMarketId(null);
-
-    try {
-      await marketLocationClient.delete(id);
-      setMarketLocations((prev) => prev.filter((market) => market.id !== id));
-      toast.success("Market removed");
-    } catch {
-      toast.error("Failed to remove market");
-    }
-  };
-
   const activeTabConfig =
     tabs.find((tab) => tab.key === activeTab) ??
     tabs[0];
@@ -892,12 +844,12 @@ export function useAdminDashboardPage() {
     ...accessCodesState,
     ...logsTab,
     ...logFilters,
+    ...marketForm,
+    ...marketLocationsState,
     activeTab,
     activeTabConfig,
-    newMarketName,
     previewImageUrl,
     pendingDeleteInspectionId,
-    pendingDeleteMarketId,
     inspectorFilter,
     reportStartDate,
     reportEndDate,
@@ -929,10 +881,8 @@ export function useAdminDashboardPage() {
     spoiledRate,
     recentTrend,
     setActiveTab,
-    setNewMarketName,
     setPreviewImageUrl,
     setPendingDeleteInspectionId,
-    setPendingDeleteMarketId,
     setInspectorFilter,
     setReportStartDate,
     setReportEndDate,
@@ -943,9 +893,6 @@ export function useAdminDashboardPage() {
     handleExportCSV,
     handleExportJSON,
     handleExportPDF,
-    handleCreateMarket,
-    handleDeleteMarket,
-    confirmDeleteMarket,
   };
 }
 

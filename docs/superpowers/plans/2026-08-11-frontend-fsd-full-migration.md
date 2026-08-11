@@ -568,8 +568,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: extracted audit-log loading, loading feedback, pagination, and page slicing from frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts into bounded widget model hooks.
   - TDD: added the audit-log state public contract before extraction (RED on missing widget exports, then GREEN after composition).
   - Validate: focused audit-log test and typecheck passed.
-- [ ] **Commit 118 — refactor: split dashboard market state**
-  - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/features/admin-management/model/use-market-locations.ts + frontend/src/features/admin-management/model/use-market-form.ts. Validate: F.
+- [x] **Commit 118 — refactor: split dashboard market state**
+  - Change: extracted market creation, normalization, duplicate checks, deletion safeguards, and mutation state into the admin-management feature model; normalization now belongs to the market-location entity.
+  - TDD: added the market-state feature public contract before extraction (RED on missing exports, then GREEN after composition).
+  - Validate: focused market-state test, typecheck, and architecture checks passed.
 - [ ] **Commit 119 — refactor: split dashboard report state**
   - Change: frontend/src/pages/admin-dashboard/hooks/useAdminDashboardPage.ts -> frontend/src/features/reports/model/use-admin-report.ts + frontend/src/widgets/admin-dashboard/model/use-reports-tab.ts. Validate: F.
 - [ ] **Commit 120 — refactor: compose bounded dashboard workspace hook**

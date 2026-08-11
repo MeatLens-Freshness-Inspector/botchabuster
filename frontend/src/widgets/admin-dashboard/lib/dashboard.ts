@@ -17,6 +17,7 @@ import type { DeveloperOverviewMetricPoint } from "@/entities/developer-metrics"
 import type { ReportDocumentModel } from "@/features/reports/model/types";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import type { AdminDashboardTabKey, ReportRow } from "../model/types";
+import { normalizeMarketName as normalizeEntityMarketName } from "@/entities/market-location";
 
 export const CLASS_COLORS: Record<FreshnessClassification, string> = {
   fresh: "bg-fresh",
@@ -133,8 +134,7 @@ export const getLocationLabel = (
   profile?.location?.trim() ||
   UNSPECIFIED_LOCATION_LABEL;
 
-export const normalizeMarketName = (value: string) =>
-  value.trim().replace(/\s+/g, " ");
+export const normalizeMarketName = normalizeEntityMarketName;
 
 export const toCsvValue = (value: unknown): string => {
   const raw = value == null ? "" : String(value);
