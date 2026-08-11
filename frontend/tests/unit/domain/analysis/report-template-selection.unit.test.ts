@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getOrganizationReportTemplate } from "../../../../src/lib/reports/templates";
+import { getOrganizationReportTemplate } from "../../../../src/features/reports/lib/templates";
 
 const sampleModel = {
   organization: "gordon_college_ccs" as const,

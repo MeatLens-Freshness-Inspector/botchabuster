@@ -3,7 +3,7 @@ import type {
   ReportSection,
   ReportTemplateKey,
 } from "@/features/reports/model/types";
-import { reorderAdminSections } from "@/lib/reports/templates/adminSectionOrder";
+import { reorderAdminSections } from "./adminSectionOrder";
 
 export const dtiTemplate = {
   key: "dti" satisfies ReportTemplateKey,

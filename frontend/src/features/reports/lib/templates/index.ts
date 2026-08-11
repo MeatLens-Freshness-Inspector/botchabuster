@@ -1,6 +1,6 @@
-import { cityVetTemplate } from "@/lib/reports/templates/cityVetTemplate";
-import { dtiTemplate } from "@/lib/reports/templates/dtiTemplate";
-import { gcccsTemplate } from "@/lib/reports/templates/gcccsTemplate";
+import { cityVetTemplate } from "./cityVetTemplate";
+import { dtiTemplate } from "./dtiTemplate";
+import { gcccsTemplate } from "./gcccsTemplate";
 import type {
   ReportDocumentModel,
   ReportSection,

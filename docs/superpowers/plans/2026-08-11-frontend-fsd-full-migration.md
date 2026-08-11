@@ -406,8 +406,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: moved report document models to `features/reports/model/types.ts`, introduced feature-owned report date/percentage formatting, and migrated all report model consumers to the feature path.
   - TDD: added formatting contract tests before implementation (RED on the absent formatting module, then GREEN with percentage and empty-date assertions).
   - Validate: focused report-formatting tests (2), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 081 — refactor: move report templates**
-  - Change: frontend/src/lib/reports/templates/index.ts -> frontend/src/features/reports/lib/templates/index.ts + frontend/tests/unit/domain/analysis/report-template-selection.unit.test.ts. Validate: F.
+- [x] **Commit 081 — refactor: move report templates**
+  - Change: moved the complete report-template strategy (selector, organization templates, and section ordering) into `features/reports/lib/templates` and migrated all template consumers/tests.
+  - TDD: retained and migrated the template-selection contract alongside the ownership move; the focused template suite covers all organization/section variants.
+  - Validate: focused template suite (9), typecheck, and lint (16 existing warnings) passed.
 - [ ] **Commit 082 — refactor: move report section composition**
   - Change: frontend/src/lib/reports/shared/meatSections.ts -> frontend/src/features/reports/lib/meat-sections.ts + frontend/src/lib/reports/pdf/pageFrames.ts -> frontend/src/features/reports/lib/page-frames.ts. Validate: F.
 - [ ] **Commit 083 — refactor: split PDF document builder**

@@ -5,7 +5,7 @@ import {
 } from "@/lib/reports/pdf/assets";
 import { getReportPageFrame } from "@/lib/reports/pdf/pageFrames";
 import { buildReportChartContent } from "@/lib/reports/pdf/reportCharts";
-import { getOrganizationReportTemplate } from "@/lib/reports/templates";
+import { getOrganizationReportTemplate } from "@/features/reports/lib/templates";
 import type {
   ReportDetailRow,
   ReportDocumentModel,
