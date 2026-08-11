@@ -4,7 +4,10 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
-import { findViolations } from "./check-fsd-boundaries.mjs";
+import {
+  findProductionOwnerViolations,
+  findViolations,
+} from "./check-fsd-boundaries.mjs";
 
 async function createFixture(files) {
   const root = await mkdtemp(path.join(os.tmpdir(), "meatlens-fsd-"));
@@ -69,6 +72,26 @@ test("rejects deep imports into another slice on the same layer", async () => {
         file: "features/auth/ui/login.ts",
         importPath: "@/features/profile/model/validate",
         rule: "cross-slice-deep-import",
+      },
+    ]);
+  } finally {
+    await fixture.cleanup();
+  }
+});
+
+test("rejects maintained files outside the FSD layers", async () => {
+  const fixture = await createFixture({
+    "legacy-app-composition.tsx": "export function App() {}",
+    "main.tsx": "export {};",
+    "test/setup.ts": "export {};",
+    "app/App.tsx": "export {};",
+  });
+
+  try {
+    assert.deepEqual(await findProductionOwnerViolations(fixture.root), [
+      {
+        file: "legacy-app-composition.tsx",
+        rule: "non-fsd-production-owner",
       },
     ]);
   } finally {

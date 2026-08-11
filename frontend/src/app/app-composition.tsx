@@ -39,21 +39,21 @@ import {
 import { applyTheme } from "@/shared/lib/theme-preference";
 import { scrubSensitiveAuthHashFromUrl } from "@/shared/api";
 import { Capacitor } from "@capacitor/core";
-import LandingPage from "./pages/public/landing-page";
+import LandingPage from "@/pages/public/landing-page";
 import { LoginPage, SignupPage } from "@/pages/auth";
 import { ForgotPasswordPage, ResetPasswordPage } from "@/pages/auth";
-import InspectPage from "./pages/inspector/inspect-page";
-import HistoryPage from "./pages/inspector/history-page";
-import AdminDashboard from "./pages/admin/admin-dashboard-page";
-import DesktopAdminDashboard from "./pages/admin/desktop-admin-dashboard-page";
-import AdminDashboardWrapper from "./pages/admin/admin-dashboard-wrapper";
-import ProfilePage from "./pages/inspector/profile-page";
-import ProfileHelpPage from "./pages/inspector/profile-help-page";
-import ProfileHelpScopePage from "./pages/inspector/profile-help-scope-page";
-import ProfileTutorialPage from "./pages/inspector/profile-tutorial-page";
-import MessagesPage from "./pages/inspector/messages-page";
-import OnboardingPage from "./pages/inspector/onboarding-page";
-import NotFound from "./pages/not-found/NotFound";
+import InspectPage from "@/pages/inspector/inspect-page";
+import HistoryPage from "@/pages/inspector/history-page";
+import AdminDashboard from "@/pages/admin/admin-dashboard-page";
+import DesktopAdminDashboard from "@/pages/admin/desktop-admin-dashboard-page";
+import AdminDashboardWrapper from "@/pages/admin/admin-dashboard-wrapper";
+import ProfilePage from "@/pages/inspector/profile-page";
+import ProfileHelpPage from "@/pages/inspector/profile-help-page";
+import ProfileHelpScopePage from "@/pages/inspector/profile-help-scope-page";
+import ProfileTutorialPage from "@/pages/inspector/profile-tutorial-page";
+import MessagesPage from "@/pages/inspector/messages-page";
+import OnboardingPage from "@/pages/inspector/onboarding-page";
+import NotFound from "@/pages/not-found/NotFound";
 
 const offlineSyncDependencies: OfflineSyncDependencies = {
   uploadInspectionImage: (file) => uploadClient.uploadInspectionImage(file),

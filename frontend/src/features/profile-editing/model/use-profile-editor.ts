@@ -2,14 +2,17 @@ import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "rea
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
-import { passkeyClient, type RegisteredPasskey } from "@/features/passkeys/api";
+import {
+  passkeyClient,
+  startPasskeyRegistration,
+  type RegisteredPasskey,
+} from "@/features/passkeys";
 import { profileClient } from "@/entities/user/api";
 import { uploadClient } from "@/features/inspection-submission";
 import {
   canUsePasskeys,
   getDefaultPasskeyDeviceLabel,
-  startPasskeyRegistration,
-} from "@/features/passkeys/lib/browser";
+} from "@/features/passkeys";
 import {
   clearStoredLocalPasskey,
   storeLocalPasskey,

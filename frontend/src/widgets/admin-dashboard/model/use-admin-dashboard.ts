@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { format, subDays, startOfDay, isAfter } from "date-fns";
+import { format, subDays, isAfter } from "date-fns";
 import { toast } from "sonner";
 import { accessCodeClient, type AccessCode } from "@/entities/access-code";
 import type { AuditLogEntry } from "@/entities/audit-log";
@@ -7,36 +7,17 @@ import { developerDashboardClient } from "@/entities/developer-metrics";
 import { inspectionClient } from "@/entities/inspection";
 import { marketLocationClient, type MarketLocation } from "@/entities/market-location";
 import { profileClient, type Profile } from "@/entities/user/api";
-import { formatInspectionLocationLabel } from "@/entities/inspection";
 import { DEFAULT_MARKET_LOCATIONS } from "@/entities/market-location";
-import {
-  getReportOrganizationLabel,
-} from "@/features/reports";
 import { useAccessCodeForm, useAccessCodes } from "@/features/admin-management";
 import { useMarketForm, useMarketLocations } from "@/features/admin-management";
-import { useAdminReport, useReportsTab } from "@/features/reports";
-import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { composeReportPdf } from "@/features/reports";
-import type { FreshnessClassification, Inspection } from "@/entities/inspection";
-import { buildDeveloperInAppMetrics } from "@/features/developer-tools";
-import type { ReportDailyTrendRow, ReportLocationBreakdown, ReportRow } from "./types";
+import type { Inspection } from "@/entities/inspection";
 import {
   ADMIN_DASHBOARD_CHART_CONFIG,
   ADMIN_DASHBOARD_MOBILE_CATEGORY_AXIS_PROPS,
   ADMIN_DASHBOARD_MOBILE_TIME_AXIS_PROPS,
-  ANALYTICS_DAYS,
-  MAX_ANALYTICS_ITEMS,
-  MEAT_TYPE_LABELS,
   PIE_COLORS,
-  REPORT_CLASSIFICATIONS,
-  buildPreScanReportFields,
   buildAdminDashboardReportPdfModel,
-  getInspectorLabel,
-  getLocationLabel,
-  getOptionalText,
-  parsePayloadActor,
-  parsePayloadSource,
-  parsePayloadText,
   toCsvValue,
 } from "../lib/dashboard";
 import { useDashboardSession } from "./use-dashboard-session";
@@ -46,6 +27,8 @@ import { useLogsTab } from "./use-logs-tab";
 import { useOverviewTab } from "./use-overview-tab";
 import { useUserActions } from "./use-user-actions";
 import { useUsersTab } from "./use-users-tab";
+import { useDashboardAnalytics } from "./use-dashboard-analytics";
+import { useDashboardReport } from "./use-dashboard-report";
 
 export function useAdminDashboard() {
   const {
@@ -84,7 +67,13 @@ export function useAdminDashboard() {
   const logsTab = useLogsTab();
   const logFilters = useLogFilters(logsTab.auditLogs);
   const { loadAuditLogs } = logsTab;
-  const adminReport = useAdminReport(inspections);
+  const analytics = useDashboardAnalytics(inspections, profiles);
+  const reportState = useDashboardReport({
+    developerLatestRuns,
+    inspections,
+    isDeveloper,
+    profileById: analytics.profileById,
+  });
 
   useEffect(() => {
     void loadData();
@@ -126,17 +115,16 @@ export function useAdminDashboard() {
     void loadAuditLogs();
   }, [activeTab, loadAuditLogs]);
 
-  const classificationCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    inspections.forEach((i) => {
-      counts[i.classification] = (counts[i.classification] || 0) + 1;
-    });
-    return counts;
-  }, [inspections]);
-
-  const profileById = useMemo(() => {
-    return new Map(profiles.map((profile) => [profile.id, profile]));
-  }, [profiles]);
+  const {
+    classificationCounts,
+    profileById,
+    dailyInspections,
+    inspectorAnalytics,
+    meatTypeAnalytics,
+    locationAnalytics,
+    confidenceTrendData,
+    freshnessMixData,
+  } = analytics;
 
   const {
     filteredInspections,
@@ -149,186 +137,11 @@ export function useAdminDashboard() {
     totalInspectionPages,
   } = useInspectionsTab(inspections, profileById);
 
-  const pieData = useMemo(() => {
-    return (["fresh", "not fresh", "acceptable", "warning", "spoiled"] as FreshnessClassification[]).map((c) => ({
-      name: c.charAt(0).toUpperCase() + c.slice(1),
-      value: classificationCounts[c] || 0,
-      fill: PIE_COLORS[c],
-    }));
-  }, [classificationCounts]);
-
-  const dailyAnalytics = useMemo(() => {
-    const buckets = new Map<
-      string,
-      {
-        date: string;
-        count: number;
-        totalConfidence: number;
-        fresh: number;
-        notFresh: number;
-        acceptable: number;
-        warning: number;
-        spoiled: number;
-      }
-    >();
-    const orderedKeys: string[] = [];
-
-    for (let i = ANALYTICS_DAYS - 1; i >= 0; i--) {
-      const day = startOfDay(subDays(new Date(), i));
-      const key = format(day, "yyyy-MM-dd");
-      orderedKeys.push(key);
-      buckets.set(key, {
-        date: format(day, "MMM d"),
-        count: 0,
-        totalConfidence: 0,
-        fresh: 0,
-        notFresh: 0,
-        acceptable: 0,
-        warning: 0,
-        spoiled: 0,
-      });
-    }
-
-    inspections.forEach((inspection) => {
-      const key = format(startOfDay(new Date(inspection.created_at)), "yyyy-MM-dd");
-      const bucket = buckets.get(key);
-      if (!bucket) return;
-
-      bucket.count += 1;
-      bucket.totalConfidence += inspection.confidence_score;
-
-      switch (inspection.classification) {
-        case "fresh":
-          bucket.fresh += 1;
-          break;
-        case "not fresh":
-          bucket.notFresh += 1;
-          break;
-        case "acceptable":
-          bucket.acceptable += 1;
-          break;
-        case "warning":
-          bucket.warning += 1;
-          break;
-        case "spoiled":
-          bucket.spoiled += 1;
-          break;
-      }
-    });
-
-    return orderedKeys.map((key) => {
-      const bucket = buckets.get(key)!;
-      return {
-        date: bucket.date,
-        count: bucket.count,
-        fresh: bucket.fresh,
-        notFresh: bucket.notFresh,
-        acceptable: bucket.acceptable,
-        warning: bucket.warning,
-        spoiled: bucket.spoiled,
-        confidence: bucket.count > 0 ? Math.round(bucket.totalConfidence / bucket.count) : 0,
-      };
-    });
-  }, [inspections]);
-
-  const dailyInspections = useMemo(() => {
-    return dailyAnalytics.map(({ date, count, fresh, spoiled }) => ({
-      date,
-      count,
-      fresh,
-      spoiled,
-    }));
-  }, [dailyAnalytics]);
-
-  const inspectorAnalytics = useMemo(() => {
-    const aggregates = new Map<string, { inspector: string; count: number; totalConfidence: number }>();
-
-    inspections.forEach((inspection) => {
-      const profile = inspection.user_id ? profileById.get(inspection.user_id) : undefined;
-      const inspector = getInspectorLabel(profile);
-      const current = aggregates.get(inspector) ?? { inspector, count: 0, totalConfidence: 0 };
-      current.count += 1;
-      current.totalConfidence += inspection.confidence_score;
-      aggregates.set(inspector, current);
-    });
-
-    return Array.from(aggregates.values())
-      .sort((left, right) => right.count - left.count || right.totalConfidence - left.totalConfidence || left.inspector.localeCompare(right.inspector))
-      .slice(0, MAX_ANALYTICS_ITEMS)
-      .map((entry) => ({
-        inspector: entry.inspector,
-        count: entry.count,
-        confidence: Math.round(entry.totalConfidence / entry.count),
-      }));
-  }, [inspections, profileById]);
-
-  const meatTypeAnalytics = useMemo(() => {
-    const aggregates = new Map<keyof typeof MEAT_TYPE_LABELS, { count: number; spoiled: number }>();
-
-    inspections.forEach((inspection) => {
-      const key = inspection.meat_type as keyof typeof MEAT_TYPE_LABELS;
-      const current = aggregates.get(key) ?? { count: 0, spoiled: 0 };
-      current.count += 1;
-      if (inspection.classification === "spoiled") {
-        current.spoiled += 1;
-      }
-      aggregates.set(key, current);
-    });
-
-    return (Object.entries(MEAT_TYPE_LABELS) as Array<[keyof typeof MEAT_TYPE_LABELS, string]>)
-      .map(([key, label]) => {
-        const entry = aggregates.get(key) ?? { count: 0, spoiled: 0 };
-        return {
-          meatType: label,
-          count: entry.count,
-          spoiledRate: entry.count > 0 ? Math.round((entry.spoiled / entry.count) * 100) : 0,
-        };
-      })
-      .filter((entry) => entry.count > 0)
-      .sort((left, right) => right.count - left.count || left.meatType.localeCompare(right.meatType));
-  }, [inspections]);
-
-  const locationAnalytics = useMemo(() => {
-    const aggregates = new Map<string, { location: string; count: number; spoiled: number }>();
-
-    inspections.forEach((inspection) => {
-      const profile = inspection.user_id ? profileById.get(inspection.user_id) : undefined;
-      const location = getLocationLabel(inspection.location, profile);
-      const current = aggregates.get(location) ?? { location, count: 0, spoiled: 0 };
-      current.count += 1;
-      if (inspection.classification === "spoiled") {
-        current.spoiled += 1;
-      }
-      aggregates.set(location, current);
-    });
-
-    return Array.from(aggregates.values())
-      .sort((left, right) => right.count - left.count || right.spoiled - left.spoiled || left.location.localeCompare(right.location))
-      .slice(0, MAX_ANALYTICS_ITEMS)
-      .map((entry) => ({
-        location: entry.location,
-        count: entry.count,
-        spoiledRate: entry.count > 0 ? Math.round((entry.spoiled / entry.count) * 100) : 0,
-      }));
-  }, [inspections, profileById]);
-
-  const confidenceTrendData = useMemo(() => {
-    return dailyAnalytics.map(({ date, confidence }) => ({
-      date,
-      confidence,
-    }));
-  }, [dailyAnalytics]);
-
-  const freshnessMixData = useMemo(() => {
-    return dailyAnalytics.map(({ date, fresh, notFresh, acceptable, warning, spoiled }) => ({
-      date,
-      fresh,
-      notFresh,
-      acceptable,
-      warning,
-      spoiled,
-    }));
-  }, [dailyAnalytics]);
+  const pieData = ["fresh", "not fresh", "acceptable", "warning", "spoiled"].map((classification) => ({
+    name: classification.charAt(0).toUpperCase() + classification.slice(1),
+    value: classificationCounts[classification] || 0,
+    fill: PIE_COLORS[classification as keyof typeof PIE_COLORS],
+  }));
 
   const {
     filteredProfiles,
@@ -345,198 +158,19 @@ export function useAdminDashboard() {
   const {
     reportDateRangeInvalid,
     reportEndDate,
-    reportFilteredInspections,
     reportStartDate,
-    setReportEndDate,
-    setReportStartDate,
-  } = adminReport;
-
-  const reportClassCounts = useMemo(() => {
-    const counts: Record<FreshnessClassification, number> = {
-      fresh: 0,
-      "not fresh": 0,
-      acceptable: 0,
-      warning: 0,
-      spoiled: 0,
-    };
-
-    reportFilteredInspections.forEach((inspection) => {
-      counts[inspection.classification] += 1;
-    });
-
-    return counts;
-  }, [reportFilteredInspections]);
-
-  const reportRows = useMemo<ReportRow[]>(() => {
-    return reportFilteredInspections.map((inspection) => {
-      const profile = inspection.user_id ? profileById.get(inspection.user_id) : undefined;
-      const manualLocation = getLocationLabel(inspection.location, profile);
-      const locationLabel =
-        formatInspectionLocationLabel(
-          manualLocation,
-          inspection.location_latitude,
-          inspection.location_longitude,
-        ) || manualLocation;
-      const preScanFields = buildPreScanReportFields(inspection);
-
-      return {
-        id: inspection.id,
-        createdAt: inspection.created_at,
-        capturedAt: inspection.captured_at ?? null,
-        inspector: getInspectorLabel(profile),
-        inspectorEmail: getOptionalText(profile?.email),
-        inspectorCode: getOptionalText(profile?.inspector_code),
-        manualLocation,
-        location: locationLabel,
-        locationLatitude: inspection.location_latitude,
-        locationLongitude: inspection.location_longitude,
-        profileLocation: getOptionalText(profile?.location),
-        meatType: inspection.meat_type,
-        classification: inspection.classification,
-        manualClassification: inspection.manual_classification,
-        confidenceScore: inspection.confidence_score,
-        ...preScanFields,
-        flaggedDeviations: inspection.flagged_deviations.length > 0 ? inspection.flagged_deviations.join("; ") : "-",
-        explanation: getOptionalText(inspection.explanation),
-        inspectorNotes: getOptionalText(inspection.inspector_notes),
-        imageUrl: inspection.image_url ?? null,
-      };
-    });
-  }, [reportFilteredInspections, profileById]);
-
-  const reportSummary = useMemo(() => {
-    if (reportRows.length === 0) {
-      return {
-        total: 0,
-        averageConfidence: 0,
-        spoiledRate: 0,
-        uniqueInspectors: 0,
-        uniqueLocations: 0,
-        flaggedRecords: 0,
-      };
-    }
-
-    const total = reportRows.length;
-    const averageConfidence = Math.round(
-      reportRows.reduce((sum, row) => sum + row.confidenceScore, 0) / total,
-    );
-    const spoiledCount = reportRows.filter((row) => row.classification === "spoiled").length;
-    const spoiledRate = Math.round((spoiledCount / total) * 100);
-    const uniqueInspectors = new Set(reportRows.map((row) => row.inspector)).size;
-    const uniqueLocations = new Set(reportRows.map((row) => row.manualLocation)).size;
-    const flaggedRecords = reportRows.filter((row) => row.flaggedDeviations !== "-").length;
-
-    return { total, averageConfidence, spoiledRate, uniqueInspectors, uniqueLocations, flaggedRecords };
-  }, [reportRows]);
-
-  const reportTopInspectors = useMemo(() => {
-    const aggregates = new Map<string, { count: number; totalConfidence: number }>();
-
-    reportRows.forEach((row) => {
-      const current = aggregates.get(row.inspector) ?? { count: 0, totalConfidence: 0 };
-      current.count += 1;
-      current.totalConfidence += row.confidenceScore;
-      aggregates.set(row.inspector, current);
-    });
-
-    return Array.from(aggregates.entries())
-      .map(([inspector, value]) => ({
-        inspector,
-        count: value.count,
-        averageConfidence: Math.round(value.totalConfidence / value.count),
-      }))
-      .sort((left, right) => right.count - left.count || right.averageConfidence - left.averageConfidence || left.inspector.localeCompare(right.inspector))
-      .slice(0, 8);
-  }, [reportRows]);
-
-  const reportByMeatType = useMemo(() => {
-    const aggregates = new Map<string, number>();
-
-    reportRows.forEach((row) => {
-      aggregates.set(row.meatType, (aggregates.get(row.meatType) ?? 0) + 1);
-    });
-
-    return Array.from(aggregates.entries())
-      .map(([meatType, count]) => ({ meatType, count }))
-      .sort((left, right) => right.count - left.count || left.meatType.localeCompare(right.meatType));
-  }, [reportRows]);
-
-  const reportTopLocations = useMemo<ReportLocationBreakdown[]>(() => {
-    const aggregates = new Map<string, { count: number; spoiledCount: number; totalConfidence: number }>();
-
-    reportRows.forEach((row) => {
-      const current = aggregates.get(row.manualLocation) ?? { count: 0, spoiledCount: 0, totalConfidence: 0 };
-      current.count += 1;
-      current.totalConfidence += row.confidenceScore;
-      if (row.classification === "spoiled") {
-        current.spoiledCount += 1;
-      }
-      aggregates.set(row.manualLocation, current);
-    });
-
-    return Array.from(aggregates.entries())
-      .map(([location, entry]) => ({
-        location,
-        count: entry.count,
-        spoiledCount: entry.spoiledCount,
-        spoiledRate: Math.round((entry.spoiledCount / entry.count) * 100),
-        averageConfidence: Math.round(entry.totalConfidence / entry.count),
-      }))
-      .sort((left, right) => right.count - left.count || right.spoiledRate - left.spoiledRate || left.location.localeCompare(right.location))
-      .slice(0, 10);
-  }, [reportRows]);
-
-  const reportDailyTrend = useMemo<ReportDailyTrendRow[]>(() => {
-    const aggregates = new Map<string, { count: number; spoiledCount: number; totalConfidence: number }>();
-
-    reportRows.forEach((row) => {
-      const key = format(new Date(row.createdAt), "yyyy-MM-dd");
-      const current = aggregates.get(key) ?? { count: 0, spoiledCount: 0, totalConfidence: 0 };
-      current.count += 1;
-      current.totalConfidence += row.confidenceScore;
-      if (row.classification === "spoiled") {
-        current.spoiledCount += 1;
-      }
-      aggregates.set(key, current);
-    });
-
-    return Array.from(aggregates.entries())
-      .sort((left, right) => left[0].localeCompare(right[0]))
-      .map(([date, entry]) => ({
-        date,
-        count: entry.count,
-        spoiledCount: entry.spoiledCount,
-        averageConfidence: Math.round(entry.totalConfidence / entry.count),
-      }));
-  }, [reportRows]);
-
-  const reportClassShare = useMemo(() => {
-    return REPORT_CLASSIFICATIONS.map((classification) => {
-      const count = reportClassCounts[classification];
-      return {
-        classification,
-        count,
-        share: reportSummary.total > 0 ? Math.round((count / reportSummary.total) * 100) : 0,
-      };
-    });
-  }, [reportClassCounts, reportSummary.total]);
-
-  const reportDeveloperMetrics = useMemo(
-    () => isDeveloper
-      ? buildDeveloperInAppMetrics(reportRows.map((row) => ({
-          classification: row.classification,
-          manual_classification: row.manualClassification,
-          meat_type: row.meatType,
-        })))
-      : null,
-    [isDeveloper, reportRows],
-  );
-  const reportsTab = useReportsTab({
-    reportDateRangeInvalid,
-    reportEndDate,
+    reportClassCounts,
     reportRows,
-    reportStartDate,
-  });
+    reportSummary,
+    reportTopInspectors,
+    reportByMeatType,
+    reportTopLocations,
+    reportDailyTrend,
+    reportClassShare,
+    reportDeveloperMetrics,
+    getReportFileSuffix,
+    validateReportRange,
+  } = reportState;
 
   const avgConfidence = useMemo(() => {
     if (inspections.length === 0) return 0;
@@ -827,8 +461,7 @@ export function useAdminDashboard() {
     ...logFilters,
     ...marketForm,
     ...marketLocationsState,
-    ...adminReport,
-    ...reportsTab,
+    ...reportState,
     activeTab,
     activeTabConfig,
     previewImageUrl,

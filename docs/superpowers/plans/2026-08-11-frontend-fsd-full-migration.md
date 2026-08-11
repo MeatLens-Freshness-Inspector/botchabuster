@@ -666,10 +666,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
 - [x] **Commit 141 — refactor: remove root legacy pages**
   - Change: delete frontend/src/pages/AdminDashboard.tsx + delete frontend/src/pages/DesktopAdminDashboard.tsx after route ownership is fully pages/admin; complete every root-page and nested-page transfer listed in the manifest.
   - TDD evidence: page ownership contracts cover history widgets, tutorial feature pages, inspection capture, and the relocated admin route composition; the migrated admin route/UI audit passes with five tests. Validate: `npm run typecheck -w frontend`, `npm run lint -w frontend`, and the focused admin/page ownership suite.
-- [ ] **Commit 142 — test: enable mandatory architecture and size gates**
+- [x] **Commit 142 — test: enable mandatory architecture and size gates**
   - Change: frontend/package.json + frontend/scripts/check-fsd-boundaries.mjs.
   - Make the CI command fail on every non-FSD production owner, deep import, upward import, or maintained source file over 600 non-blank lines.
-  - Validate: F.
+  - TDD evidence: fixture tests cover upward imports, cross-slice deep imports, non-FSD owners, split-trigger counting, and hard-limit detection; the enforced repository audit reports zero structural violations and zero hard-limit files. Validate: `npm run test:architecture -w frontend`, `npm run typecheck -w frontend`, and `npm run lint -w frontend`.
 - [ ] **Commit 143 — test: audit public slice APIs and legacy absence**
   - Change: frontend/tests/unit/architecture/final-fsd-audit.unit.test.ts + frontend/scripts/check-source-size.mjs.
   - Assert that no legacy root owner, bridge alias, or compatibility re-export is present and that every maintained source file is within the cap.

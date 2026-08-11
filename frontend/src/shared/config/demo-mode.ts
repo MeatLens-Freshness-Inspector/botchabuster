@@ -4,14 +4,43 @@
  * All API calls are short-circuited and return realistic mock data.
  */
 
-import type { AuthUser, AuthSession } from "@/features/auth/api/auth-client";
-import type { Profile } from "@/entities/user/api/profile-client";
-import type { Inspection, AnalysisResult } from "@/entities/inspection";
 export interface LandingPageStats {
   inspectionCount: number;
   userCount: number;
   freshRate: number;
 }
+
+type DemoClassification = "fresh" | "not fresh" | "spoiled" | "acceptable" | "warning";
+type DemoMeatType = "pork" | "beef" | "chicken" | "fish" | "other";
+
+type DemoInspection = {
+  id: string;
+  user_id: string | null;
+  meat_type: DemoMeatType;
+  classification: DemoClassification;
+  confidence_score: number;
+  flagged_deviations: string[];
+  explanation: string | null;
+  image_url: string | null;
+  location: string | null;
+  location_latitude: number | null;
+  location_longitude: number | null;
+  inspector_notes: string | null;
+  created_at: string;
+  updated_at: string;
+  manual_classification?: DemoClassification;
+  captured_at?: string | null;
+  stall_number?: string | null;
+  meat_inspection_certificate_proof?: string | null;
+  meat_expiry_date?: string | null;
+  storage_correct?: boolean | null;
+  light_color_correct?: boolean | null;
+  light_color_observed?: string | null;
+  area_clean?: boolean | null;
+  inspection_decision_source?: "ai" | "protocol_pre_scan" | null;
+  protocol_spoiled_reason?: string | null;
+  regulatory_compliance?: boolean | null;
+};
 
 const viteEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env ?? {};
 
@@ -23,43 +52,13 @@ export function demoDelay<T>(data: T, ms = 350): Promise<T> {
 }
 
 // ---------------------------------------------------------------------------
-// Demo user / session
-// ---------------------------------------------------------------------------
-
-export const DEMO_USER: AuthUser = {
-  id: "demo-user-001",
-  email: "demo@botchabuster.com",
-};
-
-export const DEMO_SESSION: AuthSession = {
-  access_token: "demo-token",
-  refresh_token: null,
-  token_type: "bearer",
-  expires_in: 3600,
-  expires_at: Math.floor(Date.now() / 1000) + 3600,
-};
-
-export const DEMO_PROFILE: Profile = {
-  id: "demo-user-001",
-  full_name: "Demo Inspector",
-  avatar_url: null,
-  inspector_code: "DEMO01",
-  is_dark_mode: false,
-  show_detailed_results: true,
-  email: "demo@botchabuster.com",
-  location: "Metro Manila, PH",
-  created_at: "2026-01-15T08:00:00Z",
-  updated_at: "2026-04-28T00:00:00Z",
-};
-
-// ---------------------------------------------------------------------------
 // Mock inspections
 // ---------------------------------------------------------------------------
 
 const BASE = new Date("2026-04-28T10:00:00Z").getTime();
 const daysAgo = (d: number) => new Date(BASE - d * 86_400_000).toISOString();
 
-export const DEMO_INSPECTIONS: Inspection[] = [
+export const DEMO_INSPECTIONS: DemoInspection[] = [
   {
     id: "demo-insp-001",
     user_id: "demo-user-001",
@@ -230,18 +229,6 @@ export const DEMO_STATS = {
     warning: DEMO_INSPECTIONS.filter((i) => i.classification === "warning").length,
     spoiled: DEMO_INSPECTIONS.filter((i) => i.classification === "spoiled").length,
   },
-};
-
-// ---------------------------------------------------------------------------
-// Mock analysis result (returned when "Analyze" is pressed in demo mode)
-// ---------------------------------------------------------------------------
-
-export const DEMO_ANALYSIS_RESULT: AnalysisResult = {
-  classification: "fresh",
-  confidence_score: 0.93,
-  flagged_deviations: [],
-  explanation:
-    "Sample shows strong freshness indicators with optimal color profile and uniform texture.",
 };
 
 // ---------------------------------------------------------------------------

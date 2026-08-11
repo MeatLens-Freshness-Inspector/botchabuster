@@ -1,1 +1,1 @@
-export { default, initializeAppRuntime } from "../legacy-app-composition";
+export { default, initializeAppRuntime } from "./app-composition";

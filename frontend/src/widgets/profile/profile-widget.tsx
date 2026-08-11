@@ -1,7 +1,9 @@
 import { Loader2 } from "lucide-react";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import { PrivacyPolicyDialog } from "@/widgets/legal/privacy-policy-dialog";
-import { TermsAndConditionsDialog } from "@/widgets/legal/terms-and-conditions-dialog";
+import {
+  PrivacyPolicyDialog,
+  TermsAndConditionsDialog,
+} from "@/widgets/legal";
 import { useProfileEditor } from "@/features/profile-editing";
 import { ProfilePageHeader } from "./profile-page-header";
 import { ProfilePrimaryColumn } from "@/widgets/profile/profile-primary-column";

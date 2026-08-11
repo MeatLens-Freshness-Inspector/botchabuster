@@ -1,5 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const sourceExtensions = new Set([".js", ".jsx", ".mjs", ".ts", ".tsx"]);
 
@@ -55,4 +56,21 @@ export async function findSourceSizeViolations(
   }
 
   return violations.sort((left, right) => left.file.localeCompare(right.file));
+}
+
+const isDirectExecution =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+
+if (isDirectExecution) {
+  const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../src");
+  const violations = await findSourceSizeViolations(rootDir);
+  console.log(JSON.stringify(violations, null, 2));
+
+  if (
+    process.argv.includes("--enforce") &&
+    violations.some((violation) => violation.rule === "hard-limit")
+  ) {
+    process.exitCode = 1;
+  }
 }

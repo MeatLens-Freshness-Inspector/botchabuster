@@ -1,5 +1,5 @@
 import { createAuthHeaders } from "@/shared/api/auth-headers";
-import type { AuthBootstrapPayload } from "@/features/auth/api/auth-client";
+import type { AuthBootstrapPayload } from "@/features/auth";
 import { API_BASE_URL } from "@/shared/api/base-url";
 import { fetchWithTimeout } from "@/shared/api";
 

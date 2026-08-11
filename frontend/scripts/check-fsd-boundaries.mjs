@@ -67,7 +67,10 @@ function getLayerPath(relativePath) {
   return {
     layer,
     rank: layerOrder.get(layer),
-    slice: segments[1] ?? null,
+    slice:
+      ["entities", "features", "widgets", "pages"].includes(layer) && segments.length > 2
+        ? segments[1]
+        : null,
     depth: segments.length,
   };
 }
@@ -108,6 +111,46 @@ export async function findLegacyRootImportOwners(rootDir) {
   return owners.sort((left, right) =>
     (left.file + ":" + left.importPath).localeCompare(right.file + ":" + right.importPath),
   );
+}
+
+export async function findProductionOwnerViolations(rootDir) {
+  const sourceFiles = await collectSourceFiles(rootDir);
+  const violations = [];
+  const allowedRootFiles = new Set(["main.tsx", "vite-env.d.ts"]);
+
+  for (const sourceFile of sourceFiles) {
+    const sourceRelativePath = path
+      .relative(rootDir, sourceFile)
+      .split(path.sep)
+      .join("/");
+    const segments = sourceRelativePath.split("/");
+    const owner = segments[0];
+
+    if (segments.length === 1 && allowedRootFiles.has(sourceRelativePath)) {
+      continue;
+    }
+
+    if (owner === "test") {
+      continue;
+    }
+
+    if (!layerOrder.has(owner)) {
+      violations.push({
+        file: sourceRelativePath,
+        rule: "non-fsd-production-owner",
+      });
+      continue;
+    }
+
+    if (legacyRootDirectories.has(owner)) {
+      violations.push({
+        file: sourceRelativePath,
+        rule: "legacy-root-owner",
+      });
+    }
+  }
+
+  return violations.sort((left, right) => left.file.localeCompare(right.file));
 }
 
 export async function findViolations(rootDir) {
@@ -174,11 +217,17 @@ if (isDirectExecution) {
   const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../src");
   const violations = await findViolations(rootDir);
   const legacyRootImportOwners = await findLegacyRootImportOwners(rootDir);
-  const report = { violations, legacyRootImportOwners };
+  const productionOwnerViolations = await findProductionOwnerViolations(rootDir);
+  const report = { violations, legacyRootImportOwners, productionOwnerViolations };
 
   console.log(JSON.stringify(report, null, 2));
 
-  if (process.argv.includes("--enforce") && (violations.length > 0 || legacyRootImportOwners.length > 0)) {
+  if (
+    process.argv.includes("--enforce") &&
+    (violations.length > 0 ||
+      legacyRootImportOwners.length > 0 ||
+      productionOwnerViolations.length > 0)
+  ) {
     process.exitCode = 1;
   }
 }
