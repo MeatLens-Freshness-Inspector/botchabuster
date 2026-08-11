@@ -358,8 +358,10 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: completed the shared SQLite platform boundary by adding `shared/platform/sqlite/index.ts`, exposing the existing moved `database.ts` singleton lifecycle, and migrating all current native SQLite adapters from the deep database module to the public platform API.
   - TDD: added the shared SQLite public contract first (RED on the absent index), then added the barrel and reached GREEN without changing connection initialization or migration execution.
   - Validate: SQLite public API unit (1), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
-- [ ] **Commit 069 — refactor: move SQLite inspection cache**
-  - Change: frontend/src/lib/sqlite/sqliteInspectionCache.ts -> frontend/src/entities/inspection/api/sqlite-cache.ts + frontend/src/features/offline-sync/model/inspection-queue.ts. Validate: I.
+- [x] **Commit 069 — refactor: move SQLite inspection cache**
+  - Change: moved the native inspection cache adapter into `entities/inspection/api/sqlite-cache.ts`, exposed it through the inspection entity API, and routed the existing cross-platform history-cache facade through the entity contract. The offline inspection queue remains a separate model boundary rather than absorbing cache responsibilities.
+  - TDD: added the entity cache public contract first (RED on the missing export), then moved and exported the adapter and reached GREEN with cache statistics behavior unchanged.
+  - Validate: inspection cache unit (1), integration suite (11), typecheck, lint (16 existing warnings), and architecture checks passed.
 - [ ] **Commit 070 — refactor: move SQLite offline queues**
   - Change: frontend/src/lib/sqlite/sqliteOfflineQueue.ts -> frontend/src/features/offline-sync/api/sqlite-offline-queue.ts + frontend/src/lib/sqlite/sqliteAuditQueue.ts -> frontend/src/features/offline-sync/api/sqlite-audit-queue.ts. Validate: I.
 - [ ] **Commit 071 — refactor: split model explanation helpers**

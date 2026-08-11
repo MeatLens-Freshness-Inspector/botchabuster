@@ -35,6 +35,16 @@ export {
   type InspectionScope,
 } from "./api";
 export {
+  buildInspectionHistoryStats,
+  getCachedInspection,
+  getCachedInspectionList,
+  getCachedInspectionStats,
+  setCachedInspectionList,
+  setCachedInspectionStats,
+  upsertCachedInspection,
+  type InspectionHistoryStats,
+} from "./api";
+export {
   inspectionKeys,
   inspectionStatsKey,
 } from "./model/queries";

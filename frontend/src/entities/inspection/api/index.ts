@@ -3,3 +3,13 @@ export {
   inspectionClient,
   type InspectionScope,
 } from "./inspection-client";
+export {
+  buildInspectionHistoryStats,
+  getCachedInspection,
+  getCachedInspectionList,
+  getCachedInspectionStats,
+  setCachedInspectionList,
+  setCachedInspectionStats,
+  upsertCachedInspection,
+  type InspectionHistoryStats,
+} from "./sqlite-cache";

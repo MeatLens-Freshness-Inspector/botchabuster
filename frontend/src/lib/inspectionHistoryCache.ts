@@ -1,6 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
-import * as sqliteImpl from "@/lib/sqlite/sqliteInspectionCache";
+import * as sqliteImpl from "@/entities/inspection";
 
 const isNative = () => Capacitor.isNativePlatform();
 
