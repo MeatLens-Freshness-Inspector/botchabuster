@@ -205,8 +205,8 @@ The Vite technical entry remains frontend/src/main.tsx and imports only the app 
   - Change: move administrator gating to frontend/src/app/router/guards/admin-route.tsx, remove the legacy export, and retain the current root app as its auth-state adapter.
   - Preserve developer and administrator gating.
   - Validate: F.
-- [ ] **Commit 026 — refactor: move onboarding route guard**
-  - Change: frontend/src/app/router/guards/onboarding-route.tsx + frontend/src/app/router/guards/onboarding-route.unit.test.tsx.
+- [x] **Commit 026 — refactor: move onboarding route guard**
+  - Change: move onboarding gating to frontend/src/app/router/guards/onboarding-route.tsx, adapt the root app to its auth state, and remove the obsolete mixed frontend/src/components/ProtectedRoute.tsx module.
   - Validate: F.
 - [ ] **Commit 027 — refactor: create signed-in app layout**
   - Change: frontend/src/app/App.tsx + frontend/src/app/layouts/app-layout.tsx.

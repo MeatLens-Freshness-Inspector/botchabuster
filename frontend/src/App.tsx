@@ -1,7 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { OnboardingRoute } from "@/components/ProtectedRoute";
 import { BottomNav } from "@/components/BottomNav";
 import { AIChatbot } from "@/components/AIChatbot";
 import { OfflineBanner } from "@/components/OfflineBanner";
@@ -14,6 +13,7 @@ import { ThemeController } from "@/app/providers/theme-controller";
 import { ROUTE_PATHS } from "@/app/router/paths";
 import { ProtectedRoute as ProtectedRouteGuard, type ProtectedRouteProps } from "@/app/router/guards/protected-route";
 import { AdminRoute as AdminRouteGuard, type AdminRouteProps } from "@/app/router/guards/admin-route";
+import { OnboardingRoute as OnboardingRouteGuard, type OnboardingRouteProps } from "@/app/router/guards/onboarding-route";
 import { hasSkippedOnboardingForSession } from "@/lib/onboardingSession";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
@@ -73,6 +73,23 @@ function AuthAdminRoute({ children }: Pick<AdminRouteProps, "children">) {
   return <AdminRouteGuard user={user} isAdmin={isAdmin} isLoading={isLoading}>{children}</AdminRouteGuard>;
 }
 
+function AuthOnboardingRoute({ children }: Pick<OnboardingRouteProps, "children">) {
+  const { user, isAdmin, isLoading, profile, profileStatus, retryProfileLoad } = useAuth();
+
+  return (
+    <OnboardingRouteGuard
+      user={user}
+      isAdmin={isAdmin}
+      isLoading={isLoading}
+      profile={profile}
+      profileStatus={profileStatus}
+      retryProfileLoad={retryProfileLoad}
+    >
+      {children}
+    </OnboardingRouteGuard>
+  );
+}
+
 const App = () => {
   return (
     <QueryProvider>
@@ -92,7 +109,7 @@ const App = () => {
                   <Route path={ROUTE_PATHS.signup} element={<SignupPage />} />
                   <Route path={ROUTE_PATHS.forgotPassword} element={<ForgotPasswordPage />} />
                   <Route path={ROUTE_PATHS.resetPassword} element={<ResetPasswordPage />} />
-                  <Route path={ROUTE_PATHS.onboarding} element={<OnboardingRoute><OnboardingPage /></OnboardingRoute>} />
+                  <Route path={ROUTE_PATHS.onboarding} element={<AuthOnboardingRoute><OnboardingPage /></AuthOnboardingRoute>} />
 
                   {/* Protected app routes */}
                   <Route path={ROUTE_PATHS.inspect} element={<AuthProtectedRoute><AppLayout><InspectPage /></AppLayout></AuthProtectedRoute>} />
