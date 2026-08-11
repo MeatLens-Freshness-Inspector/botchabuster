@@ -12,6 +12,7 @@ import { DEFAULT_MARKET_LOCATIONS } from "@/entities/market-location";
 import {
   getReportOrganizationLabel,
 } from "@/features/reports";
+import { useAccessCodeForm, useAccessCodes } from "@/features/admin-management";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { composeReportPdf } from "@/features/reports";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
@@ -69,12 +70,11 @@ export function useAdminDashboardPage() {
   const [accessCodes, setAccessCodes] = useState<AccessCode[]>([]);
   const [marketLocations, setMarketLocations] = useState<MarketLocation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newCode, setNewCode] = useState("");
-  const [newCodeDesc, setNewCodeDesc] = useState("");
   const [newMarketName, setNewMarketName] = useState("");
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [pendingDeleteInspectionId, setPendingDeleteInspectionId] = useState<string | null>(null);
-  const [pendingDeleteCodeId, setPendingDeleteCodeId] = useState<string | null>(null);
+  const accessCodeForm = useAccessCodeForm({ setAccessCodes });
+  const accessCodesState = useAccessCodes({ setAccessCodes });
   const [pendingDeleteMarketId, setPendingDeleteMarketId] = useState<string | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
   const [auditLogPage, setAuditLogPage] = useState(1);
@@ -825,49 +825,6 @@ export function useAdminDashboardPage() {
     }
   };
 
-  const handleCreateCode = async () => {
-    if (!newCode.trim()) {
-      toast.error("Code cannot be empty");
-      return;
-    }
-    try {
-      const created = await accessCodeClient.create(newCode.trim(), newCodeDesc.trim() || undefined);
-      setAccessCodes((prev) => [created, ...prev]);
-      setNewCode("");
-      setNewCodeDesc("");
-      toast.success("Access code created");
-    } catch {
-      toast.error("Failed to create code");
-    }
-  };
-
-  const handleDeleteCode = async (id: string) => {
-    setPendingDeleteCodeId(id);
-  };
-
-  const confirmDeleteCode = async () => {
-    const id = pendingDeleteCodeId;
-    if (!id) return;
-    setPendingDeleteCodeId(null);
-
-    try {
-      await accessCodeClient.delete(id);
-      setAccessCodes((prev) => prev.filter((c) => c.id !== id));
-      toast.success("Code deleted");
-    } catch {
-      toast.error("Failed to delete code");
-    }
-  };
-
-  const handleToggleCode = async (id: string, active: boolean) => {
-    try {
-      await accessCodeClient.toggleActive(id, active);
-      setAccessCodes((prev) => prev.map((c) => (c.id === id ? { ...c, is_active: active } : c)));
-    } catch {
-      toast.error("Failed to update code");
-    }
-  };
-
   const handleCreateMarket = async () => {
     const normalizedName = normalizeMarketName(newMarketName);
     if (!normalizedName) {
@@ -951,14 +908,13 @@ export function useAdminDashboardPage() {
     loading,
     ...usersTab,
     ...userActions,
+    ...accessCodeForm,
+    ...accessCodesState,
     activeTab,
     activeTabConfig,
-    newCode,
-    newCodeDesc,
     newMarketName,
     previewImageUrl,
     pendingDeleteInspectionId,
-    pendingDeleteCodeId,
     pendingDeleteMarketId,
     inspectorFilter,
     auditLogs,
@@ -996,12 +952,9 @@ export function useAdminDashboardPage() {
     paginatedAuditLogs,
     totalAuditLogPages,
     setActiveTab,
-    setNewCode,
-    setNewCodeDesc,
     setNewMarketName,
     setPreviewImageUrl,
     setPendingDeleteInspectionId,
-    setPendingDeleteCodeId,
     setPendingDeleteMarketId,
     setInspectorFilter,
     setAuditLogPage,
@@ -1015,10 +968,6 @@ export function useAdminDashboardPage() {
     handleExportCSV,
     handleExportJSON,
     handleExportPDF,
-    handleCreateCode,
-    handleDeleteCode,
-    confirmDeleteCode,
-    handleToggleCode,
     handleCreateMarket,
     handleDeleteMarket,
     confirmDeleteMarket,
