@@ -1,4 +1,4 @@
-import { Loader2, UserRound } from "lucide-react";
+import { KeyRound, Loader2, UserRound } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
@@ -9,17 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { Switch } from "@/shared/ui/switch";
 import { REPORT_ORGANIZATION_OPTIONS } from "@/features/reports";
 import type { ReportOrganization } from "@/entities/user/api/profile-client";
 
 type ProfileEditableDetailsCardProps = {
   email: string;
   fullName: string;
-  inspectorCode: string;
-  isLightMode: boolean;
   isSavingProfile: boolean;
-  isShowingDetailedResults: boolean;
   isUploadingAvatar: boolean;
   location: string;
   reportOrganization: ReportOrganization | null;
@@ -27,18 +23,14 @@ type ProfileEditableDetailsCardProps = {
   onFullNameChange: (value: string) => void;
   onLocationChange: (value: string) => void;
   onReportOrganizationChange: (value: ReportOrganization) => void;
+  onOpenPasswordDialog: () => void;
   onSaveProfile: () => void | Promise<void>;
-  onLightModeChange: (value: boolean) => void;
-  onDetailedResultsChange: (value: boolean) => void;
 };
 
 export function ProfileEditableDetailsCard({
   email,
   fullName,
-  inspectorCode,
-  isLightMode,
   isSavingProfile,
-  isShowingDetailedResults,
   isUploadingAvatar,
   location,
   reportOrganization,
@@ -46,20 +38,19 @@ export function ProfileEditableDetailsCard({
   onFullNameChange,
   onLocationChange,
   onReportOrganizationChange,
+  onOpenPasswordDialog,
   onSaveProfile,
-  onLightModeChange,
-  onDetailedResultsChange,
 }: ProfileEditableDetailsCardProps) {
   return (
     <section
       data-testid="profile-detailed-info-card"
-      className="order-1 flex h-full flex-col rounded-3xl border border-border/70 bg-card/90 p-4"
+      className="order-1 flex flex-col rounded-3xl border border-border/70 bg-card/90 p-4 lg:h-full"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="font-display text-lg font-semibold">Detailed Information</h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            Update your account details and inspection preferences in one place. Your
+            Update your account details in one place. Your
             inspector code is assigned by an administrator and cannot be changed here.
           </p>
         </div>
@@ -137,45 +128,21 @@ export function ProfileEditableDetailsCard({
         </div>
       </div>
 
-      <div className="mt-3 grid gap-3 md:grid-cols-2">
-        <div className="flex items-center justify-between rounded-2xl border border-border/70 bg-background/55 p-3">
-          <div className="space-y-1">
-            <Label htmlFor="profile-details-theme" className="text-[11px] uppercase tracking-widest text-muted-foreground">
-              Theme
-            </Label>
-            <p className="text-sm text-foreground">{isLightMode ? "Light mode" : "Dark mode"}</p>
-          </div>
-          <Switch
-            id="profile-details-theme"
-            checked={isLightMode}
-            onCheckedChange={onLightModeChange}
-            aria-label="Use light mode"
-          />
-        </div>
-
-        <div className="flex items-center justify-between rounded-2xl border border-border/70 bg-background/55 p-3">
-          <div className="space-y-1">
-            <Label htmlFor="profile-details-results" className="text-[11px] uppercase tracking-widest text-muted-foreground">
-              Inspect Result Detail
-            </Label>
-            <p className="text-sm text-foreground">
-              {isShowingDetailedResults ? "Detailed" : "Simplified"}
-            </p>
-          </div>
-          <Switch
-            id="profile-details-results"
-            checked={isShowingDetailedResults}
-            onCheckedChange={onDetailedResultsChange}
-            aria-label="Show detailed inspect results"
-          />
-        </div>
-      </div>
-
-      <div className="mt-auto flex justify-end pt-4">
+      <div className="mt-auto flex flex-nowrap justify-end gap-2 pt-4">
         <Button
+          type="button"
+          variant="outline"
+          onClick={onOpenPasswordDialog}
+          className="min-w-0 flex-1 whitespace-nowrap rounded-xl px-2 text-[10px] uppercase tracking-[0.08em] md:flex-none md:px-4 md:text-xs md:tracking-widest"
+        >
+          <KeyRound className="mr-2 h-4 w-4" />
+          Change Password
+        </Button>
+        <Button
+          type="button"
           onClick={onSaveProfile}
           disabled={isSavingProfile || isUploadingAvatar}
-          className="h-10 rounded-xl px-5 font-display text-xs uppercase tracking-widest"
+          className="min-w-0 flex-1 whitespace-nowrap rounded-xl px-2 text-[10px] uppercase tracking-[0.08em] md:flex-none md:px-5 md:text-xs md:tracking-widest"
         >
           {isSavingProfile ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -186,14 +153,6 @@ export function ProfileEditableDetailsCard({
         </Button>
       </div>
 
-      <div className="mt-4 space-y-2">
-        <div className="rounded-xl border border-border/70 bg-background/55 px-3 py-2.5">
-          <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
-            Inspector Code
-          </p>
-          <p className="text-sm font-medium">{inspectorCode}</p>
-        </div>
-      </div>
     </section>
   );
 }

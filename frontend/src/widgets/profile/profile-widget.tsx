@@ -1,5 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { PasswordChangeDialog } from "@/features/profile-editing/ui/password-change-dialog";
 import {
   PrivacyPolicyDialog,
   TermsAndConditionsDialog,
@@ -88,21 +89,16 @@ export function ProfilePageView() {
           <ProfilePrimaryColumn
             email={email}
             fullName={fullName}
-            inspectorCode={inspectorCode}
             location={location}
             reportOrganization={reportOrganization}
             isLightMode={isLightMode}
             isLoadingPasskeys={isLoadingPasskeys}
             isRegisteringPasskey={isRegisteringPasskey}
-            isSavingPassword={isSavingPassword}
             isSavingProfile={isSavingProfile}
             isShowingDetailedResults={isShowingDetailedResults}
             isUploadingAvatar={isUploadingAvatar}
             passkeyAvailable={passkeyAvailable}
             passkeys={passkeys}
-            currentPassword={currentPassword}
-            newPassword={newPassword}
-            confirmPassword={confirmPassword}
             removingCredentialId={removingCredentialId}
             onEmailChange={setEmail}
             onFullNameChange={setFullName}
@@ -110,24 +106,34 @@ export function ProfilePageView() {
             onReportOrganizationChange={setReportOrganization}
             onLightModeChange={setIsLightMode}
             onDetailedResultsChange={setIsShowingDetailedResults}
+            onOpenPasswordDialog={() => setDialogOpen("showPasswordDialog", true)}
+            onOpenSignOutConfirm={() => setDialogOpen("showSignOutConfirm", true)}
             onOpenHelpTutorials={openHelpTutorials}
             onOpenProfileTutorial={openProfileTutorial}
-            onCurrentPasswordChange={setCurrentPassword}
-            onNewPasswordChange={setNewPassword}
-            onConfirmPasswordChange={setConfirmPassword}
             onRegisterPasskey={handleRegisterPasskey}
             onRemovePasskey={handleRemovePasskey}
             onSaveProfile={handleSaveProfile}
-            onUpdatePassword={handleUpdatePassword}
           />
 
           <ProfileSecondaryColumn
             onOpenPrivacyDialog={() => setDialogOpen("showPrivacyDialog", true)}
-            onOpenSignOutConfirm={() => setDialogOpen("showSignOutConfirm", true)}
             onOpenTermsDialog={() => setDialogOpen("showTermsDialog", true)}
           />
         </div>
       </div>
+
+      <PasswordChangeDialog
+        open={dialogs.showPasswordDialog}
+        currentPassword={currentPassword}
+        newPassword={newPassword}
+        confirmPassword={confirmPassword}
+        isSaving={isSavingPassword}
+        onCurrentPasswordChange={setCurrentPassword}
+        onNewPasswordChange={setNewPassword}
+        onConfirmPasswordChange={setConfirmPassword}
+        onOpenChange={(open) => setDialogOpen("showPasswordDialog", open)}
+        onSubmit={handleUpdatePassword}
+      />
 
       <ConfirmDialog
         open={dialogs.showSignOutConfirm}

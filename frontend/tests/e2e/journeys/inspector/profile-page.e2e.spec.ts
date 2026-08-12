@@ -93,7 +93,7 @@ test("keeps the signed-in session intact when server-side sign-out fails", async
   expect(authState.session).toContain("session-token");
 });
 
-test("saves all editable details from the Detailed Information card without changing access code", async ({ page }) => {
+test("saves all editable details from the Detailed Information card", async ({ page }) => {
   const spies: ApiSpy[] = [];
 
   await openProfilePage(page, spies);
@@ -103,8 +103,7 @@ test("saves all editable details from the Detailed Information card without chan
   await expect(detailsCard.getByLabel(/^name$/i)).toHaveValue("Inspector");
   await expect(detailsCard.getByLabel(/^email$/i)).toHaveValue("inspector@example.com");
   await expect(detailsCard.getByLabel(/^location$/i)).toHaveValue("North Market");
-  await expect(detailsCard.getByText("Inspector Code")).toBeVisible();
-  await expect(detailsCard.getByText("INSP-001")).toBeVisible();
+  await expect(detailsCard.getByText("Inspector Code", { exact: true })).toHaveCount(0);
   await expect(detailsCard.getByRole("button", { name: /save profile/i })).toBeVisible();
   await expect(page.getByRole("button", { name: /save profile/i })).toHaveCount(1);
 
@@ -113,8 +112,9 @@ test("saves all editable details from the Detailed Information card without chan
   await detailsCard.getByLabel(/^location$/i).fill("Central Market");
   await detailsCard.getByRole("combobox").click();
   await page.getByRole("option", { name: "DTI" }).click();
-  await detailsCard.getByRole("switch", { name: "Use light mode" }).click();
-  await detailsCard.getByRole("switch", { name: "Show detailed inspect results" }).click();
+  const preferencesCard = page.getByTestId("profile-preferences-account-card");
+  await preferencesCard.getByRole("switch", { name: "Use light mode" }).click();
+  await preferencesCard.getByRole("switch", { name: "Show detailed inspect results" }).click();
   await detailsCard.getByRole("button", { name: /save profile/i }).click();
 
   await expect.poll(
@@ -147,12 +147,18 @@ test("changes the password with current, new, and confirmation fields", async ({
   const spies: ApiSpy[] = [];
 
   await openProfilePage(page, spies);
-  const passwordCard = page.getByTestId("profile-password-card");
+  const detailsCard = page.getByTestId("profile-detailed-info-card");
 
-  await passwordCard.getByLabel("Current password").fill("old-password");
-  await passwordCard.getByLabel("New password").fill("new-password-123");
-  await passwordCard.getByLabel("Confirm new password").fill("new-password-123");
-  await passwordCard.getByRole("button", { name: "Change Password" }).click();
+  await detailsCard.getByRole("button", { name: "Change Password" }).click();
+  const passwordDialog = page.getByRole("dialog");
+  await expect(passwordDialog).toBeVisible();
+
+  await passwordDialog.getByLabel("Current password").fill("old-password");
+  await passwordDialog.getByLabel("New password", { exact: true }).fill("new-password-123");
+  await passwordDialog.getByLabel("Confirm new password").fill("new-password-123");
+  await passwordDialog.getByRole("button", { name: "Change Password" }).click();
+  await expect(page.getByRole("alertdialog")).toContainText("Are you sure");
+  await page.getByRole("alertdialog").getByRole("button", { name: "Change Password" }).click();
 
   await expect.poll(
     () => spies.filter((spy) => spy.method === "PATCH" && spy.url.endsWith("/api/auth/users/user-1/password")).length,
@@ -163,22 +169,25 @@ test("changes the password with current, new, and confirmation fields", async ({
     currentPassword: "old-password",
     newPassword: "new-password-123",
   }));
+  await expect(passwordDialog).toContainText("Password changed successfully");
 });
 
 test("does not submit a password when confirmation does not match", async ({ page }) => {
   const spies: ApiSpy[] = [];
 
   await openProfilePage(page, spies);
-  const passwordCard = page.getByTestId("profile-password-card");
+  const detailsCard = page.getByTestId("profile-detailed-info-card");
+  await detailsCard.getByRole("button", { name: "Change Password" }).click();
+  const passwordDialog = page.getByRole("dialog");
 
-  await passwordCard.getByLabel("Current password").fill("old-password");
-  await passwordCard.getByLabel("New password").fill("new-password-123");
-  await passwordCard.getByLabel("Confirm new password").fill("different-password");
-  await passwordCard.getByRole("button", { name: "Change Password" }).click();
+  await passwordDialog.getByLabel("Current password").fill("old-password");
+  await passwordDialog.getByLabel("New password", { exact: true }).fill("new-password-123");
+  await passwordDialog.getByLabel("Confirm new password").fill("different-password");
+  await passwordDialog.getByRole("button", { name: "Change Password" }).click();
 
   await page.waitForTimeout(250);
   expect(spies.filter((spy) => spy.url.endsWith("/api/auth/users/user-1/password"))).toHaveLength(0);
-  await expect(page.getByText("New passwords do not match")).toBeVisible();
+  await expect(passwordDialog.getByText("New passwords do not match")).toBeVisible();
 });
 
 test("renders the approved desktop grouping for profile sections", async ({ page }) => {
@@ -189,32 +198,33 @@ test("renders the approved desktop grouping for profile sections", async ({ page
   const secondaryColumn = page.getByTestId("profile-secondary-column");
 
   await expect(primaryColumn.getByRole("heading", { name: "Detailed Information" })).toBeVisible();
-  await expect(primaryColumn.getByRole("heading", { name: "Change Password" })).toBeVisible();
   await expect(
     primaryColumn.getByRole("heading", { name: "Passkeys and Device Unlock" }),
   ).toBeVisible();
   await expect(primaryColumn.getByRole("heading", { name: "Tutorials" })).toBeVisible();
 
-  await expect(secondaryColumn.getByRole("heading", { name: "Account Actions" })).toBeVisible();
+  await expect(primaryColumn.getByRole("heading", { name: "Preferences and Account" })).toBeVisible();
   await expect(
-    secondaryColumn.getByRole("heading", { name: "Terms and Conditions Reminder" }),
+    secondaryColumn.getByRole("heading", { name: "Legal" }),
   ).toBeVisible();
-  await expect(secondaryColumn.getByRole("heading", { name: "Privacy Policy" })).toBeVisible();
-
-  const primaryBox = await primaryColumn.boundingBox();
-  const secondaryBox = await secondaryColumn.boundingBox();
-
-  expect(primaryBox).not.toBeNull();
-  expect(secondaryBox).not.toBeNull();
-  expect((primaryBox?.x ?? 0) + 40).toBeLessThan(secondaryBox?.x ?? 0);
+  await expect(secondaryColumn.getByRole("button", { name: "View Privacy Policy" })).toBeVisible();
 
   const detailedBox = await page.getByTestId("profile-detailed-info-card").boundingBox();
-  const actionsBox = await page.getByTestId("profile-actions-card").boundingBox();
-  const passwordBox = await page.getByTestId("profile-password-card").boundingBox();
-  const termsBox = await page.getByTestId("profile-terms-card").boundingBox();
+  const preferencesBox = await page.getByTestId("profile-preferences-account-card").boundingBox();
+  const passkeysBox = await page.getByTestId("profile-passkeys-card").boundingBox();
+  const legalBox = await page.getByTestId("profile-legal-card").boundingBox();
 
-  expect(detailedBox?.height).toBe(actionsBox?.height);
-  expect(passwordBox?.height).toBe(termsBox?.height);
+  expect(detailedBox).not.toBeNull();
+  expect(preferencesBox).not.toBeNull();
+  expect((detailedBox?.x ?? 0) + 40).toBeLessThan(preferencesBox?.x ?? 0);
+  expect(detailedBox?.height).toBe(preferencesBox?.height);
+  expect(passkeysBox).not.toBeNull();
+  expect(legalBox).not.toBeNull();
+  expect((passkeysBox?.x ?? 0) + 40).toBeLessThan(legalBox?.x ?? 0);
+  expect(passkeysBox?.height).toBe(legalBox?.height);
+  expect(legalBox?.y ?? 0).toBeGreaterThanOrEqual(
+    (preferencesBox?.y ?? 0) + (preferencesBox?.height ?? 0) + 16,
+  );
 });
 
 test("renders the approved mobile section order", async ({ page }) => {
@@ -223,12 +233,10 @@ test("renders the approved mobile section order", async ({ page }) => {
 
   const orderedIds = [
     "profile-detailed-info-card",
-    "profile-password-card",
+    "profile-preferences-account-card",
     "profile-passkeys-card",
     "profile-tutorials-card",
-    "profile-actions-card",
-    "profile-terms-card",
-    "profile-policy-card",
+    "profile-legal-card",
   ] as const;
 
   const topPositions = [];
@@ -237,4 +245,12 @@ test("renders the approved mobile section order", async ({ page }) => {
   }
 
   expect(topPositions).toEqual([...topPositions].sort((left, right) => left - right));
+
+  const changePasswordBox = await page.getByRole("button", { name: "Change Password" }).boundingBox();
+  const saveProfileBox = await page.getByRole("button", { name: "Save Profile" }).boundingBox();
+  expect(changePasswordBox?.y).toBe(saveProfileBox?.y);
+
+  const resultsBox = await page.getByTestId("profile-results-preference").boundingBox();
+  const signOutBox = await page.getByTestId("profile-sign-out-button").boundingBox();
+  expect(signOutBox?.y ?? 0).toBeGreaterThanOrEqual((resultsBox?.y ?? 0) + (resultsBox?.height ?? 0) + 12);
 });

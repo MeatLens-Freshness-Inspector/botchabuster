@@ -2,22 +2,17 @@ import { Loader2, KeyRound, LifeBuoy, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui";
 import type { RegisteredPasskey } from "@/features/passkeys/api/passkey-client";
 import { ProfileEditableDetailsCard } from "@/features/profile-editing/ui/editable-details-card";
-import { PasswordChangeCard } from "@/features/profile-editing/ui/password-change-card";
+import { PreferencesAccountCard } from "@/features/profile-editing/ui/preferences-account-card";
 import type { ReportOrganization } from "@/entities/user/api/profile-client";
 
 type ProfilePrimaryColumnProps = {
   email: string;
   fullName: string;
-  inspectorCode: string;
   location: string;
   reportOrganization: ReportOrganization | null;
   isLightMode: boolean;
   isLoadingPasskeys: boolean;
   isRegisteringPasskey: boolean;
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-  isSavingPassword: boolean;
   isSavingProfile: boolean;
   isShowingDetailedResults: boolean;
   isUploadingAvatar: boolean;
@@ -32,28 +27,21 @@ type ProfilePrimaryColumnProps = {
   onDetailedResultsChange: (value: boolean) => void;
   onOpenHelpTutorials: () => void;
   onOpenProfileTutorial: () => void;
-  onCurrentPasswordChange: (value: string) => void;
-  onNewPasswordChange: (value: string) => void;
-  onConfirmPasswordChange: (value: string) => void;
+  onOpenPasswordDialog: () => void;
+  onOpenSignOutConfirm: () => void;
   onRegisterPasskey: () => void | Promise<void>;
   onRemovePasskey: (credentialId: string) => void | Promise<void>;
   onSaveProfile: () => void | Promise<void>;
-  onUpdatePassword: () => void | Promise<void>;
 };
 
 export function ProfilePrimaryColumn({
   email,
   fullName,
-  inspectorCode,
   location,
   reportOrganization,
   isLightMode,
   isLoadingPasskeys,
   isRegisteringPasskey,
-  currentPassword,
-  newPassword,
-  confirmPassword,
-  isSavingPassword,
   isSavingProfile,
   isShowingDetailedResults,
   isUploadingAvatar,
@@ -68,49 +56,40 @@ export function ProfilePrimaryColumn({
   onDetailedResultsChange,
   onOpenHelpTutorials,
   onOpenProfileTutorial,
-  onCurrentPasswordChange,
-  onNewPasswordChange,
-  onConfirmPasswordChange,
   onRegisterPasskey,
   onRemovePasskey,
   onSaveProfile,
-  onUpdatePassword,
+  onOpenPasswordDialog,
+  onOpenSignOutConfirm,
 }: ProfilePrimaryColumnProps) {
   return (
-    <div data-testid="profile-primary-column" className="space-y-4 lg:contents">
+    <div data-testid="profile-primary-column" className="space-y-4 lg:space-y-0 lg:contents">
       <ProfileEditableDetailsCard
         email={email}
         fullName={fullName}
-        inspectorCode={inspectorCode}
         location={location}
         reportOrganization={reportOrganization}
-        isLightMode={isLightMode}
         isSavingProfile={isSavingProfile}
-        isShowingDetailedResults={isShowingDetailedResults}
         isUploadingAvatar={isUploadingAvatar}
         onEmailChange={onEmailChange}
         onFullNameChange={onFullNameChange}
         onLocationChange={onLocationChange}
         onReportOrganizationChange={onReportOrganizationChange}
+        onOpenPasswordDialog={onOpenPasswordDialog}
         onSaveProfile={onSaveProfile}
-        onLightModeChange={onLightModeChange}
-        onDetailedResultsChange={onDetailedResultsChange}
       />
 
-      <PasswordChangeCard
-        currentPassword={currentPassword}
-        newPassword={newPassword}
-        confirmPassword={confirmPassword}
-        isSaving={isSavingPassword}
-        onCurrentPasswordChange={onCurrentPasswordChange}
-        onNewPasswordChange={onNewPasswordChange}
-        onConfirmPasswordChange={onConfirmPasswordChange}
-        onSubmit={onUpdatePassword}
+      <PreferencesAccountCard
+        isLightMode={isLightMode}
+        isShowingDetailedResults={isShowingDetailedResults}
+        onDetailedResultsChange={onDetailedResultsChange}
+        onLightModeChange={onLightModeChange}
+        onOpenSignOutConfirm={onOpenSignOutConfirm}
       />
 
       <section
         data-testid="profile-passkeys-card"
-        className="order-5 h-full rounded-3xl border border-border/70 bg-card/92 p-4"
+        className="order-3 rounded-3xl border border-border/70 bg-card/92 p-4 lg:h-full"
       >
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
@@ -191,7 +170,7 @@ export function ProfilePrimaryColumn({
 
       <section
         data-testid="profile-tutorials-card"
-        className="order-7 h-full rounded-3xl border border-border/70 bg-card/90 p-4"
+        className="order-5 rounded-3xl border border-border/70 bg-card/90 p-4 lg:h-full"
       >
         <div className="flex items-start justify-between gap-3">
           <div>

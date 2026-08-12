@@ -238,7 +238,7 @@ export function useProfileEditor() {
     const validationError = validatePasswordChange({ currentPassword, newPassword, confirmPassword });
     if (validationError) {
       toast.error(validationError);
-      return;
+      return false;
     }
 
     setIsSavingPassword(true);
@@ -248,9 +248,11 @@ export function useProfileEditor() {
       setNewPassword("");
       setConfirmPassword("");
       toast.success("Password updated");
+      return true;
     } catch (error) {
       console.error("Password update failed:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update password");
+      return false;
     } finally {
       setIsSavingPassword(false);
     }
