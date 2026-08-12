@@ -15,7 +15,12 @@ export interface AuthApi {
 export interface DatabaseClient {
   rpc(functionName: string, args?: Record<string, unknown>): PromiseLike<any>;
   from(tableName: string): any;
-  auth: { admin: { updateUserById(userId: string, updates: Record<string, unknown>): Promise<any> } };
+  auth: {
+    admin: {
+      getUserById(userId: string): Promise<any>;
+      updateUserById(userId: string, updates: Record<string, unknown>): Promise<any>;
+    };
+  };
 }
 
 export interface AuthOperationHooks {
@@ -251,8 +256,28 @@ export class SupabaseAuthOperations {
     return user;
   }
 
-  async updatePassword(userId: string, password: string): Promise<void> {
-    const { error } = await this.databaseClient.auth.admin.updateUserById(userId, { password });
+  async updatePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    const { data: authUserData, error: authUserError } = await this.databaseClient.auth.admin.getUserById(userId);
+    const email = authUserData?.user?.email;
+
+    if (authUserError || typeof email !== "string" || !email.trim()) {
+      throw new Error("Current password is incorrect");
+    }
+
+    const { data: verificationData, error: verificationError } = await this.authApi.signInWithPassword({
+      email: email.trim(),
+      password: currentPassword,
+    });
+
+    if (verificationError || !verificationData?.user) {
+      throw new Error("Current password is incorrect");
+    }
+
+    await this.revokeSession(verificationData.session?.access_token);
+
+    const { error } = await this.databaseClient.auth.admin.updateUserById(userId, {
+      password: newPassword,
+    });
     if (error) throw new Error(`Failed to update password: ${error.message}`);
   }
 
