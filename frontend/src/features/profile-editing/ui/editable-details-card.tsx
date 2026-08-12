@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { Switch } from "@/shared/ui/switch";
-import { REPORT_ORGANIZATION_OPTIONS } from "@/features/reports/model/organizations";
+import { REPORT_ORGANIZATION_OPTIONS } from "@/features/reports";
 import type { ReportOrganization } from "@/entities/user/api/profile-client";
 
 type ProfileEditableDetailsCardProps = {
