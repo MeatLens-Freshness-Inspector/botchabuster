@@ -203,7 +203,7 @@ test("renders the approved desktop grouping for profile sections", async ({ page
   ).toBeVisible();
   await expect(primaryColumn.getByRole("heading", { name: "Tutorials" })).toBeVisible();
 
-  await expect(primaryColumn.getByRole("heading", { name: "Preferences and Account" })).toBeVisible();
+  await expect(secondaryColumn.getByRole("heading", { name: "Preferences and Account" })).toBeVisible();
   await expect(
     secondaryColumn.getByRole("heading", { name: "Legal" }),
   ).toBeVisible();
@@ -233,10 +233,10 @@ test("renders the approved mobile section order", async ({ page }) => {
 
   const orderedIds = [
     "profile-detailed-info-card",
-    "profile-preferences-account-card",
     "profile-passkeys-card",
     "profile-tutorials-card",
     "profile-legal-card",
+    "profile-preferences-account-card",
   ] as const;
 
   const topPositions = [];

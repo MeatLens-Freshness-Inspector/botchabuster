@@ -1,13 +1,24 @@
 import { Button } from "@/shared/ui";
+import { PreferencesAccountCard } from "@/features/profile-editing/ui/preferences-account-card";
 
 type ProfileSecondaryColumnProps = {
+  isLightMode: boolean;
+  isShowingDetailedResults: boolean;
   onOpenPrivacyDialog: () => void;
+  onOpenSignOutConfirm: () => void;
   onOpenTermsDialog: () => void;
+  onDetailedResultsChange: (value: boolean) => void;
+  onLightModeChange: (value: boolean) => void;
 };
 
 export function ProfileSecondaryColumn({
+  isLightMode,
+  isShowingDetailedResults,
   onOpenPrivacyDialog,
+  onOpenSignOutConfirm,
   onOpenTermsDialog,
+  onDetailedResultsChange,
+  onLightModeChange,
 }: ProfileSecondaryColumnProps) {
   return (
     <div data-testid="profile-secondary-column" className="space-y-4 lg:space-y-0 lg:contents">
@@ -28,6 +39,14 @@ export function ProfileSecondaryColumn({
           </Button>
         </div>
       </section>
+
+      <PreferencesAccountCard
+        isLightMode={isLightMode}
+        isShowingDetailedResults={isShowingDetailedResults}
+        onDetailedResultsChange={onDetailedResultsChange}
+        onLightModeChange={onLightModeChange}
+        onOpenSignOutConfirm={onOpenSignOutConfirm}
+      />
     </div>
   );
 }

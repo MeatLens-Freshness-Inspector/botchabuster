@@ -2,7 +2,6 @@ import { Loader2, KeyRound, LifeBuoy, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui";
 import type { RegisteredPasskey } from "@/features/passkeys/api/passkey-client";
 import { ProfileEditableDetailsCard } from "@/features/profile-editing/ui/editable-details-card";
-import { PreferencesAccountCard } from "@/features/profile-editing/ui/preferences-account-card";
 import type { ReportOrganization } from "@/entities/user/api/profile-client";
 
 type ProfilePrimaryColumnProps = {
@@ -10,11 +9,9 @@ type ProfilePrimaryColumnProps = {
   fullName: string;
   location: string;
   reportOrganization: ReportOrganization | null;
-  isLightMode: boolean;
   isLoadingPasskeys: boolean;
   isRegisteringPasskey: boolean;
   isSavingProfile: boolean;
-  isShowingDetailedResults: boolean;
   isUploadingAvatar: boolean;
   passkeyAvailable: boolean;
   passkeys: RegisteredPasskey[];
@@ -23,12 +20,9 @@ type ProfilePrimaryColumnProps = {
   onFullNameChange: (value: string) => void;
   onLocationChange: (value: string) => void;
   onReportOrganizationChange: (value: ReportOrganization) => void;
-  onLightModeChange: (value: boolean) => void;
-  onDetailedResultsChange: (value: boolean) => void;
   onOpenHelpTutorials: () => void;
   onOpenProfileTutorial: () => void;
   onOpenPasswordDialog: () => void;
-  onOpenSignOutConfirm: () => void;
   onRegisterPasskey: () => void | Promise<void>;
   onRemovePasskey: (credentialId: string) => void | Promise<void>;
   onSaveProfile: () => void | Promise<void>;
@@ -39,11 +33,9 @@ export function ProfilePrimaryColumn({
   fullName,
   location,
   reportOrganization,
-  isLightMode,
   isLoadingPasskeys,
   isRegisteringPasskey,
   isSavingProfile,
-  isShowingDetailedResults,
   isUploadingAvatar,
   passkeyAvailable,
   passkeys,
@@ -52,15 +44,12 @@ export function ProfilePrimaryColumn({
   onFullNameChange,
   onLocationChange,
   onReportOrganizationChange,
-  onLightModeChange,
-  onDetailedResultsChange,
   onOpenHelpTutorials,
   onOpenProfileTutorial,
   onRegisterPasskey,
   onRemovePasskey,
   onSaveProfile,
   onOpenPasswordDialog,
-  onOpenSignOutConfirm,
 }: ProfilePrimaryColumnProps) {
   return (
     <div data-testid="profile-primary-column" className="space-y-4 lg:space-y-0 lg:contents">
@@ -77,14 +66,6 @@ export function ProfilePrimaryColumn({
         onReportOrganizationChange={onReportOrganizationChange}
         onOpenPasswordDialog={onOpenPasswordDialog}
         onSaveProfile={onSaveProfile}
-      />
-
-      <PreferencesAccountCard
-        isLightMode={isLightMode}
-        isShowingDetailedResults={isShowingDetailedResults}
-        onDetailedResultsChange={onDetailedResultsChange}
-        onLightModeChange={onLightModeChange}
-        onOpenSignOutConfirm={onOpenSignOutConfirm}
       />
 
       <section

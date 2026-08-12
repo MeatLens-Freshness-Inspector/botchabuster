@@ -91,11 +91,9 @@ export function ProfilePageView() {
             fullName={fullName}
             location={location}
             reportOrganization={reportOrganization}
-            isLightMode={isLightMode}
             isLoadingPasskeys={isLoadingPasskeys}
             isRegisteringPasskey={isRegisteringPasskey}
             isSavingProfile={isSavingProfile}
-            isShowingDetailedResults={isShowingDetailedResults}
             isUploadingAvatar={isUploadingAvatar}
             passkeyAvailable={passkeyAvailable}
             passkeys={passkeys}
@@ -104,10 +102,7 @@ export function ProfilePageView() {
             onFullNameChange={setFullName}
             onLocationChange={setLocation}
             onReportOrganizationChange={setReportOrganization}
-            onLightModeChange={setIsLightMode}
-            onDetailedResultsChange={setIsShowingDetailedResults}
             onOpenPasswordDialog={() => setDialogOpen("showPasswordDialog", true)}
-            onOpenSignOutConfirm={() => setDialogOpen("showSignOutConfirm", true)}
             onOpenHelpTutorials={openHelpTutorials}
             onOpenProfileTutorial={openProfileTutorial}
             onRegisterPasskey={handleRegisterPasskey}
@@ -116,8 +111,13 @@ export function ProfilePageView() {
           />
 
           <ProfileSecondaryColumn
+            isLightMode={isLightMode}
+            isShowingDetailedResults={isShowingDetailedResults}
             onOpenPrivacyDialog={() => setDialogOpen("showPrivacyDialog", true)}
+            onOpenSignOutConfirm={() => setDialogOpen("showSignOutConfirm", true)}
             onOpenTermsDialog={() => setDialogOpen("showTermsDialog", true)}
+            onDetailedResultsChange={setIsShowingDetailedResults}
+            onLightModeChange={setIsLightMode}
           />
         </div>
       </div>
