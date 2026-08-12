@@ -110,7 +110,7 @@ export function ProfilePrimaryColumn({
 
       <section
         data-testid="profile-passkeys-card"
-        className="rounded-3xl border border-border/70 bg-card/92 p-4"
+        className="rounded-3xl border border-border/70 bg-card/92 p-4 lg:min-h-[18rem]"
       >
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
@@ -191,7 +191,7 @@ export function ProfilePrimaryColumn({
 
       <section
         data-testid="profile-tutorials-card"
-        className="rounded-3xl border border-border/70 bg-card/90 p-4"
+        className="rounded-3xl border border-border/70 bg-card/90 p-4 lg:min-h-[18rem]"
       >
         <div className="flex items-start justify-between gap-3">
           <div>

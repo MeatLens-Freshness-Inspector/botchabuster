@@ -18,7 +18,7 @@ export function ProfileSecondaryColumn({
 
       <section
         data-testid="profile-terms-card"
-        className="rounded-3xl border border-border/70 bg-card/90 p-4"
+        className="rounded-3xl border border-border/70 bg-card/90 p-4 lg:min-h-[18rem]"
       >
         <h3 className="mb-3 font-display text-lg font-semibold">
           Terms and Conditions Reminder
@@ -39,7 +39,7 @@ export function ProfileSecondaryColumn({
 
       <section
         data-testid="profile-policy-card"
-        className="rounded-3xl border border-border/70 bg-card/90 p-4"
+        className="rounded-3xl border border-border/70 bg-card/90 p-4 lg:min-h-[18rem]"
       >
         <h3 className="mb-3 font-display text-lg font-semibold">Privacy Policy</h3>
         <p className="mt-1 text-xs text-muted-foreground">

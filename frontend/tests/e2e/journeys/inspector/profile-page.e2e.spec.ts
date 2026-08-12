@@ -93,7 +93,7 @@ test("keeps the signed-in session intact when server-side sign-out fails", async
   expect(authState.session).toContain("session-token");
 });
 
-test("saves profile name and email from the Detailed Information card", async ({ page }) => {
+test("saves all editable details from the Detailed Information card without changing access code", async ({ page }) => {
   const spies: ApiSpy[] = [];
 
   await openProfilePage(page, spies);
@@ -102,11 +102,19 @@ test("saves profile name and email from the Detailed Information card", async ({
 
   await expect(detailsCard.getByLabel(/^name$/i)).toHaveValue("Inspector");
   await expect(detailsCard.getByLabel(/^email$/i)).toHaveValue("inspector@example.com");
+  await expect(detailsCard.getByLabel(/^location$/i)).toHaveValue("North Market");
+  await expect(detailsCard.getByText("Inspector Code")).toBeVisible();
+  await expect(detailsCard.getByText("INSP-001")).toBeVisible();
   await expect(detailsCard.getByRole("button", { name: /save profile/i })).toBeVisible();
   await expect(page.getByRole("button", { name: /save profile/i })).toHaveCount(1);
 
   await detailsCard.getByLabel(/^name$/i).fill("Inspector Rivera");
   await detailsCard.getByLabel(/^email$/i).fill("rivera@example.com");
+  await detailsCard.getByLabel(/^location$/i).fill("Central Market");
+  await detailsCard.getByRole("combobox").click();
+  await page.getByRole("option", { name: "DTI" }).click();
+  await detailsCard.getByRole("switch", { name: "Use light mode" }).click();
+  await detailsCard.getByRole("switch", { name: "Show detailed inspect results" }).click();
   await detailsCard.getByRole("button", { name: /save profile/i }).click();
 
   await expect.poll(
@@ -115,7 +123,12 @@ test("saves profile name and email from the Detailed Information card", async ({
         (spy) =>
           spy.method === "PUT" &&
           spy.url.endsWith("/api/profiles/user-1") &&
-          spy.postData.includes('"full_name":"Inspector Rivera"'),
+          spy.postData.includes('"full_name":"Inspector Rivera"') &&
+          spy.postData.includes('"location":"Central Market"') &&
+          spy.postData.includes('"report_organization":"dti"') &&
+          spy.postData.includes('"is_dark_mode":true') &&
+          spy.postData.includes('"show_detailed_results":false') &&
+          !spy.postData.includes("inspector_code"),
       ).length,
   ).toBe(1);
 
@@ -130,6 +143,44 @@ test("saves profile name and email from the Detailed Information card", async ({
   ).toBe(1);
 });
 
+test("changes the password with current, new, and confirmation fields", async ({ page }) => {
+  const spies: ApiSpy[] = [];
+
+  await openProfilePage(page, spies);
+  const passwordCard = page.getByTestId("profile-password-card");
+
+  await passwordCard.getByLabel("Current password").fill("old-password");
+  await passwordCard.getByLabel("New password").fill("new-password-123");
+  await passwordCard.getByLabel("Confirm new password").fill("new-password-123");
+  await passwordCard.getByRole("button", { name: "Change Password" }).click();
+
+  await expect.poll(
+    () => spies.filter((spy) => spy.method === "PATCH" && spy.url.endsWith("/api/auth/users/user-1/password")).length,
+  ).toBe(1);
+
+  const passwordRequest = spies.find((spy) => spy.url.endsWith("/api/auth/users/user-1/password"));
+  expect(passwordRequest?.postData).toBe(JSON.stringify({
+    currentPassword: "old-password",
+    newPassword: "new-password-123",
+  }));
+});
+
+test("does not submit a password when confirmation does not match", async ({ page }) => {
+  const spies: ApiSpy[] = [];
+
+  await openProfilePage(page, spies);
+  const passwordCard = page.getByTestId("profile-password-card");
+
+  await passwordCard.getByLabel("Current password").fill("old-password");
+  await passwordCard.getByLabel("New password").fill("new-password-123");
+  await passwordCard.getByLabel("Confirm new password").fill("different-password");
+  await passwordCard.getByRole("button", { name: "Change Password" }).click();
+
+  await page.waitForTimeout(250);
+  expect(spies.filter((spy) => spy.url.endsWith("/api/auth/users/user-1/password"))).toHaveLength(0);
+  await expect(page.getByText("New passwords do not match")).toBeVisible();
+});
+
 test("renders the approved desktop grouping for profile sections", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await openProfilePage(page);
@@ -138,13 +189,13 @@ test("renders the approved desktop grouping for profile sections", async ({ page
   const secondaryColumn = page.getByTestId("profile-secondary-column");
 
   await expect(primaryColumn.getByRole("heading", { name: "Detailed Information" })).toBeVisible();
-  await expect(primaryColumn.getByRole("heading", { name: "Password Reset Section" })).toBeVisible();
+  await expect(primaryColumn.getByRole("heading", { name: "Change Password" })).toBeVisible();
   await expect(
     primaryColumn.getByRole("heading", { name: "Passkeys and Device Unlock" }),
   ).toBeVisible();
   await expect(primaryColumn.getByRole("heading", { name: "Tutorials" })).toBeVisible();
 
-  await expect(secondaryColumn.getByRole("heading", { name: "Actions" })).toBeVisible();
+  await expect(secondaryColumn.getByRole("heading", { name: "Account Actions" })).toBeVisible();
   await expect(
     secondaryColumn.getByRole("heading", { name: "Terms and Conditions Reminder" }),
   ).toBeVisible();
@@ -156,6 +207,10 @@ test("renders the approved desktop grouping for profile sections", async ({ page
   expect(primaryBox).not.toBeNull();
   expect(secondaryBox).not.toBeNull();
   expect((primaryBox?.x ?? 0) + 40).toBeLessThan(secondaryBox?.x ?? 0);
+
+  await expect(page.getByTestId("profile-password-card")).toHaveClass(/lg:min-h/);
+  await expect(page.getByTestId("profile-actions-card")).toHaveClass(/lg:min-h/);
+  await expect(page.getByTestId("profile-detailed-info-card")).toHaveClass(/lg:min-h/);
 });
 
 test("renders the approved mobile section order", async ({ page }) => {
