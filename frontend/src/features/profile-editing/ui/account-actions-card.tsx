@@ -9,7 +9,7 @@ export function AccountActionsCard({ onOpenSignOutConfirm }: AccountActionsCardP
   return (
     <section
       data-testid="profile-actions-card"
-      className="flex flex-col rounded-3xl border border-border/70 bg-card/92 p-4 lg:min-h-[18rem]"
+      className="order-2 flex h-full flex-col rounded-3xl border border-border/70 bg-card/92 p-4"
     >
       <div>
         <h3 className="font-display text-base font-semibold">Account Actions</h3>

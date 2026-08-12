@@ -208,9 +208,13 @@ test("renders the approved desktop grouping for profile sections", async ({ page
   expect(secondaryBox).not.toBeNull();
   expect((primaryBox?.x ?? 0) + 40).toBeLessThan(secondaryBox?.x ?? 0);
 
-  await expect(page.getByTestId("profile-password-card")).toHaveClass(/lg:min-h/);
-  await expect(page.getByTestId("profile-actions-card")).toHaveClass(/lg:min-h/);
-  await expect(page.getByTestId("profile-detailed-info-card")).toHaveClass(/lg:min-h/);
+  const detailedBox = await page.getByTestId("profile-detailed-info-card").boundingBox();
+  const actionsBox = await page.getByTestId("profile-actions-card").boundingBox();
+  const passwordBox = await page.getByTestId("profile-password-card").boundingBox();
+  const termsBox = await page.getByTestId("profile-terms-card").boundingBox();
+
+  expect(detailedBox?.height).toBe(actionsBox?.height);
+  expect(passwordBox?.height).toBe(termsBox?.height);
 });
 
 test("renders the approved mobile section order", async ({ page }) => {

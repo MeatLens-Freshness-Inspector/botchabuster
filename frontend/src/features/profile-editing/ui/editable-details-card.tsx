@@ -53,7 +53,7 @@ export function ProfileEditableDetailsCard({
   return (
     <section
       data-testid="profile-detailed-info-card"
-      className="flex flex-col rounded-3xl border border-border/70 bg-card/90 p-4 lg:min-h-[18rem]"
+      className="order-1 flex h-full flex-col rounded-3xl border border-border/70 bg-card/90 p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div>

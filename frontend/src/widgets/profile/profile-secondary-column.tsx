@@ -13,12 +13,12 @@ export function ProfileSecondaryColumn({
   onOpenTermsDialog,
 }: ProfileSecondaryColumnProps) {
   return (
-    <div data-testid="profile-secondary-column" className="space-y-4">
+    <div data-testid="profile-secondary-column" className="space-y-4 lg:contents">
       <AccountActionsCard onOpenSignOutConfirm={onOpenSignOutConfirm} />
 
       <section
         data-testid="profile-terms-card"
-        className="rounded-3xl border border-border/70 bg-card/90 p-4 lg:min-h-[18rem]"
+        className="order-4 h-full rounded-3xl border border-border/70 bg-card/90 p-4"
       >
         <h3 className="mb-3 font-display text-lg font-semibold">
           Terms and Conditions Reminder
@@ -39,7 +39,7 @@ export function ProfileSecondaryColumn({
 
       <section
         data-testid="profile-policy-card"
-        className="rounded-3xl border border-border/70 bg-card/90 p-4 lg:min-h-[18rem]"
+        className="order-6 h-full rounded-3xl border border-border/70 bg-card/90 p-4"
       >
         <h3 className="mb-3 font-display text-lg font-semibold">Privacy Policy</h3>
         <p className="mt-1 text-xs text-muted-foreground">

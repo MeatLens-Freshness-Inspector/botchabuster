@@ -25,7 +25,7 @@ export function PasswordChangeCard({
   return (
     <section
       data-testid="profile-password-card"
-      className="flex flex-col rounded-3xl border border-border/70 bg-card/92 p-4 lg:min-h-[18rem]"
+      className="order-3 flex h-full flex-col rounded-3xl border border-border/70 bg-card/92 p-4"
     >
       <div>
         <h3 className="font-display text-lg font-semibold">Change Password</h3>

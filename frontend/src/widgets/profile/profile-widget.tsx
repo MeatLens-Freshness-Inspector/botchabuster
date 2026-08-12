@@ -84,7 +84,7 @@ export function ProfilePageView() {
           roleLabel={roleLabel}
         />
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-[0.98fr_1.02fr]">
+        <div className="mt-4 grid gap-4 lg:grid-cols-[0.98fr_1.02fr] lg:items-stretch">
           <ProfilePrimaryColumn
             email={email}
             fullName={fullName}
