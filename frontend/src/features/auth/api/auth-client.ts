@@ -136,11 +136,11 @@ export class AuthClient {
     return res.json();
   }
 
-  async updatePassword(userId: string, password: string): Promise<void> {
+  async updatePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
     const res = await fetchWithTimeout(`${API_BASE_URL}/auth/users/${userId}/password`, {
       method: "PATCH",
       headers: this.createHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ currentPassword, newPassword }),
     });
 
     if (!res.ok) {

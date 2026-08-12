@@ -15,12 +15,15 @@ export function ProfilePageView() {
     profile,
     fullName,
     email,
-    password,
+    location,
+    reportOrganization,
+    currentPassword,
+    newPassword,
+    confirmPassword,
     isLoading,
     isSavingProfile,
     isSavingPassword,
     isUploadingAvatar,
-    isSavingInspectPreference,
     isLightMode,
     dialogs,
     passkeyAvailable,
@@ -34,15 +37,19 @@ export function ProfilePageView() {
     roleLabel,
     setFullName,
     setEmail,
-    setPassword,
+    setLocation,
+    setReportOrganization,
+    setIsLightMode,
+    setIsShowingDetailedResults,
+    setCurrentPassword,
+    setNewPassword,
+    setConfirmPassword,
     setDialogOpen,
     handleAvatarUpload,
     handleSaveProfile,
     handleUpdatePassword,
     handleCopyCode,
     handleSignOut,
-    handleThemeToggle,
-    handleDetailedResultsToggle,
     handleRegisterPasskey,
     handleRemovePasskey,
     openHelpTutorials,
@@ -82,6 +89,8 @@ export function ProfilePageView() {
             email={email}
             fullName={fullName}
             inspectorCode={inspectorCode}
+            location={location}
+            reportOrganization={reportOrganization}
             isLightMode={isLightMode}
             isLoadingPasskeys={isLoadingPasskeys}
             isRegisteringPasskey={isRegisteringPasskey}
@@ -91,13 +100,21 @@ export function ProfilePageView() {
             isUploadingAvatar={isUploadingAvatar}
             passkeyAvailable={passkeyAvailable}
             passkeys={passkeys}
-            password={password}
+            currentPassword={currentPassword}
+            newPassword={newPassword}
+            confirmPassword={confirmPassword}
             removingCredentialId={removingCredentialId}
             onEmailChange={setEmail}
             onFullNameChange={setFullName}
+            onLocationChange={setLocation}
+            onReportOrganizationChange={setReportOrganization}
+            onLightModeChange={setIsLightMode}
+            onDetailedResultsChange={setIsShowingDetailedResults}
             onOpenHelpTutorials={openHelpTutorials}
             onOpenProfileTutorial={openProfileTutorial}
-            onPasswordChange={setPassword}
+            onCurrentPasswordChange={setCurrentPassword}
+            onNewPasswordChange={setNewPassword}
+            onConfirmPasswordChange={setConfirmPassword}
             onRegisterPasskey={handleRegisterPasskey}
             onRemovePasskey={handleRemovePasskey}
             onSaveProfile={handleSaveProfile}
@@ -105,14 +122,9 @@ export function ProfilePageView() {
           />
 
           <ProfileSecondaryColumn
-            isLightMode={isLightMode}
-            isSavingInspectPreference={isSavingInspectPreference}
-            isShowingDetailedResults={isShowingDetailedResults}
-            onDetailedResultsToggle={handleDetailedResultsToggle}
             onOpenPrivacyDialog={() => setDialogOpen("showPrivacyDialog", true)}
             onOpenSignOutConfirm={() => setDialogOpen("showSignOutConfirm", true)}
             onOpenTermsDialog={() => setDialogOpen("showTermsDialog", true)}
-            onThemeToggle={handleThemeToggle}
           />
         </div>
       </div>
