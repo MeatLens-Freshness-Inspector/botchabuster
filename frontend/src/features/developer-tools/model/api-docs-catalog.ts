@@ -128,7 +128,7 @@ const authOperations: ApiDocsOperation[] = [
   operation("auth-passkeys-delete", "auth", "DELETE", "/auth/passkeys/{credentialId}", "Delete a registered passkey", "Authenticated", { parameters: [pathParameter("credentialId", "Registered passkey credential id")], responseKind: "empty", responseContentType: "text/plain" }),
   operation("auth-reset-password", "auth", "POST", "/auth/reset-password", "Send a password reset email", "Public", { body: jsonBody('{"email":""}'), responseKind: "empty", responseContentType: "text/plain" }),
   operation("auth-update-email", "auth", "PATCH", "/auth/users/{id}/email", "Update a user email address", "Self or admin", { parameters: [pathParameter("id", "Target user id")], body: jsonBody('{"email":""}') }),
-  operation("auth-update-password", "auth", "PATCH", "/auth/users/{id}/password", "Update a user password", "Self or admin", { parameters: [pathParameter("id", "Target user id")], body: jsonBody('{"password":""}', ["password"]), responseKind: "empty", responseContentType: "text/plain" }),
+  operation("auth-update-password", "auth", "PATCH", "/auth/users/{id}/password", "Update a user password", "Self or admin", { parameters: [pathParameter("id", "Target user id")], body: jsonBody('{"currentPassword":"","newPassword":""}', ["currentPassword", "newPassword"]), responseKind: "empty", responseContentType: "text/plain" }),
   operation("auth-recovery-password", "auth", "POST", "/auth/recovery/password", "Update a password with a recovery token", "Public", { body: jsonBody('{"accessToken":"","password":""}', ["accessToken", "password"]), responseKind: "empty", responseContentType: "text/plain" }),
 ];
 
