@@ -234,6 +234,42 @@ export function useProfileEditor() {
     }
   }, [email, fullName, isLightMode, isShowingDetailedResults, location, profile, reportOrganization, setProfileState, updateEmail, user]);
 
+  const handleLightModeChange = useCallback(async (nextIsLightMode: boolean) => {
+    const previousIsLightMode = isLightMode;
+    setIsLightMode(nextIsLightMode);
+    applyTheme(!nextIsLightMode);
+
+    if (!user) return;
+
+    try {
+      const updatedProfile = await profileClient.updateProfile(user.id, {
+        is_dark_mode: !nextIsLightMode,
+      });
+      setProfileState(updatedProfile);
+    } catch (error) {
+      setIsLightMode(previousIsLightMode);
+      applyTheme(!previousIsLightMode);
+      toast.error(error instanceof Error ? error.message : "Failed to update theme");
+    }
+  }, [isLightMode, setProfileState, user]);
+
+  const handleDetailedResultsChange = useCallback(async (nextShowDetailedResults: boolean) => {
+    const previousShowDetailedResults = isShowingDetailedResults;
+    setIsShowingDetailedResults(nextShowDetailedResults);
+
+    if (!user) return;
+
+    try {
+      const updatedProfile = await profileClient.updateProfile(user.id, {
+        show_detailed_results: nextShowDetailedResults,
+      });
+      setProfileState(updatedProfile);
+    } catch (error) {
+      setIsShowingDetailedResults(previousShowDetailedResults);
+      toast.error(error instanceof Error ? error.message : "Failed to update inspect result detail");
+    }
+  }, [isShowingDetailedResults, setProfileState, user]);
+
   const handleUpdatePassword = useCallback(async () => {
     const validationError = validatePasswordChange({ currentPassword, newPassword, confirmPassword });
     if (validationError) {
@@ -380,8 +416,8 @@ export function useProfileEditor() {
     setEmail,
     setLocation,
     setReportOrganization,
-    setIsLightMode,
-    setIsShowingDetailedResults,
+    setIsLightMode: handleLightModeChange,
+    setIsShowingDetailedResults: handleDetailedResultsChange,
     setCurrentPassword,
     setNewPassword,
     setConfirmPassword,

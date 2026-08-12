@@ -112,9 +112,6 @@ test("saves all editable details from the Detailed Information card", async ({ p
   await detailsCard.getByLabel(/^location$/i).fill("Central Market");
   await detailsCard.getByRole("combobox").click();
   await page.getByRole("option", { name: "DTI" }).click();
-  const preferencesCard = page.getByTestId("profile-preferences-account-card");
-  await preferencesCard.getByRole("switch", { name: "Use light mode" }).click();
-  await preferencesCard.getByRole("switch", { name: "Show detailed inspect results" }).click();
   await detailsCard.getByRole("button", { name: /save profile/i }).click();
 
   await expect.poll(
@@ -126,8 +123,6 @@ test("saves all editable details from the Detailed Information card", async ({ p
           spy.postData.includes('"full_name":"Inspector Rivera"') &&
           spy.postData.includes('"location":"Central Market"') &&
           spy.postData.includes('"report_organization":"dti"') &&
-          spy.postData.includes('"is_dark_mode":true') &&
-          spy.postData.includes('"show_detailed_results":false') &&
           !spy.postData.includes("inspector_code"),
       ).length,
   ).toBe(1);
@@ -140,6 +135,29 @@ test("saves all editable details from the Detailed Information card", async ({ p
           spy.url.endsWith("/api/auth/users/user-1/email") &&
           spy.postData.includes('"email":"rivera@example.com"'),
       ).length,
+  ).toBe(1);
+});
+
+test("applies theme and inspect detail preferences immediately", async ({ page }) => {
+  const spies: ApiSpy[] = [];
+
+  await openProfilePage(page, spies);
+  const preferencesCard = page.getByTestId("profile-preferences-account-card");
+
+  await preferencesCard.getByRole("switch", { name: "Use light mode" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await expect.poll(
+    () => spies.filter(
+      (spy) => spy.method === "PUT" && spy.postData === JSON.stringify({ is_dark_mode: true }),
+    ).length,
+  ).toBe(1);
+
+  await preferencesCard.getByRole("switch", { name: "Show detailed inspect results" }).click();
+  await expect(preferencesCard.getByText("Simplified")).toBeVisible();
+  await expect.poll(
+    () => spies.filter(
+      (spy) => spy.method === "PUT" && spy.postData === JSON.stringify({ show_detailed_results: false }),
+    ).length,
   ).toBe(1);
 });
 
