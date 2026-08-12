@@ -90,7 +90,7 @@ export class ProfileService {
     updates: Partial<
       Pick<
         Profile,
-        "full_name" | "avatar_url" | "location" | "is_dark_mode" | "show_detailed_results" | "onboarding_completed_at"
+        "full_name" | "avatar_url" | "location" | "report_organization" | "is_dark_mode" | "show_detailed_results" | "onboarding_completed_at"
       >
     >
   ): Promise<Profile> {
@@ -102,6 +102,7 @@ export class ProfileService {
     if (updates.full_name !== undefined) payload.full_name = updates.full_name;
     if (updates.avatar_url !== undefined) payload.avatar_url = updates.avatar_url;
     if (updates.location !== undefined) payload.location = updates.location;
+    if (updates.report_organization !== undefined) payload.report_organization = updates.report_organization;
     if (updates.is_dark_mode !== undefined) payload.is_dark_mode = updates.is_dark_mode;
     if (updates.show_detailed_results !== undefined) payload.show_detailed_results = updates.show_detailed_results;
     if (updates.onboarding_completed_at !== undefined) payload.onboarding_completed_at = updates.onboarding_completed_at;

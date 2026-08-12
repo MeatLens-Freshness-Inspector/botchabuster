@@ -564,15 +564,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const updatePassword = async (password: string) => {
+  const updatePassword = async (currentPassword: string, newPassword: string) => {
     if (!user) throw new Error("Not signed in");
     if (authMode !== "online-authenticated") {
       throw new Error("Reconnect and sign in online before updating your password.");
     }
 
-    await authClient.updatePassword(user.id, password);
+    await authClient.updatePassword(user.id, currentPassword, newPassword);
     const passwordVerifier = user.email
-      ? await createPasswordVerifier(user.email, password)
+      ? await createPasswordVerifier(user.email, newPassword)
       : null;
 
     await updateOfflineAuthEnvelope((currentEnvelope) => {

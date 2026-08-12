@@ -1,5 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
+import { PasswordChangeDialog } from "@/features/profile-editing/ui/password-change-dialog";
 import {
   PrivacyPolicyDialog,
   TermsAndConditionsDialog,
@@ -15,12 +16,15 @@ export function ProfilePageView() {
     profile,
     fullName,
     email,
-    password,
+    location,
+    reportOrganization,
+    currentPassword,
+    newPassword,
+    confirmPassword,
     isLoading,
     isSavingProfile,
     isSavingPassword,
     isUploadingAvatar,
-    isSavingInspectPreference,
     isLightMode,
     dialogs,
     passkeyAvailable,
@@ -34,15 +38,19 @@ export function ProfilePageView() {
     roleLabel,
     setFullName,
     setEmail,
-    setPassword,
+    setLocation,
+    setReportOrganization,
+    setIsLightMode,
+    setIsShowingDetailedResults,
+    setCurrentPassword,
+    setNewPassword,
+    setConfirmPassword,
     setDialogOpen,
     handleAvatarUpload,
     handleSaveProfile,
     handleUpdatePassword,
     handleCopyCode,
     handleSignOut,
-    handleThemeToggle,
-    handleDetailedResultsToggle,
     handleRegisterPasskey,
     handleRemovePasskey,
     openHelpTutorials,
@@ -77,45 +85,55 @@ export function ProfilePageView() {
           roleLabel={roleLabel}
         />
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-[0.98fr_1.02fr]">
+        <div className="mt-4 grid gap-4 lg:grid-cols-[0.98fr_1.02fr] lg:items-stretch">
           <ProfilePrimaryColumn
             email={email}
             fullName={fullName}
-            inspectorCode={inspectorCode}
+            location={location}
+            reportOrganization={reportOrganization}
             isLightMode={isLightMode}
             isLoadingPasskeys={isLoadingPasskeys}
             isRegisteringPasskey={isRegisteringPasskey}
-            isSavingPassword={isSavingPassword}
             isSavingProfile={isSavingProfile}
             isShowingDetailedResults={isShowingDetailedResults}
             isUploadingAvatar={isUploadingAvatar}
             passkeyAvailable={passkeyAvailable}
             passkeys={passkeys}
-            password={password}
             removingCredentialId={removingCredentialId}
             onEmailChange={setEmail}
             onFullNameChange={setFullName}
+            onLocationChange={setLocation}
+            onReportOrganizationChange={setReportOrganization}
+            onLightModeChange={setIsLightMode}
+            onDetailedResultsChange={setIsShowingDetailedResults}
+            onOpenPasswordDialog={() => setDialogOpen("showPasswordDialog", true)}
+            onOpenSignOutConfirm={() => setDialogOpen("showSignOutConfirm", true)}
             onOpenHelpTutorials={openHelpTutorials}
             onOpenProfileTutorial={openProfileTutorial}
-            onPasswordChange={setPassword}
             onRegisterPasskey={handleRegisterPasskey}
             onRemovePasskey={handleRemovePasskey}
             onSaveProfile={handleSaveProfile}
-            onUpdatePassword={handleUpdatePassword}
           />
 
           <ProfileSecondaryColumn
-            isLightMode={isLightMode}
-            isSavingInspectPreference={isSavingInspectPreference}
-            isShowingDetailedResults={isShowingDetailedResults}
-            onDetailedResultsToggle={handleDetailedResultsToggle}
             onOpenPrivacyDialog={() => setDialogOpen("showPrivacyDialog", true)}
-            onOpenSignOutConfirm={() => setDialogOpen("showSignOutConfirm", true)}
             onOpenTermsDialog={() => setDialogOpen("showTermsDialog", true)}
-            onThemeToggle={handleThemeToggle}
           />
         </div>
       </div>
+
+      <PasswordChangeDialog
+        open={dialogs.showPasswordDialog}
+        currentPassword={currentPassword}
+        newPassword={newPassword}
+        confirmPassword={confirmPassword}
+        isSaving={isSavingPassword}
+        onCurrentPasswordChange={setCurrentPassword}
+        onNewPasswordChange={setNewPassword}
+        onConfirmPasswordChange={setConfirmPassword}
+        onOpenChange={(open) => setDialogOpen("showPasswordDialog", open)}
+        onSubmit={handleUpdatePassword}
+      />
 
       <ConfirmDialog
         open={dialogs.showSignOutConfirm}

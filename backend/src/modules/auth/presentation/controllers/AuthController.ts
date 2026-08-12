@@ -381,22 +381,29 @@ export class AuthController {
   async updatePassword(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { password } = req.body as { password?: string };
+      const { currentPassword, newPassword } = req.body as {
+        currentPassword?: string;
+        newPassword?: string;
+      };
 
-      if (!id || !password) {
-        res.status(400).json({ error: "User ID and password are required" });
+      if (!id || !currentPassword || !newPassword) {
+        res.status(400).json({ error: "User ID, current password, and new password are required" });
         return;
       }
 
-      if (password.length < 6) {
+      if (newPassword.length < 6) {
         res.status(400).json({ error: "Password must be at least 6 characters" });
         return;
       }
 
-      await this.updatePasswordUseCase.execute(id, password);
+      await this.updatePasswordUseCase.execute(id, currentPassword, newPassword);
       res.status(204).send();
     } catch (error) {
       console.error("Update password error:", error);
+      if (error instanceof Error && error.message === "Current password is incorrect") {
+        res.status(401).json({ error: error.message });
+        return;
+      }
       res.status(500).json({ error: error instanceof Error ? error.message : "Failed to update password" });
     }
   }

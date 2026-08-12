@@ -5,6 +5,7 @@ import { createProfileDialogState } from "../../../../src/entities/user/model/pr
 
 test("profile entity starts dialogs closed", () => {
   assert.deepEqual(createProfileDialogState(), {
+    showPasswordDialog: false,
     showPrivacyDialog: false,
     showSignOutConfirm: false,
     showTermsDialog: false,

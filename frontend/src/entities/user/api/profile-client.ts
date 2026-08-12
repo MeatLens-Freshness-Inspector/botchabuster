@@ -46,7 +46,7 @@ export interface Profile {
 type ProfileUpdateInput = Partial<
   Pick<
     Profile,
-    "full_name" | "avatar_url" | "location" | "is_dark_mode" | "show_detailed_results" | "onboarding_completed_at"
+    "full_name" | "avatar_url" | "location" | "report_organization" | "is_dark_mode" | "show_detailed_results" | "onboarding_completed_at"
   >
 >;
 

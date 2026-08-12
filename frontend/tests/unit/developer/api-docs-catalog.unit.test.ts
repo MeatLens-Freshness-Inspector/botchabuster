@@ -44,4 +44,12 @@ test("catalog marks credential fields and no-content auth responses", () => {
   assert.deepEqual(recovery?.body.mode === "json" ? recovery.body.sensitiveFields : [], ["accessToken", "password"]);
   assert.equal(reset?.responseKind, "empty");
   assert.equal(updatePassword?.responseKind, "empty");
+  assert.equal(
+    updatePassword?.body.mode === "json" ? updatePassword.body.defaultValue : null,
+    '{"currentPassword":"","newPassword":""}',
+  );
+  assert.deepEqual(
+    updatePassword?.body.mode === "json" ? updatePassword.body.sensitiveFields : [],
+    ["currentPassword", "newPassword"],
+  );
 });

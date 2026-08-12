@@ -1,106 +1,95 @@
 import { Loader2, KeyRound, LifeBuoy, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui";
-import { Input } from "@/shared/ui";
 import type { RegisteredPasskey } from "@/features/passkeys/api/passkey-client";
 import { ProfileEditableDetailsCard } from "@/features/profile-editing/ui/editable-details-card";
+import { PreferencesAccountCard } from "@/features/profile-editing/ui/preferences-account-card";
+import type { ReportOrganization } from "@/entities/user/api/profile-client";
 
 type ProfilePrimaryColumnProps = {
   email: string;
   fullName: string;
-  inspectorCode: string;
+  location: string;
+  reportOrganization: ReportOrganization | null;
   isLightMode: boolean;
   isLoadingPasskeys: boolean;
   isRegisteringPasskey: boolean;
-  isSavingPassword: boolean;
   isSavingProfile: boolean;
   isShowingDetailedResults: boolean;
   isUploadingAvatar: boolean;
   passkeyAvailable: boolean;
   passkeys: RegisteredPasskey[];
-  password: string;
   removingCredentialId: string | null;
   onEmailChange: (value: string) => void;
   onFullNameChange: (value: string) => void;
+  onLocationChange: (value: string) => void;
+  onReportOrganizationChange: (value: ReportOrganization) => void;
+  onLightModeChange: (value: boolean) => void;
+  onDetailedResultsChange: (value: boolean) => void;
   onOpenHelpTutorials: () => void;
   onOpenProfileTutorial: () => void;
-  onPasswordChange: (value: string) => void;
+  onOpenPasswordDialog: () => void;
+  onOpenSignOutConfirm: () => void;
   onRegisterPasskey: () => void | Promise<void>;
   onRemovePasskey: (credentialId: string) => void | Promise<void>;
   onSaveProfile: () => void | Promise<void>;
-  onUpdatePassword: () => void | Promise<void>;
 };
 
 export function ProfilePrimaryColumn({
   email,
   fullName,
-  inspectorCode,
+  location,
+  reportOrganization,
   isLightMode,
   isLoadingPasskeys,
   isRegisteringPasskey,
-  isSavingPassword,
   isSavingProfile,
   isShowingDetailedResults,
   isUploadingAvatar,
   passkeyAvailable,
   passkeys,
-  password,
   removingCredentialId,
   onEmailChange,
   onFullNameChange,
+  onLocationChange,
+  onReportOrganizationChange,
+  onLightModeChange,
+  onDetailedResultsChange,
   onOpenHelpTutorials,
   onOpenProfileTutorial,
-  onPasswordChange,
   onRegisterPasskey,
   onRemovePasskey,
   onSaveProfile,
-  onUpdatePassword,
+  onOpenPasswordDialog,
+  onOpenSignOutConfirm,
 }: ProfilePrimaryColumnProps) {
   return (
-    <div data-testid="profile-primary-column" className="space-y-4">
+    <div data-testid="profile-primary-column" className="space-y-4 lg:space-y-0 lg:contents">
       <ProfileEditableDetailsCard
         email={email}
         fullName={fullName}
-        inspectorCode={inspectorCode}
-        isLightMode={isLightMode}
+        location={location}
+        reportOrganization={reportOrganization}
         isSavingProfile={isSavingProfile}
-        isShowingDetailedResults={isShowingDetailedResults}
         isUploadingAvatar={isUploadingAvatar}
         onEmailChange={onEmailChange}
         onFullNameChange={onFullNameChange}
+        onLocationChange={onLocationChange}
+        onReportOrganizationChange={onReportOrganizationChange}
+        onOpenPasswordDialog={onOpenPasswordDialog}
         onSaveProfile={onSaveProfile}
       />
 
-      <section
-        data-testid="profile-password-card"
-        className="rounded-3xl border border-border/70 bg-card/92 p-4"
-      >
-        <h3 className="font-display text-lg font-semibold">Password Reset Section</h3>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Change password directly while signed in.
-        </p>
-        <div className="mt-4 space-y-3">
-          <Input
-            id="new-password"
-            type="password"
-            value={password}
-            onChange={(event) => onPasswordChange(event.target.value)}
-            placeholder="Enter new password"
-            className="h-11 rounded-xl bg-background/60"
-          />
-          <Button
-            onClick={onUpdatePassword}
-            disabled={isSavingPassword}
-            className="h-11 rounded-xl px-5"
-          >
-            {isSavingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Update Password
-          </Button>
-        </div>
-      </section>
+      <PreferencesAccountCard
+        isLightMode={isLightMode}
+        isShowingDetailedResults={isShowingDetailedResults}
+        onDetailedResultsChange={onDetailedResultsChange}
+        onLightModeChange={onLightModeChange}
+        onOpenSignOutConfirm={onOpenSignOutConfirm}
+      />
 
       <section
         data-testid="profile-passkeys-card"
-        className="rounded-3xl border border-border/70 bg-card/92 p-4"
+        className="order-3 rounded-3xl border border-border/70 bg-card/92 p-4 lg:h-full"
       >
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
@@ -181,7 +170,7 @@ export function ProfilePrimaryColumn({
 
       <section
         data-testid="profile-tutorials-card"
-        className="rounded-3xl border border-border/70 bg-card/90 p-4"
+        className="order-5 rounded-3xl border border-border/70 bg-card/90 p-4 lg:h-full"
       >
         <div className="flex items-start justify-between gap-3">
           <div>

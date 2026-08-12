@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "rea
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
+import type { ReportOrganization } from "@/entities/user/api/profile-client";
 import {
   passkeyClient,
   startPasskeyRegistration,
@@ -24,6 +25,10 @@ import {
   type ProfileDialogState,
 } from "@/entities/user";
 import { applyLocalDeviceReady, getProfileInitials } from "./profile-page";
+import {
+  buildProfileSettingsUpdate,
+  validatePasswordChange,
+} from "./profile-settings";
 
 const INITIAL_DIALOG_STATE: ProfileDialogState = createProfileDialogState();
 
@@ -42,12 +47,16 @@ export function useProfileEditor() {
   } = useAuth();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [location, setLocation] = useState("");
+  const [reportOrganization, setReportOrganization] = useState<ReportOrganization | null>(null);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [isSavingInspectPreference, setIsSavingInspectPreference] = useState(false);
   const [isLightMode, setIsLightMode] = useState(false);
+  const [isShowingDetailedResults, setIsShowingDetailedResults] = useState(false);
   const [dialogs, setDialogs] = useState<ProfileDialogState>(INITIAL_DIALOG_STATE);
   const [passkeyAvailable, setPasskeyAvailable] = useState(false);
   const [passkeys, setPasskeys] = useState<RegisteredPasskey[]>([]);
@@ -61,7 +70,6 @@ export function useProfileEditor() {
   );
 
   const inspectorCode = profile?.inspector_code || "No assigned inspector code";
-  const isShowingDetailedResults = Boolean(profile?.show_detailed_results);
   const roleLabel = isAdmin ? "Administrator" : "Inspector";
   const isLoading = profileStatus === "loading" || (Boolean(user) && !profile);
 
@@ -93,9 +101,21 @@ export function useProfileEditor() {
   }, [profile?.full_name]);
 
   useEffect(() => {
+    setLocation(profile?.location ?? "");
+  }, [profile?.location]);
+
+  useEffect(() => {
+    setReportOrganization(profile?.report_organization ?? null);
+  }, [profile?.report_organization]);
+
+  useEffect(() => {
     const isDarkMode = Boolean(profile?.is_dark_mode);
     setIsLightMode(!isDarkMode);
   }, [profile?.is_dark_mode]);
+
+  useEffect(() => {
+    setIsShowingDetailedResults(Boolean(profile?.show_detailed_results));
+  }, [profile?.show_detailed_results]);
 
   useEffect(() => {
     let mounted = true;
@@ -155,63 +175,88 @@ export function useProfileEditor() {
     const trimmedName = fullName.trim();
     const trimmedEmail = email.trim();
 
+    if (!trimmedEmail) {
+      toast.error("Email is required");
+      return;
+    }
+
     setIsSavingProfile(true);
     try {
-      let changed = false;
+      const profileUpdate = buildProfileSettingsUpdate({
+        fullName,
+        email,
+        location,
+        reportOrganization,
+        isLightMode,
+        isShowingDetailedResults,
+      }, profile ?? {
+        id: user.id,
+        full_name: null,
+        avatar_url: null,
+        inspector_code: null,
+        report_organization: null,
+        is_dark_mode: null,
+        show_detailed_results: null,
+        onboarding_completed_at: null,
+        onboarding_version: 1,
+        location: null,
+        created_at: "",
+        updated_at: "",
+      });
 
-      if (trimmedName !== (profile?.full_name ?? "")) {
-        const updatedProfile = await profileClient.updateProfile(user.id, {
-          full_name: trimmedName || null,
-        });
+      const profileChanged = Object.entries(profileUpdate).some(([key, value]) => {
+        const profileKey = key as keyof typeof profileUpdate;
+        const currentValue = profile?.[profileKey];
+        return value !== currentValue;
+      });
+
+      if (profileChanged) {
+        const updatedProfile = await profileClient.updateProfile(user.id, profileUpdate);
         setProfileState(updatedProfile);
-        changed = true;
+        applyTheme(Boolean(updatedProfile.is_dark_mode));
       }
 
       if (trimmedEmail && trimmedEmail !== (user.email ?? "")) {
         await updateEmail(trimmedEmail);
-        changed = true;
-        toast.success("Email updated");
       }
 
-      if (!changed) {
+      if (!profileChanged && trimmedEmail === (user.email ?? "")) {
         toast.message("No profile changes to save");
         return;
       }
 
-      if (trimmedEmail === (user.email ?? "")) {
-        toast.success("Profile updated");
-      }
+      toast.success("Profile updated");
     } catch (error) {
       console.error("Save profile failed:", error);
       toast.error(error instanceof Error ? error.message : "Failed to save profile");
     } finally {
       setIsSavingProfile(false);
     }
-  }, [email, fullName, profile?.full_name, setProfileState, updateEmail, user]);
+  }, [email, fullName, isLightMode, isShowingDetailedResults, location, profile, reportOrganization, setProfileState, updateEmail, user]);
 
   const handleUpdatePassword = useCallback(async () => {
-    if (!password.trim()) {
-      toast.error("Enter a new password");
-      return;
-    }
-
-    if (password.trim().length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
+    const validationError = validatePasswordChange({ currentPassword, newPassword, confirmPassword });
+    if (validationError) {
+      toast.error(validationError);
+      return false;
     }
 
     setIsSavingPassword(true);
     try {
-      await updatePassword(password.trim());
-      setPassword("");
+      await updatePassword(currentPassword.trim(), newPassword.trim());
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
       toast.success("Password updated");
+      return true;
     } catch (error) {
       console.error("Password update failed:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update password");
+      return false;
     } finally {
       setIsSavingPassword(false);
     }
-  }, [password, updatePassword]);
+  }, [confirmPassword, currentPassword, newPassword, updatePassword]);
 
   const handleCopyCode = useCallback(async () => {
     const code = profile?.inspector_code?.trim();
@@ -234,47 +279,6 @@ export function useProfileEditor() {
       toast.error("Failed to sign out");
     }
   }, [navigate, signOut]);
-
-  const handleThemeToggle = useCallback(async () => {
-    if (!user) return;
-
-    const nextIsDarkMode = isLightMode;
-
-    try {
-      const updatedProfile = await profileClient.updateProfile(user.id, {
-        is_dark_mode: nextIsDarkMode,
-      });
-      setProfileState(updatedProfile);
-      setIsLightMode(!nextIsDarkMode);
-      applyTheme(nextIsDarkMode);
-      toast.success(nextIsDarkMode ? "Dark mode enabled" : "Light mode enabled");
-    } catch (error) {
-      console.error("Theme update failed:", error);
-      toast.error("Failed to update theme preference");
-    }
-  }, [isLightMode, setProfileState, user]);
-
-  const handleDetailedResultsToggle = useCallback(async (checked: boolean) => {
-    if (!user) return;
-
-    setIsSavingInspectPreference(true);
-    try {
-      const updatedProfile = await profileClient.updateProfile(user.id, {
-        show_detailed_results: checked,
-      });
-      setProfileState(updatedProfile);
-      toast.success(
-        checked
-          ? "Detailed inspect results enabled"
-          : "Simplified inspect results enabled",
-      );
-    } catch (error) {
-      console.error("Inspect result preference update failed:", error);
-      toast.error("Failed to update inspect result preference");
-    } finally {
-      setIsSavingInspectPreference(false);
-    }
-  }, [setProfileState, user]);
 
   const handleRegisterPasskey = useCallback(async () => {
     if (!isOnlineAuthenticated) {
@@ -352,12 +356,15 @@ export function useProfileEditor() {
     profile,
     fullName,
     email,
-    password,
+    location,
+    reportOrganization,
+    currentPassword,
+    newPassword,
+    confirmPassword,
     isLoading,
     isSavingProfile,
     isSavingPassword,
     isUploadingAvatar,
-    isSavingInspectPreference,
     isLightMode,
     dialogs,
     passkeyAvailable,
@@ -371,15 +378,19 @@ export function useProfileEditor() {
     roleLabel,
     setFullName,
     setEmail,
-    setPassword,
+    setLocation,
+    setReportOrganization,
+    setIsLightMode,
+    setIsShowingDetailedResults,
+    setCurrentPassword,
+    setNewPassword,
+    setConfirmPassword,
     setDialogOpen,
     handleAvatarUpload,
     handleSaveProfile,
     handleUpdatePassword,
     handleCopyCode,
     handleSignOut,
-    handleThemeToggle,
-    handleDetailedResultsToggle,
     handleRegisterPasskey,
     handleRemovePasskey,
     openHelpTutorials: () => navigate("/profile/help"),

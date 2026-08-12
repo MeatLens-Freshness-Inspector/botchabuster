@@ -30,7 +30,7 @@ export interface AuthContextType {
   resetPassword: (email: string) => Promise<void>;
   updatePasswordWithRecoveryToken: (accessToken: string, password: string) => Promise<void>;
   updateEmail: (email: string) => Promise<void>;
-  updatePassword: (password: string) => Promise<void>;
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   setProfileState: (nextProfile: Profile | null) => void;
 }
 

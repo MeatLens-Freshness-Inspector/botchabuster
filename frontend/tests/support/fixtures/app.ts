@@ -409,6 +409,11 @@ export async function mockCommonApi(
       return;
     }
 
+    if (path === `/api/auth/users/${userId}/password` && method === "PATCH") {
+      await route.fulfill({ status: 204, body: "" });
+      return;
+    }
+
     if (path === "/api/profiles/admin/users" && method === "POST") {
       const payload = JSON.parse(request.postData() ?? "{}") as {
         email?: string;
