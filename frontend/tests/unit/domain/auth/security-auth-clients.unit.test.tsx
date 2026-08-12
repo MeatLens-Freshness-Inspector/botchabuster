@@ -96,13 +96,19 @@ test("AuthClient reuses the cached bearer token alongside cookie credentials and
     setStoredSession();
     setApiCsrfToken("csrf-1");
 
-    const requests: Array<{ authorization: string | null; credentials: RequestCredentials | undefined; csrf: string | null }> = [];
+    const requests: Array<{
+      authorization: string | null;
+      credentials: RequestCredentials | undefined;
+      csrf: string | null;
+      body: string;
+    }> = [];
     globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
       const headers = new Headers(init?.headers);
       requests.push({
         authorization: headers.get("authorization"),
         credentials: init?.credentials,
         csrf: headers.get("x-csrf-token"),
+        body: typeof init?.body === "string" ? init.body : "",
       });
 
       if (String(_input).includes("/email")) {
@@ -124,11 +130,11 @@ test("AuthClient reuses the cached bearer token alongside cookie credentials and
     }) as typeof globalThis.fetch;
 
     await authClient.updateEmail("user-1", "updated@example.com");
-    await authClient.updatePassword("user-1", "new-password-123");
+    await authClient.updatePassword("user-1", "old-password", "new-password-123");
 
     assert.deepEqual(requests, [
-      { authorization: "Bearer session-token", credentials: "include", csrf: "csrf-1" },
-      { authorization: "Bearer session-token", credentials: "include", csrf: "csrf-1" },
+      { authorization: "Bearer session-token", credentials: "include", csrf: "csrf-1", body: JSON.stringify({ email: "updated@example.com" }) },
+      { authorization: "Bearer session-token", credentials: "include", csrf: "csrf-1", body: JSON.stringify({ currentPassword: "old-password", newPassword: "new-password-123" }) },
     ]);
   } finally {
     clearApiCsrfToken();
