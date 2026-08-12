@@ -55,6 +55,7 @@ export class ProfileController {
         full_name,
         avatar_url,
         location,
+        report_organization,
         is_dark_mode,
         show_detailed_results,
         onboarding_completed_at,
@@ -75,6 +76,17 @@ export class ProfileController {
       }
 
       if (
+        report_organization !== undefined &&
+        report_organization !== null &&
+        !isReportOrganization(report_organization)
+      ) {
+        res.status(400).json({
+          error: "report_organization must be one of: dti, city_veterinary_office_olongapo, gordon_college_ccs",
+        });
+        return;
+      }
+
+      if (
         onboarding_completed_at !== undefined &&
         onboarding_completed_at !== null &&
         (typeof onboarding_completed_at !== "string" || Number.isNaN(Date.parse(onboarding_completed_at)))
@@ -87,6 +99,7 @@ export class ProfileController {
         full_name,
         avatar_url,
         location,
+        report_organization,
         is_dark_mode,
         show_detailed_results,
         onboarding_completed_at,
