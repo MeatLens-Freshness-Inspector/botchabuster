@@ -1,4 +1,4 @@
-export type MobileNetModelVariant = "default" | "seed123_model2";
+export type MobileNetModelVariant = "default" | "seed123_model2" | "roboflow_model3";
 
 export type ModelPreprocessContract = "legacy" | "segmented_center_roi";
 

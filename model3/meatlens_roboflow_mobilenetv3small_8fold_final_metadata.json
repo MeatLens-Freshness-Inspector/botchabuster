@@ -1,0 +1,24 @@
+{
+  "model_name": "meatlens_roboflow_mobilenetv3small_8fold_final",
+  "backbone": "MobileNetV3Small",
+  "model_input_mode": "cnn_only",
+  "image_crop_mode": "processed_hsv_lab_threshold_roi_224",
+  "input_shape": [224, 224, 3],
+  "target_size": [224, 224],
+  "label_order": ["fresh", "not fresh", "spoiled"],
+  "label_to_index": {
+    "fresh": 0,
+    "not fresh": 1,
+    "spoiled": 2
+  },
+  "index_to_label": {
+    "0": "fresh",
+    "1": "not fresh",
+    "2": "spoiled"
+  },
+  "dataset_source": "roboflow",
+  "evaluation_method": "stratified_8fold_cross_rotation",
+  "training_seed": 42,
+  "train_count": 2792,
+  "validation_count": 466
+}

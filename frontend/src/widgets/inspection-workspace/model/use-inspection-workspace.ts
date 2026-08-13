@@ -124,9 +124,13 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   useEffect(() => {
     const useEnsemble = developerFlags.enableModelEnsemble;
     const nextVariant =
-      useEnsemble || developerFlags.useSeed123Model2
+      useEnsemble
         ? "seed123_model2"
-        : "default";
+        : developerFlags.useRoboflowModel3
+          ? "roboflow_model3"
+          : developerFlags.useSeed123Model2
+            ? "seed123_model2"
+            : "default";
     setActiveAnalysisMode(useEnsemble ? "ensemble" : "mobilenetv3");
     setActiveMobileNetModelVariant(nextVariant);
     setIsModelReady(!navigator.onLine || getAnalysisReady());
@@ -137,7 +141,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
 
     prewarmModel();
     setIsModelReady(getAnalysisReady());
-  }, [developerFlags.enableModelEnsemble, developerFlags.useSeed123Model2, isAdmin, isDeveloperUnlocked, user]);
+  }, [developerFlags.enableModelEnsemble, developerFlags.useRoboflowModel3, developerFlags.useSeed123Model2, isAdmin, isDeveloperUnlocked, user]);
 
   useEffect(() => {
     let isCancelled = false;

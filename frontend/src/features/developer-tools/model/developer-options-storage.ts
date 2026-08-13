@@ -13,6 +13,7 @@ export interface DeveloperOptionsFlags {
   skipModelPrewarm: boolean;
   showModelInputPreview: boolean;
   useSeed123Model2: boolean;
+  useRoboflowModel3: boolean;
   enableModelEnsemble: boolean;
 }
 
@@ -37,6 +38,7 @@ export const DEFAULT_DEVELOPER_OPTIONS_FLAGS: DeveloperOptionsFlags = {
   skipModelPrewarm: false,
   showModelInputPreview: true,
   useSeed123Model2: true,
+  useRoboflowModel3: false,
   enableModelEnsemble: false,
 };
 

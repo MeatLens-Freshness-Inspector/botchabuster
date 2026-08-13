@@ -141,6 +141,24 @@ const MODEL_ASSET_PROFILES: Record<MobileNetModelVariant, ModelAssetProfile> = {
       label_order: ["fresh", "not fresh", "spoiled"],
     },
   },
+  roboflow_model3: {
+    variant: "roboflow_model3",
+    displayName: "MobileNetV3Small Roboflow model3",
+    preprocessContract: "segmented_center_roi",
+    modelCandidatePaths: [
+      "/model/model3/meatlens_roboflow_mobilenetv3small_8fold_final.onnx",
+      "/models/model3/meatlens_roboflow_mobilenetv3small_8fold_final.onnx",
+    ],
+    metadataCandidatePaths: [
+      "/model/model3/meatlens_roboflow_mobilenetv3small_8fold_final_metadata.json",
+      "/models/model3/meatlens_roboflow_mobilenetv3small_8fold_final_metadata.json",
+    ],
+    defaultMetadata: {
+      ...DEFAULT_MODEL_METADATA,
+      image_crop_mode: "preprocessed_hsv_lab_threshold_roi_224",
+      label_order: ["fresh", "not fresh", "spoiled"],
+    },
+  },
 };
 
 // Keeps the import type-safe while still lazy-loading the runtime.

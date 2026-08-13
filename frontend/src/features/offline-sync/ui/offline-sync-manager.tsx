@@ -7,7 +7,7 @@ const FORCE_RETAKE_CONFIDENCE_THRESHOLD = 80;
 type MeatType = "pork" | "beef" | "chicken" | "fish" | "other";
 type FreshnessClassification = "fresh" | "not fresh" | "spoiled" | "acceptable" | "warning";
 type InspectionDecisionSource = "ai" | "protocol_pre_scan";
-type ModelVariant = "default" | "seed123_model2";
+type ModelVariant = "default" | "seed123_model2" | "roboflow_model3";
 type AnalysisMode = "ensemble" | "mobilenetv3";
 
 type AnalysisResult = {
@@ -78,6 +78,7 @@ type OfflineInspectionInsert = {
 type DeveloperOptionsFlags = {
   enableModelEnsemble: boolean;
   useSeed123Model2: boolean;
+  useRoboflowModel3: boolean;
   verboseOfflineSyncLogs: boolean;
   skipModelPrewarm: boolean;
 };
@@ -112,11 +113,13 @@ type SyncUser = { id: string };
 export function resolveActiveModelVariant(
   user: SyncUser | null,
   isAdmin: boolean,
-  developerFlags: Pick<DeveloperOptionsFlags, "enableModelEnsemble" | "useSeed123Model2">,
+  developerFlags: Pick<DeveloperOptionsFlags, "enableModelEnsemble" | "useSeed123Model2" | "useRoboflowModel3">,
   isDeveloperUnlocked: boolean,
 ): ModelVariant {
   if (!user || !isAdmin) return "seed123_model2";
-  if (developerFlags.enableModelEnsemble || developerFlags.useSeed123Model2) return "seed123_model2";
+  if (developerFlags.enableModelEnsemble) return "seed123_model2";
+  if (developerFlags.useRoboflowModel3) return "roboflow_model3";
+  if (developerFlags.useSeed123Model2) return "seed123_model2";
   return isDeveloperUnlocked ? "default" : "seed123_model2";
 }
 

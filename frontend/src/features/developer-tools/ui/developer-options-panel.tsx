@@ -71,6 +71,11 @@ const FLAG_DEFINITIONS: FlagDefinition[] = [
     description: "When off, fallback to legacy MobileNetV3-small seed42 model for developer comparison.",
   },
   {
+    key: "useRoboflowModel3",
+    label: "Use Roboflow MobileNetV3 model3",
+    description: "Runs the newly exported Roboflow 8-fold MobileNetV3Small ONNX model.",
+  },
+  {
     key: "enableModelEnsemble",
     label: "Enable Model Ensembles",
     description: "Use multiple models to make a final prediction via ensemble technique.",

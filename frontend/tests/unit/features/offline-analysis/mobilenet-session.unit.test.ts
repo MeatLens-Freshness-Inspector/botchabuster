@@ -24,3 +24,10 @@ test("MobileNetSession invalidates a loaded runtime when switching variants", ()
   assert.equal(session.loadedModelPath, null);
   assert.equal(session.loadGeneration, 1);
 });
+
+test("MobileNetSession accepts the Roboflow model3 variant", () => {
+  const session = new MobileNetSession();
+
+  assert.equal(session.switchVariant("roboflow_model3"), null);
+  assert.equal(session.activeModelVariant, "roboflow_model3");
+});

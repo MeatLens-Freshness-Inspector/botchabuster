@@ -195,3 +195,22 @@ if (model2MetaSource) {
   }
 }
 
+const model3Files = [
+  "meatlens_roboflow_mobilenetv3small_8fold_final.onnx",
+  "meatlens_roboflow_mobilenetv3small_8fold_final_metadata.json",
+];
+
+for (const fileName of model3Files) {
+  const source = path.join(repoRoot, "model3", fileName);
+  if (!existsSync(source)) {
+    continue;
+  }
+
+  const target = path.join(repoRoot, "frontend", "public", "model", "model3", fileName);
+  mkdirSync(path.dirname(target), { recursive: true });
+  if (!existsSync(target) || statSync(target).size !== statSync(source).size) {
+    copyFileSync(source, target);
+    console.info(`[sync-onnx-model] Copied model3 ${fileName} -> ${path.relative(repoRoot, target)}`);
+  }
+}
+
