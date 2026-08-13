@@ -19,6 +19,7 @@ export interface CameraCaptureProps {
   allowFileUpload?: boolean;
   allowInAppCamera?: boolean;
   showModelInputPreview?: boolean;
+  disableRoiSegmentation?: boolean;
 }
 
 export type CaptureQualitySource = "canvas" | "file" | "cameraApp";

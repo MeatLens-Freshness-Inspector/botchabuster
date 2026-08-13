@@ -26,6 +26,7 @@ export interface InspectPageViewModel {
   saveStatus: InspectionSaveStatus;
   showDetailedResults: boolean;
   showModelInputPreview: boolean;
+  disableRoiSegmentation: boolean;
   showAnalyzeAction: boolean;
   showSaveActions: boolean;
   captureStatusText: string;

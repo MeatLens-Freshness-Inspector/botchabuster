@@ -616,6 +616,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     saveStatus,
     showDetailedResults: Boolean(profile?.show_detailed_results),
     showModelInputPreview: developerFlags.showModelInputPreview,
+    disableRoiSegmentation: developerFlags.disableRoiSegmentation,
     showAnalyzeAction: Boolean(capturedInput && !result && inspectionDecisionSource !== "protocol_pre_scan"),
     showSaveActions: Boolean(result),
     captureStatusText: getCaptureStatusText(capturedInput),

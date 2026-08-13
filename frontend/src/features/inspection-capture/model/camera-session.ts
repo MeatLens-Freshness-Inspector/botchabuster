@@ -11,6 +11,7 @@ import {
   type SquareGuideBox,
 } from "@/features/offline-analysis";
 import { getActiveModelPreprocessContract } from "@/features/offline-analysis";
+import { resolveModelInputPreviewOptions } from "./model-input-preview";
 
 import { GUIDE_BOX_SIZE_RATIO, PREVIEW_EXPORT_QUALITY } from "./camera-constants";
 import {
@@ -41,6 +42,7 @@ export function useCameraCapture({
   allowFileUpload = false,
   allowInAppCamera = false,
   showModelInputPreview = true,
+  disableRoiSegmentation = false,
 }: CameraCaptureProps): CameraCaptureViewProps {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -55,6 +57,7 @@ export function useCameraCapture({
   const [isStarting, setIsStarting] = useState(false);
   const [qualitySource, setQualitySource] = useState<CaptureQualitySource>("canvas");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [modelPreviewSourceFile, setModelPreviewSourceFile] = useState<File | null>(null);
   const [captureGuideBox, setCaptureGuideBox] = useState<SquareGuideBox | null>(null);
   const [modelInputPreview, setModelInputPreview] = useState<string | null>(null);
   const [isPreparingModelPreview, setIsPreparingModelPreview] = useState(false);
@@ -70,12 +73,13 @@ export function useCameraCapture({
     setIsPreparingModelPreview(true);
 
     try {
-      const preprocessContract = getActiveModelPreprocessContract();
-      const requiresSegmentedCenterRoi = preprocessContract === "segmented_center_roi";
+      const preparation = resolveModelInputPreviewOptions({
+        preprocessContract: getActiveModelPreprocessContract(),
+        guideBox,
+        disableRoiSegmentation,
+      });
       const preparedInput = await createModelInputImageFile(sourceFile, {
-        guideBox: requiresSegmentedCenterRoi ? null : guideBox,
-        forceCenterCrop: requiresSegmentedCenterRoi,
-        applySegmentation: requiresSegmentedCenterRoi,
+        ...preparation,
         size: DEFAULT_MEATLENS_INPUT_SIZE,
         mimeType: "image/jpeg",
         quality: PREVIEW_EXPORT_QUALITY,
@@ -95,7 +99,7 @@ export function useCameraCapture({
         setIsPreparingModelPreview(false);
       }
     }
-  }, []);
+  }, [disableRoiSegmentation]);
 
   const resetCameraControls = useCallback(() => {
     videoTrackRef.current = null;
@@ -188,6 +192,7 @@ export function useCameraCapture({
     setCapturedImage(null);
     setIsVideoReady(false);
     setCaptureGuideBox(null);
+    setModelPreviewSourceFile(null);
     setModelInputPreview(null);
     setIsPreparingModelPreview(false);
     previewRequestIdRef.current += 1;
@@ -310,7 +315,7 @@ export function useCameraCapture({
         }
 
         const previewSourceFile = new File([blob], `preview-${Date.now()}.jpg`, { type: "image/jpeg" });
-        void updateModelInputPreview(previewSourceFile, guideBox);
+        setModelPreviewSourceFile(previewSourceFile);
       },
       "image/jpeg",
       PREVIEW_EXPORT_QUALITY
@@ -321,7 +326,7 @@ export function useCameraCapture({
     setIsStreaming(false);
     setIsVideoReady(false);
     resetCameraControls();
-  }, [disabled, resetCameraControls, stream, updateModelInputPreview]);
+  }, [disabled, resetCameraControls, stream]);
 
   const handleCapturedImageLoad = useCallback(() => {
     if ((qualitySource !== "file" && qualitySource !== "cameraApp") || !uploadedFile || !capturedImageRef.current) {
@@ -351,11 +356,17 @@ export function useCameraCapture({
   }, [qualitySource, updateModelInputPreview, uploadedFile]);
 
   useEffect(() => {
+    if (!modelPreviewSourceFile) return;
+    void updateModelInputPreview(modelPreviewSourceFile, captureGuideBox);
+  }, [captureGuideBox, modelPreviewSourceFile, updateModelInputPreview]);
+
+  useEffect(() => {
     if (allowFileUpload) return;
     if (qualitySource !== "file") return;
 
     setCapturedImage(null);
     setUploadedFile(null);
+    setModelPreviewSourceFile(null);
     setCaptureGuideBox(null);
     setModelInputPreview(null);
     setQualitySource("canvas");
@@ -440,6 +451,7 @@ export function useCameraCapture({
       setCaptureQualityResult(qualityResult);
 
       setUploadedFile(file);
+      setModelPreviewSourceFile(file);
       setQualitySource(source);
       setCaptureGuideBox(null);
       setModelInputPreview(null);
@@ -494,7 +506,9 @@ export function useCameraCapture({
     );
   const modelInputLabel =
     getActiveModelPreprocessContract() === "segmented_center_roi"
-      ? "Segmented center ROI -> 224x224 model input"
+      ? disableRoiSegmentation
+        ? "Center crop -> 224x224 model input"
+        : "Segmented center ROI -> 224x224 model input"
       : (qualitySource === "file" || qualitySource === "cameraApp") && !captureGuideBox
       ? "Center crop -> 224x224 model input"
       : "Guide crop -> 224x224 model input";
