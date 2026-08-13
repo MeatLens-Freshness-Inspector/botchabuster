@@ -35,6 +35,7 @@ const RETAKE_RECOMMEND_THRESHOLD = 80;
 
 interface AnalyzeOfflineOptions {
   guideBox?: SquareGuideBox | null;
+  disableRoiSegmentation?: boolean;
 }
 
 interface OfflineAnalysisTestWindow extends Window {
@@ -384,7 +385,10 @@ export async function analyzeOffline(
     throw new Error("Model inference is unavailable. Please retry after model warmup completes.");
   }
 
-  const modelResult = await runActiveAnalysis(imageFile, { guideBox: options.guideBox ?? null });
+  const modelResult = await runActiveAnalysis(imageFile, {
+    guideBox: options.guideBox ?? null,
+    disableRoiSegmentation: options.disableRoiSegmentation ?? false,
+  });
   if (!modelResult) {
     throw new Error("Model inference is unavailable. Please retry after model warmup completes.");
   }

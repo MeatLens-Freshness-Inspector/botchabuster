@@ -33,8 +33,9 @@ export interface ActiveAnalysisPrediction {
   modelPath: string | null;
 }
 
-interface AnalyzeOptions {
+export interface AnalyzeOptions {
   guideBox?: SquareGuideBox | null;
+  disableRoiSegmentation?: boolean;
 }
 
 let activeAnalysisMode: AnalysisMode = "mobilenetv3";

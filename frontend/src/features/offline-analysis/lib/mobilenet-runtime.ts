@@ -201,6 +201,25 @@ interface LoadModelOptions {
 
 interface ClassifyWithModelOptions {
   guideBox?: SquareGuideBox | null;
+  disableRoiSegmentation?: boolean;
+}
+
+export interface MobileNetGuideBoxOptions {
+  preprocessContract: ModelPreprocessContract;
+  guideBox: SquareGuideBox | null;
+  disableRoiSegmentation: boolean;
+}
+
+export function resolveMobileNetGuideBox({
+  preprocessContract,
+  guideBox,
+  disableRoiSegmentation,
+}: MobileNetGuideBoxOptions): SquareGuideBox | null {
+  if (preprocessContract === "segmented_center_roi" && disableRoiSegmentation) {
+    return null;
+  }
+
+  return guideBox;
 }
 
 let ortModule: OrtModule | null = null;
@@ -626,7 +645,12 @@ export async function classifyWithMobileNetV3(
 
     const preprocessMode = resolvePreprocessMode(metadata, "identity");
     const image = await loadImage(imageFile);
-    const imageData = buildCroppedImageData(image, targetWidth, targetHeight, options.guideBox);
+    const guideBox = resolveMobileNetGuideBox({
+      preprocessContract: getActiveModelPreprocessContract(),
+      guideBox: options.guideBox ?? null,
+      disableRoiSegmentation: options.disableRoiSegmentation ?? false,
+    });
+    const imageData = buildCroppedImageData(image, targetWidth, targetHeight, guideBox);
     const tensorData = buildImageTensorData(imageData, layout.channelsFirst, preprocessMode);
 
     const inputTensor = new ort.Tensor(

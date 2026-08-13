@@ -395,6 +395,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     try {
       const analysisResult: AnalysisResult = await analyzeOffline(capturedInput.file, DEFAULT_MEAT_TYPE, {
         guideBox: capturedInput.guideBox,
+        disableRoiSegmentation: developerFlags.disableRoiSegmentation,
       });
 
       if (analysisResult.confidence_score < FORCE_RETAKE_CONFIDENCE_THRESHOLD) {
