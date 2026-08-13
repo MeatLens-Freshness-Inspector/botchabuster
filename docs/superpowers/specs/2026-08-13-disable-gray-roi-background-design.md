@@ -8,7 +8,7 @@ Approved design; implementation pending.
 
 The developer settings already support per-user flags stored in browser local storage. For the segmented-center-ROI model variants, the capture preview currently replaces pixels outside the selected foreground region with RGB 127 gray. This makes the preview useful for diagnosing preprocessing, but it is not always desirable when comparing model behavior against the original image.
 
-The new developer option must change runtime behavior, not only the settings UI. When enabled, it must disable ROI segmentation and use the ordinary center-cropped 224x224 image for both the model-input preview and analysis.
+The new developer option must change runtime behavior, not only the settings UI. When enabled, it must disable ROI segmentation and use the ordinary center-cropped 224x224 image for both the model-input preview and analysis. The Roboflow MobileNetV3 model must not be selected by default for new developer-option state; seed123 remains the default comparison model.
 
 ## Goals
 
@@ -17,6 +17,7 @@ The new developer option must change runtime behavior, not only the settings UI.
 - Make the flag affect both preview generation and model analysis.
 - Apply the new mode immediately to an existing capture preview when the setting changes.
 - Keep the setting scoped to the signed-in developer account and compatible with existing local-storage payloads.
+- Make `useRoboflowModel3` default to `false`, while preserving an existing stored developer choice.
 - Add regression tests that prove the setting reaches the preprocessing and inference decisions.
 
 ## Non-goals
@@ -34,6 +35,8 @@ The Developer Toggles panel adds:
 - Description: `Uses the original center-cropped 224x224 image instead of segmented ROI preprocessing.`
 - Default: off
 - Availability: only when developer options are unlocked
+
+The existing `Use Roboflow MobileNetV3 model3` toggle defaults to off for new/default flag state. A stored `true` value is not silently overwritten, so developers who explicitly enabled it retain that choice.
 
 When off, segmented-center-ROI variants continue to generate a center crop, apply ROI segmentation, and display the gray-background preview as they do today.
 
@@ -57,7 +60,7 @@ The setting is a preprocessing choice only. It does not switch models, reload mo
 
 Add or update tests for these behaviors:
 
-- Developer-option storage returns `false` by default and preserves a stored `true` value through a write/read round trip.
+- Developer-option storage returns `false` for `disableRoiSegmentation` and `useRoboflowModel3` by default, and preserves stored `true` values through a write/read round trip.
 - Model-input preparation does not invoke the segmenter when `applySegmentation` is false, and the disabled mode is wired to that option.
 - Camera preview mode selection uses center crop and no segmentation when the flag is enabled, and retains segmented-center-ROI behavior when disabled.
 - Analysis option propagation causes segmented-center-ROI variants to receive a null guide box in disabled mode and the capture guide box in normal mode; legacy variants remain unchanged.
@@ -68,6 +71,7 @@ Add or update tests for these behaviors:
 - A developer can unlock settings, enable `Disable gray ROI background`, capture or upload an image, and see a normal center-cropped preview without the gray mask.
 - Toggling the option while a source image is already present refreshes the preview without requiring a page reload or a new capture.
 - Running analysis with the option enabled uses the center crop; the setting is not preview-only.
+- A new developer session selects the seed123 model unless Roboflow is explicitly enabled.
 - Reloading the page preserves the setting for that developer account.
 - Turning the option off restores the current segmented preview and guided analysis behavior.
 - Non-developer and locked users cannot activate the option through the UI.
