@@ -439,6 +439,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   }, [
     clientSubmissionId,
     capturedInput,
+    developerFlags.disableRoiSegmentation,
     developerFlags.persistAnalysisSnapshots,
     inspectionDecisionSource,
     isAdmin,

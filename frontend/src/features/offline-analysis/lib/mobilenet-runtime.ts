@@ -20,6 +20,7 @@ import {
   type MobileNetOnnxSession,
   type ModelPreprocessContract,
 } from "./mobilenet-session";
+import { resolveMobileNetGuideBox } from "./mobilenet-input-mode";
 
 const ENV_MODEL_PATH = (
   import.meta.env?.VITE_ONNX_MODEL_PATH ?? ""
@@ -202,24 +203,6 @@ interface LoadModelOptions {
 interface ClassifyWithModelOptions {
   guideBox?: SquareGuideBox | null;
   disableRoiSegmentation?: boolean;
-}
-
-export interface MobileNetGuideBoxOptions {
-  preprocessContract: ModelPreprocessContract;
-  guideBox: SquareGuideBox | null;
-  disableRoiSegmentation: boolean;
-}
-
-export function resolveMobileNetGuideBox({
-  preprocessContract,
-  guideBox,
-  disableRoiSegmentation,
-}: MobileNetGuideBoxOptions): SquareGuideBox | null {
-  if (preprocessContract === "segmented_center_roi" && disableRoiSegmentation) {
-    return null;
-  }
-
-  return guideBox;
 }
 
 let ortModule: OrtModule | null = null;

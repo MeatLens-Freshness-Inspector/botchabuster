@@ -1,9 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import {
-  resolveMobileNetGuideBox,
-} from "../../../../src/features/offline-analysis/lib/mobilenet-runtime";
+import { resolveMobileNetGuideBox } from "../../../../src/features/offline-analysis/lib/mobilenet-input-mode";
 
 test("disabling ROI segmentation removes the guide box for segmented models", () => {
   const guideBox = { x: 0.1, y: 0.1, size: 0.8 };
