@@ -66,6 +66,11 @@ const FLAG_DEFINITIONS: FlagDefinition[] = [
     description: "Toggles the 224x224 model-preview thumbnail overlay in capture UI.",
   },
   {
+    key: "disableRoiSegmentation",
+    label: "Disable gray ROI background",
+    description: "Uses the original center-cropped 224x224 image instead of segmented ROI preprocessing.",
+  },
+  {
     key: "useSeed123Model2",
     label: "Use seed123 primary model",
     description: "When off, fallback to legacy MobileNetV3-small seed42 model for developer comparison.",
