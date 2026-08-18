@@ -2,38 +2,27 @@ import { landingWorkflow } from "../lib/landing-data";
 
 export function WorkflowSection() {
   return (
-    <section id="workflow" className="mb-24 border-b border-border/70 pb-24">
-      <div className="mb-10 flex flex-col gap-3 border-b border-border/70 pb-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="mb-2 font-display text-[10px] uppercase tracking-[0.18em] text-primary">
-            01 / Process
-          </p>
-          <h2 className="font-display text-3xl font-bold uppercase tracking-tight">
+    <section id="workflow" className="mb-24">
+      <div className="mb-12 text-center">
+        <h2 className="font-display text-3xl font-bold uppercase tracking-tight">
           Inspection Workflow
-          </h2>
-        </div>
-        <p className="max-w-sm text-sm leading-relaxed text-muted-foreground sm:text-right">
+        </h2>
+        <p className="mt-3 text-muted-foreground">
           Four simple steps to secure health standard compliance.
         </p>
       </div>
 
-      <div className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="pointer-events-none absolute left-[12.5%] right-[12.5%] top-8 hidden border-t border-dashed border-border/70 lg:block" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {landingWorkflow.map((step, index) => (
           <div
             key={step.title}
-            className="group relative border border-border/70 bg-card p-5 transition-colors duration-300 hover:border-primary/60 hover:bg-muted"
+            className="group relative rounded-3xl border border-border/30 bg-card/40 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 hover:bg-card/60 hover:shadow-2xl hover:shadow-primary/10"
           >
-            <div className="relative z-10 mb-8 flex h-8 w-8 items-center justify-center border border-primary/50 bg-card font-display text-xs font-bold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+            <div className="absolute -right-4 -top-4 flex h-12 w-12 items-center justify-center rounded-full bg-background font-display text-xl font-bold text-border/50 transition-colors group-hover:text-primary/30">
               {index + 1}
             </div>
-            <div className="mb-5 flex items-center justify-between border-b border-border/70 pb-4">
-              <div className="inline-flex h-10 w-10 items-center justify-center border border-border/70 bg-background text-primary">
-                <step.icon className="h-5 w-5" />
-              </div>
-              <span className="font-display text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
-                Step {index + 1}
-              </span>
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-transform group-hover:scale-110">
+              <step.icon className="h-6 w-6" />
             </div>
             <h3 className="mb-2 font-display text-lg font-bold uppercase tracking-wider">
               {step.title}
