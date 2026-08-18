@@ -135,7 +135,7 @@ async function resolveAndAttachAuthContext(req: Request): Promise<RequestAuthCon
   return resolveTrackedRequestAuthContext(req);
 }
 
-async function ensureTrackedAppSession(req: Request, authContext: RequestAuthContext): Promise<void> {
+async function ensureTrackedAppSession(req: Request): Promise<void> {
   const { accessToken } = getRequestAccessToken(req);
   const appSessionService = getAppSessionService();
 
@@ -144,18 +144,14 @@ async function ensureTrackedAppSession(req: Request, authContext: RequestAuthCon
   }
 
   const sessionLimit = getSessionLimitService();
-  if (await sessionLimit.hasSession(accessToken)) {
-    return;
+  const isActive = await sessionLimit.touchSession(
+    accessToken,
+    Config.getInstance().sessionIdleTimeoutSeconds,
+  );
+
+  if (!isActive) {
+    throw new RequestAuthError(401, "Invalid or expired access token");
   }
-
-  const session = appSessionService.getSession(accessToken);
-  await sessionLimit.pruneExpiredSessions(authContext.userId);
-
-  if (await sessionLimit.isAtLimit(authContext.userId)) {
-    throw new RequestAuthError(429, SESSION_LIMIT_REACHED_MESSAGE);
-  }
-
-  await sessionLimit.registerSession(authContext.userId, accessToken, session.expiresAt);
 }
 
 export async function resolveRequestAuthContext(req: Request): Promise<RequestAuthContext> {
@@ -187,7 +183,7 @@ export async function resolveTrackedRequestAuthContext(req: Request): Promise<Re
 
   const authContext = await resolveRequestAuthContext(req);
   enforceCookieCsrf(req, authContext);
-  await ensureTrackedAppSession(req, authContext);
+  await ensureTrackedAppSession(req);
   const { accessToken, source } = getRequestAccessToken(req);
   req.auth = authContext;
   req.authAccessToken = accessToken;

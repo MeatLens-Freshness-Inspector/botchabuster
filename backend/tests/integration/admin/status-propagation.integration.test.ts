@@ -4,7 +4,7 @@ import "../../setup/env";
 import { createCookieFixture } from "../../support/authFactory";
 import { startTestServer } from "../../support/appFactory";
 
-test("protected admin data endpoints preserve session-limit 429 responses instead of downgrading them to 401", async () => {
+test("protected admin data endpoints reject untracked sessions instead of re-registering them", async () => {
   const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
   const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
   const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
@@ -12,9 +12,7 @@ test("protected admin data endpoints preserve session-limit 429 responses instea
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
   const sessionLimit = getSessionLimitService();
-  const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
-  const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
-  const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
+  const originalTouchSession = sessionLimit.touchSession.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
   authService.getUserByAccessToken = async () => ({
@@ -22,9 +20,7 @@ test("protected admin data endpoints preserve session-limit 429 responses instea
     email: "admin@example.com",
   });
   profileService.getUserRoles = async () => [{ id: "role-1", user_id: "admin-1", role: "admin" }];
-  sessionLimit.hasSession = async () => false;
-  sessionLimit.pruneExpiredSessions = async () => undefined;
-  sessionLimit.isAtLimit = async () => true;
+  sessionLimit.touchSession = async () => false;
   sessionLimit.registerSession = async () => {
     assert.fail("device-slot registration should not happen after a limit rejection");
   };
@@ -45,15 +41,13 @@ test("protected admin data endpoints preserve session-limit 429 responses instea
       });
       const body = await response.json() as { error?: string };
 
-      assert.equal(response.status, 429);
-      assert.match(body.error ?? "", /maximum number of devices/i);
+      assert.equal(response.status, 401);
+      assert.match(body.error ?? "", /invalid or expired access token/i);
     }
   } finally {
     authService.getUserByAccessToken = originalGetUserByAccessToken;
     profileService.getUserRoles = originalGetUserRoles;
-    sessionLimit.hasSession = originalHasSession;
-    sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
-    sessionLimit.isAtLimit = originalIsAtLimit;
+    sessionLimit.touchSession = originalTouchSession;
     sessionLimit.registerSession = originalRegisterSession;
     await close();
   }

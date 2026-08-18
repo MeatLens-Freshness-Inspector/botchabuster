@@ -1,6 +1,7 @@
 import type { Server } from "http";
 import { Config } from "./config";
 import { createApp } from "./app";
+import { createSessionCleanupService } from "./modules/auth/infrastructure/SessionCleanupService";
 
 const config = Config.getInstance();
 const app = createApp(config);
@@ -47,14 +48,20 @@ function handleServerError(error: NodeJS.ErrnoException): never {
 }
 
 export function startServer(): Server {
+  const sessionCleanup = createSessionCleanupService({
+    intervalMs: config.sessionCleanupIntervalMs,
+    idleTimeoutSeconds: config.sessionIdleTimeoutSeconds,
+  });
   const server = app.listen(config.port, () => {
     console.log(`MeatLens backend running on port ${config.port}`);
     console.log(`Health check: http://localhost:${config.port}/api/analysis/health`);
     console.log(
       `Allowed origins: ${config.allowedOrigins.length > 0 ? config.allowedOrigins.join(", ") : "none configured"}`,
     );
+    sessionCleanup.start();
   });
 
+  server.once("close", () => sessionCleanup.stop());
   server.on("error", handleServerError);
   return server;
 }

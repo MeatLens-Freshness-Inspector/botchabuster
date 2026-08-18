@@ -211,12 +211,10 @@ test("resolveTrackedRequestAuthContext only performs session tracking once per r
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
   const sessionLimit = getSessionLimitService();
-  const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
-  const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
-  const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
+  const originalTouchSession = sessionLimit.touchSession.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
-  let registerCalls = 0;
+  let touchCalls = 0;
 
   authService.getUserByAccessToken = async (accessToken: string) => {
     assert.equal(accessToken, token);
@@ -226,11 +224,12 @@ test("resolveTrackedRequestAuthContext only performs session tracking once per r
     };
   };
   profileService.getUserRoles = async () => [];
-  sessionLimit.hasSession = async () => false;
-  sessionLimit.pruneExpiredSessions = async () => undefined;
-  sessionLimit.isAtLimit = async () => false;
+  sessionLimit.touchSession = async () => {
+    touchCalls += 1;
+    return true;
+  };
   sessionLimit.registerSession = async () => {
-    registerCalls += 1;
+    throw new Error("tracked requests must not register sessions");
   };
 
   try {
@@ -246,13 +245,55 @@ test("resolveTrackedRequestAuthContext only performs session tracking once per r
       isDeveloper: false,
     });
     assert.deepEqual(second, first);
-    assert.equal(registerCalls, 1);
+    assert.equal(touchCalls, 1);
   } finally {
     authService.getUserByAccessToken = originalGetUserByAccessToken;
     profileService.getUserRoles = originalGetUserRoles;
-    sessionLimit.hasSession = originalHasSession;
-    sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
-    sessionLimit.isAtLimit = originalIsAtLimit;
+    sessionLimit.touchSession = originalTouchSession;
+    sessionLimit.registerSession = originalRegisterSession;
+  }
+});
+
+test("resolveTrackedRequestAuthContext rejects a removed session without re-registering its token", async () => {
+  process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
+  process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
+  process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
+
+  const token = await createAppSessionCookie();
+  const req = createRequest({ cookie: `meatlens_session=${token}` });
+  const { RequestAuthError, resolveTrackedRequestAuthContext } = await import("../../../src/middleware/auth");
+  const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
+
+  const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
+  const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
+  const sessionLimit = getSessionLimitService();
+  const originalTouchSession = sessionLimit.touchSession.bind(sessionLimit);
+  const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
+
+  authService.getUserByAccessToken = async () => ({
+    id: "user-1",
+    email: "inspector@example.com",
+  });
+  profileService.getUserRoles = async () => [];
+  sessionLimit.touchSession = async () => false;
+  sessionLimit.registerSession = async () => {
+    throw new Error("removed token was re-registered");
+  };
+
+  try {
+    await assert.rejects(
+      async () => resolveTrackedRequestAuthContext(req),
+      (error: unknown) =>
+        error instanceof RequestAuthError &&
+        error.status === 401 &&
+        /invalid or expired access token/i.test(error.message),
+    );
+  } finally {
+    authService.getUserByAccessToken = originalGetUserByAccessToken;
+    profileService.getUserRoles = originalGetUserRoles;
+    sessionLimit.touchSession = originalTouchSession;
     sessionLimit.registerSession = originalRegisterSession;
   }
 });
@@ -273,19 +314,15 @@ test("resolveTrackedRequestAuthContext rejects unsafe cookie requests without a 
   const { RequestAuthError, resolveTrackedRequestAuthContext } = await import("../../../src/middleware/auth");
   const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
   const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
-  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
 
   const originalGetUserByAccessToken = authService.getUserByAccessToken.bind(authService);
   const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
-  const sessionLimit = getSessionLimitService();
-  const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
 
   authService.getUserByAccessToken = async () => ({
     id: "user-1",
     email: "inspector@example.com",
   });
   profileService.getUserRoles = async () => [];
-  sessionLimit.hasSession = async () => true;
 
   try {
     await assert.rejects(
@@ -298,6 +335,5 @@ test("resolveTrackedRequestAuthContext rejects unsafe cookie requests without a 
   } finally {
     authService.getUserByAccessToken = originalGetUserByAccessToken;
     profileService.getUserRoles = originalGetUserRoles;
-    sessionLimit.hasSession = originalHasSession;
   }
 });

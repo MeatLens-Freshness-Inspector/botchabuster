@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { getAllowedOrigins } from "./cors";
+import { resolveSessionTiming } from "./app.config";
 
 dotenv.config();
 
@@ -22,6 +23,8 @@ export class Config {
   readonly appSessionCookieSecure: boolean;
   readonly csrfTokenSecret: string;
   readonly csrfTokenTtlSeconds: number;
+  readonly sessionIdleTimeoutSeconds: number;
+  readonly sessionCleanupIntervalMs: number;
 
   private constructor() {
     this.port = parseInt(process.env.PORT || "3001", 10);
@@ -47,6 +50,9 @@ export class Config {
       60,
       parseInt(process.env.CSRF_TOKEN_TTL_SECONDS || "900", 10),
     );
+    const sessionTiming = resolveSessionTiming(process.env);
+    this.sessionIdleTimeoutSeconds = sessionTiming.sessionIdleTimeoutSeconds;
+    this.sessionCleanupIntervalMs = sessionTiming.sessionCleanupIntervalMs;
   }
 
   static getInstance(): Config {

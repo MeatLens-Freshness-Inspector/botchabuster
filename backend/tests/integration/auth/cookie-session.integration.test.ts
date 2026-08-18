@@ -172,6 +172,7 @@ test("session bootstrap accepts a bearer-backed app session, preserves authentic
   profileService.getProfile = async () => profile;
   auditLogService.write = async () => undefined;
   sessionLimit.hasSession = async () => true;
+  sessionLimit.touchSession = async () => true;
   sessionLimit.pruneExpiredSessions = async () => undefined;
   sessionLimit.isAtLimit = async () => false;
   sessionLimit.registerSession = async () => undefined;
@@ -229,6 +230,7 @@ test("cookie-authenticated inspection requests reuse the session slot registered
   const originalGetAll = inspectionService.getAll.bind(inspectionService);
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
+  const originalTouchSession = sessionLimit.touchSession.bind(sessionLimit);
   const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
@@ -249,6 +251,7 @@ test("cookie-authenticated inspection requests reuse the session slot registered
     return [];
   };
   sessionLimit.hasSession = async (accessToken) => registeredTokens.has(accessToken);
+  sessionLimit.touchSession = async (accessToken) => registeredTokens.has(accessToken);
   sessionLimit.pruneExpiredSessions = async () => undefined;
   sessionLimit.isAtLimit = async () => false;
   sessionLimit.registerSession = async (_userId, accessToken) => {
@@ -291,6 +294,7 @@ test("cookie-authenticated inspection requests reuse the session slot registered
     auditLogService.write = originalWriteAuditLog;
     inspectionService.getAll = originalGetAll;
     sessionLimit.hasSession = originalHasSession;
+    sessionLimit.touchSession = originalTouchSession;
     sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
     sessionLimit.isAtLimit = originalIsAtLimit;
     sessionLimit.registerSession = originalRegisterSession;
@@ -307,12 +311,14 @@ test("sign-out clears the session cookie and removes the registered app session"
   const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
+  const originalTouchSession = sessionLimit.touchSession.bind(sessionLimit);
   const originalRemoveSession = sessionLimit.removeSession.bind(sessionLimit);
   let removedToken: string | null = null;
 
   profileService.getUserRoles = async () => [];
   auditLogService.write = async () => undefined;
   sessionLimit.hasSession = async () => true;
+  sessionLimit.touchSession = async () => true;
   sessionLimit.removeSession = async (accessToken) => {
     removedToken = accessToken;
   };
@@ -339,7 +345,59 @@ test("sign-out clears the session cookie and removes the registered app session"
     profileService.getUserRoles = originalGetUserRoles;
     auditLogService.write = originalWriteAuditLog;
     sessionLimit.hasSession = originalHasSession;
+    sessionLimit.touchSession = originalTouchSession;
     sessionLimit.removeSession = originalRemoveSession;
+    await close();
+  }
+});
+
+test("a session removed by server-side idle cleanup cannot bootstrap again", async () => {
+  const { profileService } = await import("../../../src/modules/users/infrastructure/ProfileService");
+  const { getSessionLimitService } = await import("../../../src/modules/auth/infrastructure/SessionLimitService");
+
+  const originalGetUserRoles = profileService.getUserRoles.bind(profileService);
+  const originalGetProfile = profileService.getProfile.bind(profileService);
+  const sessionLimit = getSessionLimitService();
+  const originalTouchSession = sessionLimit.touchSession.bind(sessionLimit);
+  const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
+  const { user, session } = await createCookieFixture();
+  const profile = createProfileFixture(user.id);
+  let sessionActive = true;
+  let touchCalls = 0;
+
+  profileService.getUserRoles = async () => [];
+  profileService.getProfile = async () => profile;
+  sessionLimit.touchSession = async () => {
+    touchCalls += 1;
+    return sessionActive;
+  };
+  sessionLimit.registerSession = async () => {
+    throw new Error("idle-cleaned session was re-registered");
+  };
+
+  const { baseUrl, close } = await startTestServer();
+
+  try {
+    const activeResponse = await fetch(`${baseUrl}/api/auth/session`, {
+      headers: { Cookie: `meatlens_session=${session.access_token}` },
+    });
+    assert.equal(activeResponse.status, 200);
+    assert.equal(touchCalls, 1);
+
+    sessionActive = false;
+    const idleResponse = await fetch(`${baseUrl}/api/auth/session`, {
+      headers: { Cookie: `meatlens_session=${session.access_token}` },
+    });
+    const body = await idleResponse.json() as { error?: string };
+
+    assert.equal(idleResponse.status, 401);
+    assert.match(body.error ?? "", /invalid or expired access token/i);
+    assert.equal(touchCalls, 2);
+  } finally {
+    profileService.getUserRoles = originalGetUserRoles;
+    profileService.getProfile = originalGetProfile;
+    sessionLimit.touchSession = originalTouchSession;
+    sessionLimit.registerSession = originalRegisterSession;
     await close();
   }
 });
@@ -357,6 +415,7 @@ test("passkey authenticate verify mirrors the cookie/bootstrap contract and regi
   const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
+  const originalTouchSession = sessionLimit.touchSession.bind(sessionLimit);
   const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
@@ -417,6 +476,7 @@ test("passkey authenticate verify mirrors the cookie/bootstrap contract and regi
     profileService.getProfile = originalGetProfile;
     auditLogService.write = originalWriteAuditLog;
     sessionLimit.hasSession = originalHasSession;
+    sessionLimit.touchSession = originalTouchSession;
     sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
     sessionLimit.isAtLimit = originalIsAtLimit;
     sessionLimit.registerSession = originalRegisterSession;
@@ -437,6 +497,7 @@ test("passkey register, list, and delete routes accept cookie auth without an Au
   const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
+  const originalTouchSession = sessionLimit.touchSession.bind(sessionLimit);
   const listedPasskeys = [{ credentialId: "credential-1", deviceLabel: "Current device", transports: [], createdAt: "2026-07-01T00:00:00.000Z", lastUsedAt: null, localDeviceReady: true }];
   let deletedCredentialId: string | null = null;
 
@@ -451,6 +512,7 @@ test("passkey register, list, and delete routes accept cookie auth without an Au
   profileService.getUserRoles = async () => [];
   auditLogService.write = async () => undefined;
   sessionLimit.hasSession = async () => true;
+  sessionLimit.touchSession = async () => true;
 
   const { session, csrfToken } = await createCookieFixture();
   const { baseUrl, close } = await startTestServer();
@@ -492,6 +554,7 @@ test("passkey register, list, and delete routes accept cookie auth without an Au
     profileService.getUserRoles = originalGetUserRoles;
     auditLogService.write = originalWriteAuditLog;
     sessionLimit.hasSession = originalHasSession;
+    sessionLimit.touchSession = originalTouchSession;
     await close();
   }
 });

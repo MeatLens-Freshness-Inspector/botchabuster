@@ -11,6 +11,13 @@ export interface AppConfig extends BackendEnvironment {
   appSessionCookieSecure: boolean;
   csrfTokenSecret: string;
   csrfTokenTtlSeconds: number;
+  sessionIdleTimeoutSeconds: number;
+  sessionCleanupIntervalMs: number;
+}
+
+export interface SessionTimingConfig {
+  sessionIdleTimeoutSeconds: number;
+  sessionCleanupIntervalMs: number;
 }
 
 function parseOptionalBoolean(value: string | undefined): boolean | null {
@@ -48,5 +55,27 @@ export function createAppConfig(
     appSessionCookieSecure: secureOverride ?? overrides.NODE_ENV === "production",
     csrfTokenSecret: overrides.CSRF_TOKEN_SECRET?.trim() || environment.appSessionSecret,
     csrfTokenTtlSeconds: parseMinimumInteger(overrides.CSRF_TOKEN_TTL_SECONDS, 900, 60),
+    ...resolveSessionTiming(overrides),
+  };
+}
+
+export function resolveSessionTiming(overrides: NodeJS.ProcessEnv = process.env): SessionTimingConfig {
+  const sessionIdleTimeoutSeconds = parseMinimumInteger(
+    overrides.SESSION_IDLE_TIMEOUT_SECONDS,
+    900,
+    60,
+  );
+  const cleanupIntervalSeconds = parseMinimumInteger(
+    overrides.SESSION_CLEANUP_INTERVAL_SECONDS,
+    60,
+    1,
+  );
+
+  return {
+    sessionIdleTimeoutSeconds,
+    sessionCleanupIntervalMs: Math.min(
+      cleanupIntervalSeconds * 1000,
+      sessionIdleTimeoutSeconds * 1000,
+    ),
   };
 }
