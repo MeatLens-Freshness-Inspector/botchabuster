@@ -65,7 +65,7 @@ export function Simulator() {
 
           {scanning && (
             <>
-              <div className="absolute inset-x-0 top-0 z-20 h-1 animate-scan-line border-b-2 border-primary bg-primary/20" />
+              <div className="absolute inset-x-0 top-0 z-20 h-1 animate-scan-line border-b-2 border-primary bg-primary/20 motion-reduce:animate-none" />
               <div className="absolute left-4 top-4 h-6 w-6 border-l-2 border-t-2 border-primary" />
               <div className="absolute right-4 top-4 h-6 w-6 border-r-2 border-t-2 border-primary" />
               <div className="absolute bottom-4 left-4 h-6 w-6 border-b-2 border-l-2 border-primary" />
@@ -106,7 +106,7 @@ export function Simulator() {
         >
           {scanning ? (
             <span className="flex items-center gap-2">
-              <RefreshCcw className="h-4 w-4 animate-spin" /> Scanning...
+              <RefreshCcw className="h-4 w-4 animate-spin motion-reduce:animate-none" /> Scanning...
             </span>
           ) : (
             <span className="flex items-center gap-2">
