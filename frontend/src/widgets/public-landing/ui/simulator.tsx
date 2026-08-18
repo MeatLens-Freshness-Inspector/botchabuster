@@ -44,16 +44,17 @@ export function Simulator() {
   const activeSample = landingMockSamples[selectedIdx];
 
   return (
-    <div className="relative mx-auto w-full max-w-sm rounded-[2.5rem] border-[8px] border-border/60 bg-card/90 shadow-2xl backdrop-blur-xl">
-      <div className="absolute left-1/2 top-2 h-4 w-20 -translate-x-1/2 rounded-full bg-border/60" />
-
-      <div className="flex h-[580px] flex-col p-4 pt-8">
-        <div className="mb-4 text-center font-display text-xs uppercase tracking-widest text-muted-foreground">
+    <div className="relative mx-auto w-full max-w-sm border border-border bg-card shadow-xl shadow-background/20">
+      <div className="flex items-center justify-between border-b border-border/70 px-4 py-3">
+        <span className="font-display text-[10px] font-bold uppercase tracking-[0.18em] text-foreground">
           MeatLens Live Demo
-        </div>
+        </span>
+        <span className="h-2 w-2 rounded-full bg-primary" aria-label="Demo ready" />
+      </div>
 
-        <div className="relative mb-4 flex h-48 w-full items-center justify-center overflow-hidden rounded-2xl border border-border/80 bg-background/50 shadow-inner">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:12px_12px] opacity-20" />
+      <div className="flex min-h-[580px] flex-col p-4">
+
+        <div className="relative mb-4 flex h-48 w-full items-center justify-center overflow-hidden border border-border/80 bg-background">
 
           <div className="z-10 flex flex-col items-center justify-center space-y-2">
             <Camera className="h-10 w-10 text-muted-foreground/50" />
@@ -64,7 +65,7 @@ export function Simulator() {
 
           {scanning && (
             <>
-              <div className="absolute inset-0 z-20 animate-scan-line border-b-2 border-primary bg-gradient-to-b from-transparent to-primary/20 shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+              <div className="absolute inset-x-0 top-0 z-20 h-1 animate-scan-line border-b-2 border-primary bg-primary/20" />
               <div className="absolute left-4 top-4 h-6 w-6 border-l-2 border-t-2 border-primary" />
               <div className="absolute right-4 top-4 h-6 w-6 border-r-2 border-t-2 border-primary" />
               <div className="absolute bottom-4 left-4 h-6 w-6 border-b-2 border-l-2 border-primary" />
@@ -73,7 +74,7 @@ export function Simulator() {
           )}
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-2">
+        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {landingMockSamples.map((sample, index) => (
             <button
               key={sample.id}
@@ -85,9 +86,11 @@ export function Simulator() {
                 }
               }}
               disabled={scanning}
+              aria-pressed={selectedIdx === index}
+              aria-label={`Select ${sample.type} sample`}
               className={`flex items-center justify-center rounded-xl border p-2 font-display text-[10px] uppercase tracking-wider transition-all duration-200 ${selectedIdx === index
-                ? "border-primary bg-primary/10 text-primary shadow-sm"
-                : "border-border/50 bg-background/40 text-muted-foreground hover:bg-background/80"
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border/70 bg-background text-muted-foreground hover:bg-muted"
                 }`}
             >
               {sample.type}
@@ -112,7 +115,7 @@ export function Simulator() {
           )}
         </Button>
 
-        <div className="mt-auto h-32 rounded-2xl border border-border/70 bg-background/60 p-4 backdrop-blur-sm">
+        <div className="mt-auto min-h-32 border border-border/70 bg-background p-4" aria-live="polite">
           {scanning ? (
             <div className="flex h-full flex-col items-center justify-center space-y-3">
               <div className="font-display animate-pulse text-xs text-primary">
