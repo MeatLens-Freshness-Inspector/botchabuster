@@ -14,7 +14,6 @@ export function LogTicker() {
 
   return (
     <div className="relative mb-20 overflow-hidden border-y border-border/70 bg-card py-4">
-      <style>{`.meatlens-ticker-track { animation: ticker-scroll 28s linear infinite; } @media (prefers-reduced-motion: reduce) { .meatlens-ticker-track { animation: none; } }`}</style>
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-card to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-card to-transparent" />
 
@@ -24,8 +23,9 @@ export function LogTicker() {
 
       <div
         ref={trackRef}
-        className="meatlens-ticker-track flex gap-3 px-4 sm:px-6"
+        className="flex gap-3 px-4 sm:px-6"
         style={{
+          animation: "ticker-scroll 28s linear infinite",
           width: "max-content",
         }}
       >
