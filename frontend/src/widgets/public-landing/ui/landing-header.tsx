@@ -16,10 +16,10 @@ type LandingHeaderProps = {
 
 export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 border-b border-border/30 bg-background/60 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner ring-1 ring-primary/30">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-primary/40 bg-primary/10">
             <Fingerprint className="h-5 w-5 text-primary" />
           </div>
           <div>
@@ -69,7 +69,7 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-md"
+                className="rounded-md border border-border/70 bg-card"
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" />
@@ -77,9 +77,9 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="w-[85vw] max-w-xs border-border/40 bg-background/95 backdrop-blur-xl"
+              className="w-[85vw] max-w-xs border-border/70 bg-background"
             >
-              <SheetHeader className="mb-6 border-b border-border/30 pb-4 text-left">
+              <SheetHeader className="mb-6 border-b border-border/70 pb-4 text-left">
                 <SheetTitle className="font-display uppercase tracking-widest">Menu</SheetTitle>
               </SheetHeader>
               <div className="grid gap-3">
