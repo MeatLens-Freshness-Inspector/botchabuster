@@ -131,20 +131,12 @@ export class SessionLimitService {
 
     if (this.useDb) {
       const { supabase } = await import("../../../integrations/supabase");
-      const { data: expiredData, error: expiredError } = await (supabase.from("user_sessions") as any)
-        .delete()
-        .lte("expires_at", nowIso)
-        .select("id");
-      if (expiredError) throw new Error(`Failed to remove expired sessions: ${expiredError.message}`);
+      const { count, error } = await (supabase.from("user_sessions") as any)
+        .delete({ count: "exact" })
+        .or(`expires_at.lte.${nowIso},last_seen_at.lte.${idleCutoffIso}`);
+      if (error) throw new Error(`Failed to remove inactive sessions: ${error.message}`);
 
-      const { data: idleData, error: idleError } = await (supabase.from("user_sessions") as any)
-        .delete()
-        .lte("last_seen_at", idleCutoffIso)
-        .gt("expires_at", nowIso)
-        .select("id");
-      if (idleError) throw new Error(`Failed to remove inactive sessions: ${idleError.message}`);
-
-      return (expiredData?.length ?? 0) + (idleData?.length ?? 0);
+      return count ?? 0;
     }
 
     let removed = 0;
@@ -158,50 +150,62 @@ export class SessionLimitService {
     return removed;
   }
 
-  async pruneExpiredSessions(userId: string): Promise<void> {
+  async pruneInactiveSessions(userId: string, idleTimeoutSeconds: number): Promise<void> {
     const nowSeconds = this.nowSeconds();
+    const nowIso = new Date(nowSeconds * 1000).toISOString();
+    const idleCutoffIso = new Date((nowSeconds - idleTimeoutSeconds) * 1000).toISOString();
 
     if (this.useDb) {
       const { supabase } = await import("../../../integrations/supabase");
       const { error } = await (supabase.from("user_sessions") as any)
         .delete()
         .eq("user_id", userId)
-        .lt("expires_at", new Date(nowSeconds * 1000).toISOString());
+        .or(`expires_at.lte.${nowIso},last_seen_at.lte.${idleCutoffIso}`);
       if (error) throw new Error(`Failed to prune sessions: ${error.message}`);
       return;
     }
 
     for (const [hash, entry] of this.memStore) {
-      if (entry.userId === userId && entry.expiresAt <= nowSeconds) {
+      if (
+        entry.userId === userId &&
+        (entry.expiresAt <= nowSeconds || entry.lastSeenAt <= nowSeconds - idleTimeoutSeconds)
+      ) {
         this.memStore.delete(hash);
       }
     }
   }
 
-  async countActiveSessions(userId: string): Promise<number> {
+  async countActiveSessions(userId: string, idleTimeoutSeconds: number): Promise<number> {
     const nowSeconds = this.nowSeconds();
+    const nowIso = new Date(nowSeconds * 1000).toISOString();
+    const idleCutoffIso = new Date((nowSeconds - idleTimeoutSeconds) * 1000).toISOString();
 
     if (this.useDb) {
       const { supabase } = await import("../../../integrations/supabase");
       const { count, error } = await (supabase.from("user_sessions") as any)
         .select("id", { count: "exact", head: true })
         .eq("user_id", userId)
-        .gt("expires_at", new Date(nowSeconds * 1000).toISOString());
+        .gt("expires_at", nowIso)
+        .gt("last_seen_at", idleCutoffIso);
       if (error) throw new Error(`Failed to count sessions: ${error.message}`);
       return count ?? 0;
     }
 
     let active = 0;
     for (const entry of this.memStore.values()) {
-      if (entry.userId === userId && entry.expiresAt > nowSeconds) {
+      if (
+        entry.userId === userId &&
+        entry.expiresAt > nowSeconds &&
+        entry.lastSeenAt > nowSeconds - idleTimeoutSeconds
+      ) {
         active++;
       }
     }
     return active;
   }
 
-  async isAtLimit(userId: string): Promise<boolean> {
-    const count = await this.countActiveSessions(userId);
+  async isAtLimit(userId: string, idleTimeoutSeconds: number): Promise<boolean> {
+    const count = await this.countActiveSessions(userId, idleTimeoutSeconds);
     return count >= this.limit;
   }
 }

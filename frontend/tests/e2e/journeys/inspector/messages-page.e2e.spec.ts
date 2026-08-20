@@ -54,8 +54,54 @@ function jsonResponse(body: unknown, status = 200) {
   };
 }
 
+async function installMessageStreamMock(page: Page) {
+  await page.addInitScript(() => {
+    type StreamTestWindow = typeof window & {
+      __emitUserChatEvent?: (event: string, data: unknown) => void;
+      __userChatStreamOpenCount?: number;
+    };
+    const testWindow = window as StreamTestWindow;
+    const originalFetch = window.fetch.bind(window);
+    const encoder = new TextEncoder();
+    let streamController: ReadableStreamDefaultController<Uint8Array> | null = null;
+
+    testWindow.__userChatStreamOpenCount = 0;
+    testWindow.__emitUserChatEvent = (event, data) => {
+      streamController?.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+    };
+    window.fetch = async (input, init) => {
+      const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, location.href);
+      if (url.pathname !== "/api/user-chat/events") return originalFetch(input, init);
+
+      testWindow.__userChatStreamOpenCount = (testWindow.__userChatStreamOpenCount ?? 0) + 1;
+      const body = new ReadableStream<Uint8Array>({
+        start(controller) {
+          streamController = controller;
+          controller.enqueue(encoder.encode('event: status\ndata: {"state":"connected"}\n\n'));
+          init?.signal?.addEventListener("abort", () => {
+            if (streamController === controller) streamController = null;
+            try {
+              controller.close();
+            } catch {
+              // The stream may already be closed by page teardown.
+            }
+          }, { once: true });
+        },
+      });
+      return new Response(body, {
+        status: 200,
+        headers: { "Content-Type": "text/event-stream" },
+      });
+    };
+  });
+}
+
 async function mockMessagesApi(page: Page) {
-  const messageRequests: string[] = [];
+  const api = {
+    contactsRequests: 0,
+    messageRequests: [] as string[],
+    sendRequests: 0,
+  };
 
   await page.route("**/api/user-chat/**", async (route: Route) => {
     const request = route.request();
@@ -63,6 +109,7 @@ async function mockMessagesApi(page: Page) {
     const path = url.pathname;
 
     if (path === "/api/user-chat/contacts" && request.method() === "GET") {
+      api.contactsRequests += 1;
       await route.fulfill(jsonResponse(contacts));
       return;
     }
@@ -70,17 +117,30 @@ async function mockMessagesApi(page: Page) {
     const messageMatch = path.match(/^\/api\/user-chat\/messages\/([^/]+)$/);
     if (messageMatch && request.method() === "GET") {
       const counterpartyId = decodeURIComponent(messageMatch[1]);
-      messageRequests.push(counterpartyId);
+      api.messageRequests.push(counterpartyId);
       await route.fulfill(
         jsonResponse(messagesByContact[counterpartyId as keyof typeof messagesByContact] ?? []),
       );
       return;
     }
 
+    if (path === "/api/user-chat/messages" && request.method() === "POST") {
+      api.sendRequests += 1;
+      const body = request.postDataJSON() as { recipientId: string; content: string };
+      await route.fulfill(jsonResponse({
+        id: "message-sent",
+        sender_id: "user-1",
+        recipient_id: body.recipientId,
+        content: body.content,
+        created_at: "2026-07-02T04:00:00.000Z",
+      }, 201));
+      return;
+    }
+
     await route.fulfill(jsonResponse({ error: "Unhandled user-chat route", path }, 404));
   });
 
-  return { messageRequests };
+  return api;
 }
 
 async function openMessagesPage(
@@ -88,6 +148,7 @@ async function openMessagesPage(
   viewport: { width: number; height: number },
 ) {
   await page.setViewportSize(viewport);
+  await installMessageStreamMock(page);
   await seedSignedInSession(page, { userId: "user-1" });
   await mockCommonApi(page, { userId: "user-1" });
   const api = await mockMessagesApi(page);
@@ -141,4 +202,61 @@ test("desktop still auto-selects the first contact and loads its thread on first
   await expect(
     page.locator("p.whitespace-pre-wrap").filter({ hasText: "Need inspection support?" }),
   ).toBeVisible();
+});
+
+test("desktop receives realtime messages without polling and deduplicates sent echoes", async ({ page }) => {
+  const api = await openMessagesPage(page, { width: 1280, height: 900 });
+  await expect(page.getByRole("status")).toHaveText("Live updates connected");
+  await expect.poll(() => api.messageRequests.length).toBe(1);
+  expect(api.contactsRequests).toBe(1);
+
+  const realtimeMessage = {
+    id: "message-realtime",
+    sender_id: "admin-1",
+    recipient_id: "user-1",
+    content: "Realtime arrival",
+    created_at: "2026-07-02T03:30:00.000Z",
+  };
+  await page.evaluate((message) => {
+    (window as typeof window & { __emitUserChatEvent?: (event: string, data: unknown) => void })
+      .__emitUserChatEvent?.("message", message);
+  }, realtimeMessage);
+  await expect(
+    page.locator("p.whitespace-pre-wrap").filter({ hasText: /^Realtime arrival$/ }),
+  ).toBeVisible();
+
+  await page.waitForTimeout(6_500);
+  expect(api.contactsRequests).toBe(1);
+  expect(api.messageRequests).toEqual(["admin-1"]);
+
+  await page.getByPlaceholder(/Message Chief Admin/i).fill("Sent once");
+  await page.getByRole("button", { name: /^send$/i }).click();
+  const sentMessageBubble = page.locator("p.whitespace-pre-wrap").filter({ hasText: /^Sent once$/ });
+  await expect(sentMessageBubble).toBeVisible();
+  expect(api.sendRequests).toBe(1);
+  expect(api.contactsRequests).toBe(1);
+  expect(api.messageRequests).toEqual(["admin-1"]);
+
+  await page.evaluate(() => {
+    (window as typeof window & { __emitUserChatEvent?: (event: string, data: unknown) => void })
+      .__emitUserChatEvent?.("message", {
+        id: "message-sent",
+        sender_id: "user-1",
+        recipient_id: "admin-1",
+        content: "Sent once",
+        created_at: "2026-07-02T04:00:00.000Z",
+      });
+  });
+  await expect(sentMessageBubble).toHaveCount(1);
+
+  await page.getByRole("button", { name: /refresh messages/i }).click();
+  await expect.poll(() => api.contactsRequests).toBe(2);
+  await expect.poll(() => api.messageRequests.length).toBe(2);
+
+  await page.evaluate(() => {
+    (window as typeof window & { __emitUserChatEvent?: (event: string, data: unknown) => void })
+      .__emitUserChatEvent?.("status", { state: "realtime_unavailable" });
+  });
+  await expect(page.getByRole("status")).toHaveText("Live updates disconnected");
+  await expect(page.getByRole("button", { name: /^reconnect$/i })).toBeVisible();
 });

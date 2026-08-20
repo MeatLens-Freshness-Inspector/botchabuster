@@ -17,7 +17,7 @@ This is a monorepo containing two main applications:
 ## Quick Start
 
 ### Prerequisites
-- Node.js v18+
+- Node.js 22.x (the supported runtime range is >=22 <25)
 - npm v9+ (for workspace support)
 
 ### Installation

@@ -2,6 +2,7 @@ import type { Server } from "http";
 import { Config } from "./config";
 import { createApp } from "./app";
 import { createSessionCleanupService } from "./modules/auth/infrastructure/SessionCleanupService";
+import { chatRealtimeHub } from "./modules/chat/infrastructure/SupabaseChatRealtimeSource";
 
 const config = Config.getInstance();
 const app = createApp(config);
@@ -61,9 +62,61 @@ export function startServer(): Server {
     sessionCleanup.start();
   });
 
-  server.once("close", () => sessionCleanup.stop());
+  const shutdown = createGracefulShutdown(server, sessionCleanup, chatRealtimeHub);
+  const onSignal = () => {
+    void shutdown().catch((error) => console.error("[Shutdown] Failed to stop backend services:", error));
+  };
+  process.once("SIGTERM", onSignal);
+  process.once("SIGINT", onSignal);
+  server.once("close", () => {
+    process.off("SIGTERM", onSignal);
+    process.off("SIGINT", onSignal);
+    void stopServerServices(sessionCleanup, chatRealtimeHub).catch((error) => {
+      console.error("[Shutdown] Failed to stop backend services:", error);
+    });
+  });
   server.on("error", handleServerError);
   return server;
+}
+
+export function createGracefulShutdown(
+  server: Pick<Server, "close"> & Partial<Pick<Server, "closeAllConnections">>,
+  sessionCleanup: { stop(): void },
+  realtimeHub: { shutdown(): Promise<void> },
+  forceTimeoutMs = 10_000,
+): () => Promise<void> {
+  let shutdownPromise: Promise<void> | null = null;
+  return () => {
+    if (shutdownPromise) return shutdownPromise;
+    shutdownPromise = (async () => {
+      sessionCleanup.stop();
+      const serverClose = new Promise<void>((resolve) => {
+        server.close(() => resolve());
+      });
+      const realtimeStop = realtimeHub.shutdown();
+      let forceHandle: ReturnType<typeof setTimeout> | null = setTimeout(() => {
+        server.closeAllConnections?.();
+      }, forceTimeoutMs);
+      try {
+        await Promise.race([Promise.all([realtimeStop, serverClose]).then(() => undefined), new Promise<void>((resolve) => {
+          setTimeout(resolve, forceTimeoutMs + 100);
+        })]);
+      } finally {
+        if (forceHandle) clearTimeout(forceHandle);
+        forceHandle = null;
+        await realtimeStop;
+      }
+    })();
+    return shutdownPromise;
+  };
+}
+
+export async function stopServerServices(
+  sessionCleanup: { stop(): void },
+  realtimeHub: { shutdown(): Promise<void> },
+): Promise<void> {
+  sessionCleanup.stop();
+  await realtimeHub.shutdown();
 }
 
 if (require.main === module) {

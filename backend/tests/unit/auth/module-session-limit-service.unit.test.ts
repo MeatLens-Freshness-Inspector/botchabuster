@@ -6,6 +6,6 @@ test("module SessionLimitService enforces the configured active-session limit", 
   const service = new SessionLimitService(1, false);
   await service.registerSession("user-1", "token-1", Math.floor(Date.now() / 1000) + 60);
 
-  assert.equal(await service.isAtLimit("user-1"), true);
+  assert.equal(await service.isAtLimit("user-1", 900), true);
   assert.equal(await service.hasSession("token-1"), true);
 });

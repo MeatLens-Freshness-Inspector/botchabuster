@@ -19,6 +19,13 @@ export { default as chatRoutes } from "./presentation/routes";
 export { default as userChatRoutes } from "./presentation/user-chat-routes";
 export { ChatController } from "./presentation/controllers/ChatController";
 export { UserChatController } from "./presentation/controllers/UserChatController";
+export { ChatRealtimeHub } from "./infrastructure/ChatRealtimeHub";
+export { BufferedSseConnection } from "./infrastructure/BufferedSseConnection";
+export {
+  SupabaseChatRealtimeSource,
+  chatRealtimeHub,
+  supabaseChatRealtimeSource,
+} from "./infrastructure/SupabaseChatRealtimeSource";
 export type {
   ChatContact,
   ChatContactRepository,

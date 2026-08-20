@@ -21,6 +21,7 @@ export default function MessagesPage() {
     isLoadingContacts,
     isLoadingMessages,
     isSendingMessage,
+    messageStreamStatus,
     lastMessageRef,
     contactStats,
     showContactsPanel,
@@ -31,6 +32,7 @@ export default function MessagesPage() {
     handleRefreshContacts,
     handleSelectContact,
     handleSendMessage,
+    handleReconnectMessages,
   } = useMessages();
 
   if (!isOnlineAuthenticated || !messagesOnline) {
@@ -96,10 +98,12 @@ export default function MessagesPage() {
               isLoadingMessages={isLoadingMessages}
               isSendingMessage={isSendingMessage}
               draftMessage={draftMessage}
+              connectionStatus={messageStreamStatus}
               lastMessageRef={lastMessageRef}
               onBack={() => setMobilePanel("contacts")}
               onDraftChange={setDraftMessage}
               onSendMessage={handleSendMessage}
+              onReconnect={handleReconnectMessages}
             />
           )}
         </div>

@@ -13,6 +13,8 @@ services:
         - .npmrc
         - scripts/run-build.mjs
     envVars:
+      - key: NODE_VERSION
+        value: "22.22.0"
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_KEY

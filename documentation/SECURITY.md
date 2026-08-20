@@ -21,7 +21,7 @@ Use different values for development and production. Do not commit `.env` files,
 - Session tokens are hashed before device-limit tracking; raw tokens are not stored in the database.
 - Every accepted app-session request refreshes its server-side `last_seen_at` timestamp.
 - The backend periodically deletes idle or absolutely expired session rows; missing or stale rows are rejected and never re-registered by ordinary requests.
-- `SESSION_IDLE_TIMEOUT_SECONDS` defaults to 900 seconds and `SESSION_CLEANUP_INTERVAL_SECONDS` defaults to 60 seconds. The idle timeout never extends the JWT's absolute expiry.
+- `SESSION_IDLE_TIMEOUT_SECONDS` and `SESSION_CLEANUP_INTERVAL_SECONDS` both default to 900 seconds. Cleanup has a 300-second minimum and is not shortened to match the idle timeout; delayed row deletion never extends authorization or the JWT's absolute expiry.
 - Session expiry and the configured device limit are enforced before protected controllers run.
 
 ## CSRF and origins
@@ -46,6 +46,14 @@ Role context is resolved by the users module. The application distinguishes insp
 - IDs, pagination, cursor, classification, organization, and decision fields are validated before use.
 - Database calls use Supabase parameter binding and explicit projections.
 - Reads are bounded, ordered deterministically, and scoped by user/role.
+
+## Realtime chat boundary
+
+- Browsers authenticate `GET /api/user-chat/events` with the existing HttpOnly cookie or native bearer transport; tokens never appear in stream URLs.
+- The stream validates `Origin` explicitly before committing SSE headers and rotates at the earlier of absolute app-token expiry or one idle-timeout window.
+- The Supabase service key and Realtime channel remain backend-only. Insert events are delivered only when the server-authenticated user is the sender or recipient.
+- One backend instance accepts at most 100 streams and two per user, bounds each response queue to 100 events or 256 KiB, and stops reconnecting after 1, 2, 5, 15, and 30-second retries.
+- Authenticated message sends are limited to 30 per user per minute. Heartbeat comments do not perform authentication, touch session activity, or call Supabase.
 
 ## Headers and error responses
 

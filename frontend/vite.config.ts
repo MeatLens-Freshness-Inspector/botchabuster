@@ -55,11 +55,17 @@ export default defineConfig(({ mode }) => ({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
-          // Backend API GET requests — network-first so fresh data is preferred,
-          // but fall back to cache when offline (covers /inspections, /stats, /profiles)
+          // Authenticated SSE must never be cloned, cached, or replayed by Workbox.
+          {
+            urlPattern: ({ url }: { url: URL }) =>
+              url.pathname.endsWith("/api/user-chat/events"),
+            handler: "NetworkOnly",
+          },
+          // Backend API GET requests prefer fresh data with an offline cache fallback.
           {
             urlPattern: ({ url, request }: { url: URL; request: Request }) =>
               request.method === "GET" &&
+              !url.pathname.endsWith("/api/user-chat/events") &&
               (url.pathname.startsWith("/api/") ||
                 url.href.includes("/api/")),
             handler: "NetworkFirst",

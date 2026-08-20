@@ -10,7 +10,7 @@ function makeService(limit = 2) {
 test("allows the first session for a user", async () => {
   const svc = makeService(2);
   await svc.registerSession("user-1", "token-a", futureExpiry());
-  const count = await svc.countActiveSessions("user-1");
+  const count = await svc.countActiveSessions("user-1", 900);
   assert.equal(count, 1);
 });
 
@@ -18,21 +18,21 @@ test("allows up to the configured limit", async () => {
   const svc = makeService(2);
   await svc.registerSession("user-1", "token-a", futureExpiry());
   await svc.registerSession("user-1", "token-b", futureExpiry());
-  const count = await svc.countActiveSessions("user-1");
+  const count = await svc.countActiveSessions("user-1", 900);
   assert.equal(count, 2);
 });
 
 test("isAtLimit returns false when below limit", async () => {
   const svc = makeService(2);
   await svc.registerSession("user-1", "token-a", futureExpiry());
-  assert.equal(await svc.isAtLimit("user-1"), false);
+  assert.equal(await svc.isAtLimit("user-1", 900), false);
 });
 
 test("isAtLimit returns true when at or above limit", async () => {
   const svc = makeService(2);
   await svc.registerSession("user-1", "token-a", futureExpiry());
   await svc.registerSession("user-1", "token-b", futureExpiry());
-  assert.equal(await svc.isAtLimit("user-1"), true);
+  assert.equal(await svc.isAtLimit("user-1", 900), true);
 });
 
 test("removeSession decrements the active session count", async () => {
@@ -40,8 +40,8 @@ test("removeSession decrements the active session count", async () => {
   await svc.registerSession("user-1", "token-a", futureExpiry());
   await svc.registerSession("user-1", "token-b", futureExpiry());
   await svc.removeSession("token-a");
-  assert.equal(await svc.countActiveSessions("user-1"), 1);
-  assert.equal(await svc.isAtLimit("user-1"), false);
+  assert.equal(await svc.countActiveSessions("user-1", 900), 1);
+  assert.equal(await svc.isAtLimit("user-1", 900), false);
 });
 
 test("hasSession returns true only for active tracked tokens", async () => {
@@ -59,7 +59,7 @@ test("registering the same token twice is idempotent", async () => {
   await svc.registerSession("user-1", "token-a", futureExpiry());
   await svc.registerSession("user-1", "token-a", futureExpiry());
 
-  assert.equal(await svc.countActiveSessions("user-1"), 1);
+  assert.equal(await svc.countActiveSessions("user-1", 900), 1);
   assert.equal(await svc.hasSession("token-a"), true);
 });
 
@@ -74,8 +74,8 @@ test("expired sessions are not counted as active", async () => {
   const pastExpiry = Math.floor(Date.now() / 1000) - 1; // 1 second ago
   await svc.registerSession("user-1", "token-old", pastExpiry);
   await svc.registerSession("user-1", "token-new", futureExpiry());
-  await svc.pruneExpiredSessions("user-1");
-  assert.equal(await svc.countActiveSessions("user-1"), 1);
+  await svc.pruneInactiveSessions("user-1", 900);
+  assert.equal(await svc.countActiveSessions("user-1", 900), 1);
 });
 
 test("sessions are isolated per user", async () => {
@@ -84,15 +84,15 @@ test("sessions are isolated per user", async () => {
   await svc.registerSession("user-1", "token-b", futureExpiry());
   await svc.registerSession("user-2", "token-c", futureExpiry());
 
-  assert.equal(await svc.isAtLimit("user-1"), true);
-  assert.equal(await svc.isAtLimit("user-2"), false);
-  assert.equal(await svc.countActiveSessions("user-2"), 1);
+  assert.equal(await svc.isAtLimit("user-1", 900), true);
+  assert.equal(await svc.isAtLimit("user-2", 900), false);
+  assert.equal(await svc.countActiveSessions("user-2", 900), 1);
 });
 
 test("limit of 1 only allows a single session", async () => {
   const svc = makeService(1);
   await svc.registerSession("user-1", "token-a", futureExpiry());
-  assert.equal(await svc.isAtLimit("user-1"), true);
+  assert.equal(await svc.isAtLimit("user-1", 900), true);
 });
 
 test("touchSession accepts an active token and refreshes its last-seen state", async () => {
@@ -132,7 +132,34 @@ test("removeInactiveSessions deletes idle and absolutely expired tokens", async 
   await svc.registerSession("user-1", "token-expired", currentSeconds - 1);
 
   assert.equal(await svc.removeInactiveSessions(600), 2);
-  assert.equal(await svc.countActiveSessions("user-1"), 0);
+  assert.equal(await svc.countActiveSessions("user-1", 600), 0);
+});
+
+test("idle sessions neither count toward nor block a device slot", async () => {
+  let nowMs = 1_700_000_000_000;
+  const svc = new SessionLimitService(1, false, () => nowMs);
+  const initialSeconds = Math.floor(nowMs / 1000);
+
+  await svc.registerSession("user-1", "token-idle", initialSeconds + 3600);
+  nowMs += 601 * 1000;
+
+  assert.equal(await svc.countActiveSessions("user-1", 600), 0);
+  assert.equal(await svc.isAtLimit("user-1", 600), false);
+});
+
+test("pruneInactiveSessions removes only the requested user's idle and expired sessions", async () => {
+  let nowMs = 1_700_000_000_000;
+  const svc = new SessionLimitService(3, false, () => nowMs);
+  const initialSeconds = Math.floor(nowMs / 1000);
+
+  await svc.registerSession("user-1", "user-one-idle", initialSeconds + 3600);
+  await svc.registerSession("user-2", "user-two-idle", initialSeconds + 3600);
+  nowMs += 601 * 1000;
+
+  await svc.pruneInactiveSessions("user-1", 600);
+
+  assert.equal(await svc.hasSession("user-one-idle"), false);
+  assert.equal(await svc.hasSession("user-two-idle"), true);
 });
 
 // ---- helpers ----

@@ -4,6 +4,9 @@
   "description": "AI-powered meat freshness inspection for wet markets",
   "author": "Annah Claire B. Dimate",
   "private": true,
+  "engines": {
+    "node": ">=22 <25"
+  },
   "workspaces": [
     "frontend",
     "backend"
