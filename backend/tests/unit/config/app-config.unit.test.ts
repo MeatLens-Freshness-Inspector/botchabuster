@@ -59,3 +59,10 @@ test("createAppConfig honors explicit boolean security settings", () => {
   assert.equal(config.csrfTokenSecret, "csrf-secret");
   assert.equal(config.uploadDir, "./tmp/uploads");
 });
+
+test("caps cleanup intervals before Node's timer overflow threshold", () => {
+  const config = createAppConfig(environment, {
+    SESSION_CLEANUP_INTERVAL_SECONDS: "999999999",
+  });
+  assert.equal(config.sessionCleanupIntervalMs, 2_147_483_000);
+});
