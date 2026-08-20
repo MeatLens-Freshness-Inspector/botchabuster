@@ -27,3 +27,13 @@ test("scheduled workflows do not ping the production Render service", async () =
 test("Render retains its native lightweight health check", async () => {
   assert.match(await read("render.yaml"), /healthCheckPath:\s*\/api\/analysis\/health/);
 });
+
+test("Messages does not use recurring REST polling", async () => {
+  const modelDirectory = path.join(root, "frontend", "src", "features", "messaging", "model");
+  const sourceNames = (await readdir(modelDirectory)).filter((name) => /\.(?:ts|tsx)$/i.test(name));
+  const source = (await Promise.all(
+    sourceNames.map((name) => read(path.join("frontend", "src", "features", "messaging", "model", name))),
+  )).join("\n");
+
+  assert.doesNotMatch(source, /POLL_INTERVAL|setInterval\s*\(|\b6_000\b/);
+});
