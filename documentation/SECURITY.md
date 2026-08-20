@@ -21,7 +21,7 @@ Use different values for development and production. Do not commit `.env` files,
 - Session tokens are hashed before device-limit tracking; raw tokens are not stored in the database.
 - Every accepted app-session request refreshes its server-side `last_seen_at` timestamp.
 - The backend periodically deletes idle or absolutely expired session rows; missing or stale rows are rejected and never re-registered by ordinary requests.
-- `SESSION_IDLE_TIMEOUT_SECONDS` defaults to 900 seconds and `SESSION_CLEANUP_INTERVAL_SECONDS` defaults to 60 seconds. The idle timeout never extends the JWT's absolute expiry.
+- `SESSION_IDLE_TIMEOUT_SECONDS` and `SESSION_CLEANUP_INTERVAL_SECONDS` both default to 900 seconds. Cleanup has a 300-second minimum and is not shortened to match the idle timeout; delayed row deletion never extends authorization or the JWT's absolute expiry.
 - Session expiry and the configured device limit are enforced before protected controllers run.
 
 ## CSRF and origins

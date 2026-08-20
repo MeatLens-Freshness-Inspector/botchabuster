@@ -56,7 +56,7 @@ Optional values:
 APP_SESSION_TTL_SECONDS=28800
 CSRF_TOKEN_TTL_SECONDS=900
 SESSION_IDLE_TIMEOUT_SECONDS=900
-SESSION_CLEANUP_INTERVAL_SECONDS=60
+SESSION_CLEANUP_INTERVAL_SECONDS=900
 APP_SESSION_COOKIE_NAME=meatlens_session
 DEVELOPER_OPTIONS_PASSWORD=<strong-password>
 DEVELOPER_OPTIONS_TOKEN_SECRET=<token-secret>
@@ -66,6 +66,8 @@ SMTP_PASS=<smtp-app-password>
 ```
 
 Do not expose the service key, session secrets, audit key, SMTP password, or developer password to Netlify or browser code.
+
+Session cleanup accepts a minimum interval of 300 seconds and is intentionally independent from the idle timeout. A longer cleanup interval delays only physical row deletion; authenticated requests still reject an idle session immediately.
 
 ## Supabase release checklist
 

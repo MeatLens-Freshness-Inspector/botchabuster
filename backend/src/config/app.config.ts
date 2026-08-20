@@ -67,15 +67,12 @@ export function resolveSessionTiming(overrides: NodeJS.ProcessEnv = process.env)
   );
   const cleanupIntervalSeconds = parseMinimumInteger(
     overrides.SESSION_CLEANUP_INTERVAL_SECONDS,
-    60,
-    1,
+    900,
+    300,
   );
 
   return {
     sessionIdleTimeoutSeconds,
-    sessionCleanupIntervalMs: Math.min(
-      cleanupIntervalSeconds * 1000,
-      sessionIdleTimeoutSeconds * 1000,
-    ),
+    sessionCleanupIntervalMs: cleanupIntervalSeconds * 1000,
   };
 }

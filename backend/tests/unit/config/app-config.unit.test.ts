@@ -19,7 +19,7 @@ test("createAppConfig supplies bounded upload and security defaults", () => {
   assert.equal(config.csrfTokenSecret, "session-secret");
   assert.equal(config.appSessionCookieSecure, false);
   assert.equal(config.sessionIdleTimeoutSeconds, 900);
-  assert.equal(config.sessionCleanupIntervalMs, 60_000);
+  assert.equal(config.sessionCleanupIntervalMs, 900_000);
 });
 
 test("createAppConfig bounds and overrides session cleanup timing", () => {
@@ -29,7 +29,7 @@ test("createAppConfig bounds and overrides session cleanup timing", () => {
   });
 
   assert.equal(config.sessionIdleTimeoutSeconds, 600);
-  assert.equal(config.sessionCleanupIntervalMs, 30_000);
+  assert.equal(config.sessionCleanupIntervalMs, 300_000);
 
   const bounded = createAppConfig(environment, {
     SESSION_IDLE_TIMEOUT_SECONDS: "10",
@@ -37,7 +37,15 @@ test("createAppConfig bounds and overrides session cleanup timing", () => {
   });
 
   assert.equal(bounded.sessionIdleTimeoutSeconds, 60);
-  assert.equal(bounded.sessionCleanupIntervalMs, 60_000);
+  assert.equal(bounded.sessionCleanupIntervalMs, 300_000);
+
+  const independent = createAppConfig(environment, {
+    SESSION_IDLE_TIMEOUT_SECONDS: "60",
+    SESSION_CLEANUP_INTERVAL_SECONDS: "1200",
+  });
+
+  assert.equal(independent.sessionIdleTimeoutSeconds, 60);
+  assert.equal(independent.sessionCleanupIntervalMs, 1_200_000);
 });
 
 test("createAppConfig honors explicit boolean security settings", () => {
