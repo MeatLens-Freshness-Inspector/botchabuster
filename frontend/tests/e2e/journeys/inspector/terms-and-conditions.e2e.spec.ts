@@ -89,7 +89,7 @@ test("profile includes a terms and conditions reminder section", async ({ page }
 
   await page.goto("/profile");
 
-  await expect(page.getByText(/review the MeatLens terms/i)).toBeVisible();
+  await expect(page.getByText(/terms and conditions reminder/i)).toBeVisible();
   const viewTermsButton = page.getByRole("button", { name: /view terms and conditions/i }).first();
   await expect(viewTermsButton).toBeVisible();
 

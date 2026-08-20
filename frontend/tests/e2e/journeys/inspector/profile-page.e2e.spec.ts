@@ -222,25 +222,23 @@ test("renders the approved desktop grouping for profile sections", async ({ page
   await expect(primaryColumn.getByRole("heading", { name: "Tutorials" })).toBeVisible();
 
   await expect(secondaryColumn.getByRole("heading", { name: "Preferences and Account" })).toBeVisible();
-  await expect(
-    secondaryColumn.getByRole("heading", { name: "Legal" }),
-  ).toBeVisible();
+  await expect(secondaryColumn.getByRole("heading", { name: "Terms and Conditions Reminder" })).toBeVisible();
   await expect(secondaryColumn.getByRole("button", { name: "View Privacy Policy" })).toBeVisible();
 
   const detailedBox = await page.getByTestId("profile-detailed-info-card").boundingBox();
   const preferencesBox = await page.getByTestId("profile-preferences-account-card").boundingBox();
   const passkeysBox = await page.getByTestId("profile-passkeys-card").boundingBox();
-  const legalBox = await page.getByTestId("profile-legal-card").boundingBox();
+  const termsBox = await page.getByTestId("profile-terms-card").boundingBox();
 
   expect(detailedBox).not.toBeNull();
   expect(preferencesBox).not.toBeNull();
   expect((detailedBox?.x ?? 0) + 40).toBeLessThan(preferencesBox?.x ?? 0);
   expect(detailedBox?.height).toBe(preferencesBox?.height);
   expect(passkeysBox).not.toBeNull();
-  expect(legalBox).not.toBeNull();
-  expect((passkeysBox?.x ?? 0) + 40).toBeLessThan(legalBox?.x ?? 0);
-  expect(passkeysBox?.height).toBe(legalBox?.height);
-  expect(legalBox?.y ?? 0).toBeGreaterThanOrEqual(
+  expect(termsBox).not.toBeNull();
+  expect((passkeysBox?.x ?? 0) + 40).toBeLessThan(termsBox?.x ?? 0);
+  expect(passkeysBox?.height).toBe(termsBox?.height);
+  expect(termsBox?.y ?? 0).toBeGreaterThanOrEqual(
     (preferencesBox?.y ?? 0) + (preferencesBox?.height ?? 0) + 16,
   );
 });
@@ -253,7 +251,8 @@ test("renders the approved mobile section order", async ({ page }) => {
     "profile-detailed-info-card",
     "profile-passkeys-card",
     "profile-tutorials-card",
-    "profile-legal-card",
+    "profile-terms-card",
+    "profile-policy-card",
     "profile-preferences-account-card",
   ] as const;
 
