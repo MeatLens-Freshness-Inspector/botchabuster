@@ -9,7 +9,11 @@ const legacyGlobalsStylesPath = new URL("../../../src/index.css", import.meta.ur
 const legacyAppStylesPath = new URL("../../../src/App.css", import.meta.url);
 
 function sha256(path: URL): string {
-  return createHash("sha256").update(readFileSync(path)).digest("hex");
+  // Git checks these stylesheets out with LF on CI and may convert them to
+  // CRLF on Windows. Hash the canonical repository representation so the
+  // ownership contract is independent of the local checkout's line endings.
+  const canonical = readFileSync(path, "utf8").replace(/\r\n/g, "\n");
+  return createHash("sha256").update(canonical).digest("hex");
 }
 
 test("app owns global styles without changing their bytes or legacy cascade", () => {
@@ -19,10 +23,10 @@ test("app owns global styles without changing their bytes or legacy cascade", ()
   assert.equal(existsSync(legacyAppStylesPath), false);
   assert.equal(
     sha256(globalsStylesPath),
-    "d4879cecbb87e8efcfaf3c5644c1916d89e05943504d851c7fe9ed80676f636c",
+    "56f7272d5f44946ab5cc546c5f36ccbaef059dbb8d9201de0ab4903e844b5db4",
   );
   assert.equal(
     sha256(appStylesPath),
-    "1b75716b5511ad178574cd3e3656e5e8dd94544456944b4ff1d253c9ecc614d4",
+    "a0715e0a09edbd0fbde65816a75e0fa0fc8b314c5260c0768c19bf3aac22621a",
   );
 });
