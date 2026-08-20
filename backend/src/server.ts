@@ -71,6 +71,9 @@ export function startServer(): Server {
   server.once("close", () => {
     process.off("SIGTERM", onSignal);
     process.off("SIGINT", onSignal);
+    void stopServerServices(sessionCleanup, chatRealtimeHub).catch((error) => {
+      console.error("[Shutdown] Failed to stop backend services:", error);
+    });
   });
   server.on("error", handleServerError);
   return server;
