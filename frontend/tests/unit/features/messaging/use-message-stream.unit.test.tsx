@@ -70,6 +70,7 @@ test("opens only while visible and online, aborts on pause, and coalesces lifecy
   const root = createRoot(dom.container);
   const calls: Array<{ signal: AbortSignal }> = [];
   let gapCalls = 0;
+  let nowMs = 1_000;
   let latest: ReturnType<typeof useMessageStream> | null = null;
   const options: UseMessageStreamOptions = {
     enabled: true,
@@ -81,6 +82,7 @@ test("opens only while visible and online, aborts on pause, and coalesces lifecy
     onGap: async () => {
       gapCalls += 1;
     },
+    nowMs: () => nowMs,
   };
 
   try {
@@ -98,6 +100,11 @@ test("opens only while visible and online, aborts on pause, and coalesces lifecy
     await act(async () => window.dispatchEvent(new window.Event("focus")));
     await flush();
     assert.equal(calls.length, 2);
+    assert.equal(gapCalls, 1);
+
+    nowMs += 1_001;
+    await act(async () => window.dispatchEvent(new window.Event("focus")));
+    await flush();
     assert.equal(gapCalls, 2);
 
     await act(async () => dom.setOnline(false));

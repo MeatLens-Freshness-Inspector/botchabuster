@@ -10,10 +10,21 @@ function compareContacts(left: UserChatContact, right: UserChatContact): number 
   return rightActivity.localeCompare(leftActivity) || left.id.localeCompare(right.id);
 }
 
-function getCounterpartyId(message: UserChatMessage, currentUserId: string): string | null {
+export function getCounterpartyId(message: UserChatMessage, currentUserId: string): string | null {
   if (message.sender_id === currentUserId) return message.recipient_id;
   if (message.recipient_id === currentUserId) return message.sender_id;
   return null;
+}
+
+export function applyMessageJournalToContacts(
+  contacts: readonly UserChatContact[],
+  journal: ReadonlyMap<string, UserChatMessage>,
+  currentUserId: string,
+): UserChatContact[] {
+  return [...journal.values()].reduce(
+    (snapshot, message) => applyMessageToContacts(snapshot, message, currentUserId),
+    [...contacts],
+  );
 }
 
 export function upsertMessages(

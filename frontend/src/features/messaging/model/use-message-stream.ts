@@ -7,6 +7,7 @@ import {
 } from "@/entities/message";
 
 export const MESSAGE_STREAM_RETRY_DELAYS_MS = [1_000, 2_000, 5_000, 15_000, 30_000] as const;
+const ACTIVATION_REFRESH_COALESCE_MS = 1_000;
 export type MessageStreamStatus = "connecting" | "connected" | "disconnected";
 
 type ScheduledHandle = unknown;
@@ -24,6 +25,7 @@ export interface UseMessageStreamOptions {
   onGap: () => Promise<void> | void;
   schedule?: (callback: () => void, delayMs: number) => ScheduledHandle;
   cancelSchedule?: (handle: ScheduledHandle) => void;
+  nowMs?: () => number;
 }
 
 export interface MessageStreamController {
@@ -52,12 +54,14 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
     options.cancelSchedule ?? ((handle: ScheduledHandle) => window.clearTimeout(handle as number)),
   );
   const reconnectRef = useRef<() => void>(() => {});
+  const nowMsRef = useRef(options.nowMs ?? (() => Date.now()));
 
   openStreamRef.current = options.openStream ?? openMessageEventStream;
   onMessageRef.current = options.onMessage;
   onGapRef.current = options.onGap;
   scheduleRef.current = options.schedule ?? ((callback, delayMs) => window.setTimeout(callback, delayMs));
   cancelScheduleRef.current = options.cancelSchedule ?? ((handle) => window.clearTimeout(handle as number));
+  nowMsRef.current = options.nowMs ?? (() => Date.now());
 
   useEffect(() => {
     if (!options.enabled || typeof window === "undefined" || typeof document === "undefined") {
@@ -74,6 +78,7 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
     let localStatus: MessageStreamStatus = "disconnected";
     let gapPromise: Promise<void> | null = null;
     let recoverSnapshotOnReady = false;
+    let lastVisibilityRefreshAt = Number.NEGATIVE_INFINITY;
 
     const updateStatus = (nextStatus: MessageStreamStatus) => {
       localStatus = nextStatus;
@@ -170,13 +175,16 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
         pause(true);
         return;
       }
+      lastVisibilityRefreshAt = nowMsRef.current();
       resume(true);
     };
     const handleOffline = () => pause(true);
     const handleOnline = () => resume(true);
     const handleFocus = () => {
       if (!canStreamNow()) return;
-      void runGap();
+      if (nowMsRef.current() - lastVisibilityRefreshAt > ACTIVATION_REFRESH_COALESCE_MS) {
+        void runGap();
+      }
       if (localStatus === "disconnected") {
         pause(false);
         retryIndex = 0;

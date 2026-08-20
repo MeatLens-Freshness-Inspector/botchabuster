@@ -10,6 +10,8 @@ import { formatContactName } from "@/features/messaging/lib/formatters";
 import { resolveSelectedContactId } from "./view-state";
 import {
   applyMessageToContacts,
+  applyMessageJournalToContacts,
+  getCounterpartyId,
   isConversationMessage,
   mergeContactSnapshots,
   upsertMessages,
@@ -54,9 +56,14 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const selectedContactIdRef = useRef<string | null>(selectedContactId);
-  const contactsPromiseRef = useRef<Promise<void> | null>(null);
+  const contactsPromiseRef = useRef<{ identity: string; promise: Promise<void> } | null>(null);
   const snapshotPromiseRef = useRef<Promise<void> | null>(null);
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
+  const authIdentity = auth.isOnlineAuthenticated ? currentUserId : null;
+  const authIdentityRef = useRef(authIdentity);
+  const previousAuthIdentityRef = useRef(authIdentity);
+  const streamJournalRef = useRef(new Map<string, UserChatMessage>());
+  authIdentityRef.current = authIdentity;
   selectedContactIdRef.current = selectedContactId;
 
   const selectedContact = useMemo(
@@ -88,17 +95,24 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
   }, [contacts]);
 
   const loadContacts = useCallback((loadOptions?: LoadOptions): Promise<void> => {
-    if (!auth.isOnlineAuthenticated) {
+    const requestIdentity = authIdentity;
+    if (!requestIdentity) {
       setContacts([]);
       setIsLoadingContacts(false);
       return Promise.resolve();
     }
-    if (contactsPromiseRef.current) return contactsPromiseRef.current;
+    if (contactsPromiseRef.current?.identity === requestIdentity) return contactsPromiseRef.current.promise;
     if (!loadOptions?.silent) setIsLoadingContacts(true);
     const promise = (async () => {
       try {
         const snapshot = await client.getContacts();
-        setContacts((current) => mergeContactSnapshots(current, snapshot));
+        if (authIdentityRef.current === requestIdentity) {
+          setContacts((current) => applyMessageJournalToContacts(
+            mergeContactSnapshots(current, snapshot),
+            streamJournalRef.current,
+            requestIdentity,
+          ));
+        }
       } catch (error) {
         if (!loadOptions?.silent) {
           toast.error(error instanceof Error ? error.message : "Failed to load chat contacts");
@@ -107,14 +121,15 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
         if (!loadOptions?.silent) setIsLoadingContacts(false);
       }
     })().finally(() => {
-      if (contactsPromiseRef.current === promise) contactsPromiseRef.current = null;
+      if (contactsPromiseRef.current?.promise === promise) contactsPromiseRef.current = null;
     });
-    contactsPromiseRef.current = promise;
+    contactsPromiseRef.current = { identity: requestIdentity, promise };
     return promise;
   }, [auth.isOnlineAuthenticated, client]);
 
   const loadMessages = useCallback(async (counterpartyId: string, loadOptions?: LoadOptions) => {
-    if (!auth.isOnlineAuthenticated) {
+    const requestIdentity = authIdentity;
+    if (!requestIdentity) {
       setMessages([]);
       setIsLoadingMessages(false);
       return;
@@ -122,7 +137,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     if (!loadOptions?.silent) setIsLoadingMessages(true);
     try {
       const snapshot = await client.getMessages(counterpartyId);
-      if (selectedContactIdRef.current === counterpartyId) {
+      if (authIdentityRef.current === requestIdentity && selectedContactIdRef.current === counterpartyId) {
         setMessages((current) => upsertMessages(current, snapshot));
       }
     } catch (error) {
@@ -132,7 +147,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     } finally {
       if (!loadOptions?.silent) setIsLoadingMessages(false);
     }
-  }, [auth.isOnlineAuthenticated, client]);
+  }, [authIdentity, client]);
 
   const refreshSnapshot = useCallback((loadOptions: LoadOptions = { silent: true }): Promise<void> => {
     if (snapshotPromiseRef.current) return snapshotPromiseRef.current;
@@ -148,13 +163,20 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
   }, [loadContacts, loadMessages]);
 
   const applyIncomingMessage = useCallback((message: UserChatMessage) => {
-    if (!currentUserId) return;
-    setContacts((current) => applyMessageToContacts(current, message, currentUserId));
-    const counterpartyId = selectedContactIdRef.current;
-    if (counterpartyId && isConversationMessage(message, currentUserId, counterpartyId)) {
+    if (!authIdentity) return;
+    const counterpartyId = getCounterpartyId(message, authIdentity);
+    if (counterpartyId) {
+      const previous = streamJournalRef.current.get(counterpartyId);
+      if (!previous || previous.created_at.localeCompare(message.created_at) <= 0) {
+        streamJournalRef.current.set(counterpartyId, message);
+      }
+    }
+    setContacts((current) => applyMessageToContacts(current, message, authIdentity));
+    const selectedCounterpartyId = selectedContactIdRef.current;
+    if (selectedCounterpartyId && isConversationMessage(message, authIdentity, selectedCounterpartyId)) {
       setMessages((current) => upsertMessages(current, [message]));
     }
-  }, [currentUserId]);
+  }, [authIdentity]);
 
   const messageStream = useMessageStream({
     enabled: auth.isOnlineAuthenticated,
@@ -162,6 +184,20 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     onMessage: applyIncomingMessage,
     onGap: () => refreshSnapshot({ silent: true }),
   });
+
+  useEffect(() => {
+    if (previousAuthIdentityRef.current === authIdentity) return;
+    previousAuthIdentityRef.current = authIdentity;
+    streamJournalRef.current.clear();
+    contactsPromiseRef.current = null;
+    snapshotPromiseRef.current = null;
+    selectedContactIdRef.current = null;
+    setContacts([]);
+    setMessages([]);
+    setSelectedContactId(null);
+    setIsLoadingContacts(Boolean(authIdentity));
+    setIsLoadingMessages(false);
+  }, [authIdentity]);
 
   useEffect(() => {
     if (!auth.isOnlineAuthenticated) {
@@ -175,14 +211,15 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
   }, [auth.isOnlineAuthenticated, loadContacts]);
 
   useEffect(() => {
-    setSelectedContactId((currentId) =>
-      resolveSelectedContactId(contacts, currentId, isDesktop),
-    );
+    const nextId = resolveSelectedContactId(contacts, selectedContactIdRef.current, isDesktop);
+    if (nextId === selectedContactIdRef.current) return;
+    selectedContactIdRef.current = nextId;
+    setMessages([]);
+    setSelectedContactId(nextId);
   }, [contacts, isDesktop]);
 
   useEffect(() => {
     selectedContactIdRef.current = selectedContactId;
-    setMessages([]);
     if (auth.isOnlineAuthenticated && selectedContactId) void loadMessages(selectedContactId);
   }, [auth.isOnlineAuthenticated, loadMessages, selectedContactId]);
 
@@ -232,6 +269,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
 
   const handleSelectContact = useCallback((contactId: string) => {
     selectedContactIdRef.current = contactId;
+    setMessages([]);
     setSelectedContactId(contactId);
     if (!isDesktop) setMobilePanel("thread");
   }, [isDesktop]);
