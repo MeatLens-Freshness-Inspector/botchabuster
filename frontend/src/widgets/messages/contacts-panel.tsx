@@ -39,7 +39,7 @@ export function ContactsPanel({
             className="h-8 w-8 rounded-xl"
             onClick={() => void onRefresh()}
             disabled={isLoadingContacts}
-            aria-label="Refresh contacts"
+            aria-label="Refresh messages"
           >
             <RefreshCw className={`h-4 w-4 ${isLoadingContacts ? "animate-spin" : ""}`} />
           </Button>

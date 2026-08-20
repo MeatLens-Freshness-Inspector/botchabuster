@@ -47,6 +47,14 @@ Role context is resolved by the users module. The application distinguishes insp
 - Database calls use Supabase parameter binding and explicit projections.
 - Reads are bounded, ordered deterministically, and scoped by user/role.
 
+## Realtime chat boundary
+
+- Browsers authenticate `GET /api/user-chat/events` with the existing HttpOnly cookie or native bearer transport; tokens never appear in stream URLs.
+- The stream validates `Origin` explicitly before committing SSE headers and rotates at the earlier of absolute app-token expiry or one idle-timeout window.
+- The Supabase service key and Realtime channel remain backend-only. Insert events are delivered only when the server-authenticated user is the sender or recipient.
+- One backend instance accepts at most 100 streams and two per user, bounds each response queue to 100 events or 256 KiB, and stops reconnecting after 1, 2, 5, 15, and 30-second retries.
+- Authenticated message sends are limited to 30 per user per minute. Heartbeat comments do not perform authentication, touch session activity, or call Supabase.
+
 ## Headers and error responses
 
 The app applies `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Cross-Origin-Opener-Policy`, and `Origin-Agent-Cluster`. The global error handler returns stable operational errors and hides unexpected internal details.

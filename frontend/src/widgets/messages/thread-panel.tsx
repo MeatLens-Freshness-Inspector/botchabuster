@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { ArrowLeft, Loader2, Send } from "lucide-react";
+import { ArrowLeft, Loader2, RefreshCw, Send } from "lucide-react";
 import { Button } from "@/shared/ui";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Input } from "@/shared/ui";
@@ -17,10 +17,12 @@ type ThreadPanelProps = {
   isLoadingMessages: boolean;
   isSendingMessage: boolean;
   draftMessage: string;
+  connectionStatus: "connecting" | "connected" | "disconnected";
   lastMessageRef: RefObject<HTMLDivElement | null>;
   onBack: () => void;
   onDraftChange: (value: string) => void;
   onSendMessage: () => void | Promise<void>;
+  onReconnect: () => void;
 };
 
 export function ThreadPanel({
@@ -31,11 +33,19 @@ export function ThreadPanel({
   isLoadingMessages,
   isSendingMessage,
   draftMessage,
+  connectionStatus,
   lastMessageRef,
   onBack,
   onDraftChange,
   onSendMessage,
+  onReconnect,
 }: ThreadPanelProps) {
+  const connectionCopy = connectionStatus === "connected"
+    ? "Live updates connected"
+    : connectionStatus === "connecting"
+      ? "Connecting live updates"
+      : "Live updates disconnected";
+
   return (
     <section className="min-w-0 rounded-3xl border border-border/70 bg-card/92 p-4 lg:flex lg:max-h-[calc(100dvh-24rem)] lg:min-h-[560px] lg:flex-col">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -54,9 +64,29 @@ export function ThreadPanel({
           )}
           <h2 className="font-display text-base font-semibold">Conversation Thread</h2>
         </div>
-        <span className="rounded-full border border-border/70 bg-background/55 px-3 py-1 text-[11px] uppercase tracking-widest text-muted-foreground">
-          {messages.length} messages
-        </span>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <span
+            role="status"
+            className="rounded-full border border-border/70 bg-background/55 px-3 py-1 text-[11px] uppercase tracking-widest text-muted-foreground"
+          >
+            {connectionCopy}
+          </span>
+          {connectionStatus === "disconnected" ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1.5 rounded-xl px-3 text-xs"
+              onClick={onReconnect}
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              Reconnect
+            </Button>
+          ) : null}
+          <span className="rounded-full border border-border/70 bg-background/55 px-3 py-1 text-[11px] uppercase tracking-widest text-muted-foreground">
+            {messages.length} messages
+          </span>
+        </div>
       </div>
 
       <Card className="mt-3 flex min-h-[52vh] flex-col overflow-hidden rounded-2xl border-border/70 bg-background/55 lg:min-h-0 lg:flex-1">

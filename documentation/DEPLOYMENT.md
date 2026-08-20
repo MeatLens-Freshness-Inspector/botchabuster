@@ -96,4 +96,12 @@ The repository workflow is path-aware and keeps deployment independent of paid i
 - frontend unit, component, integration, and critical Playwright gates; and
 - a final quality-gate job that summarizes all lanes and fails on any failure or cancellation.
 
-Documentation-only changes run the documentation validator and skip the expensive application lanes. Scheduled and manual runs additionally execute infrastructure checks and the full Playwright suite. Keep preview deploy hooks optional; deployment does not depend on them. A hosted ping may be used to prevent an idle Render instance, but it is operational convenience rather than a backend dependency.
+Documentation-only changes run the documentation validator and skip the expensive application lanes. Scheduled and manual runs additionally execute infrastructure checks and the full Playwright suite. Keep preview deploy hooks optional; deployment does not depend on them.
+
+## Free-tier request budget
+
+Do not configure GitHub Actions, cron-job.org, UptimeRobot, or another hosted monitor to ping the production Render service inside its idle window. `render.yaml` keeps Render's native `/api/analysis/health` readiness check, but repository-controlled traffic must allow a free web service to spin down. A legitimate request may therefore experience a normal Render cold start.
+
+While the backend is running, tracked-session cleanup starts once and then issues one combined Supabase delete every 900 seconds (96 scheduled requests per day at most). It makes no requests while Render is spun down.
+
+Messages use one authenticated browser event stream only while the Messages screen is visible and online. The backend lazily shares one Supabase Realtime channel across active stream clients and removes it after the final client leaves. Opening, selecting, focusing, reconnecting, sending, and manual refresh may issue bounded REST requests; no interval polling or REST fallback is used.
