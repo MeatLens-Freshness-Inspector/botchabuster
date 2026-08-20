@@ -210,3 +210,36 @@ test("ignores an authenticated contacts response that resolves after logout", as
     dom.cleanup();
   }
 });
+
+test("ignores a send response that resolves after logout", async () => {
+  const dom = installDom();
+  const root = createRoot(dom.container);
+  const workflowRef: { current: MessagesWorkflow | null } = { current: null };
+  let resolveSend!: (message: UserChatMessage) => void;
+  const base = baseOptions();
+  const options = {
+    ...base.options,
+    client: {
+      ...base.options.client,
+      sendMessage: () => new Promise<UserChatMessage>((resolve) => { resolveSend = resolve; }),
+    },
+  };
+  try {
+    await act(async () => root.render(<Harness workflowRef={workflowRef} options={options} />));
+    await flush();
+    await act(async () => {
+      workflowRef.current!.handleSelectContact("admin-b");
+      workflowRef.current!.setDraftMessage("late");
+      await Promise.resolve();
+    });
+    const pending = act(async () => workflowRef.current!.handleSendMessage());
+    await act(async () => root.render(<Harness workflowRef={workflowRef} options={{ ...options, auth: { ...options.auth, isOnlineAuthenticated: false } }} />));
+    resolveSend(messageForB);
+    await pending;
+    await flush();
+    assert.deepEqual(workflowRef.current!.messages, []);
+  } finally {
+    await act(async () => root.unmount());
+    dom.cleanup();
+  }
+});

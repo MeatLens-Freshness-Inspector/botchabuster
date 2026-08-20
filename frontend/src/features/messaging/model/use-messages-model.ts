@@ -163,7 +163,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
   }, [loadContacts, loadMessages]);
 
   const applyIncomingMessage = useCallback((message: UserChatMessage) => {
-    if (!authIdentity) return;
+    if (!authIdentity || authIdentityRef.current !== authIdentity) return;
     const counterpartyId = getCounterpartyId(message, authIdentity);
     if (counterpartyId) {
       const previous = streamJournalRef.current.get(counterpartyId);
