@@ -67,7 +67,7 @@ export class ChatRealtimeHub {
     this.cancelSchedule = options.cancelSchedule ?? ((handle) => clearTimeout(handle as NodeJS.Timeout));
   }
 
-  async connect(client: ChatStreamClient): Promise<() => Promise<void>> {
+  connect(client: ChatStreamClient): () => Promise<void> {
     if (this.shuttingDown) throw new Error("Chat realtime hub is shutting down");
 
     this.evictOldestUserClientIfNeeded(client.userId);
@@ -80,7 +80,13 @@ export class ChatRealtimeHub {
       this.retriesExhausted = false;
       this.retryIndex = 0;
     }
-    await this.ensureSourceStarted();
+    if (this.stopSource) {
+      queueMicrotask(() => {
+        if (this.clients.has(client.id)) client.send("status", { state: "connected" });
+      });
+    } else {
+      void this.ensureSourceStarted();
+    }
 
     let disconnected = false;
     return async () => {

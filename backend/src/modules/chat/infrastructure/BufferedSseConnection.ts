@@ -49,8 +49,15 @@ export class BufferedSseConnection implements ChatStreamClient {
 
   send(event: ChatStreamEvent, data: unknown): boolean {
     if (this.closed) return false;
+    return this.sendFrame(formatSseEvent(event, data));
+  }
 
-    const frame = formatSseEvent(event, data);
+  sendComment(comment: string): boolean {
+    if (this.closed) return false;
+    return this.sendFrame(`: ${comment}\n\n`);
+  }
+
+  private sendFrame(frame: string): boolean {
     if (!this.waitingForDrain && this.queue.length === 0) {
       if (!this.writer.write(frame)) this.waitForDrain();
       return true;

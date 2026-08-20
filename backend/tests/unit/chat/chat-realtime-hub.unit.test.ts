@@ -115,7 +115,7 @@ test("evicts the oldest stream for a user while enforcing the total stream cap",
   await hub.connect(newest);
 
   assert.deepEqual(closed, ["replaced_by_newer_stream"]);
-  await assert.rejects(
+  assert.throws(
     () => hub.connect(createClient("other", "user-2").client),
     (error: unknown) => error instanceof ChatConnectionLimitError && error.scope === "instance",
   );
@@ -143,6 +143,7 @@ test("upstream recovery uses the five bounded delays and then reports unavailabl
   };
 
   await hub.connect(client);
+  await new Promise<void>((resolve) => setImmediate(resolve));
   for (let index = 0; index < CHAT_RETRY_DELAYS_MS.length; index += 1) {
     assert.equal(scheduled[index].delay, CHAT_RETRY_DELAYS_MS[index]);
     scheduled[index].callback();
