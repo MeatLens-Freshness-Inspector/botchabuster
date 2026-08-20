@@ -131,20 +131,12 @@ export class SessionLimitService {
 
     if (this.useDb) {
       const { supabase } = await import("../../../integrations/supabase");
-      const { data: expiredData, error: expiredError } = await (supabase.from("user_sessions") as any)
-        .delete()
-        .lte("expires_at", nowIso)
-        .select("id");
-      if (expiredError) throw new Error(`Failed to remove expired sessions: ${expiredError.message}`);
+      const { count, error } = await (supabase.from("user_sessions") as any)
+        .delete({ count: "exact" })
+        .or(`expires_at.lte.${nowIso},last_seen_at.lte.${idleCutoffIso}`);
+      if (error) throw new Error(`Failed to remove inactive sessions: ${error.message}`);
 
-      const { data: idleData, error: idleError } = await (supabase.from("user_sessions") as any)
-        .delete()
-        .lte("last_seen_at", idleCutoffIso)
-        .gt("expires_at", nowIso)
-        .select("id");
-      if (idleError) throw new Error(`Failed to remove inactive sessions: ${idleError.message}`);
-
-      return (expiredData?.length ?? 0) + (idleData?.length ?? 0);
+      return count ?? 0;
     }
 
     let removed = 0;
