@@ -124,7 +124,7 @@ export class ChatEventsController {
 
       res.status(200).set({
         "Content-Type": "text/event-stream; charset=utf-8",
-        "Cache-Control": "no-cache, no-transform",
+        "Cache-Control": "no-store, no-transform",
         Connection: "keep-alive",
         "X-Accel-Buffering": "no",
       });

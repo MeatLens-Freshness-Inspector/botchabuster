@@ -134,7 +134,7 @@ test("writes secure SSE headers, heartbeats, and rotates without repeated auth a
 
   assert.equal(response.statusCode, 200);
   assert.equal(response.headers.get("content-type"), "text/event-stream; charset=utf-8");
-  assert.equal(response.headers.get("cache-control"), "no-cache, no-transform");
+  assert.equal(response.headers.get("cache-control"), "no-store, no-transform");
   assert.equal(response.headers.get("connection"), "keep-alive");
   assert.equal(response.headers.get("x-accel-buffering"), "no");
   assert.equal(response.flushes, 1);
