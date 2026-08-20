@@ -87,10 +87,10 @@ export function createGracefulShutdown(
     if (shutdownPromise) return shutdownPromise;
     shutdownPromise = (async () => {
       sessionCleanup.stop();
-      const realtimeStop = realtimeHub.shutdown();
       const serverClose = new Promise<void>((resolve) => {
         server.close(() => resolve());
       });
+      const realtimeStop = realtimeHub.shutdown();
       let forceHandle: ReturnType<typeof setTimeout> | null = setTimeout(() => {
         server.closeAllConnections?.();
       }, forceTimeoutMs);

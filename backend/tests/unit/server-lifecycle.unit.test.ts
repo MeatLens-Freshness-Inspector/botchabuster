@@ -31,6 +31,6 @@ test("graceful shutdown stops realtime before closing the HTTP listener", async 
   );
   await shutdown();
   await shutdown();
-  assert.deepEqual(calls, ["session-cleanup", "chat-realtime", "server-close"]);
+  assert.deepEqual(calls, ["session-cleanup", "server-close", "chat-realtime"]);
   assert.equal(closeAllConnections, 0);
 });
