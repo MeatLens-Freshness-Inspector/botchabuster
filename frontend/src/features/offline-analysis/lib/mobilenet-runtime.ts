@@ -3,7 +3,6 @@ import {
   buildImageTensorData,
   classifyRecommendation,
   computeFreshnessScore,
-  normalizeClassificationLabel,
   normalizeModelProbabilities,
   parsePrediction,
   resolveInputSize,
@@ -14,6 +13,12 @@ import {
   type MeatLensModelMetadata,
   type SquareGuideBox,
 } from "./meat-lens-pipeline";
+import {
+  deriveInputLayout,
+  deriveOutputClassCount,
+  parseExplicitClassLabels,
+  sanitizeModelMetadata,
+} from "./mobilenet-runtime-shapes";
 import {
   MobileNetSession,
   type MobileNetModelVariant,
@@ -58,14 +63,6 @@ if (ENV_METADATA_PATH.length > 0 && !ENV_MOBILE_METADATA_PATH) {
 
 const FALLBACK_IMAGE_SIZE = 224;
 const RETRY_INTERVAL_MS = 15_000;
-const LEGACY_ALLOWED_LABELS = new Set<FreshnessClassification>([
-  "fresh",
-  "not fresh",
-  "spoiled",
-  "acceptable",
-  "warning",
-]);
-
 interface ModelAssetProfile {
   variant: MobileNetModelVariant;
   displayName: string;
@@ -166,24 +163,6 @@ const MODEL_ASSET_PROFILES: Record<MobileNetModelVariant, ModelAssetProfile> = {
 type OrtModule = typeof import("onnxruntime-web");
 type OnnxSession = MobileNetOnnxSession;
 
-interface InputLayout {
-  inputName: string;
-  channelsFirst: boolean;
-  width: number;
-  height: number;
-}
-
-interface NodeMetadataLike {
-  shape?: ReadonlyArray<number | string>;
-  dimensions?: unknown[];
-  dims?: unknown[];
-}
-
-interface SessionMetadataShape {
-  inputMetadata?: Record<string, NodeMetadataLike> | NodeMetadataLike[];
-  outputMetadata?: Record<string, NodeMetadataLike> | NodeMetadataLike[];
-}
-
 export interface ModelPredictionResult {
   classification: FreshnessClassification;
   confidence: number;
@@ -259,137 +238,6 @@ export function getActiveModelPreprocessContract(): ModelPreprocessContract {
   return getModelProfile(modelSession.activeModelVariant).preprocessContract;
 }
 
-function isPositiveNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value) && value > 0;
-}
-
-function normalizeDimension(value: unknown, fallback: number): number {
-  if (isPositiveNumber(value)) {
-    return Math.round(value);
-  }
-  if (typeof value === "bigint" && value > 0n) {
-    return Number(value);
-  }
-  return fallback;
-}
-
-function resolveMetadataEntry(
-  metadata: Record<string, NodeMetadataLike> | NodeMetadataLike[] | undefined,
-  preferredName?: string
-): NodeMetadataLike | undefined {
-  if (!metadata) {
-    return undefined;
-  }
-
-  if (Array.isArray(metadata)) {
-    return metadata[0];
-  }
-
-  if (preferredName && metadata[preferredName]) {
-    return metadata[preferredName];
-  }
-
-  const firstKey = Object.keys(metadata)[0];
-  return firstKey ? metadata[firstKey] : undefined;
-}
-
-function resolveMetadataDims(metadata: NodeMetadataLike | undefined): ReadonlyArray<number | string> {
-  if (!metadata) {
-    return [];
-  }
-
-  if (Array.isArray(metadata.shape)) {
-    return metadata.shape;
-  }
-
-  if (Array.isArray(metadata.dimensions)) {
-    return metadata.dimensions as ReadonlyArray<number | string>;
-  }
-
-  if (Array.isArray(metadata.dims)) {
-    return metadata.dims as ReadonlyArray<number | string>;
-  }
-
-  return [];
-}
-
-function deriveInputLayout(activeSession: OnnxSession, fallbackSize: number): InputLayout {
-  const inputName = activeSession.inputNames?.[0];
-  if (!inputName) {
-    throw new Error("ONNX model has no input tensor.");
-  }
-
-  const sessionMetadata = activeSession as unknown as SessionMetadataShape;
-  const inputMetadata = resolveMetadataEntry(sessionMetadata.inputMetadata, inputName);
-  const dims = resolveMetadataDims(inputMetadata);
-
-  if (!Array.isArray(dims) || dims.length < 4) {
-    return {
-      inputName,
-      channelsFirst: true,
-      width: fallbackSize,
-      height: fallbackSize,
-    };
-  }
-
-  const d1 = normalizeDimension(dims[1], fallbackSize);
-  const d2 = normalizeDimension(dims[2], fallbackSize);
-  const d3 = normalizeDimension(dims[3], fallbackSize);
-
-  if (d1 === 3) {
-    return { inputName, channelsFirst: true, height: d2, width: d3 };
-  }
-
-  if (d3 === 3) {
-    return { inputName, channelsFirst: false, height: d1, width: d2 };
-  }
-
-  return {
-    inputName,
-    channelsFirst: true,
-    width: d3,
-    height: d2,
-  };
-}
-
-function deriveOutputClassCount(activeSession: OnnxSession): number | null {
-  const sessionMetadata = activeSession as unknown as SessionMetadataShape;
-  const firstOutputName = activeSession.outputNames?.[0];
-  const outputMetadata = resolveMetadataEntry(sessionMetadata.outputMetadata, firstOutputName);
-  const dims = resolveMetadataDims(outputMetadata);
-  if (!Array.isArray(dims) || dims.length === 0) {
-    return null;
-  }
-
-  const lastDim = dims[dims.length - 1];
-  const classCount = normalizeDimension(lastDim, -1);
-  return classCount > 0 ? classCount : null;
-}
-
-function parseExplicitClassLabels(): FreshnessClassification[] | null {
-  if (!ENV_CLASS_LABELS) {
-    return null;
-  }
-
-  const parsed = ENV_CLASS_LABELS
-    .split(",")
-    .map((value) => normalizeClassificationLabel(value))
-    .filter(Boolean);
-
-  if (parsed.length === 0) {
-    return null;
-  }
-
-  if (!parsed.every((label) => LEGACY_ALLOWED_LABELS.has(label))) {
-    console.warn(
-      `[Model][ONNX] Ignoring class labels from env because they contain invalid labels.`
-    );
-    return null;
-  }
-
-  return parsed;
-}
-
 async function loadImage(file: File): Promise<HTMLImageElement> {
   const url = URL.createObjectURL(file);
 
@@ -440,37 +288,6 @@ function buildCroppedImageData(
   return context.getImageData(0, 0, targetWidth, targetHeight);
 }
 
-function sanitizeMetadata(
-  payload: unknown,
-  defaultMetadata: MeatLensModelMetadata
-): MeatLensModelMetadata {
-  if (!payload || typeof payload !== "object") {
-    return { ...defaultMetadata };
-  }
-
-  const candidate = payload as Record<string, unknown>;
-  const labelOrder = Array.isArray(candidate.label_order)
-    ? candidate.label_order.map((value) => String(value)).map((value) => normalizeClassificationLabel(value))
-    : undefined;
-
-  return {
-    backbone: typeof candidate.backbone === "string" ? candidate.backbone : defaultMetadata.backbone,
-    preprocess_function_name:
-      typeof candidate.preprocess_function_name === "string"
-        ? candidate.preprocess_function_name
-        : defaultMetadata.preprocess_function_name,
-    input_size:
-      typeof candidate.input_size === "number" || Array.isArray(candidate.input_size)
-        ? (candidate.input_size as MeatLensModelMetadata["input_size"])
-        : defaultMetadata.input_size,
-    image_crop_mode:
-      typeof candidate.image_crop_mode === "string"
-        ? candidate.image_crop_mode
-        : defaultMetadata.image_crop_mode,
-    label_order: labelOrder && labelOrder.length > 0 ? labelOrder : defaultMetadata.label_order,
-  };
-}
-
 async function loadModelMetadata(profile: ModelAssetProfile): Promise<MeatLensModelMetadata> {
   if (metadataPromise && metadataPromiseVariant === profile.variant) {
     return metadataPromise;
@@ -490,7 +307,7 @@ async function loadModelMetadata(profile: ModelAssetProfile): Promise<MeatLensMo
         }
 
         const metadataJson = await response.json();
-        const parsedMetadata = sanitizeMetadata(metadataJson, profile.defaultMetadata);
+        const parsedMetadata = sanitizeModelMetadata(metadataJson, profile.defaultMetadata);
         console.info(`[Model][ONNX] Loaded metadata from ${path}`);
         return parsedMetadata;
       } catch {
@@ -667,7 +484,7 @@ export async function classifyWithMobileNetV3(
       return null;
     }
 
-    const explicitLabels = parseExplicitClassLabels();
+    const explicitLabels = parseExplicitClassLabels(ENV_CLASS_LABELS);
     const classLabels =
       explicitLabels?.length === usableClassCount
         ? explicitLabels
