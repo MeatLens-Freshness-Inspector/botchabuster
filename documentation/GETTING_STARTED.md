@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Node.js 18 or newer (Node 20 is used by the hosted frontend build).
+- Node.js 22.x (the supported runtime range is >=22 <25).
 - npm 9 or newer.
 - A Supabase project with PostgreSQL, Auth, and Storage enabled.
 - Git.
