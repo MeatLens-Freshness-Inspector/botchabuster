@@ -125,7 +125,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     });
     contactsPromiseRef.current = { identity: requestIdentity, promise };
     return promise;
-  }, [auth.isOnlineAuthenticated, client]);
+  }, [authIdentity, client]);
 
   const loadMessages = useCallback(async (counterpartyId: string, loadOptions?: LoadOptions) => {
     const requestIdentity = authIdentity;
