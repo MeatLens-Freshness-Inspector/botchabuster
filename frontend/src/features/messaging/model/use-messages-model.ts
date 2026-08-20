@@ -54,6 +54,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const selectedContactIdRef = useRef<string | null>(selectedContactId);
+  const contactsPromiseRef = useRef<Promise<void> | null>(null);
   const snapshotPromiseRef = useRef<Promise<void> | null>(null);
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
   selectedContactIdRef.current = selectedContactId;
@@ -86,23 +87,30 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     };
   }, [contacts]);
 
-  const loadContacts = useCallback(async (loadOptions?: LoadOptions) => {
+  const loadContacts = useCallback((loadOptions?: LoadOptions): Promise<void> => {
     if (!auth.isOnlineAuthenticated) {
       setContacts([]);
       setIsLoadingContacts(false);
-      return;
+      return Promise.resolve();
     }
+    if (contactsPromiseRef.current) return contactsPromiseRef.current;
     if (!loadOptions?.silent) setIsLoadingContacts(true);
-    try {
-      const snapshot = await client.getContacts();
-      setContacts((current) => mergeContactSnapshots(current, snapshot));
-    } catch (error) {
-      if (!loadOptions?.silent) {
-        toast.error(error instanceof Error ? error.message : "Failed to load chat contacts");
+    const promise = (async () => {
+      try {
+        const snapshot = await client.getContacts();
+        setContacts((current) => mergeContactSnapshots(current, snapshot));
+      } catch (error) {
+        if (!loadOptions?.silent) {
+          toast.error(error instanceof Error ? error.message : "Failed to load chat contacts");
+        }
+      } finally {
+        if (!loadOptions?.silent) setIsLoadingContacts(false);
       }
-    } finally {
-      if (!loadOptions?.silent) setIsLoadingContacts(false);
-    }
+    })().finally(() => {
+      if (contactsPromiseRef.current === promise) contactsPromiseRef.current = null;
+    });
+    contactsPromiseRef.current = promise;
+    return promise;
   }, [auth.isOnlineAuthenticated, client]);
 
   const loadMessages = useCallback(async (counterpartyId: string, loadOptions?: LoadOptions) => {

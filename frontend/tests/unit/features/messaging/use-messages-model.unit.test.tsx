@@ -157,3 +157,61 @@ test("uses bounded snapshots and applies sends/stream echoes without follow-up G
     dom.cleanup();
   }
 });
+
+test("coalesces the development StrictMode mount into one contacts request", async () => {
+  const dom = installDom();
+  const root = createRoot(dom.container);
+  const workflowRef: { current: MessagesWorkflow | null } = { current: null };
+  const contact: UserChatContact = {
+    id: "admin-1",
+    full_name: "Admin One",
+    email: "admin@example.com",
+    inspector_code: null,
+    location: null,
+    role: "admin",
+    last_message_preview: null,
+    last_message_at: null,
+  };
+  const contactsResolvers: Array<(contacts: UserChatContact[]) => void> = [];
+  let contactsCalls = 0;
+  const options: Parameters<typeof useMessagesModel>[0] = {
+    auth: {
+      user: { id: "user-1" },
+      isAdmin: false,
+      isOnlineAuthenticated: true,
+    },
+    isDesktop: true,
+    client: {
+      getContacts() {
+        contactsCalls += 1;
+        return new Promise<UserChatContact[]>((resolve) => contactsResolvers.push(resolve));
+      },
+      async getMessages() {
+        return [];
+      },
+      async sendMessage() {
+        throw new Error("not used");
+      },
+    },
+    openStream: async ({ signal }) => {
+      await new Promise<void>((resolve) => signal.addEventListener("abort", () => resolve(), { once: true }));
+    },
+  };
+
+  try {
+    await act(async () => {
+      root.render(
+        <React.StrictMode>
+          <Harness workflowRef={workflowRef} options={options} />
+        </React.StrictMode>,
+      );
+    });
+    await flush();
+    assert.equal(contactsCalls, 1);
+    await act(async () => contactsResolvers.forEach((resolve) => resolve([contact])));
+    await flush();
+  } finally {
+    await act(async () => root.unmount());
+    dom.cleanup();
+  }
+});
