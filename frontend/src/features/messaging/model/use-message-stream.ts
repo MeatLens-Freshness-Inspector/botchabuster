@@ -130,6 +130,7 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
               void runGap();
             }
           } else if (streamStatus === "connecting") {
+            recoverSnapshotOnReady = true;
             updateStatus("connecting");
           } else {
             updateStatus("disconnected");

@@ -7,6 +7,7 @@ import { SupabaseChatRealtimeSource } from "../../../src/modules/chat/infrastruc
 type StatusCallback = (status: string, error?: Error) => void;
 
 class FakeChannel {
+  teardown?: () => void;
   eventType: string | null = null;
   filter: Record<string, string> | null = null;
   insertCallback: ((payload: { new?: unknown }) => void) | null = null;
@@ -101,4 +102,22 @@ test("rejects an initial channel failure and reports a later disconnect", async 
 
   assert.match(disconnects[0].message, /socket lost/);
   await stop();
+});
+
+test("forces local teardown when Supabase cannot remove a channel", async () => {
+  const channel = new FakeChannel();
+  let tornDown = 0;
+  channel.teardown = () => { tornDown += 1; };
+  let disconnected = 0;
+  const source = new SupabaseChatRealtimeSource({
+    channel: () => channel,
+    async removeChannel() { return "timed out"; },
+    realtime: { disconnect: () => { disconnected += 1; } },
+  });
+  const start = source.start(() => {}, () => {});
+  channel.statusCallback?.("SUBSCRIBED");
+  const stop = await start;
+  await stop();
+  assert.equal(tornDown, 1);
+  assert.equal(disconnected, 1);
 });

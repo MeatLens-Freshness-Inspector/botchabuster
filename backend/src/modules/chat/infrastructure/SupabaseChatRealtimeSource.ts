@@ -11,11 +11,13 @@ interface RealtimeChannelPort {
     callback: (payload: { new?: unknown }) => void,
   ): RealtimeChannelPort;
   subscribe(callback: (status: RealtimeStatus, error?: Error) => void): RealtimeChannelPort;
+  teardown?(): void;
 }
 
 interface SupabaseRealtimeClientPort {
   channel(name: string): RealtimeChannelPort;
   removeChannel(channel: RealtimeChannelPort): Promise<unknown>;
+  realtime?: { disconnect(): void };
 }
 
 interface ActiveChannel {
@@ -61,9 +63,18 @@ export class SupabaseChatRealtimeSource implements ChatRealtimeSource {
     const stop = async (): Promise<void> => {
       if (active.stopPromise) return active.stopPromise;
       active.stopping = true;
-      active.stopPromise = Promise.resolve(this.client.removeChannel(channel)).then(() => {
-        if (this.active === active) this.active = null;
-      });
+      active.stopPromise = Promise.resolve(this.client.removeChannel(channel))
+        .then((result) => {
+          if (result !== "ok") channel.teardown?.();
+          this.client.realtime?.disconnect();
+        })
+        .catch(() => {
+          channel.teardown?.();
+          this.client.realtime?.disconnect();
+        })
+        .finally(() => {
+          if (this.active === active) this.active = null;
+        });
       return active.stopPromise;
     };
 

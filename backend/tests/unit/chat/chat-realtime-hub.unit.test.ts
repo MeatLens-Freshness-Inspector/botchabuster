@@ -98,7 +98,7 @@ test("shutdown closes clients and stops the shared source exactly once", async (
   assert.equal(source.stops, 1);
 });
 
-test("evicts the oldest stream for a user while enforcing the total stream cap", async () => {
+test("rejects a third stream for a user while enforcing the total stream cap", async () => {
   const source = new FakeRealtimeSource();
   const closed: string[] = [];
   const hub = new ChatRealtimeHub(source, { maxClients: 2, maxClientsPerUser: 2 });
@@ -108,13 +108,13 @@ test("evicts the oldest stream for a user while enforcing the total stream cap",
   oldest.createdAt = 1;
   newer.createdAt = 2;
   newest.createdAt = 3;
-  oldest.close = (reason) => closed.push(reason);
-
   await hub.connect(oldest);
   await hub.connect(newer);
-  await hub.connect(newest);
-
-  assert.deepEqual(closed, ["replaced_by_newer_stream"]);
+  assert.throws(
+    () => hub.connect(newest),
+    (error: unknown) => error instanceof ChatConnectionLimitError && error.scope === "user",
+  );
+  assert.deepEqual(closed, []);
   assert.throws(
     () => hub.connect(createClient("other", "user-2").client),
     (error: unknown) => error instanceof ChatConnectionLimitError && error.scope === "instance",

@@ -49,6 +49,7 @@ export class ChatRealtimeHub {
 
   private startPromise: Promise<void> | null = null;
   private stopSource: StopRealtimeSource | null = null;
+  private stopPromise: Promise<void> | null = null;
   private retryHandle: ScheduledHandle | null = null;
   private retryIndex = 0;
   private retriesExhausted = false;
@@ -70,15 +71,17 @@ export class ChatRealtimeHub {
   connect(client: ChatStreamClient): () => Promise<void> {
     if (this.shuttingDown) throw new Error("Chat realtime hub is shutting down");
 
-    this.evictOldestUserClientIfNeeded(client.userId);
+    this.assertUserCapacity(client.userId);
     if (this.clients.size >= this.maxClients) {
       throw new ChatConnectionLimitError("instance");
     }
 
     this.clients.set(client.id, client);
-    if (this.retriesExhausted && !this.stopSource && !this.startPromise) {
-      this.retriesExhausted = false;
-      this.retryIndex = 0;
+    if (this.retriesExhausted) {
+      queueMicrotask(() => {
+        if (this.clients.has(client.id)) client.send("status", { state: "realtime_unavailable" });
+      });
+      return async () => this.disconnect(client.id);
     }
     if (this.stopSource) {
       queueMicrotask(() => {
@@ -106,21 +109,19 @@ export class ChatRealtimeHub {
       const clients = [...this.clients.values()];
       this.clients.clear();
       for (const client of clients) client.close("server_shutdown");
+      if (this.startPromise) await this.startPromise;
       await this.stopUpstream();
     })();
 
     return this.shutdownPromise;
   }
 
-  private evictOldestUserClientIfNeeded(userId: string): void {
+  private assertUserCapacity(userId: string): void {
     const userClients = [...this.clients.values()]
       .filter((client) => client.userId === userId)
       .sort((left, right) => left.createdAt - right.createdAt || left.id.localeCompare(right.id));
 
-    if (userClients.length < this.maxClientsPerUser) return;
-    const oldest = userClients[0];
-    this.clients.delete(oldest.id);
-    oldest.close("replaced_by_newer_stream");
+    if (userClients.length >= this.maxClientsPerUser) throw new ChatConnectionLimitError("user");
   }
 
   private async ensureSourceStarted(): Promise<void> {
@@ -132,6 +133,11 @@ export class ChatRealtimeHub {
       this.retriesExhausted
     ) return;
     if (this.startPromise) return this.startPromise;
+    if (this.stopPromise) {
+      await this.stopPromise;
+      if (this.clients.size > 0) return this.ensureSourceStarted();
+      return;
+    }
 
     const generation = ++this.sourceGeneration;
     const startPromise = this.source
@@ -160,6 +166,9 @@ export class ChatRealtimeHub {
       })
       .finally(() => {
         if (this.startPromise === startPromise) this.startPromise = null;
+        if (!this.shuttingDown && this.clients.size > 0 && !this.stopSource && !this.retryHandle && !this.retriesExhausted) {
+          queueMicrotask(() => void this.ensureSourceStarted());
+        }
       });
 
     this.startPromise = startPromise;
@@ -170,6 +179,7 @@ export class ChatRealtimeHub {
     if (this.shuttingDown || this.clients.size === 0) return;
 
     this.sourceGeneration += 1;
+    this.notifyStatus({ state: "connecting" });
     await this.stopUpstream();
     if (this.retryHandle !== null) return;
 
@@ -194,7 +204,7 @@ export class ChatRealtimeHub {
     }
   }
 
-  private notifyStatus(status: { state: "connected" | "realtime_unavailable" }): void {
+  private notifyStatus(status: { state: "connecting" | "connected" | "realtime_unavailable" }): void {
     for (const client of this.clients.values()) {
       if (!client.send("status", status)) void this.disconnect(client.id);
     }
@@ -202,6 +212,7 @@ export class ChatRealtimeHub {
 
   private async disconnect(clientId: string): Promise<void> {
     this.clients.delete(clientId);
+    if (this.shuttingDown) return;
     if (this.clients.size > 0) return;
 
     this.cancelRetry();
@@ -218,8 +229,13 @@ export class ChatRealtimeHub {
   }
 
   private async stopUpstream(): Promise<void> {
+    if (this.stopPromise) return this.stopPromise;
     const stopSource = this.stopSource;
     this.stopSource = null;
-    if (stopSource) await stopSource();
+    if (!stopSource) return;
+    this.stopPromise = Promise.resolve(stopSource()).finally(() => {
+      this.stopPromise = null;
+    });
+    await this.stopPromise;
   }
 }
