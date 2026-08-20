@@ -48,7 +48,11 @@ The stream is open only while all of the following are true:
 - the browser document is visible; and
 - the device is online.
 
-The frontend aborts the stream on logout, offline transition, page unmount, document hiding, or the existing inactivity lock. Returning to a visible, focused Messages screen opens a new stream and performs one snapshot refresh. Server heartbeat comments keep intermediaries from buffering or dropping a live stream, but they do not create new HTTP or Supabase requests and do not count as user session activity.
+The frontend aborts the stream on logout, offline transition, page unmount, document hiding, or the existing inactivity lock. Returning to a visible, focused Messages screen opens a new stream and performs one snapshot refresh. All focus, visibility, and online triggers use one refresh coordinator; concurrent triggers share the same in-flight promise and cannot duplicate the snapshot.
+
+The server writes one SSE heartbeat comment every 25 seconds. Heartbeats keep intermediaries from buffering or dropping a live stream, but they do not create new HTTP or Supabase requests and do not update `last_seen_at`.
+
+After authentication, the server schedules stream closure at the earlier of the app-session token's absolute expiry or `SESSION_IDLE_TIMEOUT_SECONDS` after stream creation. A client that remains online-authenticated and visible reconnects through the normal authenticated handshake, which counts as activity and touches the tracked session once. A client closed by logout or the inactivity guard does not reconnect. This bounds server-side authorization age without introducing a frequent heartbeat request.
 
 The stream response uses `text/event-stream`, `Cache-Control: no-cache, no-transform`, `Connection: keep-alive`, and `X-Accel-Buffering: no`. The backend removes every listener, queue, timer, and response reference when the request closes.
 
@@ -61,6 +65,8 @@ A process-wide `ChatRealtimeHub` owns the upstream subscription and connected-cl
 - Each database event is delivered only to connections whose authenticated user ID equals the row's `sender_id` or `recipient_id`.
 - The last stream client disconnecting removes the Supabase channel, leaving no Realtime connection while chat is unused.
 - Backend shutdown removes the channel and closes all client streams.
+
+The hub permits only one upstream join or reconnect attempt at a time. Failed upstream joins use the same bounded 1, 2, 5, 15, and 30-second delays as downstream streams. After five consecutive failures, the hub stops retrying, sends a `realtime_unavailable` status event to connected clients, and waits for a new visible-screen connection or manual reconnect action. It never creates a REST-polling fallback.
 
 A forward-only Supabase migration adds only `public.user_chat_messages` to the `supabase_realtime` publication. The browser receives no Supabase URL, key, or service-role credential as part of this change. Message inserts continue through the existing authorized backend POST endpoint.
 
@@ -76,7 +82,7 @@ The messaging state applies messages by ID:
 - the POST response for a sent message is applied immediately; the matching streamed echo is deduplicated;
 - sending a message no longer triggers contacts and conversation refetches.
 
-Manual refresh reloads both contacts and the selected conversation. Refocusing or reconnecting after a stream gap performs the same one-time snapshot refresh, so events missed during a deploy, cold start, or network interruption are recovered. Snapshot rows and streamed rows use the same ID-based upsert path, making their arrival order harmless.
+Manual refresh reloads both contacts and the selected conversation. Refocusing or reconnecting after a stream gap performs the same one-time snapshot refresh, so events missed during a deploy, cold start, or network interruption are recovered. Snapshot rows and streamed rows use the same ID-based upsert path, making their arrival order harmless. Concurrent open, focus, visibility, online, and reconnect signals are coalesced into one snapshot operation.
 
 ### Reconnection and failure behavior
 
@@ -149,7 +155,8 @@ Deployment documentation explicitly instructs maintainers to remove any separate
 - A message is delivered only to its sender and recipient.
 - Existing backend conversation authorization remains authoritative for sends and conversation snapshots.
 - Stream heartbeats never update `last_seen_at`.
-- Logout, local inactivity lock, token absolute expiry, request closure, and backend shutdown terminate the stream.
+- Each stream is re-authorized no less often than the configured idle-timeout window; an actively visible screen performs at most one tracked-session touch per window for stream rotation.
+- Logout, local inactivity lock, token absolute expiry, idle-window stream rotation, request closure, and backend shutdown terminate the current stream.
 
 ## Verification Strategy
 
@@ -162,6 +169,7 @@ Deployment documentation explicitly instructs maintainers to remove any separate
 - Stream events are participant-scoped, deduplicated by ID, ordered deterministically, and update contact previews.
 - Sending uses the POST response and streamed echo without follow-up snapshot requests or duplicate messages.
 - Reconnect attempts follow the five configured delays and stop instead of polling forever.
+- Concurrent lifecycle triggers produce one stream connection and one snapshot refresh.
 
 ### Backend tests
 
@@ -169,6 +177,7 @@ Deployment documentation explicitly instructs maintainers to remove any separate
 - Multiple client streams share one upstream Supabase subscription.
 - Sender and recipient receive an inserted message; unrelated users receive nothing.
 - The upstream channel is removed after the last client disconnects and during backend shutdown.
+- Upstream channel recovery uses one bounded retry sequence and stops after five failures.
 - Per-user, per-instance, send-rate, buffer, and backpressure limits are enforced.
 - Request aborts and upstream errors release all resources.
 
@@ -191,5 +200,6 @@ Deployment documentation explicitly instructs maintainers to remove any separate
 - With no users, repository-controlled traffic does not keep Render awake.
 - With Render continuously awake, session cleanup makes no more than 96 scheduled Supabase requests per day per backend instance, plus one request per process start.
 - A visible Messages screen receives new messages without periodic contacts or conversation requests.
+- With no new messages or user navigation, one continuously visible Messages screen makes at most three backend requests per idle-timeout window for stream rotation and snapshot recovery, instead of 20 backend requests per minute.
 - Leaving the Messages screen or hiding the document closes both its downstream stream and, when it is the final client, the shared upstream Supabase subscription.
 - Existing session idle timeout, absolute expiry, device limit, chat participant authorization, and manual refresh behavior remain enforced.
