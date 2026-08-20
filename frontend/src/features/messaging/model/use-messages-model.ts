@@ -114,11 +114,11 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
           ));
         }
       } catch (error) {
-        if (!loadOptions?.silent) {
+        if (!loadOptions?.silent && authIdentityRef.current === requestIdentity) {
           toast.error(error instanceof Error ? error.message : "Failed to load chat contacts");
         }
       } finally {
-        if (!loadOptions?.silent) setIsLoadingContacts(false);
+        if (!loadOptions?.silent && authIdentityRef.current === requestIdentity) setIsLoadingContacts(false);
       }
     })().finally(() => {
       if (contactsPromiseRef.current?.promise === promise) contactsPromiseRef.current = null;
@@ -141,11 +141,11 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
         setMessages((current) => upsertMessages(current, snapshot));
       }
     } catch (error) {
-      if (!loadOptions?.silent) {
+      if (!loadOptions?.silent && authIdentityRef.current === requestIdentity) {
         toast.error(error instanceof Error ? error.message : "Failed to load chat messages");
       }
     } finally {
-      if (!loadOptions?.silent) setIsLoadingMessages(false);
+      if (!loadOptions?.silent && authIdentityRef.current === requestIdentity) setIsLoadingMessages(false);
     }
   }, [authIdentity, client]);
 
@@ -180,6 +180,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
 
   const messageStream = useMessageStream({
     enabled: auth.isOnlineAuthenticated,
+    identity: authIdentity,
     openStream: options.openStream,
     onMessage: applyIncomingMessage,
     onGap: () => refreshSnapshot({ silent: true }),
@@ -195,6 +196,8 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     setContacts([]);
     setMessages([]);
     setSelectedContactId(null);
+    setDraftMessage("");
+    setIsSendingMessage(false);
     setIsLoadingContacts(Boolean(authIdentity));
     setIsLoadingMessages(false);
   }, [authIdentity]);
@@ -248,18 +251,22 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
     }
     const content = draftMessage.trim();
     if (!selectedContactId || !content || isSendingMessage) return;
+    const requestIdentity = authIdentity;
     setIsSendingMessage(true);
     setDraftMessage("");
     try {
       applyIncomingMessage(await client.sendMessage(selectedContactId, content));
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to send chat message");
-      setDraftMessage(content);
+      if (authIdentityRef.current === requestIdentity) {
+        toast.error(error instanceof Error ? error.message : "Failed to send chat message");
+        setDraftMessage(content);
+      }
     } finally {
-      setIsSendingMessage(false);
+      if (authIdentityRef.current === requestIdentity) setIsSendingMessage(false);
     }
   }, [
     applyIncomingMessage,
+    authIdentity,
     auth.isOnlineAuthenticated,
     client,
     draftMessage,
@@ -268,6 +275,7 @@ export function useMessagesModel(options: UseMessagesModelOptions) {
   ]);
 
   const handleSelectContact = useCallback((contactId: string) => {
+    if (selectedContactIdRef.current === contactId) return;
     selectedContactIdRef.current = contactId;
     setMessages([]);
     setSelectedContactId(contactId);

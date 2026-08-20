@@ -20,6 +20,7 @@ interface OpenStreamOptions {
 
 export interface UseMessageStreamOptions {
   enabled: boolean;
+  identity?: string | null;
   openStream?: (options: OpenStreamOptions) => Promise<void>;
   onMessage: (message: UserChatMessage) => void;
   onGap: () => Promise<void> | void;
@@ -216,7 +217,7 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
       window.removeEventListener("focus", handleFocus);
       pause(false);
     };
-  }, [options.enabled]);
+  }, [options.enabled, options.identity]);
 
   const reconnect = useCallback(() => reconnectRef.current(), []);
   return { status, reconnect };

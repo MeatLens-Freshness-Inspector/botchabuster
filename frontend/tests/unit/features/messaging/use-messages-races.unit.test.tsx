@@ -232,10 +232,10 @@ test("ignores a send response that resolves after logout", async () => {
       workflowRef.current!.setDraftMessage("late");
       await Promise.resolve();
     });
-    const pending = act(async () => workflowRef.current!.handleSendMessage());
+    const pending = workflowRef.current!.handleSendMessage();
     await act(async () => root.render(<Harness workflowRef={workflowRef} options={{ ...options, auth: { ...options.auth, isOnlineAuthenticated: false } }} />));
     resolveSend(messageForB);
-    await pending;
+    await act(async () => pending);
     await flush();
     assert.deepEqual(workflowRef.current!.messages, []);
   } finally {
