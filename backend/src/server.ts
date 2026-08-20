@@ -2,6 +2,7 @@ import type { Server } from "http";
 import { Config } from "./config";
 import { createApp } from "./app";
 import { createSessionCleanupService } from "./modules/auth/infrastructure/SessionCleanupService";
+import { chatRealtimeHub } from "./modules/chat/infrastructure/SupabaseChatRealtimeSource";
 
 const config = Config.getInstance();
 const app = createApp(config);
@@ -61,9 +62,21 @@ export function startServer(): Server {
     sessionCleanup.start();
   });
 
-  server.once("close", () => sessionCleanup.stop());
+  server.once("close", () => {
+    void stopServerServices(sessionCleanup, chatRealtimeHub).catch((error) => {
+      console.error("[Shutdown] Failed to stop backend services:", error);
+    });
+  });
   server.on("error", handleServerError);
   return server;
+}
+
+export async function stopServerServices(
+  sessionCleanup: { stop(): void },
+  realtimeHub: { shutdown(): Promise<void> },
+): Promise<void> {
+  sessionCleanup.stop();
+  await realtimeHub.shutdown();
 }
 
 if (require.main === module) {
