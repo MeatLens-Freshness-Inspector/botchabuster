@@ -28,7 +28,7 @@ export function ProfileSecondaryColumn({
       >
         <h3 className="mb-3 font-display text-lg font-semibold">Legal</h3>
         <p className="mt-1 text-xs text-muted-foreground">
-          Terms and Conditions reminder: review the MeatLens terms and how the application collects, uses, and protects your data.
+          Review the MeatLens terms and how the application collects, uses, and protects your data.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Button type="button" variant="outline" className="h-10 rounded-xl border-border/80 text-xs uppercase tracking-wider" onClick={onOpenTermsDialog}>
