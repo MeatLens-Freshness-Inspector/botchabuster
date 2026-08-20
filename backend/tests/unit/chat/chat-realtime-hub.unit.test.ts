@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { UserChatMessage } from "../../../src/modules/chat/infrastructure/UserChatService";
 import {
+  CHAT_RETRY_DELAYS_MS,
+  ChatConnectionLimitError,
   ChatRealtimeHub,
   type ChatRealtimeSource,
   type ChatStreamClient,
@@ -94,4 +96,59 @@ test("shutdown closes clients and stops the shared source exactly once", async (
 
   assert.deepEqual(closed, ["first:server_shutdown", "second:server_shutdown"]);
   assert.equal(source.stops, 1);
+});
+
+test("evicts the oldest stream for a user while enforcing the total stream cap", async () => {
+  const source = new FakeRealtimeSource();
+  const closed: string[] = [];
+  const hub = new ChatRealtimeHub(source, { maxClients: 2, maxClientsPerUser: 2 });
+  const oldest = createClient("oldest", "user-1").client;
+  const newer = createClient("newer", "user-1").client;
+  const newest = createClient("newest", "user-1").client;
+  oldest.createdAt = 1;
+  newer.createdAt = 2;
+  newest.createdAt = 3;
+  oldest.close = (reason) => closed.push(reason);
+
+  await hub.connect(oldest);
+  await hub.connect(newer);
+  await hub.connect(newest);
+
+  assert.deepEqual(closed, ["replaced_by_newer_stream"]);
+  await assert.rejects(
+    () => hub.connect(createClient("other", "user-2").client),
+    (error: unknown) => error instanceof ChatConnectionLimitError && error.scope === "instance",
+  );
+});
+
+test("upstream recovery uses the five bounded delays and then reports unavailable", async () => {
+  const scheduled: Array<{ delay: number; callback: () => void }> = [];
+  const statuses: unknown[] = [];
+  const source: ChatRealtimeSource = {
+    async start() {
+      throw new Error("upstream unavailable");
+    },
+  };
+  const hub = new ChatRealtimeHub(source, {
+    schedule(callback, delay) {
+      scheduled.push({ callback, delay });
+      return callback;
+    },
+    cancelSchedule() {},
+  });
+  const client = createClient("stream-1", "user-1").client;
+  client.send = (event, data) => {
+    if (event === "status") statuses.push(data);
+    return true;
+  };
+
+  await hub.connect(client);
+  for (let index = 0; index < CHAT_RETRY_DELAYS_MS.length; index += 1) {
+    assert.equal(scheduled[index].delay, CHAT_RETRY_DELAYS_MS[index]);
+    scheduled[index].callback();
+    await new Promise<void>((resolve) => setImmediate(resolve));
+  }
+
+  assert.deepEqual(scheduled.map(({ delay }) => delay), [...CHAT_RETRY_DELAYS_MS]);
+  assert.deepEqual(statuses.at(-1), { state: "realtime_unavailable" });
 });
