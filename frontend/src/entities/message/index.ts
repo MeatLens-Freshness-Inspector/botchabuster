@@ -3,6 +3,7 @@ export {
   userChatClient,
 } from "./api/message-client";
 export {
+  MessageStreamConnectionError,
   openMessageEventStream,
   parseMessageEventStream,
 } from "./api/message-event-stream";

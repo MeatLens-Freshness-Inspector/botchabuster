@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { JSDOM } from "jsdom";
 import {
+  MessageStreamConnectionError,
   openMessageEventStream,
   parseMessageEventStream,
   type UserChatStreamEvent,
@@ -62,6 +63,17 @@ test("parses fragmented CRLF frames, ignores heartbeats, and validates messages"
   ]);
 });
 
+test("preserves CRLF framing at every network chunk boundary", async () => {
+  const frame = 'event: status\r\ndata: {"state":"connected"}\r\n\r\n';
+
+  for (let splitAt = 1; splitAt < frame.length; splitAt += 1) {
+    const events: UserChatStreamEvent[] = [];
+    const body = streamFromChunks([frame.slice(0, splitAt), frame.slice(splitAt)]);
+    for await (const event of parseMessageEventStream(body)) events.push(event);
+    assert.deepEqual(events, [{ type: "status", state: "connected" }], `split at byte ${splitAt}`);
+  }
+});
+
 test("opens the events endpoint with auth and treats unexpected EOF as reconnectable", async () => {
   const cleanup = installDom();
   const originalFetch = globalThis.fetch;
@@ -92,6 +104,7 @@ test("opens the events endpoint with auth and treats unexpected EOF as reconnect
     assert.equal(headers.get("Authorization"), "Bearer session-token");
     assert.equal(headers.get("Accept"), "text/event-stream");
     assert.equal(capturedInit?.credentials, "include");
+    assert.equal(capturedInit?.cache, "no-store");
     assert.deepEqual(messages, ["message-1"]);
   } finally {
     globalThis.fetch = originalFetch;
@@ -115,7 +128,10 @@ test("notifies the app when the stream handshake returns 401", async () => {
         onMessage: () => {},
         onStatus: () => {},
       }),
-      /Session expired/,
+      (error: unknown) =>
+        error instanceof MessageStreamConnectionError &&
+        error.status === 401 &&
+        error.retryable === false,
     );
     assert.equal(expiredEvents, 1);
   } finally {

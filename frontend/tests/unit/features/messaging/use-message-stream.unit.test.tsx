@@ -9,6 +9,7 @@ import {
   useMessageStream,
   type UseMessageStreamOptions,
 } from "../../../../src/features/messaging/model/use-message-stream";
+import { MessageStreamConnectionError } from "../../../../src/entities/message";
 
 function installDom() {
   const dom = new JSDOM("<!doctype html><html><body><div id='root'></div></body></html>", {
@@ -143,6 +144,71 @@ test("uses five bounded reconnect delays and then stops", async () => {
 
     assert.equal(attempts, 6);
     assert.deepEqual(scheduled.map(({ delay }) => delay), [...MESSAGE_STREAM_RETRY_DELAYS_MS]);
+    assert.equal(dom.container.querySelector('[data-testid="status"]')?.textContent, "disconnected");
+  } finally {
+    await act(async () => root.unmount());
+    dom.cleanup();
+  }
+});
+
+test("does not retry terminal handshake failures", async () => {
+  const dom = installDom();
+  const root = createRoot(dom.container);
+  const scheduled: number[] = [];
+  const options: UseMessageStreamOptions = {
+    enabled: true,
+    openStream: async () => {
+      throw new MessageStreamConnectionError("capacity reached", 429, false);
+    },
+    onMessage: () => {},
+    onGap: async () => {},
+    schedule(_callback, delay) {
+      scheduled.push(delay);
+      return delay;
+    },
+    cancelSchedule() {},
+  };
+
+  try {
+    await act(async () => root.render(<Harness options={options} onValue={() => {}} />));
+    await flush();
+    assert.deepEqual(scheduled, []);
+    assert.equal(dom.container.querySelector('[data-testid="status"]')?.textContent, "disconnected");
+  } finally {
+    await act(async () => root.unmount());
+    dom.cleanup();
+  }
+});
+
+test("treats realtime_unavailable as terminal until a lifecycle or manual restart", async () => {
+  const dom = installDom();
+  const root = createRoot(dom.container);
+  const scheduled: number[] = [];
+  let attempts = 0;
+  const options: UseMessageStreamOptions = {
+    enabled: true,
+    openStream: async ({ signal, onStatus }) => {
+      attempts += 1;
+      onStatus("realtime_unavailable");
+      await new Promise<void>((resolve) => {
+        if (signal.aborted) resolve();
+        else signal.addEventListener("abort", () => resolve(), { once: true });
+      });
+    },
+    onMessage: () => {},
+    onGap: async () => {},
+    schedule(_callback, delay) {
+      scheduled.push(delay);
+      return delay;
+    },
+    cancelSchedule() {},
+  };
+
+  try {
+    await act(async () => root.render(<Harness options={options} onValue={() => {}} />));
+    await flush();
+    assert.equal(attempts, 1);
+    assert.deepEqual(scheduled, []);
     assert.equal(dom.container.querySelector('[data-testid="status"]')?.textContent, "disconnected");
   } finally {
     await act(async () => root.unmount());

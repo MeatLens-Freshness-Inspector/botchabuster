@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  MessageStreamConnectionError,
   openMessageEventStream,
   type UserChatMessage,
   type UserChatStreamStatus,
@@ -127,6 +128,8 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
             updateStatus("connecting");
           } else {
             updateStatus("disconnected");
+            controller = null;
+            streamController.abort();
           }
         },
       }).then(
@@ -139,11 +142,12 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
           if (streamController.signal.aborted) return;
           throw error;
         },
-      ).catch(() => {
+      ).catch((error: unknown) => {
         if (disposed || generation !== streamGeneration || streamController.signal.aborted) return;
         controller = null;
         updateStatus("disconnected");
         recoverSnapshotOnReady = true;
+        if (error instanceof MessageStreamConnectionError && !error.retryable) return;
         if (retryIndex >= MESSAGE_STREAM_RETRY_DELAYS_MS.length) return;
         const delayMs = MESSAGE_STREAM_RETRY_DELAYS_MS[retryIndex];
         retryIndex += 1;
