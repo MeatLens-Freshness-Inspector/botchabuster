@@ -58,3 +58,13 @@ test("the user-chat limiter has no timer-driven cleanup", () => {
   );
   assert.doesNotMatch(source, /setInterval\s*\(/);
 });
+
+test("uses a sliding one-minute window across fixed-window boundaries", () => {
+  let now = 1_000_000;
+  const limiter = createUserChatSendRateLimit(() => now);
+  for (let count = 0; count < 30; count += 1) assert.equal(invokeLimiter(limiter, "user-1").nextCalls, 1);
+  now += 59_999;
+  assert.equal(invokeLimiter(limiter, "user-1").nextCalls, 0);
+  now += 1;
+  assert.equal(invokeLimiter(limiter, "user-1").nextCalls, 1);
+});

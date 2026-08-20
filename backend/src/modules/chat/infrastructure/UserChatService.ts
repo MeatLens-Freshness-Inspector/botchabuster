@@ -184,12 +184,12 @@ export class UserChatService {
       .or(
         `and(sender_id.eq.${actorId},recipient_id.eq.${counterpartId}),and(sender_id.eq.${counterpartId},recipient_id.eq.${actorId})`
       )
-      .order("created_at", { ascending: true })
-      .order("id", { ascending: true })
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .limit(limit);
 
     if (error) throw new Error(`Failed to fetch chat conversation: ${error.message}`);
-    return (data as UserChatMessage[]) ?? [];
+    return ((data as UserChatMessage[]) ?? []).reverse();
   }
 
   async sendMessage(

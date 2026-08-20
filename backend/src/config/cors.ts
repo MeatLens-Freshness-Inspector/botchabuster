@@ -1,5 +1,14 @@
 import type { CorsOptions } from "cors";
 
+export class OriginNotAllowedError extends Error {
+  readonly status = 403;
+
+  constructor(origin: string) {
+    super(`Origin ${origin} is not allowed by CORS`);
+    this.name = "OriginNotAllowedError";
+  }
+}
+
 const DEFAULT_DEV_ALLOWED_ORIGINS = [
   "http://localhost:8080",
   "http://127.0.0.1:8080",
@@ -59,7 +68,7 @@ export function createCorsOptions(allowedOrigins: readonly string[]): CorsOption
         return;
       }
 
-      callback(new Error(`Origin ${origin} is not allowed by CORS`));
+      callback(new OriginNotAllowedError(origin));
     },
   };
 }

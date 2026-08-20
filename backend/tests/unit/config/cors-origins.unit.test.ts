@@ -77,3 +77,17 @@ test("createCorsOptions enables credentials, exposes csrf headers, and echoes al
     });
   });
 });
+
+test("createCorsOptions exposes a client-safe 403 for disallowed origins", async () => {
+  const options = createCorsOptions(["https://allowed.example"]);
+  await new Promise<void>((resolve, reject) => {
+    options.origin?.("https://evil.example", (error) => {
+      try {
+        assert.equal((error as Error & { status?: number }).status, 403);
+        resolve();
+      } catch (assertionError) {
+        reject(assertionError);
+      }
+    });
+  });
+});

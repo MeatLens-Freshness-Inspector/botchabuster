@@ -5,8 +5,7 @@ const MAX_SENDS_PER_WINDOW = 30;
 const LIMIT_MESSAGE = "Too many messages. Please wait before sending again.";
 
 interface SendBucket {
-  count: number;
-  resetAt: number;
+  timestamps: number[];
 }
 
 export function createUserChatSendRateLimit(nowMs: () => number = () => Date.now()): RequestHandler {
@@ -17,7 +16,8 @@ export function createUserChatSendRateLimit(nowMs: () => number = () => Date.now
     requestCount += 1;
     if (requestCount % 256 !== 0) return;
     for (const [userId, bucket] of buckets) {
-      if (bucket.resetAt <= now) buckets.delete(userId);
+      bucket.timestamps = bucket.timestamps.filter((timestamp) => timestamp > now - WINDOW_MS);
+      if (bucket.timestamps.length === 0) buckets.delete(userId);
     }
   }
 
@@ -31,20 +31,21 @@ export function createUserChatSendRateLimit(nowMs: () => number = () => Date.now
     const now = nowMs();
     pruneExpired(now);
     const bucket = buckets.get(userId);
-    if (!bucket || bucket.resetAt <= now) {
-      buckets.set(userId, { count: 1, resetAt: now + WINDOW_MS });
+    if (!bucket) {
+      buckets.set(userId, { timestamps: [now] });
       next();
       return;
     }
 
-    if (bucket.count >= MAX_SENDS_PER_WINDOW) {
-      const retryAfterSeconds = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
+    bucket.timestamps = bucket.timestamps.filter((timestamp) => timestamp > now - WINDOW_MS);
+    if (bucket.timestamps.length >= MAX_SENDS_PER_WINDOW) {
+      const retryAfterSeconds = Math.max(1, Math.ceil((bucket.timestamps[0] + WINDOW_MS - now) / 1000));
       res.setHeader("Retry-After", String(retryAfterSeconds));
       res.status(429).json({ error: LIMIT_MESSAGE });
       return;
     }
 
-    bucket.count += 1;
+    bucket.timestamps.push(now);
     next();
   };
 }

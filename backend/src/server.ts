@@ -62,13 +62,50 @@ export function startServer(): Server {
     sessionCleanup.start();
   });
 
+  const shutdown = createGracefulShutdown(server, sessionCleanup, chatRealtimeHub);
+  const onSignal = () => {
+    void shutdown().catch((error) => console.error("[Shutdown] Failed to stop backend services:", error));
+  };
+  process.once("SIGTERM", onSignal);
+  process.once("SIGINT", onSignal);
   server.once("close", () => {
-    void stopServerServices(sessionCleanup, chatRealtimeHub).catch((error) => {
-      console.error("[Shutdown] Failed to stop backend services:", error);
-    });
+    process.off("SIGTERM", onSignal);
+    process.off("SIGINT", onSignal);
   });
   server.on("error", handleServerError);
   return server;
+}
+
+export function createGracefulShutdown(
+  server: Pick<Server, "close"> & Partial<Pick<Server, "closeAllConnections">>,
+  sessionCleanup: { stop(): void },
+  realtimeHub: { shutdown(): Promise<void> },
+  forceTimeoutMs = 10_000,
+): () => Promise<void> {
+  let shutdownPromise: Promise<void> | null = null;
+  return () => {
+    if (shutdownPromise) return shutdownPromise;
+    shutdownPromise = (async () => {
+      sessionCleanup.stop();
+      const realtimeStop = realtimeHub.shutdown();
+      const serverClose = new Promise<void>((resolve) => {
+        server.close(() => resolve());
+      });
+      let forceHandle: ReturnType<typeof setTimeout> | null = setTimeout(() => {
+        server.closeAllConnections?.();
+      }, forceTimeoutMs);
+      try {
+        await Promise.race([Promise.all([realtimeStop, serverClose]).then(() => undefined), new Promise<void>((resolve) => {
+          setTimeout(resolve, forceTimeoutMs + 100);
+        })]);
+      } finally {
+        if (forceHandle) clearTimeout(forceHandle);
+        forceHandle = null;
+        await realtimeStop;
+      }
+    })();
+    return shutdownPromise;
+  };
 }
 
 export async function stopServerServices(

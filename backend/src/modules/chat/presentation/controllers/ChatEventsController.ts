@@ -81,6 +81,11 @@ export class ChatEventsController {
     let disconnectHub: (() => Promise<void>) | null = null;
     let connection: BufferedSseConnection | null = null;
     let cleaned = false;
+    let transportClosed = Boolean((req as Request & { destroyed?: boolean }).destroyed || (res as Response & { destroyed?: boolean }).destroyed);
+    const closeFromTransport = () => {
+      transportClosed = true;
+      void cleanup("client_closed", true);
+    };
 
     const cleanup = async (reason: string, closeResponse: boolean): Promise<void> => {
       if (cleaned) return;
@@ -93,8 +98,15 @@ export class ChatEventsController {
       if (closeResponse && connection) connection.close(reason);
     };
 
+    req.once("close", closeFromTransport);
+    res.once("close", closeFromTransport);
+
     try {
       const auth = await this.authenticate(req);
+      if (transportClosed || (req as Request & { destroyed?: boolean }).destroyed || res.writableEnded) {
+        await cleanup("client_closed", false);
+        return;
+      }
       connection = new BufferedSseConnection({
         id: this.createConnectionId(),
         userId: auth.userId,
@@ -105,6 +117,10 @@ export class ChatEventsController {
         },
       });
       disconnectHub = this.hub.connect(connection);
+      if (transportClosed || res.writableEnded) {
+        await cleanup("client_closed", true);
+        return;
+      }
 
       res.status(200).set({
         "Content-Type": "text/event-stream; charset=utf-8",
@@ -126,11 +142,6 @@ export class ChatEventsController {
         void cleanup("stream_rotation", true);
       }, rotationDelayMs);
 
-      const closeFromRequest = () => {
-        void cleanup("client_closed", true);
-      };
-      req.once("close", closeFromRequest);
-      res.once("close", closeFromRequest);
     } catch (error) {
       if (error instanceof ChatConnectionLimitError) {
         res.status(429).set({ "Retry-After": "60" }).json({ error: error.message });

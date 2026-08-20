@@ -152,3 +152,23 @@ test("writes secure SSE headers, heartbeats, and rotates without repeated auth a
   assert.equal(disconnects, 1);
   assert.equal(response.ends, 1);
 });
+
+test("does not admit a request that closes while authentication is pending", async () => {
+  const request = new FakeRequest();
+  request.setHeader("origin", "https://allowed.example");
+  const response = new FakeResponse();
+  let resolveAuth!: (value: { userId: string }) => void;
+  let connects = 0;
+  const controller = new ChatEventsController({
+    hub: { connect() { connects += 1; return async () => {}; } },
+    authenticate: () => new Promise((resolve) => { resolveAuth = resolve; }),
+    allowedOrigins: ["https://allowed.example"],
+  });
+
+  const pending = controller.handle(request as never, response as never);
+  request.emit("close");
+  resolveAuth({ userId: "user-1" });
+  await pending;
+  assert.equal(connects, 0);
+  assert.equal(response.flushes, 0);
+});
