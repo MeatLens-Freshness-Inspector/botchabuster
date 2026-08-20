@@ -17,21 +17,28 @@ test("sign-in sets a secure cookie, returns a bootstrap payload, and registers t
   const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
-  const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
+  const originalPruneInactiveSessions = sessionLimit.pruneInactiveSessions.bind(sessionLimit);
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
   const user = createUserFixture();
   const profile = createProfileFixture(user.id);
   let registeredToken: string | null = null;
+  const pruneCalls: Array<[string, number]> = [];
+  const limitCalls: Array<[string, number]> = [];
 
   authService.signIn = async () => ({ user, session: null });
   profileService.getUserRoles = async () => [];
   profileService.getProfile = async () => profile;
   auditLogService.write = async () => undefined;
   sessionLimit.hasSession = async () => false;
-  sessionLimit.pruneExpiredSessions = async () => undefined;
-  sessionLimit.isAtLimit = async () => false;
+  sessionLimit.pruneInactiveSessions = async (userId, idleTimeoutSeconds) => {
+    pruneCalls.push([userId, idleTimeoutSeconds]);
+  };
+  sessionLimit.isAtLimit = async (userId, idleTimeoutSeconds) => {
+    limitCalls.push([userId, idleTimeoutSeconds]);
+    return false;
+  };
   sessionLimit.registerSession = async (_userId, accessToken) => {
     registeredToken = accessToken;
   };
@@ -59,6 +66,8 @@ test("sign-in sets a secure cookie, returns a bootstrap payload, and registers t
     assert.match(setCookie, /Path=\//i);
     assert.match(setCookie, /(Max-Age|Expires)=/i);
     assert.equal(registeredToken, cookieToken);
+    assert.deepEqual(pruneCalls, [[user.id, 900]]);
+    assert.deepEqual(limitCalls, [[user.id, 900]]);
 
     assert.equal((body.user as { id?: string }).id, user.id);
     assert.equal((body.profile as { id?: string }).id, profile.id);
@@ -76,7 +85,7 @@ test("sign-in sets a secure cookie, returns a bootstrap payload, and registers t
     profileService.getProfile = originalGetProfile;
     auditLogService.write = originalWriteAuditLog;
     sessionLimit.hasSession = originalHasSession;
-    sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
+    sessionLimit.pruneInactiveSessions = originalPruneInactiveSessions;
     sessionLimit.isAtLimit = originalIsAtLimit;
     sessionLimit.registerSession = originalRegisterSession;
     await close();
@@ -95,7 +104,7 @@ test("sign-in rejects before issuing a session cookie when the device limit is r
   const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
-  const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
+  const originalPruneInactiveSessions = sessionLimit.pruneInactiveSessions.bind(sessionLimit);
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
@@ -111,7 +120,7 @@ test("sign-in rejects before issuing a session cookie when the device limit is r
     auditCalls += 1;
   };
   sessionLimit.hasSession = async () => false;
-  sessionLimit.pruneExpiredSessions = async () => undefined;
+  sessionLimit.pruneInactiveSessions = async () => undefined;
   sessionLimit.isAtLimit = async () => true;
   sessionLimit.registerSession = async () => {
     registerCalls += 1;
@@ -141,7 +150,7 @@ test("sign-in rejects before issuing a session cookie when the device limit is r
     profileService.getProfile = originalGetProfile;
     auditLogService.write = originalWriteAuditLog;
     sessionLimit.hasSession = originalHasSession;
-    sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
+    sessionLimit.pruneInactiveSessions = originalPruneInactiveSessions;
     sessionLimit.isAtLimit = originalIsAtLimit;
     sessionLimit.registerSession = originalRegisterSession;
     await close();
@@ -160,7 +169,7 @@ test("session bootstrap accepts a bearer-backed app session, preserves authentic
   const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
-  const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
+  const originalPruneInactiveSessions = sessionLimit.pruneInactiveSessions.bind(sessionLimit);
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
@@ -173,7 +182,7 @@ test("session bootstrap accepts a bearer-backed app session, preserves authentic
   auditLogService.write = async () => undefined;
   sessionLimit.hasSession = async () => true;
   sessionLimit.touchSession = async () => true;
-  sessionLimit.pruneExpiredSessions = async () => undefined;
+  sessionLimit.pruneInactiveSessions = async () => undefined;
   sessionLimit.isAtLimit = async () => false;
   sessionLimit.registerSession = async () => undefined;
 
@@ -209,7 +218,7 @@ test("session bootstrap accepts a bearer-backed app session, preserves authentic
     profileService.getProfile = originalGetProfile;
     auditLogService.write = originalWriteAuditLog;
     sessionLimit.hasSession = originalHasSession;
-    sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
+    sessionLimit.pruneInactiveSessions = originalPruneInactiveSessions;
     sessionLimit.isAtLimit = originalIsAtLimit;
     sessionLimit.registerSession = originalRegisterSession;
     await close();
@@ -231,7 +240,7 @@ test("cookie-authenticated inspection requests reuse the session slot registered
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
   const originalTouchSession = sessionLimit.touchSession.bind(sessionLimit);
-  const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
+  const originalPruneInactiveSessions = sessionLimit.pruneInactiveSessions.bind(sessionLimit);
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
@@ -252,7 +261,7 @@ test("cookie-authenticated inspection requests reuse the session slot registered
   };
   sessionLimit.hasSession = async (accessToken) => registeredTokens.has(accessToken);
   sessionLimit.touchSession = async (accessToken) => registeredTokens.has(accessToken);
-  sessionLimit.pruneExpiredSessions = async () => undefined;
+  sessionLimit.pruneInactiveSessions = async () => undefined;
   sessionLimit.isAtLimit = async () => false;
   sessionLimit.registerSession = async (_userId, accessToken) => {
     registerCalls += 1;
@@ -295,7 +304,7 @@ test("cookie-authenticated inspection requests reuse the session slot registered
     inspectionService.getAll = originalGetAll;
     sessionLimit.hasSession = originalHasSession;
     sessionLimit.touchSession = originalTouchSession;
-    sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
+    sessionLimit.pruneInactiveSessions = originalPruneInactiveSessions;
     sessionLimit.isAtLimit = originalIsAtLimit;
     sessionLimit.registerSession = originalRegisterSession;
     await close();
@@ -416,7 +425,7 @@ test("passkey authenticate verify mirrors the cookie/bootstrap contract and regi
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
   const originalTouchSession = sessionLimit.touchSession.bind(sessionLimit);
-  const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
+  const originalPruneInactiveSessions = sessionLimit.pruneInactiveSessions.bind(sessionLimit);
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
@@ -432,7 +441,7 @@ test("passkey authenticate verify mirrors the cookie/bootstrap contract and regi
   profileService.getProfile = async () => profile;
   auditLogService.write = async () => undefined;
   sessionLimit.hasSession = async () => false;
-  sessionLimit.pruneExpiredSessions = async () => undefined;
+  sessionLimit.pruneInactiveSessions = async () => undefined;
   sessionLimit.isAtLimit = async () => false;
   sessionLimit.registerSession = async (_userId, accessToken) => {
     registeredToken = accessToken;
@@ -477,7 +486,7 @@ test("passkey authenticate verify mirrors the cookie/bootstrap contract and regi
     auditLogService.write = originalWriteAuditLog;
     sessionLimit.hasSession = originalHasSession;
     sessionLimit.touchSession = originalTouchSession;
-    sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
+    sessionLimit.pruneInactiveSessions = originalPruneInactiveSessions;
     sessionLimit.isAtLimit = originalIsAtLimit;
     sessionLimit.registerSession = originalRegisterSession;
     await close();

@@ -71,7 +71,7 @@ test("auth sign-in responses match the frontend bootstrap contract", async () =>
   const originalWriteAuditLog = auditLogService.write.bind(auditLogService);
   const sessionLimit = getSessionLimitService();
   const originalHasSession = sessionLimit.hasSession.bind(sessionLimit);
-  const originalPruneExpiredSessions = sessionLimit.pruneExpiredSessions.bind(sessionLimit);
+  const originalPruneInactiveSessions = sessionLimit.pruneInactiveSessions.bind(sessionLimit);
   const originalIsAtLimit = sessionLimit.isAtLimit.bind(sessionLimit);
   const originalRegisterSession = sessionLimit.registerSession.bind(sessionLimit);
 
@@ -88,7 +88,7 @@ test("auth sign-in responses match the frontend bootstrap contract", async () =>
   profileService.getProfile = async () => profile;
   auditLogService.write = async () => undefined;
   sessionLimit.hasSession = async () => false;
-  sessionLimit.pruneExpiredSessions = async () => undefined;
+  sessionLimit.pruneInactiveSessions = async () => undefined;
   sessionLimit.isAtLimit = async () => false;
   sessionLimit.registerSession = async () => undefined;
 
@@ -115,7 +115,7 @@ test("auth sign-in responses match the frontend bootstrap contract", async () =>
     profileService.getProfile = originalGetProfile;
     auditLogService.write = originalWriteAuditLog;
     sessionLimit.hasSession = originalHasSession;
-    sessionLimit.pruneExpiredSessions = originalPruneExpiredSessions;
+    sessionLimit.pruneInactiveSessions = originalPruneInactiveSessions;
     sessionLimit.isAtLimit = originalIsAtLimit;
     sessionLimit.registerSession = originalRegisterSession;
     await close();

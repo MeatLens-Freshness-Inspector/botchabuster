@@ -158,13 +158,14 @@ export class AuthController {
       return;
     }
 
-    await sessionLimit.pruneExpiredSessions(userId);
+    const idleTimeoutSeconds = this.config.sessionIdleTimeoutSeconds;
+    await sessionLimit.pruneInactiveSessions(userId, idleTimeoutSeconds);
 
     if (await sessionLimit.hasSession(session.access_token)) {
       return;
     }
 
-    if (await sessionLimit.isAtLimit(userId)) {
+    if (await sessionLimit.isAtLimit(userId, idleTimeoutSeconds)) {
       throw new RequestAuthError(429, SESSION_LIMIT_REACHED_MESSAGE);
     }
 
