@@ -4,7 +4,9 @@ MeatLens is an AI-assisted meat-freshness inspection system for wet-market workf
 
 ## Product capabilities
 
-- Client-side MobileNetV3 ONNX inference for freshness decision support.
+- Client-side primary MobileNetV3Small ONNX inference for freshness decision support.
+- Developer-only selection of the primary MobileNetV3Small, Seed123 MobileNetV3Small, legacy MobileNetV3Small, ResNet50, or Ensemble runtimes.
+- The developer model selector displays each model's project-added date; the primary model was added on August 13, 2026.
 - Authenticated inspection capture, upload, classification, and history.
 - Role-aware administration for inspectors, admins, and developers.
 - Access-code onboarding and market-location management.

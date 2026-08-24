@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import type { AnalysisResult, FreshnessClassification } from "../../../frontend/src/types/inspection";
 
 const analysisLabels = new Set<FreshnessClassification>(["fresh", "not fresh", "spoiled", "acceptable", "warning"]);
+const analysisSources = new Set(["mobilenetv3", "resnet50", "ensemble", "backend"]);
 const predictionLabels = ["fresh", "not_fresh", "spoiled"] as const;
 
 export type FreshnessPredictionContract = {
@@ -29,6 +30,10 @@ export function assertAnalysisResponseSchema(value: unknown): asserts value is A
   assert.ok(Array.isArray(value.flagged_deviations), "flagged_deviations must be an array");
   assert.ok(value.flagged_deviations.every((item) => typeof item === "string"), "flagged_deviations must contain only strings");
   assert.equal(typeof value.explanation, "string", "explanation must be a string");
+
+  if (value.analysis_source !== undefined) {
+    assert.ok(analysisSources.has(String(value.analysis_source)), "analysis_source must identify a supported analysis runtime");
+  }
 
   if (value.probabilities !== undefined) {
     assertRecord(value.probabilities, "probabilities must be an object when present");

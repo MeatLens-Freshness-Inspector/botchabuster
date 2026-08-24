@@ -198,8 +198,8 @@ test("analysis result fixtures stay on the shared frontend contract", () => {
     label_order: ["fresh", "warning", "spoiled"],
     flagged_deviations: [],
     explanation: "The sample appears fresh.",
-    analysis_source: "mobilenetv3",
-    model_path: "models/mobilenetv3.onnx",
+    analysis_source: "resnet50",
+    model_path: "models/resnet50_meat/meatlens_resnet50_exp2.onnx",
   };
 
   assertAnalysisResponseSchema(analysis);
