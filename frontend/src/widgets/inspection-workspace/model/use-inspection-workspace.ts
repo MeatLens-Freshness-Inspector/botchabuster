@@ -63,7 +63,7 @@ import {
 } from "./inspect-page";
 
 export function useInspectionWorkspace(): InspectPageViewModel {
-  const { user, profile, isAdmin } = useAuth();
+  const { user, profile, isAdmin, isDeveloper } = useAuth();
   const [capturedInput, setCapturedInput] = useState<CapturedImagePayload | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [preScanForm, setPreScanForm] = useState<InspectionPreScanForm>(() =>
@@ -88,7 +88,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   const createInspection = useSubmitInspection();
 
   useEffect(() => {
-    if (!user || !isAdmin) {
+    if (!user || !isDeveloper) {
       setDeveloperFlags(DEFAULT_DEVELOPER_OPTIONS_FLAGS);
       setIsDeveloperUnlocked(false);
       return;
@@ -119,12 +119,13 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     }).catch(() => {
       // Keep local unlocked session while offline verification is unavailable.
     });
-  }, [isAdmin, user]);
+  }, [isDeveloper, user]);
 
   useEffect(() => {
     const selectedModel = resolveInspectionModelSelection(
       user ? { id: user.id } : null,
       isAdmin,
+      isDeveloper,
       isDeveloperUnlocked,
       developerFlags.selectedModel,
     );
@@ -137,7 +138,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
 
     prewarmModel();
     setIsModelReady(getAnalysisReady());
-  }, [developerFlags.selectedModel, isAdmin, isDeveloperUnlocked, user]);
+  }, [developerFlags.selectedModel, isAdmin, isDeveloper, isDeveloperUnlocked, user]);
 
   useEffect(() => {
     let isCancelled = false;
