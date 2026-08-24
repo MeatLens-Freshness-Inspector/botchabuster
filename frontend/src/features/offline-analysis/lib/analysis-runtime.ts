@@ -6,9 +6,11 @@ import {
 } from "@/features/offline-analysis/lib/ensemble";
 import {
   classifyWithMobileNetV3,
+  getActiveMobileNetModelVariant,
   getLoadedModelPath as getLoadedMobileNetModelPath,
   isModelReady as isMobileNetReady,
   loadMobileNetV3Model,
+  setActiveMobileNetModelVariant,
   type ModelPredictionResult,
 } from "@/features/offline-analysis/lib/mobilenet-runtime";
 import {
@@ -17,9 +19,13 @@ import {
   isResNet50Ready,
   loadResNet50Model,
 } from "@/features/offline-analysis/lib/resnet-runtime";
+import {
+  PRIMARY_ANALYSIS_MODEL,
+  type AnalysisModelSelection,
+} from "./model-catalog";
 import type { FreshnessRecommendation, SquareGuideBox } from "./meat-lens-pipeline";
 
-export type AnalysisMode = "ensemble" | "mobilenetv3";
+export type AnalysisMode = "ensemble" | "mobilenetv3" | "resnet50";
 
 export interface ActiveAnalysisPrediction {
   classification: FreshnessClassification;
@@ -29,7 +35,7 @@ export interface ActiveAnalysisPrediction {
   labelOrder: FreshnessClassification[];
   freshnessScore: number;
   recommendation: FreshnessRecommendation;
-  analysisSource: "mobilenetv3" | "ensemble";
+  analysisSource: "mobilenetv3" | "resnet50" | "ensemble";
   modelPath: string | null;
 }
 
@@ -39,6 +45,7 @@ export interface AnalyzeOptions {
 }
 
 let activeAnalysisMode: AnalysisMode = "mobilenetv3";
+let activeAnalysisModel: AnalysisModelSelection = PRIMARY_ANALYSIS_MODEL;
 
 function toEnsembleSourcePrediction(
   result: ModelPredictionResult,
@@ -59,8 +66,12 @@ function toEnsembleSourcePrediction(
 
 function toActiveAnalysisPrediction(
   result: ModelPredictionResult,
-  analysisSource: "mobilenetv3"
+  analysisSource: "mobilenetv3" | "resnet50"
 ): ActiveAnalysisPrediction {
+  const fallbackModelPath = analysisSource === "resnet50"
+    ? getLoadedResNet50ModelPath()
+    : getLoadedMobileNetModelPath();
+
   return {
     classification: result.classification,
     confidenceProbability: result.confidenceProbability,
@@ -70,7 +81,7 @@ function toActiveAnalysisPrediction(
     freshnessScore: result.freshnessScore,
     recommendation: result.recommendation,
     analysisSource,
-    modelPath: result.modelPath ?? getLoadedMobileNetModelPath(),
+    modelPath: result.modelPath ?? fallbackModelPath,
   };
 }
 
@@ -92,15 +103,48 @@ function toActiveAnalysisPredictionFromEnsemble(
 
 export function setActiveAnalysisMode(mode: AnalysisMode): void {
   activeAnalysisMode = mode;
+  if (mode === "ensemble") {
+    activeAnalysisModel = "ensemble";
+  } else if (mode === "resnet50") {
+    activeAnalysisModel = "resnet50";
+  } else if (activeAnalysisModel === "resnet50" || activeAnalysisModel === "ensemble") {
+    activeAnalysisModel = getActiveMobileNetModelVariant();
+  }
 }
 
 export function getActiveAnalysisMode(): AnalysisMode {
   return activeAnalysisMode;
 }
 
+export function setActiveAnalysisModel(selection: AnalysisModelSelection): void {
+  activeAnalysisModel = selection;
+
+  if (selection === "ensemble") {
+    activeAnalysisMode = "ensemble";
+    setActiveMobileNetModelVariant(PRIMARY_ANALYSIS_MODEL);
+    return;
+  }
+
+  if (selection === "resnet50") {
+    activeAnalysisMode = "resnet50";
+    return;
+  }
+
+  activeAnalysisMode = "mobilenetv3";
+  setActiveMobileNetModelVariant(selection);
+}
+
+export function getActiveAnalysisModel(): AnalysisModelSelection {
+  return activeAnalysisModel;
+}
+
 export function isAnalysisReady(): boolean {
   if (activeAnalysisMode === "ensemble") {
-    return isMobileNetReady() || isResNet50Ready();
+    return isMobileNetReady() && isResNet50Ready();
+  }
+
+  if (activeAnalysisMode === "resnet50") {
+    return isResNet50Ready();
   }
 
   return isMobileNetReady();
@@ -112,6 +156,11 @@ export async function loadActiveAnalysisModel(options: { forceRetry?: boolean } 
       loadMobileNetV3Model(options),
       loadResNet50Model(options),
     ]);
+    return isAnalysisReady();
+  }
+
+  if (activeAnalysisMode === "resnet50") {
+    await loadResNet50Model(options);
     return isAnalysisReady();
   }
 
@@ -151,6 +200,15 @@ export async function runActiveAnalysis(
     );
 
     return ensembleResult ? toActiveAnalysisPredictionFromEnsemble(ensembleResult) : null;
+  }
+
+  if (activeAnalysisMode === "resnet50") {
+    const resNetResult = await classifyWithResNet50(imageFile, options);
+    if (!resNetResult) {
+      return null;
+    }
+
+    return toActiveAnalysisPrediction(resNetResult, "resnet50");
   }
 
   const mobileNetResult = await classifyWithMobileNetV3(imageFile, options);

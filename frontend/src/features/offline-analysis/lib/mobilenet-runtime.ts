@@ -139,9 +139,9 @@ const MODEL_ASSET_PROFILES: Record<MobileNetModelVariant, ModelAssetProfile> = {
       label_order: ["fresh", "not fresh", "spoiled"],
     },
   },
-  roboflow_model3: {
-    variant: "roboflow_model3",
-    displayName: "MobileNetV3Small Roboflow model3",
+  primary: {
+    variant: "primary",
+    displayName: "Primary MobileNetV3Small",
     preprocessContract: "segmented_center_roi",
     modelCandidatePaths: [
       "/model/model3/meatlens_roboflow_mobilenetv3small_8fold_final.onnx",
