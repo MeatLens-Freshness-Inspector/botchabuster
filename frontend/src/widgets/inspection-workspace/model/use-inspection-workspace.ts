@@ -36,9 +36,8 @@ import {
   isModelReady as getAnalysisReady,
   loadActiveAnalysisModel,
   prewarmModel,
-  setActiveAnalysisMode,
+  setActiveAnalysisModel,
 } from "@/features/offline-analysis";
-import { setActiveMobileNetModelVariant } from "@/features/offline-analysis";
 import {
   formatInspectionLocationLabel,
   getCoordinateStatusText,
@@ -50,6 +49,7 @@ import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspec
 import type { CapturedImagePayload } from "@/features/inspection-capture";
 import type { InspectPageViewModel, InspectionSaveStatus } from "./types";
 import { useInspectionAnalysis } from "./use-inspection-analysis";
+import { resolveInspectionModelSelection } from "./analysis-model-selection";
 import {
   createClientSubmissionId,
   DEFAULT_MEAT_TYPE,
@@ -122,17 +122,13 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   }, [isAdmin, user]);
 
   useEffect(() => {
-    const useEnsemble = developerFlags.enableModelEnsemble;
-    const nextVariant =
-      useEnsemble
-        ? "seed123_model2"
-        : developerFlags.useRoboflowModel3
-          ? "roboflow_model3"
-          : developerFlags.useSeed123Model2
-            ? "seed123_model2"
-            : "default";
-    setActiveAnalysisMode(useEnsemble ? "ensemble" : "mobilenetv3");
-    setActiveMobileNetModelVariant(nextVariant);
+    const selectedModel = resolveInspectionModelSelection(
+      user ? { id: user.id } : null,
+      isAdmin,
+      isDeveloperUnlocked,
+      developerFlags.selectedModel,
+    );
+    setActiveAnalysisModel(selectedModel);
     setIsModelReady(!navigator.onLine || getAnalysisReady());
 
     if (!navigator.onLine) {
@@ -141,7 +137,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
 
     prewarmModel();
     setIsModelReady(getAnalysisReady());
-  }, [developerFlags.enableModelEnsemble, developerFlags.useRoboflowModel3, developerFlags.useSeed123Model2, isAdmin, isDeveloperUnlocked, user]);
+  }, [developerFlags.selectedModel, isAdmin, isDeveloperUnlocked, user]);
 
   useEffect(() => {
     let isCancelled = false;
