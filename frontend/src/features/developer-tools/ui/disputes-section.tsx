@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Check, Database, X } from "lucide-react";
 import type { InspectionResultDispute } from "@/entities/inspection";
 import { Button, Label } from "@/shared/ui";
@@ -9,14 +9,16 @@ function formatDate(value: string): string {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
 }
 
-export function DeveloperDisputesSection({
+export function InspectionDisputeReviewSection({
   disputes,
   isLoading,
+  canApplyDeveloperLabel,
   onApplyDeveloperLabel,
   onReview,
 }: {
   disputes: InspectionResultDispute[];
   isLoading: boolean;
+  canApplyDeveloperLabel: boolean;
   onApplyDeveloperLabel: (disputeId: string) => Promise<unknown>;
   onReview: (disputeId: string, decision: "approved" | "rejected", reviewerNote: string | null) => Promise<unknown>;
 }) {
@@ -80,10 +82,12 @@ export function DeveloperDisputesSection({
                 />
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button type="button" size="sm" variant="outline" disabled={isBusy || Boolean(dispute.developer_label_applied_at)} onClick={() => void run(dispute.id, () => onApplyDeveloperLabel(dispute.id))}>
-                  <Database className="mr-1.5 h-4 w-4" />
-                  {dispute.developer_label_applied_at ? "Developer label applied" : "Apply developer label"}
-                </Button>
+                {canApplyDeveloperLabel && (
+                  <Button type="button" size="sm" variant="outline" disabled={isBusy || Boolean(dispute.developer_label_applied_at)} onClick={() => void run(dispute.id, () => onApplyDeveloperLabel(dispute.id))}>
+                    <Database className="mr-1.5 h-4 w-4" />
+                    {dispute.developer_label_applied_at ? "Developer label applied" : "Apply developer label"}
+                  </Button>
+                )}
                 <Button type="button" size="sm" disabled={isBusy} onClick={() => void run(dispute.id, () => onReview(dispute.id, "approved", note.trim() || null))}>
                   <Check className="mr-1.5 h-4 w-4" /> Approve official result
                 </Button>

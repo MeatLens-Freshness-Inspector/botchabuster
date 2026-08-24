@@ -5,6 +5,7 @@ export type AdminDashboardTabKey =
   | "overview"
   | "users"
   | "inspections"
+  | "disputes"
   | "codes"
   | "markets"
   | "reports"

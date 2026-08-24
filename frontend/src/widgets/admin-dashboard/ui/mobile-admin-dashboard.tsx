@@ -14,6 +14,7 @@ import { useAdminDashboard } from "../model/use-admin-dashboard";
 import type { AdminDashboardTabKey } from "../model/types";
 import AccessCodesTab from "./mobile-access-codes-tab";
 import DeveloperTab from "./mobile-developer-tab";
+import DisputesTab from "./disputes-tab";
 import InspectionsTab from "./mobile-inspections-tab";
 import LogsTab from "./mobile-logs-tab";
 import MarketsTab from "./mobile-markets-tab";
@@ -32,6 +33,8 @@ function renderMobileTab(
       return <UsersTab dashboard={dashboard} />;
     case "inspections":
       return <InspectionsTab dashboard={dashboard} />;
+    case "disputes":
+      return <DisputesTab />;
     case "codes":
       return <AccessCodesTab dashboard={dashboard} />;
     case "markets":

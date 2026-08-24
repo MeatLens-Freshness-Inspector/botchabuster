@@ -3,5 +3,4 @@ export type DeveloperWorkspaceTabKey =
   | "settings"
   | "api-docs"
   | "datasets"
-  | "training"
-  | "disputes";
+  | "training";

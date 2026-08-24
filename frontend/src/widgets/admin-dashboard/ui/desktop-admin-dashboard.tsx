@@ -8,6 +8,7 @@ import { useAdminDashboard } from "../model/use-admin-dashboard";
 import type { AdminDashboardTabKey } from "../model/types";
 import AccessCodesTab from "./desktop-access-codes-tab";
 import DeveloperTab from "./desktop-developer-tab";
+import DisputesTab from "./disputes-tab";
 import InspectionsTab from "./desktop-inspections-tab";
 import LogsTab from "./desktop-logs-tab";
 import MarketsTab from "./desktop-markets-tab";
@@ -26,6 +27,8 @@ function renderDesktopTab(
       return <UsersTab dashboard={dashboard} />;
     case "inspections":
       return <InspectionsTab dashboard={dashboard} />;
+    case "disputes":
+      return <DisputesTab />;
     case "codes":
       return <AccessCodesTab dashboard={dashboard} />;
     case "markets":

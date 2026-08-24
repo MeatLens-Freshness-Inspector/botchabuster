@@ -6,7 +6,6 @@ import {
   DeveloperExport,
   DeveloperOverviewSection,
   DeveloperTrainingSection,
-  DeveloperDisputesSection,
   ApiDocsSection,
   DeveloperOptionsPanel,
 } from "@/features/developer-tools";
@@ -27,7 +26,6 @@ const DeveloperTabContent = () => {
           <TabsTrigger value="api-docs" className="rounded-xl">API Docs</TabsTrigger>
           <TabsTrigger value="datasets" className="rounded-xl">Datasets</TabsTrigger>
           <TabsTrigger value="training" className="rounded-xl">Training</TabsTrigger>
-          <TabsTrigger value="disputes" className="rounded-xl">Disputes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-5">
@@ -62,14 +60,6 @@ const DeveloperTabContent = () => {
             onImport={developer.importTrainingRun}
             isImporting={developer.isImportingTrainingRun}
             isLoading={developer.isLoadingTrainingRuns}
-          />
-        </TabsContent>
-        <TabsContent value="disputes" className="mt-5">
-          <DeveloperDisputesSection
-            disputes={developer.disputes}
-            isLoading={developer.isLoadingDisputes}
-            onApplyDeveloperLabel={developer.applyDisputeToDeveloperDataset}
-            onReview={developer.reviewDispute}
           />
         </TabsContent>
       </Tabs>
