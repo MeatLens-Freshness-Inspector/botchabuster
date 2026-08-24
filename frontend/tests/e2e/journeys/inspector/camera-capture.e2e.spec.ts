@@ -179,7 +179,7 @@ test("developer bypass allows camera access without completing the pre-scan chec
     verboseOfflineSyncLogs: false,
     skipModelPrewarm: false,
     showModelInputPreview: true,
-    useSeed123Model2: true,
+    selectedModel: "primary",
   });
   await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
 

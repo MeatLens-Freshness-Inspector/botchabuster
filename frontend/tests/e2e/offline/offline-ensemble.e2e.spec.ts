@@ -29,7 +29,7 @@ function buildModelResult(
 }
 
 test("fuses MobileNetV3 and ResNet50 probabilities using the documented ordinal score", () => {
-  const mobileNet = buildModelResult("fresh", 91, "MobileNetV3-small seed123/model2", {
+  const mobileNet = buildModelResult("fresh", 91, "Primary MobileNetV3", {
     fresh: 0.8,
     "not fresh": 0.15,
     spoiled: 0.05,
@@ -55,7 +55,7 @@ test("fuses MobileNetV3 and ResNet50 probabilities using the documented ordinal 
 });
 
 test("falls back to the available model when the other ensemble branch is unavailable", () => {
-  const mobileNet = buildModelResult("not fresh", 66, "MobileNetV3-small seed123/model2", {
+  const mobileNet = buildModelResult("not fresh", 66, "Primary MobileNetV3", {
     fresh: 0.06,
     "not fresh": 0.49,
     spoiled: 0.45,
