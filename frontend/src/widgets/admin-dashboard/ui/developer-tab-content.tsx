@@ -20,7 +20,7 @@ const DeveloperTabContent = () => {
         value={developer.activeDeveloperTab}
         onValueChange={(value) => developer.setActiveDeveloperTab(value as DeveloperWorkspaceTabKey)}
       >
-        <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl bg-card/90 p-2 md:grid-cols-6">
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl bg-card/90 p-2 md:grid-cols-5">
           <TabsTrigger value="overview" className="rounded-xl">Overview</TabsTrigger>
           <TabsTrigger value="settings" className="rounded-xl">Developer Settings</TabsTrigger>
           <TabsTrigger value="api-docs" className="rounded-xl">API Docs</TabsTrigger>

@@ -365,6 +365,11 @@ test("developer workspace renders the five internal tabs", async () => {
       "Datasets",
       "Training",
     ]);
+
+    const tabList = document.querySelector('[role="tablist"]');
+    assert.ok(tabList, "Expected developer workspace tab list");
+    assert.match(tabList?.className ?? "", /md:grid-cols-5/);
+    assert.doesNotMatch(tabList?.className ?? "", /md:grid-cols-6/);
   } finally {
     globalThis.fetch = originalFetch;
     await act(async () => {
