@@ -26,9 +26,9 @@ const localStorage = createMemoryStorage();
   localStorage,
 } as Window;
 
-test("new developer flag state selects the primary model and keeps gray ROI preprocessing enabled", () => {
+test("new developer flag state selects the primary model and disables ROI segmentation", () => {
   assert.equal(DEFAULT_DEVELOPER_OPTIONS_FLAGS.selectedModel, "primary");
-  assert.equal(DEFAULT_DEVELOPER_OPTIONS_FLAGS.disableRoiSegmentation, false);
+  assert.equal(DEFAULT_DEVELOPER_OPTIONS_FLAGS.disableRoiSegmentation, true);
 });
 
 test("stored developer choices survive normalization", () => {
@@ -43,6 +43,15 @@ test("stored developer choices survive normalization", () => {
   assert.equal(flags.disableRoiSegmentation, true);
 });
 
+test("stored developer segmentation override remains enabled when explicitly selected", () => {
+  setDeveloperOptionsFlags("developer-override", {
+    ...DEFAULT_DEVELOPER_OPTIONS_FLAGS,
+    disableRoiSegmentation: false,
+  });
+
+  assert.equal(getDeveloperOptionsFlags("developer-override").disableRoiSegmentation, false);
+});
+
 test("older default payloads migrate to the primary model", () => {
   localStorage.setItem(
     "meatlens-developer-options-flags:developer-2",
@@ -50,7 +59,7 @@ test("older default payloads migrate to the primary model", () => {
   );
 
   assert.equal(getDeveloperOptionsFlags("developer-2").selectedModel, "primary");
-  assert.equal(getDeveloperOptionsFlags("developer-2").disableRoiSegmentation, false);
+  assert.equal(getDeveloperOptionsFlags("developer-2").disableRoiSegmentation, true);
 });
 
 test("older explicit selections migrate to their matching model", () => {
