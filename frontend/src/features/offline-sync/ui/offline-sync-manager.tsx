@@ -1,14 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import type { AnalysisModelSelection } from "@/features/offline-analysis";
 
 const FORCE_RETAKE_CONFIDENCE_THRESHOLD = 80;
 
 type MeatType = "pork" | "beef" | "chicken" | "fish" | "other";
 type FreshnessClassification = "fresh" | "not fresh" | "spoiled" | "acceptable" | "warning";
 type InspectionDecisionSource = "ai" | "protocol_pre_scan";
-type ModelVariant = "default" | "seed123_model2" | "roboflow_model3";
-type AnalysisMode = "ensemble" | "mobilenetv3";
 
 type AnalysisResult = {
   classification: FreshnessClassification;
@@ -76,9 +75,7 @@ type OfflineInspectionInsert = {
 };
 
 type DeveloperOptionsFlags = {
-  enableModelEnsemble: boolean;
-  useSeed123Model2: boolean;
-  useRoboflowModel3: boolean;
+  selectedModel: AnalysisModelSelection;
   verboseOfflineSyncLogs: boolean;
   skipModelPrewarm: boolean;
 };
@@ -101,8 +98,7 @@ export type OfflineSyncDependencies = {
   buildProtocolSpoiledAnalysisResult: () => AnalysisResult;
   analyzeOffline: (file: File, meatType: MeatType) => Promise<AnalysisResult>;
   prewarmModel: () => void;
-  setActiveAnalysisMode: (mode: AnalysisMode) => void;
-  setActiveMobileNetModelVariant: (variant: ModelVariant) => void;
+  setActiveAnalysisModel: (selection: AnalysisModelSelection) => void;
   getDeveloperOptionsFlags: (userId: string) => DeveloperOptionsFlags;
   getDeveloperOptionsSession: (userId: string) => unknown;
   isDeveloperOptionsSessionExpired: (session: unknown) => boolean;
@@ -110,17 +106,14 @@ export type OfflineSyncDependencies = {
 
 type SyncUser = { id: string };
 
-export function resolveActiveModelVariant(
+export function resolveActiveModelSelection(
   user: SyncUser | null,
   isAdmin: boolean,
-  developerFlags: Pick<DeveloperOptionsFlags, "enableModelEnsemble" | "useSeed123Model2" | "useRoboflowModel3">,
+  developerFlags: Pick<DeveloperOptionsFlags, "selectedModel">,
   isDeveloperUnlocked: boolean,
-): ModelVariant {
-  if (!user || !isAdmin) return "seed123_model2";
-  if (developerFlags.enableModelEnsemble) return "seed123_model2";
-  if (developerFlags.useRoboflowModel3) return "roboflow_model3";
-  if (developerFlags.useSeed123Model2) return "seed123_model2";
-  return isDeveloperUnlocked ? "default" : "seed123_model2";
+): AnalysisModelSelection {
+  if (!user || !isAdmin || !isDeveloperUnlocked) return "primary";
+  return developerFlags.selectedModel;
 }
 
 /**
@@ -242,8 +235,8 @@ export function OfflineSyncManager({
   const queryClient = useQueryClient();
   const isRunning = useRef(false);
 
-  const resolveActiveVariant = (developerFlags: DeveloperOptionsFlags, isDeveloperUnlocked: boolean) =>
-    resolveActiveModelVariant(user, isAdmin, developerFlags, isDeveloperUnlocked);
+  const resolveActiveSelection = (developerFlags: DeveloperOptionsFlags, isDeveloperUnlocked: boolean) =>
+    resolveActiveModelSelection(user, isAdmin, developerFlags, isDeveloperUnlocked);
 
   const drainQueue = async () => {
     if (!navigator.onLine) return;
@@ -256,9 +249,7 @@ export function OfflineSyncManager({
     const isDeveloperUnlocked = Boolean(
       developerSession && !dependencies.isDeveloperOptionsSessionExpired(developerSession)
     );
-    const useEnsemble = developerFlags.enableModelEnsemble;
-    dependencies.setActiveAnalysisMode(useEnsemble ? "ensemble" : "mobilenetv3");
-    dependencies.setActiveMobileNetModelVariant(resolveActiveVariant(developerFlags, isDeveloperUnlocked));
+    dependencies.setActiveAnalysisModel(resolveActiveSelection(developerFlags, isDeveloperUnlocked));
 
     isRunning.current = true;
     try {
@@ -304,8 +295,7 @@ export function OfflineSyncManager({
   useEffect(() => {
     const maybePrewarm = () => {
       if (!user) {
-        dependencies.setActiveAnalysisMode("mobilenetv3");
-        dependencies.setActiveMobileNetModelVariant("seed123_model2");
+        dependencies.setActiveAnalysisModel("primary");
         dependencies.prewarmModel();
         return;
       }
@@ -315,9 +305,7 @@ export function OfflineSyncManager({
       const isDeveloperUnlocked = Boolean(
         developerSession && !dependencies.isDeveloperOptionsSessionExpired(developerSession)
       );
-      const useEnsemble = developerFlags.enableModelEnsemble;
-      dependencies.setActiveAnalysisMode(useEnsemble ? "ensemble" : "mobilenetv3");
-      dependencies.setActiveMobileNetModelVariant(resolveActiveVariant(developerFlags, isDeveloperUnlocked));
+      dependencies.setActiveAnalysisModel(resolveActiveSelection(developerFlags, isDeveloperUnlocked));
       if (developerFlags.skipModelPrewarm) {
         if (developerFlags.verboseOfflineSyncLogs) {
           console.info("[OfflineSyncManager] Skipping model prewarm due to developer option");

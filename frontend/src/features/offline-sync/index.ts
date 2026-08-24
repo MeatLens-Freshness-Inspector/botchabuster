@@ -1,6 +1,6 @@
 export {
   OfflineSyncManager,
-  resolveActiveModelVariant,
+  resolveActiveModelSelection,
   type OfflineSyncDependencies,
   type OfflineSyncManagerProps,
 } from "./ui/offline-sync-manager";

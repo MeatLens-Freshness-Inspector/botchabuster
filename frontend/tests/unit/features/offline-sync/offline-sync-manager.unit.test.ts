@@ -1,25 +1,29 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { resolveActiveModelVariant } from "../../../../src/features/offline-sync/ui/offline-sync-manager";
+import { resolveActiveModelSelection } from "../../../../src/features/offline-sync/ui/offline-sync-manager";
 
-test("offline sync selects the stable model for anonymous and locked sessions", () => {
-  assert.equal(resolveActiveModelVariant(null, false, { enableModelEnsemble: false, useSeed123Model2: false, useRoboflowModel3: false }, false), "seed123_model2");
-  assert.equal(resolveActiveModelVariant({ id: "admin-1" }, true, { enableModelEnsemble: false, useSeed123Model2: false, useRoboflowModel3: false }, false), "seed123_model2");
+test("offline sync selects the primary model for anonymous and locked sessions", () => {
+  assert.equal(resolveActiveModelSelection(null, false, { selectedModel: "primary" }, false), "primary");
+  assert.equal(resolveActiveModelSelection({ id: "admin-1" }, true, { selectedModel: "resnet50" }, false), "primary");
 });
 
-test("offline sync selects the configured developer model when unlocked", () => {
-  assert.equal(resolveActiveModelVariant({ id: "admin-1" }, true, { enableModelEnsemble: false, useSeed123Model2: false, useRoboflowModel3: false }, true), "default");
-  assert.equal(resolveActiveModelVariant({ id: "admin-1" }, true, { enableModelEnsemble: true, useSeed123Model2: false, useRoboflowModel3: false }, true), "seed123_model2");
+test("offline sync selects each configured developer model when unlocked", () => {
+  for (const selectedModel of ["primary", "seed123_model2", "default", "resnet50", "ensemble"] as const) {
+    assert.equal(
+      resolveActiveModelSelection({ id: "admin-1" }, true, { selectedModel }, true),
+      selectedModel,
+    );
+  }
 });
 
-test("offline sync selects the Roboflow model3 developer option", () => {
+test("offline sync always returns primary when developer access is unavailable", () => {
   assert.equal(
-    resolveActiveModelVariant(
+    resolveActiveModelSelection(
       { id: "admin-1" },
-      true,
-      { enableModelEnsemble: false, useSeed123Model2: true, useRoboflowModel3: true },
+      false,
+      { selectedModel: "ensemble" },
       true,
     ),
-    "roboflow_model3",
+    "primary",
   );
 });
