@@ -27,6 +27,7 @@ export { DeveloperOptionsPanel } from "./ui/developer-options-panel";
 export { DeveloperOverviewSection } from "./ui/developer-metrics";
 export { DeveloperDatasetsSection } from "./ui/datasets-section";
 export { DeveloperTrainingSection } from "./ui/training-section";
+export { DeveloperDisputesSection } from "./ui/disputes-section";
 export * from "./model/api-docs-catalog";
 export * from "./model/api-docs-types";
 export * from "./model/types";

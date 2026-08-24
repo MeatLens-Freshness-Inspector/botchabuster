@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Inspection, FreshnessClassification } from "@/entities/inspection";
-import { FreshnessBadge } from "@/entities/inspection";
+import { FreshnessBadge, FRESHNESS_CLASSIFICATIONS, getEffectiveInspectionClassification } from "@/entities/inspection";
+import { useInspectionDisputes, useSubmitInspectionDispute } from "@/features/inspection-disputes/model/use-inspection-disputes";
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,9 @@ import {
   Beef,
   Clock,
   ShieldCheck,
+  Scale,
 } from "lucide-react";
+import { Button, Label } from "@/shared/ui";
 
 interface InspectionDetailSheetProps {
   inspection: Inspection | null;
@@ -43,11 +46,21 @@ function formatYesNo(value: boolean | null | undefined): string {
 
 export function InspectionDetailSheet({ inspection, open, onOpenChange }: InspectionDetailSheetProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [isDisputeFormOpen, setIsDisputeFormOpen] = useState(false);
+  const [expectedClassification, setExpectedClassification] = useState<FreshnessClassification>("fresh");
+  const [disputeReason, setDisputeReason] = useState("");
+  const disputesQuery = useInspectionDisputes();
+  const submitDispute = useSubmitInspectionDispute();
   if (!inspection) return null;
 
+  const effectiveClassification = getEffectiveInspectionClassification(inspection);
+  const currentDispute = disputesQuery.data?.find((item) => item.inspection_id === inspection.id) ?? null;
+  const pendingDispute = disputesQuery.data?.find(
+    (item) => item.inspection_id === inspection.id && item.status === "pending",
+  ) ?? null;
   const confidenceFillClass = getConfidenceFillClass(inspection.confidence_score);
   const confidenceTextClass = getConfidenceTextClass(inspection.confidence_score);
-  const classificationColor = CLASSIFICATION_COLORS[inspection.classification];
+  const classificationColor = CLASSIFICATION_COLORS[effectiveClassification];
   const locationLabel = formatInspectionLocationLabel(
     inspection.location,
     inspection.location_latitude,
@@ -98,7 +111,7 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
                   {inspection.id.slice(0, 12)}…
                 </p>
               </div>
-              <FreshnessBadge classification={inspection.classification} size="lg" />
+              <FreshnessBadge classification={effectiveClassification} size="lg" />
             </div>
           </DialogHeader>
 
@@ -142,7 +155,13 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
           <div className={cn("mb-4 rounded-xl border p-3", classificationColor)}>
             <div className="mb-2 flex items-center justify-between">
               <p className="text-[10px] font-display uppercase tracking-widest text-muted-foreground">Classification</p>
-              <FreshnessBadge classification={inspection.classification} size="sm" />
+              <FreshnessBadge classification={effectiveClassification} size="sm" />
+              {inspection.official_classification && (
+                <p className="mt-1 text-[10px] text-muted-foreground">Official result</p>
+              )}
+              {inspection.official_classification && inspection.official_classification !== inspection.classification && (
+                <p className="mt-1 text-[10px] text-muted-foreground">Model result: <span className="capitalize">{inspection.classification}</span></p>
+              )}
             </div>
             <p className="text-[10px] font-display uppercase tracking-widest text-muted-foreground mt-2">
               Confidence
@@ -302,6 +321,96 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
               </div>
             </section>
           )}
+
+          <section className="mt-5 rounded-xl border border-primary/25 bg-primary/5 p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="flex items-center gap-1.5 text-[10px] font-display uppercase tracking-widest text-primary">
+                  <Scale className="h-3.5 w-3.5" /> Dispute result
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  Submit the result you expect and explain the inspection evidence. An administrator or developer must approve the official change.
+                </p>
+              </div>
+              {pendingDispute ? (
+                <span className="shrink-0 rounded-full bg-warning/15 px-2 py-1 text-[10px] font-semibold text-warning">
+                  Pending review
+                </span>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setExpectedClassification(effectiveClassification);
+                    setDisputeReason("");
+                    setIsDisputeFormOpen((openState) => !openState);
+                  }}
+                >
+                  {isDisputeFormOpen ? "Cancel" : "Dispute result"}
+                </Button>
+              )}
+            </div>
+
+            {currentDispute && !pendingDispute && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Latest dispute: <span className="font-semibold capitalize">{currentDispute.status}</span> · expected {currentDispute.expected_classification}
+              </p>
+            )}
+
+            {isDisputeFormOpen && !pendingDispute && (
+              <form
+                className="mt-3 space-y-3 border-t border-primary/15 pt-3"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void submitDispute.mutateAsync({
+                    inspectionId: inspection.id,
+                    expectedClassification,
+                    reason: disputeReason,
+                  }).then(() => {
+                    setIsDisputeFormOpen(false);
+                    setDisputeReason("");
+                  }).catch(() => undefined);
+                }}
+              >
+                <div className="space-y-1.5">
+                  <Label htmlFor={`dispute-result-${inspection.id}`}>Expected result</Label>
+                  <select
+                    id={`dispute-result-${inspection.id}`}
+                    value={expectedClassification}
+                    onChange={(event) => setExpectedClassification(event.target.value as FreshnessClassification)}
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm capitalize"
+                  >
+                    {FRESHNESS_CLASSIFICATIONS.map((classification) => (
+                      <option key={classification} value={classification}>{classification}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor={`dispute-reason-${inspection.id}`}>Why is the result incorrect?</Label>
+                  <textarea
+                    id={`dispute-reason-${inspection.id}`}
+                    value={disputeReason}
+                    onChange={(event) => setDisputeReason(event.target.value)}
+                    minLength={10}
+                    maxLength={2000}
+                    rows={4}
+                    placeholder="Describe the visible evidence or inspection finding."
+                    className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm leading-relaxed outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+                    required
+                  />
+                  <p className="text-[10px] text-muted-foreground">{disputeReason.trim().length}/2000 characters; minimum 10.</p>
+                </div>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={submitDispute.isPending || disputeReason.trim().length < 10}
+                >
+                  {submitDispute.isPending ? "Submitting..." : "Submit dispute"}
+                </Button>
+              </form>
+            )}
+          </section>
         </div>
       </DialogContent>
     </Dialog>

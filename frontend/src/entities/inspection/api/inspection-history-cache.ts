@@ -1,4 +1,5 @@
 import { Capacitor } from "@capacitor/core";
+import { getEffectiveInspectionClassification } from "../model/types";
 import type { FreshnessClassification, Inspection } from "../model/types";
 import * as sqliteImpl from "./sqlite-cache";
 
@@ -71,7 +72,7 @@ export function buildInspectionHistoryStats(inspections: Inspection[]): Inspecti
   };
 
   for (const inspection of inspections) {
-    byClassification[inspection.classification] += 1;
+    byClassification[getEffectiveInspectionClassification(inspection)] += 1;
   }
 
   return {

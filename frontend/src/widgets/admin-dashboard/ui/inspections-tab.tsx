@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { ClipboardList, Trash2 } from "lucide-react";
-import { FreshnessBadge } from "@/entities/inspection";
+import { FreshnessBadge, getEffectiveInspectionClassification } from "@/entities/inspection";
 import { Button } from "@/shared/ui";
 import {
   Card,
@@ -98,7 +98,7 @@ const InspectionsTab = ({ dashboard }: InspectionsTabContentProps) => {
                           {inspection.meat_type}
                         </span>
                         <FreshnessBadge
-                          classification={inspection.classification}
+                          classification={getEffectiveInspectionClassification(inspection)}
                           size="sm"
                         />
                       </div>

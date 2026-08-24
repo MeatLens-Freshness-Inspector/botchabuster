@@ -7,9 +7,9 @@ import {
   type DeveloperDatasetListResponse,
   type DeveloperOverviewResponse,
   type TrainingRunRecord,
+  type DeveloperDisputeMutationResponse,
 } from "@/entities/developer-metrics";
-import type { FreshnessClassification } from "@/entities/inspection";
-import type { Inspection } from "@/entities/inspection";
+import type { FreshnessClassification, Inspection, InspectionResultDispute } from "@/entities/inspection";
 import { buildDeveloperInAppMetrics } from "../lib/in-app-metrics";
 import type { DeveloperWorkspaceTabKey } from "./types";
 
@@ -25,6 +25,7 @@ export function useDeveloperDashboard() {
   const [datasets, setDatasets] = useState<DeveloperDatasetListResponse | null>(null);
   const [overviewDatasetItems, setOverviewDatasetItems] = useState<Inspection[] | null>(null);
   const [trainingRuns, setTrainingRuns] = useState<TrainingRunRecord[]>([]);
+  const [disputes, setDisputes] = useState<InspectionResultDispute[]>([]);
   const [datasetFilters, setDatasetFilters] = useState<DeveloperDatasetFilterState>(
     DEFAULT_DEVELOPER_DATASET_FILTERS,
   );
@@ -33,6 +34,7 @@ export function useDeveloperDashboard() {
   const [isLoadingTrainingRuns, setIsLoadingTrainingRuns] = useState(false);
   const [isExportingDatasets, setIsExportingDatasets] = useState(false);
   const [isImportingTrainingRun, setIsImportingTrainingRun] = useState(false);
+  const [isLoadingDisputes, setIsLoadingDisputes] = useState(false);
 
   const loadOverview = useCallback(async () => {
     setIsLoadingOverview(true);
@@ -74,6 +76,45 @@ export function useDeveloperDashboard() {
       toast.error(error instanceof Error ? error.message : "Failed to load training runs");
     } finally {
       setIsLoadingTrainingRuns(false);
+    }
+  }, []);
+
+  const loadDisputes = useCallback(async () => {
+    setIsLoadingDisputes(true);
+    try {
+      setDisputes(await developerDashboardClient.listInspectionResultDisputes());
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to load inspection disputes");
+    } finally {
+      setIsLoadingDisputes(false);
+    }
+  }, []);
+
+  const applyDisputeToDeveloperDataset = useCallback(async (disputeId: string): Promise<DeveloperDisputeMutationResponse> => {
+    try {
+      const result = await developerDashboardClient.applyInspectionDisputeToDeveloperDataset(disputeId);
+      setDisputes((current) => current.filter((item) => item.id !== disputeId));
+      toast.success("Developer dataset label applied");
+      return result;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to apply developer label");
+      throw error;
+    }
+  }, []);
+
+  const reviewDispute = useCallback(async (
+    disputeId: string,
+    decision: "approved" | "rejected",
+    reviewerNote: string | null,
+  ): Promise<DeveloperDisputeMutationResponse> => {
+    try {
+      const result = await developerDashboardClient.reviewInspectionResultDispute(disputeId, decision, reviewerNote);
+      setDisputes((current) => current.filter((item) => item.id !== disputeId));
+      toast.success(`Dispute ${decision}`);
+      return result;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : `Failed to ${decision} dispute`);
+      throw error;
     }
   }, []);
 
@@ -168,12 +209,19 @@ export function useDeveloperDashboard() {
     }
   }, [activeDeveloperTab, isLoadingTrainingRuns, loadTrainingRuns, trainingRuns.length]);
 
+  useEffect(() => {
+    if (activeDeveloperTab === "disputes" && disputes.length === 0 && !isLoadingDisputes) {
+      void loadDisputes();
+    }
+  }, [activeDeveloperTab, disputes.length, isLoadingDisputes, loadDisputes]);
+
   return {
     activeDeveloperTab,
     setActiveDeveloperTab,
     overview,
     datasets,
     trainingRuns,
+    disputes,
     datasetFilters,
     setDatasetFilters,
     isLoadingOverview,
@@ -181,11 +229,15 @@ export function useDeveloperDashboard() {
     isLoadingTrainingRuns,
     isExportingDatasets,
     isImportingTrainingRun,
+    isLoadingDisputes,
     loadOverview,
     loadDatasets,
     loadTrainingRuns,
+    loadDisputes,
     updateDatasetManualClassification,
     exportDatasets,
     importTrainingRun,
+    applyDisputeToDeveloperDataset,
+    reviewDispute,
   };
 }

@@ -16,6 +16,7 @@ export interface Inspection {
   user_id: string | null;
   meat_type: MeatType;
   classification: FreshnessClassification;
+  official_classification?: FreshnessClassification | null;
   manual_classification?: FreshnessClassification;
   confidence_score: number;
   flagged_deviations: string[];
@@ -38,6 +39,29 @@ export interface Inspection {
   captured_at?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export type InspectionResultDisputeStatus = 'pending' | 'approved' | 'rejected';
+
+export interface InspectionResultDispute {
+  id: string;
+  inspection_id: string;
+  submitted_by: string;
+  expected_classification: FreshnessClassification;
+  reason: string;
+  status: InspectionResultDisputeStatus;
+  developer_label_applied_at: string | null;
+  developer_label_applied_by: string | null;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  reviewer_note: string | null;
+  created_at: string;
+  updated_at: string;
+  inspection?: Inspection | null;
+}
+
+export function getEffectiveInspectionClassification(inspection: Pick<Inspection, 'classification' | 'official_classification'>): FreshnessClassification {
+  return inspection.official_classification ?? inspection.classification;
 }
 
 export interface InspectionInsert {

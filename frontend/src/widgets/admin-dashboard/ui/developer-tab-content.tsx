@@ -6,6 +6,7 @@ import {
   DeveloperExport,
   DeveloperOverviewSection,
   DeveloperTrainingSection,
+  DeveloperDisputesSection,
   ApiDocsSection,
   DeveloperOptionsPanel,
 } from "@/features/developer-tools";
@@ -20,12 +21,13 @@ const DeveloperTabContent = () => {
         value={developer.activeDeveloperTab}
         onValueChange={(value) => developer.setActiveDeveloperTab(value as DeveloperWorkspaceTabKey)}
       >
-        <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl bg-card/90 p-2 md:grid-cols-5">
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl bg-card/90 p-2 md:grid-cols-6">
           <TabsTrigger value="overview" className="rounded-xl">Overview</TabsTrigger>
           <TabsTrigger value="settings" className="rounded-xl">Developer Settings</TabsTrigger>
           <TabsTrigger value="api-docs" className="rounded-xl">API Docs</TabsTrigger>
           <TabsTrigger value="datasets" className="rounded-xl">Datasets</TabsTrigger>
           <TabsTrigger value="training" className="rounded-xl">Training</TabsTrigger>
+          <TabsTrigger value="disputes" className="rounded-xl">Disputes</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-5">
@@ -60,6 +62,14 @@ const DeveloperTabContent = () => {
             onImport={developer.importTrainingRun}
             isImporting={developer.isImportingTrainingRun}
             isLoading={developer.isLoadingTrainingRuns}
+          />
+        </TabsContent>
+        <TabsContent value="disputes" className="mt-5">
+          <DeveloperDisputesSection
+            disputes={developer.disputes}
+            isLoading={developer.isLoadingDisputes}
+            onApplyDeveloperLabel={developer.applyDisputeToDeveloperDataset}
+            onReview={developer.reviewDispute}
           />
         </TabsContent>
       </Tabs>

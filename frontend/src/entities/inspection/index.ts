@@ -7,7 +7,10 @@ export {
   type Inspection,
   type InspectionDecisionSource,
   type InspectionInsert,
+  type InspectionResultDispute,
+  type InspectionResultDisputeStatus,
   type MeatType,
+  getEffectiveInspectionClassification,
 } from "./model/types";
 export {
   PROTOCOL_SPOILED_REASON,

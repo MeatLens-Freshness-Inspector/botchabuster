@@ -1,4 +1,5 @@
 import type { ReportOrganization } from "@/features/reports/model/types";
+import { getEffectiveInspectionClassification, type FreshnessClassification } from "@/entities/inspection";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { getTemplateKeyForOrganization } from "@/features/reports/lib/pdf/assets";
 import {
@@ -14,7 +15,8 @@ type InspectorDailyInspection = {
   created_at: string;
   captured_at: string | null;
   meat_type: string;
-  classification: string;
+  classification: FreshnessClassification;
+  official_classification?: FreshnessClassification | null;
   confidence_score: number;
   location: string | null;
   image_url: string | null;
@@ -51,8 +53,8 @@ function buildInspectorClassificationChart(
 
   inspections.forEach((inspection) => {
     counts.set(
-      inspection.classification,
-      (counts.get(inspection.classification) ?? 0) + 1,
+      getEffectiveInspectionClassification(inspection),
+      (counts.get(getEffectiveInspectionClassification(inspection)) ?? 0) + 1,
     );
   });
 
@@ -165,7 +167,7 @@ export function buildInspectorDailyReportModel(
             inspection.captured_at ?? inspection.created_at,
           ),
           meatType: inspection.meat_type,
-          classification: inspection.classification,
+          classification: getEffectiveInspectionClassification(inspection),
           confidenceLabel: `${inspection.confidence_score}%`,
           location: inspection.location ?? "-",
         })),

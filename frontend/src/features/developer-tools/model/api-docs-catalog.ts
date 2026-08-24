@@ -151,6 +151,8 @@ const inspectionOperations: ApiDocsOperation[] = [
   operation("inspections-get", "inspections", "GET", "/inspections/{id}", "Read one inspection", "Authenticated", { parameters: [pathParameter("id", "Inspection id"), queryParameter("scope", "Inspection scope: mine or all", "mine")] }),
   operation("inspections-create", "inspections", "POST", "/inspections", "Create an inspection record", "Authenticated", { body: jsonBody('{"meat_type":"","classification":"","confidence_score":0}') }),
   operation("inspections-delete", "inspections", "DELETE", "/inspections/{id}", "Delete an inspection", "Authenticated", { parameters: [pathParameter("id", "Inspection id")], responseKind: "empty", responseContentType: "text/plain" }),
+  operation("inspections-disputes-list", "inspections", "GET", "/inspections/disputes", "List your inspection result disputes", "Authenticated"),
+  operation("inspections-dispute-submit", "inspections", "POST", "/inspections/{id}/disputes", "Submit an inspection result dispute", "Authenticated", { parameters: [pathParameter("id", "Inspection id")], body: jsonBody('{"expectedClassification":"","reason":""}') }),
 ];
 
 const profileOperations: ApiDocsOperation[] = [
@@ -197,6 +199,9 @@ const developerDashboardOperations: ApiDocsOperation[] = [
   operation("developer-dashboard-datasets", "developer-dashboard", "GET", "/developer-dashboard/datasets", "List the developer dataset", "Developer", { parameters: [queryParameter("limit", "Maximum records to return", "25"), queryParameter("offset", "Number of records to skip", "0"), queryParameter("meatType", "Filter by meat type"), queryParameter("classification", "Filter by classification"), queryParameter("inspector", "Filter by inspector"), queryParameter("location", "Filter by location"), queryParameter("hasImage", "Filter by image presence"), queryParameter("dateFrom", "Filter from date"), queryParameter("dateTo", "Filter to date")] }),
   operation("developer-dashboard-datasets-export", "developer-dashboard", "POST", "/developer-dashboard/datasets/export", "Export filtered developer data", "Developer", { body: jsonBody('{"limit":"25","offset":"0"}') , responseKind: "blob", responseContentType: "application/zip" }),
   operation("developer-dashboard-dataset-classification", "developer-dashboard", "PATCH", "/developer-dashboard/datasets/{inspectionId}/manual-classification", "Update a dataset manual classification", "Developer", { parameters: [pathParameter("inspectionId", "Inspection id")], body: jsonBody('{"manualClassification":""}') }),
+  operation("developer-dashboard-disputes", "developer-dashboard", "GET", "/developer-dashboard/disputes", "List pending inspection result disputes", "Admin or developer"),
+  operation("developer-dashboard-dispute-label", "developer-dashboard", "POST", "/developer-dashboard/disputes/{disputeId}/apply-developer-label", "Apply a dispute to the developer dataset", "Developer", { parameters: [pathParameter("disputeId", "Dispute id")] }),
+  operation("developer-dashboard-dispute-review", "developer-dashboard", "POST", "/developer-dashboard/disputes/{disputeId}/review", "Approve or reject an inspection result dispute", "Admin or developer", { parameters: [pathParameter("disputeId", "Dispute id")], body: jsonBody('{"decision":"approved","reviewerNote":null}') }),
   operation("developer-dashboard-training-runs", "developer-dashboard", "GET", "/developer-dashboard/training-runs", "List imported training runs", "Developer"),
   operation("developer-dashboard-training-import", "developer-dashboard", "POST", "/developer-dashboard/training-runs/import", "Import a training run package", "Developer", { body: formDataBody([fileField("package", "Training run ZIP package", ".zip,application/zip")]) }),
 ];

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Inspection } from "@/entities/inspection";
-import { FreshnessBadge } from "./freshness-badge";
+import { FreshnessBadge, getEffectiveInspectionClassification } from "@/entities/inspection";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Dialog, DialogContent } from "@/shared/ui/dialog";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
@@ -19,6 +19,7 @@ interface InspectionListItemProps {
 export function InspectionListItem({ inspection, onClick, onSelect, className }: InspectionListItemProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const confidenceTextClass = getConfidenceTextClass(inspection.confidence_score);
+  const effectiveClassification = getEffectiveInspectionClassification(inspection);
   const locationLabel = formatInspectionLocationLabel(
     inspection.location,
     inspection.location_latitude,
@@ -31,7 +32,7 @@ export function InspectionListItem({ inspection, onClick, onSelect, className }:
     acceptable: "bg-[hsl(var(--acceptable)/0.14)]",
     warning: "bg-[hsl(var(--warning)/0.14)]",
     spoiled: "bg-[hsl(var(--spoiled)/0.14)]",
-  }[inspection.classification];
+  }[effectiveClassification];
 
   return (
     <Card
@@ -72,7 +73,7 @@ export function InspectionListItem({ inspection, onClick, onSelect, className }:
             <span className="rounded-full border border-border/70 bg-background/65 px-2 py-0.5 text-[10px] uppercase tracking-widest text-muted-foreground">
               {format(new Date(inspection.created_at), "MMM d, yyyy")}
             </span>
-            <FreshnessBadge classification={inspection.classification} size="sm" />
+            <FreshnessBadge classification={effectiveClassification} size="sm" />
           </div>
 
           <p className="font-display text-sm font-semibold capitalize truncate">{inspection.meat_type}</p>

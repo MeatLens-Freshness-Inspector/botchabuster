@@ -1,5 +1,5 @@
 import { createAuthHeaders } from "@/shared/api/auth-headers";
-import type { Inspection } from "@/entities/inspection";
+import type { Inspection, InspectionResultDispute } from "@/entities/inspection";
 import { fetchWithTimeout, readApiErrorMessage } from "@/shared/api";
 import { API_BASE_URL } from "@/shared/api/base-url";
 const LONG_RUNNING_REQUEST_TIMEOUT_MS = 120_000;
@@ -77,6 +77,13 @@ export interface DeveloperDatasetListResponse {
   total: number;
   limit: number;
   offset: number;
+}
+
+export interface DeveloperDisputeMutationResponse {
+  dispute: InspectionResultDispute;
+  inspection: Inspection;
+  previousManualClassification?: Inspection["classification"] | null;
+  previousOfficialClassification?: Inspection["classification"] | null;
 }
 
 export interface TrainingRunRecord {
@@ -214,6 +221,46 @@ export class DeveloperDashboardClient {
       throw new Error(await readApiErrorMessage(response, "Failed to update developer dataset classification"));
     }
 
+    return response.json();
+  }
+
+  async listInspectionResultDisputes(): Promise<InspectionResultDispute[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/developer-dashboard/disputes`, {
+      headers: this.createHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(await readApiErrorMessage(response, "Failed to fetch inspection disputes"));
+    }
+    return response.json();
+  }
+
+  async applyInspectionDisputeToDeveloperDataset(disputeId: string): Promise<DeveloperDisputeMutationResponse> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/developer-dashboard/disputes/${encodeURIComponent(disputeId)}/apply-developer-label`,
+      { method: "POST", headers: this.createHeaders() },
+    );
+    if (!response.ok) {
+      throw new Error(await readApiErrorMessage(response, "Failed to apply dispute to developer dataset"));
+    }
+    return response.json();
+  }
+
+  async reviewInspectionResultDispute(
+    disputeId: string,
+    decision: "approved" | "rejected",
+    reviewerNote: string | null,
+  ): Promise<DeveloperDisputeMutationResponse> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/developer-dashboard/disputes/${encodeURIComponent(disputeId)}/review`,
+      {
+        method: "POST",
+        headers: this.createHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ decision, reviewerNote }),
+      },
+    );
+    if (!response.ok) {
+      throw new Error(await readApiErrorMessage(response, `Failed to ${decision} inspection dispute`));
+    }
     return response.json();
   }
 
