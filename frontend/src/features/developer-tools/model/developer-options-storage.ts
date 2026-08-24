@@ -3,7 +3,7 @@ import {
   isAnalysisModelSelection,
   PRIMARY_ANALYSIS_MODEL,
   type AnalysisModelSelection,
-} from "@/features/offline-analysis/lib/model-catalog";
+} from "@/features/offline-analysis";
 import { readJson, writeJson } from "@/shared/lib/storage";
 
 const DEV_OPTIONS_FLAGS_KEY_PREFIX = "meatlens-developer-options-flags";
