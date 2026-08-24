@@ -50,6 +50,7 @@ import type { CapturedImagePayload } from "@/features/inspection-capture";
 import type { InspectPageViewModel, InspectionSaveStatus } from "./types";
 import { useInspectionAnalysis } from "./use-inspection-analysis";
 import { resolveInspectionModelSelection } from "./analysis-model-selection";
+import { resolveInspectionSegmentationDisabled } from "./segmentation-selection";
 import {
   createClientSubmissionId,
   DEFAULT_MEAT_TYPE,
@@ -230,6 +231,11 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   const isPreScanChecklistComplete = isPreScanBypassed
     ? true
     : isPreScanChecklistCompleteHelper(preScanForm);
+  const disableRoiSegmentation = resolveInspectionSegmentationDisabled(
+    isDeveloper,
+    isDeveloperUnlocked,
+    developerFlags.disableRoiSegmentation,
+  );
 
   const persistPendingScan = useCallback(
     async (
@@ -392,7 +398,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     try {
       const analysisResult: AnalysisResult = await analyzeOffline(capturedInput.file, DEFAULT_MEAT_TYPE, {
         guideBox: capturedInput.guideBox,
-        disableRoiSegmentation: developerFlags.disableRoiSegmentation,
+        disableRoiSegmentation,
       });
 
       if (analysisResult.confidence_score < FORCE_RETAKE_CONFIDENCE_THRESHOLD) {
@@ -436,7 +442,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   }, [
     clientSubmissionId,
     capturedInput,
-    developerFlags.disableRoiSegmentation,
+    disableRoiSegmentation,
     developerFlags.persistAnalysisSnapshots,
     inspectionDecisionSource,
     isAdmin,
@@ -615,7 +621,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     saveStatus,
     showDetailedResults: Boolean(profile?.show_detailed_results),
     showModelInputPreview: developerFlags.showModelInputPreview,
-    disableRoiSegmentation: developerFlags.disableRoiSegmentation,
+    disableRoiSegmentation,
     showAnalyzeAction: Boolean(capturedInput && !result && inspectionDecisionSource !== "protocol_pre_scan"),
     showSaveActions: Boolean(result),
     captureStatusText: getCaptureStatusText(capturedInput),
