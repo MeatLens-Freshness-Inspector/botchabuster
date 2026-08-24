@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
 import { useInspections } from "@/features/inspection-history";
 import { composeReportPdf } from "@/features/reports";
+import { getEffectiveInspectionClassification } from "@/entities/inspection";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import type { FilterOption, HistoryMonthlyCount } from "./types";
 import {
@@ -57,7 +58,7 @@ export function useHistory() {
     };
 
     (inspections ?? []).forEach((item) => {
-      counts[item.classification] += 1;
+      counts[getEffectiveInspectionClassification(item)] += 1;
     });
 
     return counts;
@@ -84,7 +85,7 @@ export function useHistory() {
         }
       }
 
-      if (activeFilter !== "all" && inspection.classification !== activeFilter) {
+      if (activeFilter !== "all" && getEffectiveInspectionClassification(inspection) !== activeFilter) {
         return false;
       }
 

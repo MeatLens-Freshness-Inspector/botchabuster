@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { format } from "date-fns";
-import { formatInspectionLocationLabel, type Inspection, type FreshnessClassification } from "@/entities/inspection";
+import { formatInspectionLocationLabel, getEffectiveInspectionClassification, type Inspection, type FreshnessClassification } from "@/entities/inspection";
 import type { Profile } from "@/entities/user/api";
 import { buildDeveloperInAppMetrics } from "@/features/developer-tools";
 import { useAdminReport, useReportsTab } from "@/features/reports";
@@ -45,7 +45,7 @@ export function useDashboardReport({
     };
 
     reportFilteredInspections.forEach((inspection) => {
-      counts[inspection.classification] += 1;
+      counts[getEffectiveInspectionClassification(inspection)] += 1;
     });
 
     return counts;
@@ -75,7 +75,7 @@ export function useDashboardReport({
         locationLongitude: inspection.location_longitude,
         profileLocation: getOptionalText(profile?.location),
         meatType: inspection.meat_type,
-        classification: inspection.classification,
+        classification: getEffectiveInspectionClassification(inspection),
         manualClassification: inspection.manual_classification,
         confidenceScore: inspection.confidence_score,
         ...buildPreScanReportFields(inspection),
@@ -198,13 +198,13 @@ export function useDashboardReport({
 
   const reportDeveloperMetrics = useMemo(
     () => isDeveloper
-      ? buildDeveloperInAppMetrics(reportRows.map((row) => ({
-          classification: row.classification,
-          manual_classification: row.manualClassification,
-          meat_type: row.meatType,
+      ? buildDeveloperInAppMetrics(reportFilteredInspections.map((inspection) => ({
+          classification: inspection.classification,
+          manual_classification: inspection.manual_classification,
+          meat_type: inspection.meat_type,
         })))
       : null,
-    [isDeveloper, reportRows],
+    [isDeveloper, reportFilteredInspections],
   );
 
   const reportsTab = useReportsTab({

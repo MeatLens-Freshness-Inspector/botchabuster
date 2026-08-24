@@ -49,7 +49,7 @@ type InspectionInsertPayload = {
   inspector_notes?: string | null;
 };
 
-const INSPECTION_COLUMNS = "id, user_id, meat_type, classification, manual_classification, confidence_score, flagged_deviations, explanation, image_url, location, location_latitude, location_longitude, stall_number, meat_inspection_certificate_proof, meat_expiry_date, storage_correct, light_color_correct, light_color_observed, area_clean, inspection_decision_source, protocol_spoiled_reason, regulatory_compliance, inspector_notes, client_submission_id, captured_at, created_at, updated_at";
+const INSPECTION_COLUMNS = "id, user_id, meat_type, classification, official_classification, manual_classification, confidence_score, flagged_deviations, explanation, image_url, location, location_latitude, location_longitude, stall_number, meat_inspection_certificate_proof, meat_expiry_date, storage_correct, light_color_correct, light_color_observed, area_clean, inspection_decision_source, protocol_spoiled_reason, regulatory_compliance, inspector_notes, client_submission_id, captured_at, created_at, updated_at";
 
 export class InspectionService {
   private static instance: InspectionService;
@@ -156,7 +156,7 @@ export class InspectionService {
   }> {
     let query = supabase
       .from(this.tableName)
-      .select("classification")
+      .select("classification, official_classification")
       .limit(10_000);
 
     if (!this.shouldViewAll(scope ?? "mine", isAdmin ?? false)) {
@@ -167,10 +167,14 @@ export class InspectionService {
 
     if (error) throw new Error(`Failed to fetch statistics: ${error.message}`);
 
-    const records = (data ?? []) as unknown as { classification: string }[];
+    const records = (data ?? []) as unknown as {
+      classification: string;
+      official_classification?: string | null;
+    }[];
     const byClassification: Record<string, number> = {};
     for (const record of records) {
-      byClassification[record.classification] = (byClassification[record.classification] || 0) + 1;
+      const effectiveClassification = record.official_classification ?? record.classification;
+      byClassification[effectiveClassification] = (byClassification[effectiveClassification] || 0) + 1;
     }
 
     return { total: records.length, byClassification };

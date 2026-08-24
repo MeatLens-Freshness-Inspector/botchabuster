@@ -13,7 +13,7 @@ test("API docs category counts match the registered backend route audit", () => 
     auth: 14,
     analysis: 2,
     "access-codes": 5,
-    inspections: 5,
+    inspections: 7,
     profiles: 8,
     stats: 1,
     upload: 1,
@@ -21,7 +21,7 @@ test("API docs category counts match the registered backend route audit", () => 
     "market-locations": 3,
     "audit-logs": 2,
     "developer-options": 2,
-    "developer-dashboard": 6,
+    "developer-dashboard": 9,
     "user-chat": 3,
   });
 });

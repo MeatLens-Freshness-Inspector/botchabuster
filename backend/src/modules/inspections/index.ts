@@ -11,6 +11,12 @@ export { ListInspections } from "./application/ListInspections";
 export { GetInspectionStatistics } from "./application/GetInspectionStatistics";
 export { CreateInspection } from "./application/CreateInspection";
 export { DeleteInspection } from "./application/DeleteInspection";
+export { ApplyDisputeToDeveloperDataset } from "./application/ApplyDisputeToDeveloperDataset";
+export { ListInspectionResultDisputes } from "./application/ListInspectionResultDisputes";
+export { ListPendingInspectionResultDisputes } from "./application/ListPendingInspectionResultDisputes";
+export { ReviewInspectionResultDispute } from "./application/ReviewInspectionResultDispute";
+export { SubmitInspectionResultDispute } from "./application/SubmitInspectionResultDispute";
+export { InspectionResultDisputeService, inspectionResultDisputeService } from "./infrastructure/InspectionResultDisputeService";
 export type {
   GetInspectionByIdRequest,
   InspectionRecord,

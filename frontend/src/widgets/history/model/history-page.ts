@@ -1,4 +1,4 @@
-import { formatInspectionLocationLabel } from "@/entities/inspection";
+import { formatInspectionLocationLabel, getEffectiveInspectionClassification } from "@/entities/inspection";
 import { resolveReportOrganization } from "@/features/reports";
 import { buildInspectorDailyReportModel } from "@/features/reports";
 import type { ReportDocumentModel } from "@/features/reports/model/types";
@@ -41,7 +41,7 @@ export function buildDetailedHistoryReportPdfModel(
       created_at: inspection.created_at,
       captured_at: inspection.captured_at ?? null,
       meat_type: inspection.meat_type,
-      classification: inspection.classification,
+      classification: getEffectiveInspectionClassification(inspection),
       confidence_score: inspection.confidence_score,
       location:
         formatInspectionLocationLabel(
@@ -75,7 +75,7 @@ export function buildHistorySearchText(inspection: Inspection): string {
     inspection.meat_type,
     inspection.location ?? "",
     locationLabel,
-    inspection.classification,
+    getEffectiveInspectionClassification(inspection),
     inspection.id,
   ]
     .join(" ")

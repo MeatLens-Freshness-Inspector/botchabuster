@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { format, subDays, startOfDay } from "date-fns";
 import type { Profile } from "@/entities/user/api";
+import { getEffectiveInspectionClassification } from "@/entities/inspection";
 import type { Inspection } from "@/entities/inspection";
 import {
   ANALYTICS_DAYS,
@@ -17,7 +18,8 @@ export function useDashboardAnalytics(
   const classificationCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     inspections.forEach((inspection) => {
-      counts[inspection.classification] = (counts[inspection.classification] || 0) + 1;
+      const classification = getEffectiveInspectionClassification(inspection);
+      counts[classification] = (counts[classification] || 0) + 1;
     });
     return counts;
   }, [inspections]);
@@ -67,7 +69,7 @@ export function useDashboardAnalytics(
       bucket.count += 1;
       bucket.totalConfidence += inspection.confidence_score;
 
-      switch (inspection.classification) {
+      switch (getEffectiveInspectionClassification(inspection)) {
         case "fresh":
           bucket.fresh += 1;
           break;
@@ -135,7 +137,7 @@ export function useDashboardAnalytics(
       const key = inspection.meat_type as keyof typeof MEAT_TYPE_LABELS;
       const current = aggregates.get(key) ?? { count: 0, spoiled: 0 };
       current.count += 1;
-      if (inspection.classification === "spoiled") current.spoiled += 1;
+      if (getEffectiveInspectionClassification(inspection) === "spoiled") current.spoiled += 1;
       aggregates.set(key, current);
     });
 
@@ -160,7 +162,7 @@ export function useDashboardAnalytics(
       const location = getLocationLabel(inspection.location, profile);
       const current = aggregates.get(location) ?? { location, count: 0, spoiled: 0 };
       current.count += 1;
-      if (inspection.classification === "spoiled") current.spoiled += 1;
+      if (getEffectiveInspectionClassification(inspection) === "spoiled") current.spoiled += 1;
       aggregates.set(location, current);
     });
 

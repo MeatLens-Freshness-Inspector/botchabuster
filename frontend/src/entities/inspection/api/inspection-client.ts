@@ -1,4 +1,9 @@
-import type { Inspection, InspectionInsert } from "@/entities/inspection";
+import type {
+  FreshnessClassification,
+  Inspection,
+  InspectionInsert,
+  InspectionResultDispute,
+} from "@/entities/inspection";
 import { IS_DEMO_MODE, demoDelay, DEMO_INSPECTIONS, DEMO_STATS } from "@/shared/config/demo-mode";
 import { createAuthHeaders } from "@/shared/api/auth-headers";
 import { notifyApiAuthExpired } from "@/shared/api/request";
@@ -141,6 +146,46 @@ export class InspectionClient {
       headers: this.createHeaders(),
     });
     if (!res.ok) throw await this.createRequestError("fetch inspection statistics", res);
+    return res.json();
+  }
+
+  async listResultDisputes(): Promise<InspectionResultDispute[]> {
+    if (IS_DEMO_MODE) return demoDelay([]);
+    const res = await fetchWithTimeout(`${API_BASE_URL}/inspections/disputes`, {
+      headers: this.createHeaders(),
+    });
+    if (!res.ok) throw await this.createRequestError("fetch inspection disputes", res);
+    return res.json();
+  }
+
+  async submitResultDispute(
+    inspectionId: string,
+    input: { expectedClassification: FreshnessClassification; reason: string },
+  ): Promise<InspectionResultDispute> {
+    if (IS_DEMO_MODE) {
+      return demoDelay({
+        id: `demo-dispute-${Date.now()}`,
+        inspection_id: inspectionId,
+        submitted_by: "demo-user-001",
+        expected_classification: input.expectedClassification,
+        reason: input.reason.trim(),
+        status: "pending",
+        developer_label_applied_at: null,
+        developer_label_applied_by: null,
+        reviewed_at: null,
+        reviewed_by: null,
+        reviewer_note: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    const res = await fetchWithTimeout(`${API_BASE_URL}/inspections/${encodeURIComponent(inspectionId)}/disputes`, {
+      method: "POST",
+      headers: this.createHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(input),
+    });
+    if (!res.ok) throw await this.createRequestError("submit inspection dispute", res);
     return res.json();
   }
 }

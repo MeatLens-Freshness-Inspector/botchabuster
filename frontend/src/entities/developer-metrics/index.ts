@@ -6,6 +6,7 @@ export {
 export type {
   DeveloperDatasetFilterState,
   DeveloperDatasetListResponse,
+  DeveloperDisputeMutationResponse,
   DeveloperOverviewMetricPoint,
   DeveloperOverviewResponse,
   InAppClassBreakdown,
