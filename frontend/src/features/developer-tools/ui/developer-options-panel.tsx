@@ -3,11 +3,18 @@ import { LockKeyhole, LockOpen, Upload, Database, Trash2, RefreshCcw, FlaskConic
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
 import { developerOptionsClient } from "@/features/developer-tools";
+import {
+  ANALYSIS_MODEL_CATALOG as MODEL_CATALOG,
+  formatModelAddedDate,
+  isAnalysisModelSelection,
+  type AnalysisModelCatalogEntry,
+} from "@/features/offline-analysis";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Button } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
 import { Switch } from "@/shared/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import {
   clearDeveloperAnalysisSnapshot,
   clearDeveloperOptionsSession,
@@ -28,8 +35,10 @@ import {
   getPendingScans,
 } from "@/features/offline-sync";
 
+type DeveloperToggleKey = Exclude<keyof DeveloperOptionsFlags, "selectedModel">;
+
 type FlagDefinition = {
-  key: keyof DeveloperOptionsFlags;
+  key: DeveloperToggleKey;
   label: string;
   description: string;
 };
@@ -70,22 +79,13 @@ const FLAG_DEFINITIONS: FlagDefinition[] = [
     label: "Disable gray ROI background",
     description: "Uses the original center-cropped 224x224 image instead of segmented ROI preprocessing.",
   },
-  {
-    key: "useSeed123Model2",
-    label: "Use seed123 primary model",
-    description: "When off, fallback to legacy MobileNetV3-small seed42 model for developer comparison.",
-  },
-  {
-    key: "useRoboflowModel3",
-    label: "Use Roboflow MobileNetV3 model3",
-    description: "Runs the newly exported Roboflow 8-fold MobileNetV3Small ONNX model.",
-  },
-  {
-    key: "enableModelEnsemble",
-    label: "Enable Model Ensembles",
-    description: "Use multiple models to make a final prediction via ensemble technique.",
-  },
 ];
+
+export const ANALYSIS_MODEL_CATALOG = MODEL_CATALOG;
+
+export function formatDeveloperModelOption(entry: AnalysisModelCatalogEntry): string {
+  return `${entry.label} · ${entry.addedOn ? `Added ${formatModelAddedDate(entry.addedOn)}` : entry.addedOnLabel}`;
+}
 
 function downloadJson(filename: string, payload: unknown): void {
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
@@ -210,9 +210,16 @@ export function DeveloperOptionsPanel() {
     }
   };
 
-  const updateFlag = (key: keyof DeveloperOptionsFlags, checked: boolean) => {
+  const updateFlag = (key: DeveloperToggleKey, checked: boolean) => {
     if (!currentUserId) return;
     const nextFlags = { ...flags, [key]: checked };
+    setFlags(nextFlags);
+    setDeveloperOptionsFlags(currentUserId, nextFlags);
+  };
+
+  const updateSelectedModel = (value: string) => {
+    if (!currentUserId || !isAnalysisModelSelection(value)) return;
+    const nextFlags = { ...flags, selectedModel: value };
     setFlags(nextFlags);
     setDeveloperOptionsFlags(currentUserId, nextFlags);
   };
@@ -286,6 +293,32 @@ export function DeveloperOptionsPanel() {
 
   return (
     <div className="space-y-4">
+      <Card className="rounded-3xl border-border/70 bg-card/95">
+        <CardHeader>
+          <CardTitle className="font-display text-sm uppercase tracking-wider">Analysis Model</CardTitle>
+          <CardDescription className="text-xs">
+            Select the model used by online, offline, and queued inspection analysis.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Label htmlFor="developer-analysis-model" className="text-xs uppercase tracking-widest text-muted-foreground">
+            Active model
+          </Label>
+          <Select value={flags.selectedModel} onValueChange={updateSelectedModel} disabled={!isUnlocked}>
+            <SelectTrigger id="developer-analysis-model" className="mt-2 h-auto min-h-10 rounded-xl">
+              <SelectValue placeholder="Select analysis model" />
+            </SelectTrigger>
+            <SelectContent>
+              {ANALYSIS_MODEL_CATALOG.map((entry) => (
+                <SelectItem key={entry.value} value={entry.value}>
+                  {formatDeveloperModelOption(entry)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
       <Card className="rounded-3xl border-border/70 bg-card/95">
         <CardHeader>
           <CardTitle className="font-display text-sm uppercase tracking-wider">Developer Access</CardTitle>
