@@ -1,4 +1,9 @@
 import type { AnalysisResult } from "@/entities/inspection";
+import {
+  isAnalysisModelSelection,
+  PRIMARY_ANALYSIS_MODEL,
+  type AnalysisModelSelection,
+} from "@/features/offline-analysis/lib/model-catalog";
 import { readJson, writeJson } from "@/shared/lib/storage";
 
 const DEV_OPTIONS_FLAGS_KEY_PREFIX = "meatlens-developer-options-flags";
@@ -6,6 +11,7 @@ const DEV_OPTIONS_SESSION_KEY_PREFIX = "meatlens-developer-options-session";
 const DEV_OPTIONS_SNAPSHOT_KEY_PREFIX = "meatlens-developer-options-last-analysis";
 
 export interface DeveloperOptionsFlags {
+  selectedModel: AnalysisModelSelection;
   enableDebugFileUpload: boolean;
   bypassPreScanChecklist: boolean;
   persistAnalysisSnapshots: boolean;
@@ -13,9 +19,6 @@ export interface DeveloperOptionsFlags {
   skipModelPrewarm: boolean;
   showModelInputPreview: boolean;
   disableRoiSegmentation: boolean;
-  useSeed123Model2: boolean;
-  useRoboflowModel3: boolean;
-  enableModelEnsemble: boolean;
 }
 
 export interface DeveloperOptionsSession {
@@ -32,6 +35,7 @@ export interface DeveloperAnalysisSnapshot {
 }
 
 export const DEFAULT_DEVELOPER_OPTIONS_FLAGS: DeveloperOptionsFlags = {
+  selectedModel: PRIMARY_ANALYSIS_MODEL,
   enableDebugFileUpload: false,
   bypassPreScanChecklist: false,
   persistAnalysisSnapshots: false,
@@ -39,10 +43,35 @@ export const DEFAULT_DEVELOPER_OPTIONS_FLAGS: DeveloperOptionsFlags = {
   skipModelPrewarm: false,
   showModelInputPreview: true,
   disableRoiSegmentation: false,
-  useSeed123Model2: true,
-  useRoboflowModel3: false,
-  enableModelEnsemble: false,
 };
+
+interface LegacyDeveloperOptionsPayload {
+  selectedModel?: unknown;
+  enableModelEnsemble?: unknown;
+  useRoboflowModel3?: unknown;
+  useSeed123Model2?: unknown;
+}
+
+function resolveStoredModelSelection(stored: LegacyDeveloperOptionsPayload | null): AnalysisModelSelection {
+  if (isAnalysisModelSelection(stored?.selectedModel)) {
+    return stored.selectedModel;
+  }
+
+  if (stored?.enableModelEnsemble === true) {
+    return "ensemble";
+  }
+
+  if (stored?.useRoboflowModel3 === true) {
+    return "primary";
+  }
+
+  // The former default was seed123. Treat that legacy default as the new primary.
+  if (stored?.useSeed123Model2 === true) {
+    return PRIMARY_ANALYSIS_MODEL;
+  }
+
+  return PRIMARY_ANALYSIS_MODEL;
+}
 
 function resolveFlagsStorageKey(userId: string): string {
   return `${DEV_OPTIONS_FLAGS_KEY_PREFIX}:${userId}`;
@@ -61,12 +90,16 @@ function getLocalStorage(): Storage | null {
 }
 
 export function getDeveloperOptionsFlags(userId: string): DeveloperOptionsFlags {
-  const stored = readJson<Partial<DeveloperOptionsFlags>>(getLocalStorage(), resolveFlagsStorageKey(userId));
+  const stored = readJson<Partial<DeveloperOptionsFlags> & LegacyDeveloperOptionsPayload>(
+    getLocalStorage(),
+    resolveFlagsStorageKey(userId),
+  );
   if (!stored) return { ...DEFAULT_DEVELOPER_OPTIONS_FLAGS };
 
   return {
     ...DEFAULT_DEVELOPER_OPTIONS_FLAGS,
     ...stored,
+    selectedModel: resolveStoredModelSelection(stored),
   };
 }
 

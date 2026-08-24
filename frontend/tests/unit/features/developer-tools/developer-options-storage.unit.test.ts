@@ -26,28 +26,52 @@ const localStorage = createMemoryStorage();
   localStorage,
 } as Window;
 
-test("new developer flag state disables Roboflow and gray ROI preprocessing by default", () => {
-  assert.equal(DEFAULT_DEVELOPER_OPTIONS_FLAGS.useRoboflowModel3, false);
+test("new developer flag state selects the primary model and keeps gray ROI preprocessing enabled", () => {
+  assert.equal(DEFAULT_DEVELOPER_OPTIONS_FLAGS.selectedModel, "primary");
   assert.equal(DEFAULT_DEVELOPER_OPTIONS_FLAGS.disableRoiSegmentation, false);
 });
 
 test("stored developer choices survive normalization", () => {
   setDeveloperOptionsFlags("developer-1", {
     ...DEFAULT_DEVELOPER_OPTIONS_FLAGS,
-    useRoboflowModel3: true,
+    selectedModel: "resnet50",
     disableRoiSegmentation: true,
   });
 
   const flags = getDeveloperOptionsFlags("developer-1");
-  assert.equal(flags.useRoboflowModel3, true);
+  assert.equal(flags.selectedModel, "resnet50");
   assert.equal(flags.disableRoiSegmentation, true);
 });
 
-test("older stored payloads receive the new false default", () => {
+test("older default payloads migrate to the primary model", () => {
   localStorage.setItem(
     "meatlens-developer-options-flags:developer-2",
-    JSON.stringify({ useSeed123Model2: true }),
+    JSON.stringify({ useSeed123Model2: true, useRoboflowModel3: false, enableModelEnsemble: false }),
   );
 
+  assert.equal(getDeveloperOptionsFlags("developer-2").selectedModel, "primary");
   assert.equal(getDeveloperOptionsFlags("developer-2").disableRoiSegmentation, false);
+});
+
+test("older explicit selections migrate to their matching model", () => {
+  localStorage.setItem(
+    "meatlens-developer-options-flags:developer-3",
+    JSON.stringify({ enableModelEnsemble: true }),
+  );
+  localStorage.setItem(
+    "meatlens-developer-options-flags:developer-4",
+    JSON.stringify({ useRoboflowModel3: true }),
+  );
+
+  assert.equal(getDeveloperOptionsFlags("developer-3").selectedModel, "ensemble");
+  assert.equal(getDeveloperOptionsFlags("developer-4").selectedModel, "primary");
+});
+
+test("invalid persisted model selections fall back to primary", () => {
+  localStorage.setItem(
+    "meatlens-developer-options-flags:developer-5",
+    JSON.stringify({ selectedModel: "not-a-model" }),
+  );
+
+  assert.equal(getDeveloperOptionsFlags("developer-5").selectedModel, "primary");
 });
