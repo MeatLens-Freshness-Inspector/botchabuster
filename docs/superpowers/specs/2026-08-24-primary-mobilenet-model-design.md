@@ -6,7 +6,7 @@ Make the existing model3 MobileNetV3Small ONNX asset the application’s primary
 
 ## Scope
 
-This change is limited to frontend offline-analysis model selection, developer model controls, model metadata/catalog presentation, and tests. It does not change ONNX preprocessing, class labels, analysis response contracts, persistence schemas, or model binaries.
+This change is limited to frontend offline-analysis model selection, developer model controls, model metadata/catalog presentation, and tests. It does not change ONNX preprocessing, class labels, persistence schemas, or model binaries. The frontend analysis-source union is extended additively with `resnet50` so standalone ResNet50 results are labeled accurately; existing source values remain valid.
 
 ## Model catalog
 
@@ -66,7 +66,8 @@ Add or update tests to verify:
 5. Standalone ResNet50 loading/classification follows the selected analysis mode.
 6. Legacy persisted developer settings migrate without losing intentional selections.
 7. Catalog labels and added dates are present and neutral.
-8. Existing offline-analysis, offline-sync, developer UI, and frontend build/type checks pass.
+8. Standalone ResNet50 results expose `analysis_source: "resnet50"` and render the correct source label.
+9. Existing offline-analysis, offline-sync, developer UI, and frontend build/type checks pass.
 
 ## Acceptance criteria
 
