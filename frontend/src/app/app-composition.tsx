@@ -105,12 +105,13 @@ function AuthAssistant() {
 }
 
 function AuthOfflineSyncManager() {
-  const { user, isAdmin, isOnlineAuthenticated } = useAuth();
+  const { user, isAdmin, isDeveloper, isOnlineAuthenticated } = useAuth();
 
   return (
     <OfflineSyncManager
       user={user ? { id: user.id } : null}
       isAdmin={isAdmin}
+      isDeveloper={isDeveloper}
       isOnlineAuthenticated={isOnlineAuthenticated}
       dependencies={offlineSyncDependencies}
     />

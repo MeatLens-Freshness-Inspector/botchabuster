@@ -109,10 +109,11 @@ type SyncUser = { id: string };
 export function resolveActiveModelSelection(
   user: SyncUser | null,
   isAdmin: boolean,
+  isDeveloper: boolean,
   developerFlags: Pick<DeveloperOptionsFlags, "selectedModel">,
   isDeveloperUnlocked: boolean,
 ): AnalysisModelSelection {
-  if (!user || !isAdmin || !isDeveloperUnlocked) return "primary";
+  if (!user || !isAdmin || !isDeveloper || !isDeveloperUnlocked) return "primary";
   return developerFlags.selectedModel;
 }
 
@@ -222,6 +223,7 @@ async function processAuditLogs(logs: PendingAuditLog[], dependencies: OfflineSy
 export type OfflineSyncManagerProps = {
   user: SyncUser | null;
   isAdmin: boolean;
+  isDeveloper: boolean;
   isOnlineAuthenticated: boolean;
   dependencies: OfflineSyncDependencies;
 };
@@ -229,6 +231,7 @@ export type OfflineSyncManagerProps = {
 export function OfflineSyncManager({
   user,
   isAdmin,
+  isDeveloper,
   isOnlineAuthenticated,
   dependencies,
 }: OfflineSyncManagerProps) {
@@ -236,7 +239,12 @@ export function OfflineSyncManager({
   const isRunning = useRef(false);
 
   const resolveActiveSelection = (developerFlags: DeveloperOptionsFlags, isDeveloperUnlocked: boolean) =>
-    resolveActiveModelSelection(user, isAdmin, developerFlags, isDeveloperUnlocked);
+    resolveActiveModelSelection(user, isAdmin, isDeveloper, developerFlags, isDeveloperUnlocked);
+
+  const getActiveDeveloperFlags = (userId: string): DeveloperOptionsFlags =>
+    isDeveloper
+      ? dependencies.getDeveloperOptionsFlags(userId)
+      : { selectedModel: "primary", verboseOfflineSyncLogs: false, skipModelPrewarm: false };
 
   const drainQueue = async () => {
     if (!navigator.onLine) return;
@@ -244,7 +252,7 @@ export function OfflineSyncManager({
     if (!isOnlineAuthenticated) return;
     if (isRunning.current) return;
 
-    const developerFlags = dependencies.getDeveloperOptionsFlags(user.id);
+    const developerFlags = getActiveDeveloperFlags(user.id);
     const developerSession = dependencies.getDeveloperOptionsSession(user.id);
     const isDeveloperUnlocked = Boolean(
       developerSession && !dependencies.isDeveloperOptionsSessionExpired(developerSession)
@@ -300,7 +308,7 @@ export function OfflineSyncManager({
         return;
       }
 
-      const developerFlags = dependencies.getDeveloperOptionsFlags(user.id);
+      const developerFlags = getActiveDeveloperFlags(user.id);
       const developerSession = dependencies.getDeveloperOptionsSession(user.id);
       const isDeveloperUnlocked = Boolean(
         developerSession && !dependencies.isDeveloperOptionsSessionExpired(developerSession)
@@ -327,7 +335,7 @@ export function OfflineSyncManager({
     window.addEventListener("online", handleOnline);
     return () => window.removeEventListener("online", handleOnline);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dependencies, isAdmin, isOnlineAuthenticated, user?.id]);
+  }, [dependencies, isAdmin, isDeveloper, isOnlineAuthenticated, user?.id]);
 
   return null;
 }
