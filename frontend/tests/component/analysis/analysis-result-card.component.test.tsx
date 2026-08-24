@@ -64,3 +64,16 @@ test("shows Ensemble as the rendered result source label", () => {
 
   assert.match(markup, /Source: Ensemble/);
 });
+
+test("shows ResNet50 as the rendered result source label", () => {
+  const markup = renderToStaticMarkup(
+    <AnalysisResultCard
+      result={buildResult({
+        analysis_source: "resnet50",
+        model_path: "/models/resnet50_meat/meatlens_resnet50_exp2.onnx",
+      })}
+    />
+  );
+
+  assert.match(markup, /Source: ResNet50 ONNX/);
+});

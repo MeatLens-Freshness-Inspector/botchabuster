@@ -9,22 +9,26 @@
 import type { AnalysisResult, FreshnessClassification } from "@/entities/inspection";
 import {
   getActiveAnalysisMode,
+  getActiveAnalysisModel,
   isAnalysisReady,
   loadActiveAnalysisModel,
   prewarmAnalysisModel,
   runActiveAnalysis,
   setActiveAnalysisMode,
+  setActiveAnalysisModel,
 } from "../lib/analysis-runtime";
 import type { SquareGuideBox } from "../lib/meat-lens-pipeline";
 import { validateImageQuality, type ImageQualityResult } from "@/features/inspection-capture";
 
 export {
   getActiveAnalysisMode,
+  getActiveAnalysisModel,
   isAnalysisReady as isModelReady,
   loadActiveAnalysisModel,
   prewarmAnalysisModel as prewarmModel,
   runActiveAnalysis,
   setActiveAnalysisMode,
+  setActiveAnalysisModel,
 };
 
 const MODEL_LOAD_WAIT_ONLINE_MS = 45_000;
@@ -398,7 +402,9 @@ export async function analyzeOffline(
       ? modelResult.modelPath && modelResult.modelPath.includes(" + ")
         ? `Ensemble (${modelResult.modelPath})`
         : "Ensemble"
-      : "MobileNetV3 ONNX";
+      : modelResult.analysisSource === "resnet50"
+        ? "ResNet50 ONNX"
+        : "MobileNetV3 ONNX";
 
   const explanation = buildAnalysisExplanation({
     meatType,

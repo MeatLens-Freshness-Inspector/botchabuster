@@ -78,7 +78,7 @@ export interface AnalysisResult {
   label_order?: FreshnessClassification[];
   flagged_deviations: string[];
   explanation: string;
-  analysis_source?: "mobilenetv3" | "ensemble" | "backend";
+  analysis_source?: "mobilenetv3" | "resnet50" | "ensemble" | "backend";
   model_path?: string | null;
 }
 

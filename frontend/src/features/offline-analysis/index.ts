@@ -18,7 +18,20 @@ export {
   prewarmModel,
   runActiveAnalysis,
   setActiveAnalysisMode,
+  getActiveAnalysisModel,
+  setActiveAnalysisModel,
 } from "./api/analyze-inspection";
+export {
+  ANALYSIS_MODEL_CATALOG,
+  PRIMARY_ANALYSIS_MODEL,
+  formatModelAddedDate,
+  isAnalysisModelSelection,
+} from "./lib/model-catalog";
+export type {
+  AnalysisModelCatalogEntry,
+  AnalysisModelRuntime,
+  AnalysisModelSelection,
+} from "./lib/model-catalog";
 export {
   buildImageTensorData,
   createCroppedResizedImageFile,
