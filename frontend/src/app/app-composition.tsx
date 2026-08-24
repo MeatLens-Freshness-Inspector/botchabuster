@@ -29,8 +29,7 @@ import {
   removeScan,
 } from "@/features/offline-sync";
 import { PROTOCOL_SPOILED_REASON, buildProtocolSpoiledAnalysisResult } from "@/entities/inspection";
-import { analyzeOffline, prewarmModel, setActiveAnalysisMode } from "@/features/offline-analysis";
-import { setActiveMobileNetModelVariant } from "@/features/offline-analysis";
+import { analyzeOffline, prewarmModel, setActiveAnalysisModel } from "@/features/offline-analysis";
 import {
   getDeveloperOptionsFlags,
   getDeveloperOptionsSession,
@@ -67,8 +66,7 @@ const offlineSyncDependencies: OfflineSyncDependencies = {
   buildProtocolSpoiledAnalysisResult,
   analyzeOffline,
   prewarmModel,
-  setActiveAnalysisMode,
-  setActiveMobileNetModelVariant,
+  setActiveAnalysisModel,
   getDeveloperOptionsFlags,
   getDeveloperOptionsSession,
   isDeveloperOptionsSessionExpired: (session) =>
