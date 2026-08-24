@@ -1,4 +1,6 @@
-export type MobileNetModelVariant = "default" | "seed123_model2" | "roboflow_model3";
+import type { MobileNetModelVariant } from "./model-catalog";
+
+export type { MobileNetModelVariant } from "./model-catalog";
 
 export type ModelPreprocessContract = "legacy" | "segmented_center_roi";
 
@@ -6,7 +8,7 @@ export type MobileNetOnnxSession = import("onnxruntime-web").InferenceSession;
 
 /** Owns the mutable ONNX session identity independently from inference code. */
 export class MobileNetSession {
-  activeModelVariant: MobileNetModelVariant = "seed123_model2";
+  activeModelVariant: MobileNetModelVariant = "primary";
   session: MobileNetOnnxSession | null = null;
   loadedModelPath: string | null = null;
   loadGeneration = 0;
