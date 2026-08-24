@@ -32,6 +32,7 @@ export type {
   AnalysisModelRuntime,
   AnalysisModelSelection,
 } from "./lib/model-catalog";
+export { DEFAULT_DISABLE_ROI_SEGMENTATION } from "./lib/preprocessing-defaults";
 export {
   buildImageTensorData,
   createCroppedResizedImageFile,

@@ -1,0 +1,1 @@
+export const DEFAULT_DISABLE_ROI_SEGMENTATION = true;
