@@ -5,6 +5,7 @@ import {
   KeyRound,
   LayoutGrid,
   MapPin,
+  Scale,
   ScrollText,
   Users,
 } from "lucide-react";
@@ -65,6 +66,7 @@ export const ADMIN_DASHBOARD_TABS: Array<{
   { key: "overview", label: "Overview", icon: LayoutGrid },
   { key: "users", label: "Users", icon: Users },
   { key: "inspections", label: "Inspections", icon: ClipboardList },
+  { key: "disputes", label: "Disputes", icon: Scale },
   { key: "codes", label: "Access Codes", icon: KeyRound },
   { key: "markets", label: "Markets", icon: MapPin },
   { key: "reports", label: "Reports", icon: FileBarChart2 },
