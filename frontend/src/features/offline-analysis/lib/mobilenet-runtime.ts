@@ -26,6 +26,7 @@ import {
   type ModelPreprocessContract,
 } from "./mobilenet-session";
 import { resolveMobileNetGuideBox } from "./mobilenet-input-mode";
+import { DEFAULT_DISABLE_ROI_SEGMENTATION } from "./preprocessing-defaults";
 
 const ENV_MODEL_PATH = (
   import.meta.env?.VITE_ONNX_MODEL_PATH ?? ""
@@ -448,7 +449,8 @@ export async function classifyWithMobileNetV3(
     const guideBox = resolveMobileNetGuideBox({
       preprocessContract: getActiveModelPreprocessContract(),
       guideBox: options.guideBox ?? null,
-      disableRoiSegmentation: options.disableRoiSegmentation ?? false,
+      disableRoiSegmentation:
+        options.disableRoiSegmentation ?? DEFAULT_DISABLE_ROI_SEGMENTATION,
     });
     const imageData = buildCroppedImageData(image, targetWidth, targetHeight, guideBox);
     const tensorData = buildImageTensorData(imageData, layout.channelsFirst, preprocessMode);

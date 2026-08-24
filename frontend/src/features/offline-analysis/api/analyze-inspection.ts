@@ -18,6 +18,7 @@ import {
   setActiveAnalysisModel,
 } from "../lib/analysis-runtime";
 import type { SquareGuideBox } from "../lib/meat-lens-pipeline";
+import { DEFAULT_DISABLE_ROI_SEGMENTATION } from "../lib/preprocessing-defaults";
 import { validateImageQuality, type ImageQualityResult } from "@/features/inspection-capture";
 
 export {
@@ -391,7 +392,8 @@ export async function analyzeOffline(
 
   const modelResult = await runActiveAnalysis(imageFile, {
     guideBox: options.guideBox ?? null,
-    disableRoiSegmentation: options.disableRoiSegmentation ?? false,
+    disableRoiSegmentation:
+      options.disableRoiSegmentation ?? DEFAULT_DISABLE_ROI_SEGMENTATION,
   });
   if (!modelResult) {
     throw new Error("Model inference is unavailable. Please retry after model warmup completes.");

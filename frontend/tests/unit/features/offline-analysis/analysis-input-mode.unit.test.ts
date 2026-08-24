@@ -3,6 +3,13 @@ import test from "node:test";
 
 import { resolveMobileNetGuideBox } from "../../../../src/features/offline-analysis/lib/mobilenet-input-mode";
 
+test("the MobileNet default omits the guide box when segmentation is not configured", () => {
+  assert.equal(resolveMobileNetGuideBox({
+    preprocessContract: "segmented_center_roi",
+    guideBox: { x: 0.1, y: 0.1, size: 0.8 },
+  }), null);
+});
+
 test("disabling ROI segmentation removes the guide box for segmented models", () => {
   const guideBox = { x: 0.1, y: 0.1, size: 0.8 };
 

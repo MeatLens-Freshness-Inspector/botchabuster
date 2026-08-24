@@ -23,6 +23,7 @@ import {
   PRIMARY_ANALYSIS_MODEL,
   type AnalysisModelSelection,
 } from "./model-catalog";
+import { DEFAULT_DISABLE_ROI_SEGMENTATION } from "./preprocessing-defaults";
 import type { FreshnessRecommendation, SquareGuideBox } from "./meat-lens-pipeline";
 
 export type AnalysisMode = "ensemble" | "mobilenetv3" | "resnet50";
@@ -178,10 +179,16 @@ export async function runActiveAnalysis(
   imageFile: File,
   options: AnalyzeOptions = {}
 ): Promise<ActiveAnalysisPrediction | null> {
+  const resolvedOptions: AnalyzeOptions = {
+    ...options,
+    disableRoiSegmentation:
+      options.disableRoiSegmentation ?? DEFAULT_DISABLE_ROI_SEGMENTATION,
+  };
+
   if (activeAnalysisMode === "ensemble") {
     const [mobileNetResult, resNetResult] = await Promise.all([
-      classifyWithMobileNetV3(imageFile, options),
-      classifyWithResNet50(imageFile, options),
+      classifyWithMobileNetV3(imageFile, resolvedOptions),
+      classifyWithResNet50(imageFile, resolvedOptions),
     ]);
 
     const ensembleResult = buildEnsembleAnalysisResult(
@@ -203,7 +210,7 @@ export async function runActiveAnalysis(
   }
 
   if (activeAnalysisMode === "resnet50") {
-    const resNetResult = await classifyWithResNet50(imageFile, options);
+    const resNetResult = await classifyWithResNet50(imageFile, resolvedOptions);
     if (!resNetResult) {
       return null;
     }
@@ -211,7 +218,7 @@ export async function runActiveAnalysis(
     return toActiveAnalysisPrediction(resNetResult, "resnet50");
   }
 
-  const mobileNetResult = await classifyWithMobileNetV3(imageFile, options);
+  const mobileNetResult = await classifyWithMobileNetV3(imageFile, resolvedOptions);
   if (!mobileNetResult) {
     return null;
   }
