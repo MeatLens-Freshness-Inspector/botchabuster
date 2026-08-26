@@ -1,7 +1,7 @@
 import React from "react";
 import { Download, ImageIcon, RotateCcw, Search, Sparkles } from "lucide-react";
 import { FreshnessBadge } from "@/entities/inspection";
-import { Button } from "@/shared/ui";
+import { Button, ExportLoadingOverlay } from "@/shared/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Input } from "@/shared/ui";
 import {
@@ -69,7 +69,8 @@ export function DeveloperDatasetsSection({
   const previousOffset = Math.max(0, currentOffset - limit);
 
   return (
-    <section className="space-y-4">
+    <section className="relative space-y-4" aria-busy={isExporting}>
+      <ExportLoadingOverlay visible={isExporting} message="Preparing dataset export..." />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-display text-xl font-semibold">Datasets & Ground Truth Labels</h2>

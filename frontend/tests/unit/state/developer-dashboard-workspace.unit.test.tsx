@@ -461,6 +461,37 @@ test("dataset export button calls the developer dashboard export endpoint", asyn
   }
 });
 
+test("dataset export panel shows a blocking loading screen while exporting", async () => {
+  const { container, cleanup } = installDom();
+  const root: Root = createRoot(container);
+
+  try {
+    await act(async () => {
+      root.render(
+        <DeveloperDatasetsSection
+          datasets={null}
+          filters={DEFAULT_DEVELOPER_DATASET_FILTERS}
+          onFiltersChange={() => undefined}
+          onManualClassificationChange={async () => undefined}
+          onPageChange={async () => undefined}
+          onExport={async () => undefined}
+          isExporting={true}
+          isLoading={false}
+        />,
+      );
+    });
+    await flushEffects();
+
+    assert.ok(document.querySelector('[role="status"][aria-label="Preparing dataset export..."]'));
+    assert.equal(getButtonByName("Exporting...").disabled, true);
+  } finally {
+    await act(async () => {
+      root.unmount();
+    });
+    cleanup();
+  }
+});
+
 test("developer datasets show confidence scores as raw percentages", async () => {
   const { container, cleanup } = installDom();
   const root: Root = createRoot(container);
