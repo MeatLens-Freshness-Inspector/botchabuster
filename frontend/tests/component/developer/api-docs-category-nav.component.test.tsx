@@ -46,7 +46,7 @@ test("renders every API category and selects an operation", async () => {
 
     const text = container.textContent ?? "";
     for (const category of API_DOCS_CATEGORIES) assert.match(text, new RegExp(category.label));
-    assert.equal(container.querySelectorAll("[data-operation-id]").length, 53);
+    assert.equal(container.querySelectorAll("[data-operation-id]").length, API_DOCS_OPERATIONS.length);
 
     await act(async () => {
       (container.querySelector('[data-operation-id="developer-dashboard-training-import"]') as HTMLButtonElement).click();
