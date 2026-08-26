@@ -29,6 +29,7 @@ import { useUserActions } from "./use-user-actions";
 import { useUsersTab } from "./use-users-tab";
 import { useDashboardAnalytics } from "./use-dashboard-analytics";
 import { useDashboardReport } from "./use-dashboard-report";
+import { useExportTask } from "@/shared/lib/use-export-task";
 
 export function useAdminDashboard() {
   const {
@@ -53,6 +54,7 @@ export function useAdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [pendingDeleteInspectionId, setPendingDeleteInspectionId] = useState<string | null>(null);
+  const reportExport = useExportTask<"pdf" | "csv" | "json">();
   const accessCodeForm = useAccessCodeForm({ setAccessCodes });
   const accessCodesState = useAccessCodes({ setAccessCodes });
   const marketForm = useMarketForm({ marketLocations, setMarketLocations });
@@ -230,10 +232,11 @@ export function useAdminDashboard() {
     }, 1000);
   };
 
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
     if (!validateReportRange()) return;
 
-    const headers = [
+    await reportExport.run("csv", () => {
+      const headers = [
       "ID",
       "Created At",
       "Captured At",
@@ -264,7 +267,7 @@ export function useAdminDashboard() {
       "Inspector Notes",
       "Image URL",
     ];
-    const rows = reportRows.map((row) => [
+      const rows = reportRows.map((row) => [
       row.id,
       formatReportDateTime(row.createdAt),
       formatReportDateTime(row.capturedAt),
@@ -295,7 +298,7 @@ export function useAdminDashboard() {
       row.inspectorNotes,
       row.imageUrl,
     ]);
-    const developerRows = isDeveloper && reportDeveloperMetrics
+      const developerRows = isDeveloper && reportDeveloperMetrics
       ? [
           [],
           ["Developer Analytics"],
@@ -329,21 +332,23 @@ export function useAdminDashboard() {
           ...developerLatestRuns.map((run) => [run.name, run.accuracy, run.precision, run.recall, run.f1Score]),
         ]
       : [];
-    const csv = [headers, ...rows, ...developerRows]
-      .map((record) => record.map((value) => toCsvValue(value)).join(","))
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-    triggerDownload(blob, `MeatLens-report-detail-${getReportFileSuffix()}.csv`);
-    toast.success("CSV detail report exported");
+      const csv = [headers, ...rows, ...developerRows]
+        .map((record) => record.map((value) => toCsvValue(value)).join(","))
+        .join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      triggerDownload(blob, `MeatLens-report-detail-${getReportFileSuffix()}.csv`);
+      toast.success("CSV detail report exported");
+    });
   };
 
-  const handleExportJSON = () => {
+  const handleExportJSON = async () => {
     if (!validateReportRange()) return;
 
-    const reportExportInspections = isDeveloper
+    await reportExport.run("json", () => {
+      const reportExportInspections = isDeveloper
       ? reportRows
       : reportRows.map(({ manualClassification: _manualClassification, ...row }) => row);
-    const payload = {
+      const payload = {
       generatedAt: new Date().toISOString(),
       generatedBy: user?.email ?? user?.id ?? "admin",
       dateRange: {
@@ -389,15 +394,17 @@ export function useAdminDashboard() {
         : {}),
     };
 
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
-    triggerDownload(blob, `MeatLens-report-snapshot-${getReportFileSuffix()}.json`);
-    toast.success("JSON snapshot report exported");
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+      triggerDownload(blob, `MeatLens-report-snapshot-${getReportFileSuffix()}.json`);
+      toast.success("JSON snapshot report exported");
+    });
   };
 
   const handleExportPDF = async () => {
     if (!validateReportRange()) return;
 
-    try {
+    await reportExport.run("pdf", async () => {
+      try {
       const generatedAt = format(new Date(), "MMM d, yyyy h:mm a");
       const generatedBy = user?.email ?? user?.id ?? "admin";
       const model = buildAdminDashboardReportPdfModel({
@@ -421,10 +428,11 @@ export function useAdminDashboard() {
         `MeatLens-report-summary-${getReportFileSuffix()}.pdf`,
       );
       toast.success("PDF summary exported");
-    } catch (error) {
-      console.error("Failed to export admin PDF report", error);
-      toast.error("Failed to export admin PDF report");
-    }
+      } catch (error) {
+        console.error("Failed to export admin PDF report", error);
+        toast.error("Failed to export admin PDF report");
+      }
+    });
   };
 
   const activeTabConfig =
@@ -462,6 +470,7 @@ export function useAdminDashboard() {
     ...marketForm,
     ...marketLocationsState,
     ...reportState,
+    activeReportExport: reportExport.activeTask,
     activeTab,
     activeTabConfig,
     previewImageUrl,
