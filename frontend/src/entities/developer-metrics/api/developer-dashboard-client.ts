@@ -3,6 +3,19 @@ import type { Inspection, InspectionResultDispute } from "@/entities/inspection"
 import { fetchWithTimeout, readApiErrorMessage } from "@/shared/api";
 import { API_BASE_URL } from "@/shared/api/base-url";
 const LONG_RUNNING_REQUEST_TIMEOUT_MS = 120_000;
+const EXPORT_PROGRESS_POLL_INTERVAL_MS = 250;
+
+export interface DeveloperDatasetExportProgress {
+  status: "running" | "completed" | "failed";
+  stage: string;
+  current: number;
+  total: number;
+  error?: string;
+}
+
+export type DeveloperDatasetExportProgressHandler = (
+  progress: DeveloperDatasetExportProgress,
+) => void;
 
 export interface DeveloperOverviewMetricPoint {
   runId: string;
@@ -186,21 +199,57 @@ export class DeveloperDashboardClient {
     return response.json();
   }
 
-  async exportDatasets(filters: DeveloperDatasetFilterState): Promise<Blob> {
-    const response = await fetchWithTimeout(
-      `${API_BASE_URL}/developer-dashboard/datasets/export`,
+  async exportDatasets(
+    filters: DeveloperDatasetFilterState,
+    onProgress?: DeveloperDatasetExportProgressHandler,
+  ): Promise<Blob> {
+    const startResponse = await fetchWithTimeout(
+      `${API_BASE_URL}/developer-dashboard/datasets/export/start`,
       {
         method: "POST",
         headers: this.createHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(createDatasetExportPayload(filters)),
       },
+    );
+
+    if (!startResponse.ok) {
+      throw new Error(await readApiErrorMessage(startResponse, "Failed to start developer dataset export"));
+    }
+
+    const { exportId } = (await startResponse.json()) as { exportId?: unknown };
+    if (typeof exportId !== "string" || exportId.trim().length === 0) {
+      throw new Error("Failed to start developer dataset export");
+    }
+
+    while (true) {
+      const progressResponse = await fetchWithTimeout(
+        `${API_BASE_URL}/developer-dashboard/datasets/export/${encodeURIComponent(exportId)}/progress`,
+        { headers: this.createHeaders() },
+      );
+
+      if (!progressResponse.ok) {
+        throw new Error(await readApiErrorMessage(progressResponse, "Failed to read developer dataset export progress"));
+      }
+
+      const progress = (await progressResponse.json()) as DeveloperDatasetExportProgress;
+      onProgress?.(progress);
+      if (progress.status === "failed") {
+        throw new Error(progress.error ?? "Failed to export developer datasets");
+      }
+      if (progress.status === "completed") break;
+
+      await new Promise<void>((resolve) => globalThis.setTimeout(resolve, EXPORT_PROGRESS_POLL_INTERVAL_MS));
+    }
+
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/developer-dashboard/datasets/export/${encodeURIComponent(exportId)}/download`,
+      { headers: this.createHeaders() },
       LONG_RUNNING_REQUEST_TIMEOUT_MS,
     );
 
     if (!response.ok) {
-      throw new Error(await readApiErrorMessage(response, "Failed to export developer datasets"));
+      throw new Error(await readApiErrorMessage(response, "Failed to download developer datasets"));
     }
-
     return response.blob();
   }
 
