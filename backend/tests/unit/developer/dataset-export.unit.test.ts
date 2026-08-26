@@ -295,6 +295,46 @@ test("dataset export stores original bytes without recompressing ZIP entries", a
   }
 });
 
+test("dataset export reports query, row, and ZIP assembly progress", async () => {
+  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
+  const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
+  const originalGetDeveloperDatasetExportRows = (inspectionService as unknown as {
+    getDeveloperDatasetExportRows?: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows;
+  const progress: string[] = [];
+
+  (inspectionService as unknown as {
+    getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows = async () => [
+    createInspection({ id: "progress-a" }),
+    createInspection({ id: "progress-b" }),
+  ];
+
+  try {
+    await developerDashboardService.exportDatasetZip(
+      { limit: 100, offset: 0 },
+      (update) => progress.push(`${update.stage}:${update.current}/${update.total}`),
+    );
+
+    assert.deepEqual(progress, [
+      "querying:0/1",
+      "downloading-images:0/2",
+      "downloading-images:1/2",
+      "downloading-images:2/2",
+      "assembling-zip:0/1",
+      "complete:1/1",
+    ]);
+  } finally {
+    if (originalGetDeveloperDatasetExportRows) {
+      (inspectionService as unknown as {
+        getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+      }).getDeveloperDatasetExportRows = originalGetDeveloperDatasetExportRows;
+    } else {
+      delete (inspectionService as unknown as { getDeveloperDatasetExportRows?: unknown }).getDeveloperDatasetExportRows;
+    }
+  }
+});
+
 test("dataset export uses stored manual classifications", async () => {
   const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
   const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
