@@ -8,21 +8,13 @@ import {
   type DeveloperOverviewResponse,
   type TrainingRunRecord,
 } from "@/entities/developer-metrics";
-import type { FreshnessClassification, Inspection } from "@/entities/inspection";
-import { buildDeveloperInAppMetrics } from "../lib/in-app-metrics";
+import type { FreshnessClassification } from "@/entities/inspection";
 import type { DeveloperWorkspaceTabKey } from "./types";
-
-const OVERVIEW_DATASET_FILTERS: DeveloperDatasetFilterState = {
-  ...DEFAULT_DEVELOPER_DATASET_FILTERS,
-  limit: 10_000,
-  offset: 0,
-};
 
 export function useDeveloperDashboard() {
   const [activeDeveloperTab, setActiveDeveloperTab] = useState<DeveloperWorkspaceTabKey>("overview");
   const [overview, setOverview] = useState<DeveloperOverviewResponse | null>(null);
   const [datasets, setDatasets] = useState<DeveloperDatasetListResponse | null>(null);
-  const [overviewDatasetItems, setOverviewDatasetItems] = useState<Inspection[] | null>(null);
   const [trainingRuns, setTrainingRuns] = useState<TrainingRunRecord[]>([]);
   const [datasetFilters, setDatasetFilters] = useState<DeveloperDatasetFilterState>(
     DEFAULT_DEVELOPER_DATASET_FILTERS,
@@ -36,15 +28,7 @@ export function useDeveloperDashboard() {
   const loadOverview = useCallback(async () => {
     setIsLoadingOverview(true);
     try {
-      const [overviewResponse, overviewDatasetPage] = await Promise.all([
-        developerDashboardClient.getOverview(),
-        developerDashboardClient.getDatasets(OVERVIEW_DATASET_FILTERS, 0),
-      ]);
-      setOverviewDatasetItems(overviewDatasetPage.items);
-      setOverview({
-        ...overviewResponse,
-        inAppMetrics: buildDeveloperInAppMetrics(overviewDatasetPage.items),
-      });
+      setOverview(await developerDashboardClient.getOverview());
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to load developer overview");
     } finally {
@@ -92,22 +76,7 @@ export function useDeveloperDashboard() {
               }
             : current,
         );
-        setOverviewDatasetItems((current) => {
-          if (!current) {
-            return current;
-          }
-
-          const nextItems = current.map((item) => (item.id === inspectionId ? updatedInspection : item));
-          setOverview((currentOverview) => (
-            currentOverview
-              ? {
-                  ...currentOverview,
-                  inAppMetrics: buildDeveloperInAppMetrics(nextItems),
-                }
-              : currentOverview
-          ));
-          return nextItems;
-        });
+        void loadOverview();
 
         return updatedInspection;
       } catch (error) {

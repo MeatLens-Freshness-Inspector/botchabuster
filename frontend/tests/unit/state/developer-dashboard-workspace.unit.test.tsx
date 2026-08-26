@@ -253,11 +253,13 @@ function createDeveloperDashboardFetch(options?: {
   onExport?: () => void;
   onExportBody?: (body: unknown) => void;
   onDatasetUpdateBody?: (body: unknown) => void;
+  onDatasetRequest?: () => void;
   datasets?: unknown[];
 }): typeof globalThis.fetch {
   const onExport = options?.onExport;
   const onExportBody = options?.onExportBody;
   const onDatasetUpdateBody = options?.onDatasetUpdateBody;
+  const onDatasetRequest = options?.onDatasetRequest;
   const datasets = options?.datasets ?? [];
 
   return (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -270,6 +272,17 @@ function createDeveloperDashboardFetch(options?: {
           mobilenetv3: null,
         },
         latestRuns: [],
+        inAppMetrics: {
+          totalEvaluated: 2,
+          correctlyIdentified: 1,
+          incorrectlyIdentified: 1,
+          inAppAccuracy: 0.5,
+          inAppPrecision: 0.5,
+          inAppRecall: 0.5,
+          inAppF1Score: 0.5,
+          classBreakdown: [],
+          meatTypeBreakdown: [],
+        },
       }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -319,6 +332,7 @@ function createDeveloperDashboardFetch(options?: {
     }
 
     if (url.includes("/developer-dashboard/datasets")) {
+      onDatasetRequest?.();
       return new Response(JSON.stringify({
         items: datasets,
         total: datasets.length,
@@ -370,6 +384,36 @@ test("developer workspace renders the five internal tabs", async () => {
     assert.ok(tabList, "Expected developer workspace tab list");
     assert.match(tabList?.className ?? "", /md:grid-cols-5/);
     assert.doesNotMatch(tabList?.className ?? "", /md:grid-cols-6/);
+  } finally {
+    globalThis.fetch = originalFetch;
+    await act(async () => {
+      root.unmount();
+    });
+    cleanup();
+  }
+});
+
+test("developer overview uses the overview metrics without loading 10000 dataset rows", async () => {
+  const { container, cleanup } = installDom();
+  const originalFetch = globalThis.fetch;
+  const root: Root = createRoot(container);
+  let datasetRequests = 0;
+
+  try {
+    globalThis.fetch = createDeveloperDashboardFetch({
+      onDatasetRequest: () => {
+        datasetRequests += 1;
+      },
+    });
+    const { DeveloperTabContent } = await import("../../../src/widgets/admin-dashboard");
+
+    await act(async () => {
+      root.render(<DeveloperTabContent />);
+    });
+    await flushEffects();
+
+    assert.equal(datasetRequests, 0);
+    assert.match(document.body.textContent ?? "", /1 of 2 records/);
   } finally {
     globalThis.fetch = originalFetch;
     await act(async () => {
