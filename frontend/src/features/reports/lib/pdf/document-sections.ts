@@ -87,6 +87,9 @@ async function buildInspectionEvidenceContent(
               buildInspectionEvidenceField("Meat", evidenceItem.meatType),
               buildInspectionEvidenceField("Classification", evidenceItem.classification),
               buildInspectionEvidenceField("Confidence", evidenceItem.confidenceLabel),
+              ...(evidenceItem.regulatoryCompliance !== undefined
+                ? [buildInspectionEvidenceField("Regulatory Compliance", evidenceItem.regulatoryCompliance)]
+                : []),
               buildInspectionEvidenceField("Location", evidenceItem.location),
             ],
           },

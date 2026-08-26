@@ -161,6 +161,7 @@ const sampleDtiAdminPorkModel: ReportDocumentModel = {
           classification: "warning",
           confidenceLabel: "88%",
           location: "East Market",
+          regulatoryCompliance: "Non-Compliant",
           inspectorLabel: "Inspector One",
         },
         {
@@ -171,6 +172,7 @@ const sampleDtiAdminPorkModel: ReportDocumentModel = {
           classification: "fresh",
           confidenceLabel: "92%",
           location: "West Market",
+          regulatoryCompliance: "Compliant",
           inspectorLabel: "Inspector Two",
         },
       ],
@@ -517,6 +519,8 @@ test("buildReportDocDefinition renders inspector labels in dti admin pork eviden
   assert.ok(sectionTexts.includes("Inspector"));
   assert.ok(sectionTexts.includes("Inspector One"));
   assert.ok(sectionTexts.includes("Inspector Two"));
+  assert.ok(sectionTexts.includes("Regulatory Compliance"));
+  assert.ok(sectionTexts.includes("Non-Compliant"));
 });
 
 test("buildReportDocDefinition keeps city vet admin pork evidence cards when an image cannot be loaded", async () => {
