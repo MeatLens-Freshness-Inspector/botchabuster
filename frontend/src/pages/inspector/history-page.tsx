@@ -9,6 +9,7 @@ import { useHistory } from "@/widgets/history/model/use-history";
 const HistoryPage = () => {
   const {
     isLoading,
+    isExportingDetailedPdf,
     activeFilter,
     searchText,
     selectedReportDay,
@@ -52,6 +53,7 @@ const HistoryPage = () => {
             filteredCount={filteredInspections.length}
             formattedReportDayLabel={formattedReportDayLabel}
             hasValidReportDay={hasValidReportDay}
+            isExportingDetailedPdf={isExportingDetailedPdf}
             isLoading={isLoading}
             pagedInspections={pagedInspections}
             safePage={safePage}

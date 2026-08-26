@@ -1,5 +1,5 @@
-import { Button } from "@/shared/ui";
-import { Input } from "@/shared/ui";
+import React from "react";
+import { Button, ExportLoadingOverlay, Input } from "@/shared/ui";
 import { InspectionListItem } from "@/entities/inspection";
 import { Loader2, ClipboardList, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Inspection } from "@/entities/inspection";
@@ -11,6 +11,7 @@ type InspectionTimelineSectionProps = {
   filteredCount: number;
   formattedReportDayLabel: string | null;
   hasValidReportDay: boolean;
+  isExportingDetailedPdf: boolean;
   isLoading: boolean;
   pagedInspections: Inspection[];
   safePage: number;
@@ -32,6 +33,7 @@ export function InspectionTimelineSection({
   filteredCount,
   formattedReportDayLabel,
   hasValidReportDay,
+  isExportingDetailedPdf,
   isLoading,
   pagedInspections,
   safePage,
@@ -48,7 +50,14 @@ export function InspectionTimelineSection({
   onSearchTextChange,
 }: InspectionTimelineSectionProps) {
   return (
-    <section className="min-w-0 rounded-3xl border border-border/70 bg-card/92 p-4">
+    <section
+      className="relative min-w-0 rounded-3xl border border-border/70 bg-card/92 p-4"
+      aria-busy={isExportingDetailedPdf}
+    >
+      <ExportLoadingOverlay
+        visible={isExportingDetailedPdf}
+        message="Preparing PDF export..."
+      />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-base font-semibold">Inspection Timeline</h2>
         <span className="rounded-full border border-border/70 bg-background/55 px-3 py-1 text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -101,8 +110,9 @@ export function InspectionTimelineSection({
             size="sm"
             className="h-9 rounded-lg"
             onClick={onExportDetailedPdf}
+            disabled={isExportingDetailedPdf}
           >
-            Export PDF
+            {isExportingDetailedPdf ? "Exporting PDF..." : "Export PDF"}
           </Button>
         </div>
 
