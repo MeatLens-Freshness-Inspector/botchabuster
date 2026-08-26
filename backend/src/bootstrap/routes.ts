@@ -13,6 +13,7 @@ import auditLogRoutes from "../modules/audit/presentation/routes";
 import developerOptionsRoutes from "../modules/developer/presentation/options-routes";
 import developerDashboardRoutes from "../modules/developer/presentation/dashboard-routes";
 import userChatRoutes from "../modules/chat/presentation/user-chat-routes";
+import { createDefaultModelAccuracyRouter } from "../modules/model-accuracy/presentation/routes";
 
 export interface BackendRoute {
   readonly prefix: string;
@@ -34,5 +35,6 @@ export function createBackendRoutes(_modules?: ModuleRegistry): readonly Backend
     { prefix: "/api/developer-options", router: developerOptionsRoutes },
     { prefix: "/api/developer-dashboard", router: developerDashboardRoutes },
     { prefix: "/api/user-chat", router: userChatRoutes },
+    { prefix: "/api/model-accuracy", router: createDefaultModelAccuracyRouter() },
   ];
 }
