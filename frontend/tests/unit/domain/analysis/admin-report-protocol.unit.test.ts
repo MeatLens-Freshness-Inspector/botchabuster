@@ -6,6 +6,7 @@ import type { Inspection } from "../../../../src/entities/inspection";
 test("buildPreScanReportFields converts nullable protocol fields into export-friendly strings", () => {
   const inspection: Pick<
     Inspection,
+    | "created_at"
     | "stall_number"
     | "meat_inspection_certificate_proof"
     | "meat_expiry_date"
@@ -17,6 +18,7 @@ test("buildPreScanReportFields converts nullable protocol fields into export-fri
     | "protocol_spoiled_reason"
     | "regulatory_compliance"
   > = {
+    created_at: "2026-08-06T00:00:00.000Z",
     stall_number: "12-A",
     meat_inspection_certificate_proof: "CERT-77",
     meat_expiry_date: "2026-07-10",
@@ -44,4 +46,58 @@ test("buildPreScanReportFields converts nullable protocol fields into export-fri
       protocolSpoiledReason: "failed_pre_scan_safety_protocol",
     },
   );
+});
+
+test("buildPreScanReportFields marks pre-feature inspections as unavailable", () => {
+  const inspection = {
+    created_at: "2026-08-04T23:59:59.000Z",
+    regulatory_compliance: true,
+    storage_correct: true,
+    light_color_correct: true,
+    light_color_observed: null,
+    area_clean: true,
+    stall_number: null,
+    meat_inspection_certificate_proof: null,
+    meat_expiry_date: null,
+    inspection_decision_source: null,
+    protocol_spoiled_reason: null,
+  };
+
+  assert.equal(buildPreScanReportFields(inspection).regulatoryCompliance, "Not available");
+});
+
+test("buildPreScanReportFields includes compliance on the feature date", () => {
+  const inspection = {
+    created_at: "2026-08-05T00:00:00.000Z",
+    regulatory_compliance: true,
+    storage_correct: true,
+    light_color_correct: true,
+    light_color_observed: null,
+    area_clean: true,
+    stall_number: null,
+    meat_inspection_certificate_proof: null,
+    meat_expiry_date: null,
+    inspection_decision_source: null,
+    protocol_spoiled_reason: null,
+  };
+
+  assert.equal(buildPreScanReportFields(inspection).regulatoryCompliance, "Compliant");
+});
+
+test("buildPreScanReportFields keeps post-feature missing compliance distinct", () => {
+  const inspection = {
+    created_at: "2026-08-06T00:00:00.000Z",
+    regulatory_compliance: null,
+    storage_correct: null,
+    light_color_correct: null,
+    light_color_observed: null,
+    area_clean: null,
+    stall_number: null,
+    meat_inspection_certificate_proof: null,
+    meat_expiry_date: null,
+    inspection_decision_source: null,
+    protocol_spoiled_reason: null,
+  };
+
+  assert.equal(buildPreScanReportFields(inspection).regulatoryCompliance, "Not Recorded");
 });

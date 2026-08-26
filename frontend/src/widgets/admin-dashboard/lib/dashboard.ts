@@ -49,6 +49,7 @@ export const ANALYTICS_DAYS = 14;
 export const MAX_ANALYTICS_ITEMS = 6;
 export const REPORT_DEFAULT_RANGE_DAYS = 30;
 export const REPORT_PDF_DETAIL_ROW_LIMIT = 60;
+export const REGULATORY_COMPLIANCE_AVAILABLE_FROM = "2026-08-05";
 export const UNKNOWN_INSPECTOR_LABEL = "Unknown Inspector";
 export const UNSPECIFIED_LOCATION_LABEL = "Unspecified";
 export const REPORT_CLASSIFICATIONS: FreshnessClassification[] = [
@@ -186,9 +187,20 @@ export const formatRegulatoryComplianceLabel = (
   return "Not Recorded";
 };
 
+const formatRegulatoryComplianceLabelForInspection = (
+  createdAt: string,
+  compliance: boolean | null,
+): string => {
+  if (createdAt.slice(0, 10) < REGULATORY_COMPLIANCE_AVAILABLE_FROM) {
+    return "Not available";
+  }
+  return formatRegulatoryComplianceLabel(compliance);
+};
+
 export const buildPreScanReportFields = (
   inspection: Pick<
     Inspection,
+    | "created_at"
     | "stall_number"
     | "meat_inspection_certificate_proof"
     | "meat_expiry_date"
@@ -208,7 +220,8 @@ export const buildPreScanReportFields = (
   lightColorCorrect: formatYesNo(inspection.light_color_correct),
   lightColorObserved: getOptionalText(inspection.light_color_observed),
   areaClean: formatYesNo(inspection.area_clean),
-  regulatoryCompliance: formatRegulatoryComplianceLabel(
+  regulatoryCompliance: formatRegulatoryComplianceLabelForInspection(
+    inspection.created_at,
     resolveRegulatoryComplianceStatus(inspection),
   ),
   decisionSource:
