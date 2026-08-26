@@ -50,6 +50,7 @@ type InspectionInsertPayload = {
 };
 
 const INSPECTION_COLUMNS = "id, user_id, meat_type, classification, official_classification, manual_classification, confidence_score, flagged_deviations, explanation, image_url, location, location_latitude, location_longitude, stall_number, meat_inspection_certificate_proof, meat_expiry_date, storage_correct, light_color_correct, light_color_observed, area_clean, inspection_decision_source, protocol_spoiled_reason, regulatory_compliance, inspector_notes, client_submission_id, captured_at, created_at, updated_at";
+const DEVELOPER_DATASET_EXPORT_COLUMNS = "id, meat_type, classification, manual_classification, confidence_score, image_url, captured_at";
 
 export class InspectionService {
   private static instance: InspectionService;
@@ -188,6 +189,42 @@ export class InspectionService {
       .from(this.tableName) as any)
       .select(INSPECTION_COLUMNS, { count: "exact" });
 
+    query = this.applyDeveloperDatasetFilters(query, filters);
+
+    const { data, error, count } = await query
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) throw new Error(`Failed to fetch developer dataset: ${error.message}`);
+
+    return {
+      items: (data as unknown as Inspection[]) ?? [],
+      total: count ?? 0,
+      limit,
+      offset,
+    };
+  }
+
+  async getDeveloperDatasetExportRows(filters: DeveloperDatasetFilters): Promise<Inspection[]> {
+    const limit = Math.min(Math.max(Math.trunc(filters.limit || 50), 1), 10_000);
+
+    let query = (supabase
+      .from(this.tableName) as any)
+      .select(DEVELOPER_DATASET_EXPORT_COLUMNS);
+
+    query = this.applyDeveloperDatasetFilters(query, filters);
+
+    const { data, error } = await query
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range(0, limit - 1);
+
+    if (error) throw new Error(`Failed to fetch developer dataset export: ${error.message}`);
+    return (data as unknown as Inspection[]) ?? [];
+  }
+
+  private applyDeveloperDatasetFilters(query: any, filters: DeveloperDatasetFilters): any {
     if (filters.meatType?.trim()) {
       query = query.eq("meat_type", filters.meatType.trim());
     }
@@ -218,19 +255,7 @@ export class InspectionService {
       query = query.lte("created_at", filters.dateTo.trim());
     }
 
-    const { data, error, count } = await query
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    if (error) throw new Error(`Failed to fetch developer dataset: ${error.message}`);
-
-    return {
-      items: (data as unknown as Inspection[]) ?? [],
-      total: count ?? 0,
-      limit,
-      offset,
-    };
+    return query;
   }
 
   private async getByClientSubmissionId(clientSubmissionId: string, userId: string): Promise<Inspection | null> {
