@@ -20,6 +20,23 @@ test("export loading overlay announces its active export status", () => {
   assert.match(markup, /animate-spin/);
 });
 
+test("export loading overlay renders determinate progress when reported", () => {
+  const markup = renderToStaticMarkup(
+    <ExportLoadingOverlay
+      visible
+      message="Downloading images..."
+      progress={{ current: 4, total: 10 }}
+    />,
+  );
+
+  assert.match(markup, /role="progressbar"/);
+  assert.match(markup, /aria-valuemin="0"/);
+  assert.match(markup, /aria-valuemax="10"/);
+  assert.match(markup, /aria-valuenow="4"/);
+  assert.match(markup, /40%/);
+  assert.doesNotMatch(markup, /animate-spin/);
+});
+
 test("shared ui publishes the export loading overlay", () => {
   assert.equal(SharedExportLoadingOverlay, ExportLoadingOverlay);
 });
