@@ -170,7 +170,8 @@ export function useHistory() {
       return;
     }
 
-    await reportExport.run("pdf", async () => {
+    await reportExport.run("pdf", async (report) => {
+      report({ current: 1, total: 3 });
       try {
         const generatedAt = format(new Date(), "MMM d, yyyy h:mm a");
         const model = buildDetailedHistoryReportPdfModel({
@@ -181,10 +182,12 @@ export function useHistory() {
             reportOrganization: profile?.report_organization ?? null,
           });
 
+        report({ current: 2, total: 3 });
         await composeReportPdf(
           model,
           `MeatLens-inspector-detailed-${selectedReportDay}.pdf`,
         );
+        report({ current: 3, total: 3 });
         toast.success("Inspector PDF report exported");
       } catch (error) {
         console.error("Failed to export inspector PDF report", error);
@@ -203,6 +206,7 @@ export function useHistory() {
   return {
     isLoading,
     isExportingDetailedPdf: reportExport.activeTask !== null,
+    exportProgress: reportExport.progress,
     activeFilter,
     searchText,
     selectedReportDay,

@@ -12,6 +12,7 @@ test("inspection history shows a blocking loading state during PDF export", () =
       formattedReportDayLabel="August 26, 2026"
       hasValidReportDay
       isExportingDetailedPdf
+      exportProgress={{ current: 2, total: 3 }}
       isLoading={false}
       pagedInspections={[]}
       safePage={1}
@@ -32,4 +33,6 @@ test("inspection history shows a blocking loading state during PDF export", () =
   assert.match(markup, /Preparing PDF export\.\.\./);
   assert.match(markup, /aria-busy="true"/);
   assert.match(markup, /Exporting PDF/);
+  assert.match(markup, /role="progressbar"/);
+  assert.match(markup, /aria-valuenow="2"/);
 });

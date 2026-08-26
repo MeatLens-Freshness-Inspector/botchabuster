@@ -3,6 +3,7 @@ import { Button, ExportLoadingOverlay, Input } from "@/shared/ui";
 import { InspectionListItem } from "@/entities/inspection";
 import { Loader2, ClipboardList, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Inspection } from "@/entities/inspection";
+import type { ExportProgress } from "@/shared/lib/use-export-task";
 import type { FilterOption } from "../model/types";
 import { HISTORY_FILTER_OPTIONS } from "../model/history-page";
 
@@ -12,6 +13,7 @@ type InspectionTimelineSectionProps = {
   formattedReportDayLabel: string | null;
   hasValidReportDay: boolean;
   isExportingDetailedPdf: boolean;
+  exportProgress: ExportProgress | null;
   isLoading: boolean;
   pagedInspections: Inspection[];
   safePage: number;
@@ -34,6 +36,7 @@ export function InspectionTimelineSection({
   formattedReportDayLabel,
   hasValidReportDay,
   isExportingDetailedPdf,
+  exportProgress,
   isLoading,
   pagedInspections,
   safePage,
@@ -57,6 +60,7 @@ export function InspectionTimelineSection({
       <ExportLoadingOverlay
         visible={isExportingDetailedPdf}
         message="Preparing PDF export..."
+        progress={exportProgress}
       />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-base font-semibold">Inspection Timeline</h2>

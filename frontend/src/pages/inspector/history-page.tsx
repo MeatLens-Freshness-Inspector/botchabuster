@@ -10,6 +10,7 @@ const HistoryPage = () => {
   const {
     isLoading,
     isExportingDetailedPdf,
+    exportProgress,
     activeFilter,
     searchText,
     selectedReportDay,
@@ -54,6 +55,7 @@ const HistoryPage = () => {
             formattedReportDayLabel={formattedReportDayLabel}
             hasValidReportDay={hasValidReportDay}
             isExportingDetailedPdf={isExportingDetailedPdf}
+            exportProgress={exportProgress}
             isLoading={isLoading}
             pagedInspections={pagedInspections}
             safePage={safePage}
