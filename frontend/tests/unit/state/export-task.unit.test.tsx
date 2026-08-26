@@ -96,3 +96,50 @@ test("export task prevents duplicate work and clears its active state", async ()
     cleanup();
   }
 });
+
+test("export task exposes reported determinate progress and clears it on completion", async () => {
+  const { container, cleanup } = installDom();
+  const root: Root = createRoot(container);
+  const work = deferred<void>();
+
+  function Harness() {
+    const task = useExportTask<"zip">();
+    return (
+      <div>
+        <span data-testid="progress">
+          {task.progress ? `${task.progress.current}/${task.progress.total}` : "none"}
+        </span>
+        <button
+          type="button"
+          onClick={() => void task.run("zip", async (report) => {
+            report({ current: 2, total: 10 });
+            await work.promise;
+          })}
+        >
+          export
+        </button>
+      </div>
+    );
+  }
+
+  try {
+    await act(async () => root.render(<Harness />));
+    const button = document.querySelector("button") as HTMLButtonElement;
+    await act(async () => {
+      button.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    assert.equal(document.querySelector('[data-testid="progress"]')?.textContent, "2/10");
+
+    await act(async () => {
+      work.resolve();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    assert.equal(document.querySelector('[data-testid="progress"]')?.textContent, "none");
+  } finally {
+    await act(async () => root.unmount());
+    cleanup();
+  }
+});
