@@ -21,6 +21,7 @@ import {
 } from "@/features/offline-analysis/lib/resnet-runtime";
 import {
   PRIMARY_ANALYSIS_MODEL,
+  getAnalysisModelVersionKey,
   type AnalysisModelSelection,
 } from "./model-catalog";
 import { DEFAULT_DISABLE_ROI_SEGMENTATION } from "./preprocessing-defaults";
@@ -38,6 +39,7 @@ export interface ActiveAnalysisPrediction {
   recommendation: FreshnessRecommendation;
   analysisSource: "mobilenetv3" | "resnet50" | "ensemble";
   modelPath: string | null;
+  modelVersionKey: string;
 }
 
 export interface AnalyzeOptions {
@@ -83,6 +85,7 @@ function toActiveAnalysisPrediction(
     recommendation: result.recommendation,
     analysisSource,
     modelPath: result.modelPath ?? fallbackModelPath,
+    modelVersionKey: getActiveAnalysisModelVersionKey(),
   };
 }
 
@@ -99,6 +102,7 @@ function toActiveAnalysisPredictionFromEnsemble(
     recommendation: result.recommendation,
     analysisSource: result.analysisSource,
     modelPath: result.modelPath,
+    modelVersionKey: getActiveAnalysisModelVersionKey(),
   };
 }
 
@@ -137,6 +141,10 @@ export function setActiveAnalysisModel(selection: AnalysisModelSelection): void 
 
 export function getActiveAnalysisModel(): AnalysisModelSelection {
   return activeAnalysisModel;
+}
+
+export function getActiveAnalysisModelVersionKey(): string {
+  return getAnalysisModelVersionKey(activeAnalysisModel);
 }
 
 export function isAnalysisReady(): boolean {

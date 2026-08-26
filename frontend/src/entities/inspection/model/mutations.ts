@@ -41,6 +41,8 @@ export function buildInspectionInsert({
         preScanPayload.area_clean === true)
     : null;
 
+  const modelVersionKey = result.model_version_key?.trim() || null;
+
   return {
     user_id: userId,
     client_submission_id: submissionId,
@@ -59,5 +61,6 @@ export function buildInspectionInsert({
     flagged_deviations: result.flagged_deviations,
     explanation: result.explanation,
     image_url: imageUrl,
+    ...(modelVersionKey ? { model_version_key: modelVersionKey } : {}),
   };
 }

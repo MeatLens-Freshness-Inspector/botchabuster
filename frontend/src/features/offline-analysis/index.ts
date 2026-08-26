@@ -19,6 +19,7 @@ export {
   runActiveAnalysis,
   setActiveAnalysisMode,
   getActiveAnalysisModel,
+  getActiveAnalysisModelVersionKey,
   setActiveAnalysisModel,
 } from "./api/analyze-inspection";
 export {
@@ -26,6 +27,7 @@ export {
   PRIMARY_ANALYSIS_MODEL,
   formatModelAddedDate,
   isAnalysisModelSelection,
+  getAnalysisModelVersionKey,
 } from "./lib/model-catalog";
 export type {
   AnalysisModelCatalogEntry,

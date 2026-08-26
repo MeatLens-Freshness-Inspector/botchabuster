@@ -16,6 +16,7 @@ import {
   runActiveAnalysis,
   setActiveAnalysisMode,
   setActiveAnalysisModel,
+  getActiveAnalysisModelVersionKey,
 } from "../lib/analysis-runtime";
 import type { SquareGuideBox } from "../lib/meat-lens-pipeline";
 import { DEFAULT_DISABLE_ROI_SEGMENTATION } from "../lib/preprocessing-defaults";
@@ -30,6 +31,7 @@ export {
   runActiveAnalysis,
   setActiveAnalysisMode,
   setActiveAnalysisModel,
+  getActiveAnalysisModelVersionKey,
 };
 
 const MODEL_LOAD_WAIT_ONLINE_MS = 45_000;
@@ -432,5 +434,6 @@ export async function analyzeOffline(
     explanation,
     analysis_source: modelResult.analysisSource,
     model_path: modelResult.modelPath,
+    model_version_key: modelResult.modelVersionKey,
   };
 }

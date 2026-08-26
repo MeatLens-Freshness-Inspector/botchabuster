@@ -11,6 +11,7 @@
  *   002_create_pending_audit_logs
  *   003_create_offline_auth_envelope
  *   004_create_inspection_history_cache
+ *   007_add_model_version_key_to_pending_scans
  */
 
 import { CapacitorSQLite, SQLiteConnection } from "@capacitor-community/sqlite";
@@ -50,7 +51,7 @@ const SYNC_METADATA_SEEDS = [
   ["last_scan_sync_at",            ""],
   ["last_audit_sync_at",           ""],
   ["last_inspection_cache_sync_at",""],
-  ["db_schema_version",            "6"],
+  ["db_schema_version",            "7"],
   ["app_version",                  "1.0.0"],
 ] as const;
 
@@ -222,6 +223,12 @@ const DDL_006 = `
     ADD COLUMN IF NOT EXISTS regulatory_compliance INTEGER;
 `;
 
+/** Migration 007 — Preserve the deployed model key for queued scans */
+const DDL_007 = `
+  ALTER TABLE pending_scans
+    ADD COLUMN model_version_key TEXT;
+`;
+
 // ---------------------------------------------------------------------------
 // Ordered migration list (version, description, DDL)
 // ---------------------------------------------------------------------------
@@ -231,6 +238,7 @@ const MIGRATIONS: Array<{ version: number; description: string; ddl: string }> =
   { version: 3, description: "Create offline_auth_envelope table",                            ddl: DDL_003 },
   { version: 4, description: "Create inspection_history_cache and inspection_stats_cache",    ddl: DDL_004 },
   { version: 6, description: "Add regulatory_compliance to pending_scans",                    ddl: DDL_006 },
+  { version: 7, description: "Add model version key to pending_scans",                       ddl: DDL_007 },
 ];
 
 // ---------------------------------------------------------------------------

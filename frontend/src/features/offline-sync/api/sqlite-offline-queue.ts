@@ -46,6 +46,7 @@ export interface PendingScan {
   queuedAt: string;
   userId: string;
   analysisResult?: AnalysisResult;
+  modelVersionKey?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -103,6 +104,7 @@ function rowToScan(row: Record<string, unknown>): PendingScan {
     queuedAt: row["queued_at"] as string,
     userId: row["user_id"] as string,
     analysisResult: safeParseJson<AnalysisResult>(row["analysis_result_json"] as string | null) ?? undefined,
+    modelVersionKey: (row["model_version_key"] as string | null) ?? null,
   };
 }
 
@@ -120,9 +122,9 @@ export async function queueScan(scan: PendingScan): Promise<void> {
       storage_correct, light_color_correct, light_color_observed, area_clean,
       regulatory_compliance,
       inspection_decision_source, protocol_spoiled_reason,
-      captured_at, queued_at, user_id, analysis_result_json,
+      captured_at, queued_at, user_id, analysis_result_json, model_version_key,
       sync_status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
     [
       scan.id,
       arrayBufferToBase64(scan.imageData),
@@ -146,6 +148,7 @@ export async function queueScan(scan: PendingScan): Promise<void> {
       scan.queuedAt,
       scan.userId,
       scan.analysisResult ? JSON.stringify(scan.analysisResult) : null,
+      scan.modelVersionKey ?? scan.analysisResult?.model_version_key ?? null,
     ],
   );
 }

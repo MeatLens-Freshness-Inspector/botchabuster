@@ -79,3 +79,18 @@ test("buildInspectionInsert normalizes empty location and omits protocol reason 
   assert.equal(result.protocol_spoiled_reason, null);
   assert.equal(result.inspection_decision_source, "ai");
 });
+
+test("buildInspectionInsert carries the model version key from the analysis result", () => {
+  const result = buildInspectionInsert({
+    ...submission,
+    decisionSource: "ai",
+    result: {
+      ...submission.result,
+      classification: "fresh",
+      confidence_score: 91,
+      model_version_key: "mobilenet-primary-2026-08-13",
+    },
+  });
+
+  assert.equal(result.model_version_key, "mobilenet-primary-2026-08-13");
+});

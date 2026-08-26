@@ -29,6 +29,7 @@ export interface Inspection {
   captured_at: string;
   created_at: string;
   updated_at: string;
+  model_version_id?: string | null;
 }
 
 export interface InspectionInsert {
@@ -56,4 +57,5 @@ export interface InspectionInsert {
   inspector_notes?: string | null;
   captured_at?: string;
   client_submission_id: string;
+  model_version_key?: string | null;
 }

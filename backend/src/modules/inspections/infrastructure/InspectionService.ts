@@ -25,6 +25,7 @@ type SupabaseWriteError = {
 type InspectionInsertPayload = {
   user_id: string;
   client_submission_id: string;
+  model_version_id?: string | null;
   meat_type: InspectionInsert["meat_type"];
   classification: InspectionInsert["classification"];
   manual_classification?: InspectionInsert["manual_classification"];
@@ -49,7 +50,7 @@ type InspectionInsertPayload = {
   inspector_notes?: string | null;
 };
 
-const INSPECTION_COLUMNS = "id, user_id, meat_type, classification, official_classification, manual_classification, confidence_score, flagged_deviations, explanation, image_url, location, location_latitude, location_longitude, stall_number, meat_inspection_certificate_proof, meat_expiry_date, storage_correct, light_color_correct, light_color_observed, area_clean, inspection_decision_source, protocol_spoiled_reason, regulatory_compliance, inspector_notes, client_submission_id, captured_at, created_at, updated_at";
+const INSPECTION_COLUMNS = "id, user_id, meat_type, classification, official_classification, manual_classification, confidence_score, flagged_deviations, explanation, image_url, location, location_latitude, location_longitude, stall_number, meat_inspection_certificate_proof, meat_expiry_date, storage_correct, light_color_correct, light_color_observed, area_clean, inspection_decision_source, protocol_spoiled_reason, regulatory_compliance, inspector_notes, client_submission_id, model_version_id, captured_at, created_at, updated_at";
 const DEVELOPER_DATASET_EXPORT_COLUMNS = "id, meat_type, classification, manual_classification, confidence_score, image_url, captured_at";
 
 export class InspectionService {
@@ -114,7 +115,8 @@ export class InspectionService {
       return { inspection: existingInspection, created: false };
     }
 
-    const inspectionPayload = this.buildInsertPayload(inspection, userId, clientSubmissionId);
+    const modelVersionId = await this.resolveModelVersionId(inspection.model_version_key);
+    const inspectionPayload = this.buildInsertPayload(inspection, userId, clientSubmissionId, modelVersionId);
 
     const { data, error } = await (supabase
       .from(this.tableName) as any)
@@ -278,6 +280,7 @@ export class InspectionService {
     inspection: InspectionInsert,
     userId: string,
     clientSubmissionId: string,
+    modelVersionId: string | null,
   ): InspectionInsertPayload {
     let payload: InspectionInsertPayload = {
       user_id: userId,
@@ -286,6 +289,7 @@ export class InspectionService {
       classification: inspection.classification,
       manual_classification: inspection.manual_classification ?? inspection.classification,
       confidence_score: inspection.confidence_score,
+      model_version_id: modelVersionId,
     };
 
     if (inspection.captured_at !== undefined) payload.captured_at = inspection.captured_at;
@@ -325,6 +329,21 @@ export class InspectionService {
       inspection_decision_source: inspection.inspection_decision_source,
       protocol_spoiled_reason: inspection.protocol_spoiled_reason,
     });
+  }
+
+  private async resolveModelVersionId(modelVersionKey?: string | null): Promise<string | null> {
+    const normalizedKey = modelVersionKey?.trim();
+    if (!normalizedKey) return null;
+
+    const { data, error } = await (supabase
+      .from("model_versions") as any)
+      .select("id, version_key")
+      .eq("version_key", normalizedKey)
+      .maybeSingle();
+
+    if (error) throw new Error(`Failed to resolve model version: ${error.message}`);
+    if (!data?.id) throw new Error("Model version is not registered");
+    return data.id as string;
   }
 
   async updateManualClassification(

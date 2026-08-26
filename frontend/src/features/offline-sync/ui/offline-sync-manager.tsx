@@ -38,6 +38,7 @@ type PendingScan = {
   queuedAt: string;
   userId: string;
   analysisResult?: AnalysisResult;
+  modelVersionKey?: string | null;
 };
 
 type PendingAuditLog = {
@@ -72,6 +73,7 @@ type OfflineInspectionInsert = {
   flagged_deviations: string[];
   explanation: string;
   image_url: string | null;
+  model_version_key?: string | null;
 };
 
 type DeveloperOptionsFlags = {
@@ -178,6 +180,7 @@ async function processScan(
     flagged_deviations: result.flagged_deviations,
     explanation: result.explanation,
     image_url: imageUrl,
+    model_version_key: scan.modelVersionKey ?? result.model_version_key ?? null,
   });
 
   await dependencies.removeScan(scan.id);

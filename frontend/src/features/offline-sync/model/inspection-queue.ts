@@ -42,6 +42,7 @@ export interface PendingScan {
   queuedAt: string;
   userId: string;
   analysisResult?: AnalysisResult;
+  modelVersionKey?: string | null;
 }
 
 function openDb(): Promise<IDBDatabase> {

@@ -288,6 +288,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
         queuedAt,
         userId: user.id,
         analysisResult,
+        modelVersionKey: analysisResult?.model_version_key ?? null,
       });
     },
     [

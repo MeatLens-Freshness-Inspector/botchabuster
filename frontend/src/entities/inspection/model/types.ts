@@ -39,6 +39,7 @@ export interface Inspection {
   captured_at?: string | null;
   created_at: string;
   updated_at: string;
+  model_version_id?: string | null;
 }
 
 export type InspectionResultDisputeStatus = 'pending' | 'approved' | 'rejected';
@@ -89,6 +90,7 @@ export interface InspectionInsert {
   regulatory_compliance?: boolean | null;
   inspector_notes?: string | null;
   user_id?: string | null;
+  model_version_key?: string | null;
 }
 
 export interface AnalysisResult {
@@ -104,6 +106,7 @@ export interface AnalysisResult {
   explanation: string;
   analysis_source?: "mobilenetv3" | "resnet50" | "ensemble" | "backend";
   model_path?: string | null;
+  model_version_key?: string | null;
 }
 
 export interface ApiConfig {
