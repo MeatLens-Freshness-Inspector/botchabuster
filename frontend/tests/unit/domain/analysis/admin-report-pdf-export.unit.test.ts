@@ -43,6 +43,7 @@ test("buildAdminDashboardReportPdfModel preserves the organization overview and 
         lightColorCorrect: "Yes",
         lightColorObserved: "-",
         areaClean: "Yes",
+        regulatoryCompliance: "Not available",
         flaggedDeviations: "-",
         explanation: "Looks good",
         inspectorNotes: "Routine check",
@@ -98,6 +99,7 @@ test("buildAdminDashboardReportPdfModel preserves graph payloads and nullable po
         lightColorCorrect: "Yes",
         lightColorObserved: "-",
         areaClean: "Yes",
+        regulatoryCompliance: "Compliant",
         flaggedDeviations: "-",
         explanation: "Looks good",
         inspectorNotes: "Routine check",
@@ -127,6 +129,7 @@ test("buildAdminDashboardReportPdfModel preserves graph payloads and nullable po
         lightColorCorrect: "Yes",
         lightColorObserved: "-",
         areaClean: "Yes",
+        regulatoryCompliance: "Not available",
         flaggedDeviations: "-",
         explanation: "Review needed",
         inspectorNotes: "Second pass",
@@ -146,4 +149,20 @@ test("buildAdminDashboardReportPdfModel preserves graph payloads and nullable po
     porkGallery?.inspectionEvidence?.[0].imageUrl,
     "https://example.com/city-vet-pork.jpg",
   );
+  assert.equal(
+    porkGallery?.inspectionEvidence?.[0].regulatoryCompliance,
+    "Compliant",
+  );
+
+  const detailSection = model.sections.find((section) => section.id === "meat-detail");
+  assert.deepEqual(detailSection?.tables?.[0].columns, [
+    "Created",
+    "Inspector",
+    "Location",
+    "Meat",
+    "Classification",
+    "Confidence",
+    "Regulatory Compliance",
+  ]);
+  assert.equal(detailSection?.tables?.[0].rows[0][6], "Compliant");
 });

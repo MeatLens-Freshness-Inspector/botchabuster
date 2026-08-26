@@ -34,6 +34,7 @@ type AdminReportRow = {
   classification: string;
   manualClassification?: string;
   confidenceScore: number;
+  regulatoryCompliance: string;
   imageUrl: string | null;
 };
 
@@ -282,6 +283,7 @@ function buildPorkInspectionEvidence(
       classification: row.classification,
       confidenceLabel: `${row.confidenceScore}%`,
       location: row.location,
+      regulatoryCompliance: row.regulatoryCompliance,
       inspectorLabel: row.inspector,
     }));
 }
@@ -371,6 +373,7 @@ export function buildAdminRangeReportModel(
           "Meat",
           "Classification",
           "Confidence",
+          "Regulatory Compliance",
         ],
         rows: input.reportRows.map((row) => [
           row.createdAt,
@@ -379,6 +382,7 @@ export function buildAdminRangeReportModel(
           row.meatType,
           row.classification,
           `${row.confidenceScore}%`,
+          row.regulatoryCompliance,
         ]),
       }),
     ],

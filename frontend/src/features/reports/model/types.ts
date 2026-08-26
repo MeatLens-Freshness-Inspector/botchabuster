@@ -54,6 +54,7 @@ export interface ReportInspectionEvidenceItem {
   classification: string;
   confidenceLabel: string;
   location: string;
+  regulatoryCompliance?: string;
   inspectorLabel?: string;
 }
 

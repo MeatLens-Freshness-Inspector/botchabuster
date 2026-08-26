@@ -278,6 +278,7 @@ export function buildAdminDashboardReportPdfModel(input: {
       classification: row.classification,
       manualClassification: row.manualClassification,
       confidenceScore: row.confidenceScore,
+      regulatoryCompliance: row.regulatoryCompliance,
       imageUrl: row.imageUrl,
     })),
     modelAccuracyHistory: input.modelAccuracyHistory,
