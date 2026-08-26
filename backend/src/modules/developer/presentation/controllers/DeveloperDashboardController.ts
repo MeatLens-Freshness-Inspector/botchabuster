@@ -107,6 +107,54 @@ export class DeveloperDashboardController {
     }
   }
 
+  async startDatasetExport(req: Request, res: Response): Promise<void> {
+    try {
+      const ownerId = req.auth?.userId;
+      if (!ownerId) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+
+      const body = (req.body ?? {}) as Record<string, unknown>;
+      res.status(202).json(
+        dashboard.startDatasetExportSession(this.parseFilters(body), ownerId),
+      );
+    } catch (error) {
+      this.handleError("Start developer dataset export", res, error, "Failed to start developer dataset export");
+    }
+  }
+
+  async getDatasetExportProgress(req: Request, res: Response): Promise<void> {
+    try {
+      const ownerId = req.auth?.userId;
+      if (!ownerId) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+
+      res.json(dashboard.getDatasetExportProgress(req.params.exportId ?? "", ownerId));
+    } catch (error) {
+      this.handleError("Get developer dataset export progress", res, error, "Failed to get developer dataset export progress");
+    }
+  }
+
+  async downloadDatasetExport(req: Request, res: Response): Promise<void> {
+    try {
+      const ownerId = req.auth?.userId;
+      if (!ownerId) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+
+      const exported = dashboard.getDatasetExportBuffer(req.params.exportId ?? "", ownerId);
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader("Content-Disposition", `attachment; filename="${exported.filename}"`);
+      res.status(200).send(exported.buffer);
+    } catch (error) {
+      this.handleError("Download developer dataset export", res, error, "Failed to download developer dataset export");
+    }
+  }
+
   async updateDatasetManualClassification(req: Request, res: Response): Promise<void> {
     try {
       const inspectionId = typeof req.params.inspectionId === "string" ? req.params.inspectionId.trim() : "";

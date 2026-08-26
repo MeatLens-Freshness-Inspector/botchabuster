@@ -19,6 +19,9 @@ router.post("/disputes/:disputeId/review", requireAdmin, (req, res) =>
   void disputeController.review(req, res),
 );
 router.post("/datasets/export", requireDeveloper, (req, res) => controller.exportDatasets(req, res));
+router.post("/datasets/export/start", requireDeveloper, (req, res) => controller.startDatasetExport(req, res));
+router.get("/datasets/export/:exportId/progress", requireDeveloper, (req, res) => controller.getDatasetExportProgress(req, res));
+router.get("/datasets/export/:exportId/download", requireDeveloper, (req, res) => controller.downloadDatasetExport(req, res));
 router.patch("/datasets/:inspectionId/manual-classification", requireDeveloper, (req, res) =>
   controller.updateDatasetManualClassification(req, res),
 );
