@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { LockKeyhole, LockOpen, Upload, Database, Trash2, RefreshCcw, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
@@ -10,7 +10,7 @@ import {
   type AnalysisModelCatalogEntry,
 } from "@/features/offline-analysis";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Button } from "@/shared/ui";
+import { Button, ExportLoadingOverlay } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
 import { Switch } from "@/shared/ui/switch";
@@ -34,6 +34,7 @@ import {
   getPendingCount,
   getPendingScans,
 } from "@/features/offline-sync";
+import { useExportTask } from "@/shared/lib/use-export-task";
 
 type DeveloperToggleKey = Exclude<keyof DeveloperOptionsFlags, "selectedModel">;
 
@@ -109,6 +110,8 @@ export function DeveloperOptionsPanel() {
   const [pendingAuditCount, setPendingAuditCount] = useState(0);
   const [isBusyAction, setIsBusyAction] = useState(false);
   const [lastSnapshotAt, setLastSnapshotAt] = useState<string | null>(null);
+  const queueExport = useExportTask<"queue">();
+  const isExportingQueue = queueExport.activeTask !== null;
 
   const currentUserId = user?.id ?? null;
 
@@ -225,31 +228,32 @@ export function DeveloperOptionsPanel() {
   };
 
   const handleExportQueue = async () => {
-    setIsBusyAction(true);
-    try {
-      const scans = await getPendingScans();
-      const payload = scans.map((scan) => ({
-        id: scan.id,
-        userId: scan.userId,
-        meatType: scan.meatType,
-        location: scan.location,
-        locationLatitude: scan.locationLatitude,
-        locationLongitude: scan.locationLongitude,
-        queuedAt: scan.queuedAt,
-        capturedAt: scan.capturedAt ?? null,
-        imageName: scan.imageName,
-        imageType: scan.imageType,
-        imageByteLength: scan.imageData.byteLength,
-        hasAnalysisResult: Boolean(scan.analysisResult),
-        analysisResult: scan.analysisResult ?? null,
-      }));
-      downloadJson(`meatlens-offline-queue-${Date.now()}.json`, payload);
-      toast.success("Offline queue exported");
-    } catch {
-      toast.error("Failed to export offline queue");
-    } finally {
-      setIsBusyAction(false);
-    }
+    if (!isUnlocked) return;
+
+    await queueExport.run("queue", async () => {
+      try {
+        const scans = await getPendingScans();
+        const payload = scans.map((scan) => ({
+          id: scan.id,
+          userId: scan.userId,
+          meatType: scan.meatType,
+          location: scan.location,
+          locationLatitude: scan.locationLatitude,
+          locationLongitude: scan.locationLongitude,
+          queuedAt: scan.queuedAt,
+          capturedAt: scan.capturedAt ?? null,
+          imageName: scan.imageName,
+          imageType: scan.imageType,
+          imageByteLength: scan.imageData.byteLength,
+          hasAnalysisResult: Boolean(scan.analysisResult),
+          analysisResult: scan.analysisResult ?? null,
+        }));
+        downloadJson(`meatlens-offline-queue-${Date.now()}.json`, payload);
+        toast.success("Offline queue exported");
+      } catch {
+        toast.error("Failed to export offline queue");
+      }
+    });
   };
 
   const handleClearQueue = async () => {
@@ -394,7 +398,11 @@ export function DeveloperOptionsPanel() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border-border/70 bg-card/95">
+      <Card
+        className="relative rounded-3xl border-border/70 bg-card/95"
+        aria-busy={isExportingQueue}
+      >
+        <ExportLoadingOverlay visible={isExportingQueue} message="Preparing offline queue export..." />
         <CardHeader>
           <CardTitle className="font-display text-sm uppercase tracking-wider">Debug Utilities</CardTitle>
           <CardDescription className="text-xs">
@@ -423,17 +431,17 @@ export function DeveloperOptionsPanel() {
               variant="outline"
               className="justify-start gap-2 rounded-xl"
               onClick={() => void handleExportQueue()}
-              disabled={!isUnlocked || isBusyAction}
+              disabled={!isUnlocked || isBusyAction || isExportingQueue}
             >
               <Upload className="h-4 w-4" />
-              Export Offline Queue JSON
+              {isExportingQueue ? "Exporting queue..." : "Export Offline Queue JSON"}
             </Button>
             <Button
               type="button"
               variant="outline"
               className="justify-start gap-2 rounded-xl"
               onClick={() => void refreshQueueCounts()}
-              disabled={isBusyAction}
+              disabled={isBusyAction || isExportingQueue}
             >
               <RefreshCcw className="h-4 w-4" />
               Refresh Queue Counters
@@ -443,7 +451,7 @@ export function DeveloperOptionsPanel() {
               variant="outline"
               className="justify-start gap-2 rounded-xl text-destructive hover:text-destructive"
               onClick={() => void handleClearQueue()}
-              disabled={!isUnlocked || isBusyAction}
+              disabled={!isUnlocked || isBusyAction || isExportingQueue}
             >
               <Database className="h-4 w-4" />
               Clear Pending Scan Queue
@@ -453,7 +461,7 @@ export function DeveloperOptionsPanel() {
               variant="outline"
               className="justify-start gap-2 rounded-xl text-destructive hover:text-destructive"
               onClick={() => void handleClearAuditQueue()}
-              disabled={!isUnlocked || isBusyAction}
+              disabled={!isUnlocked || isBusyAction || isExportingQueue}
             >
               <Trash2 className="h-4 w-4" />
               Clear Pending Audit Queue
@@ -463,7 +471,7 @@ export function DeveloperOptionsPanel() {
               variant="outline"
               className="justify-start gap-2 rounded-xl"
               onClick={handleClearSnapshot}
-              disabled={!isUnlocked}
+              disabled={!isUnlocked || isExportingQueue}
             >
               <FlaskConical className="h-4 w-4" />
               Clear Saved Analysis Snapshot
