@@ -7,6 +7,10 @@ const REPORT_TEMPLATE_FRAME_ASSET_PATHS: Record<ReportTemplateKey, string> = {
   city_vet: "/letterheads/rendered/city-vet-page.png",
 };
 
+export type ReportInspectionImageLoader = (
+  path: string | null | undefined,
+) => Promise<string | null>;
+
 export function getTemplateKeyForOrganization(
   value: unknown,
 ): ReportTemplateKey {
@@ -55,4 +59,46 @@ export async function loadOptionalReportImageAsset(
   } catch {
     return null;
   }
+}
+
+export function createReportInspectionImageLoader(
+  loadAsset: ReportInspectionImageLoader = loadOptionalReportImageAsset,
+  concurrency = 6,
+): ReportInspectionImageLoader {
+  const cache = new Map<string, Promise<string | null>>();
+  const pending: Array<{
+    path: string;
+    resolve: (value: string | null) => void;
+  }> = [];
+  let active = 0;
+  const workerLimit = Math.max(1, Math.trunc(concurrency));
+
+  const pump = (): void => {
+    while (active < workerLimit && pending.length > 0) {
+      const next = pending.shift();
+      if (!next) return;
+
+      active += 1;
+      void Promise.resolve(loadAsset(next.path))
+        .then(next.resolve, () => next.resolve(null))
+        .finally(() => {
+          active -= 1;
+          pump();
+        });
+    }
+  };
+
+  return (path) => {
+    if (!path) return Promise.resolve(null);
+
+    const cached = cache.get(path);
+    if (cached) return cached;
+
+    const result = new Promise<string | null>((resolve) => {
+      pending.push({ path, resolve });
+      pump();
+    });
+    cache.set(path, result);
+    return result;
+  };
 }

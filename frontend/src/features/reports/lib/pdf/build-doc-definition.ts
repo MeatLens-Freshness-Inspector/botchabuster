@@ -1,4 +1,5 @@
 import {
+  createReportInspectionImageLoader,
   loadOptionalReportImageAsset,
   loadReportBrandAsset,
 } from "@/features/reports/lib/pdf/assets";
@@ -22,7 +23,8 @@ export async function buildReportDocDefinition(
   const sections = template.buildSections(model);
   const frame = getReportPageFrame(model.templateKey);
   const loadBrandAsset = dependencies.loadBrandAsset ?? loadReportBrandAsset;
-  const loadInspectionImageAsset = dependencies.loadInspectionImageAsset ?? loadOptionalReportImageAsset;
+  const loadInspectionImageAsset = dependencies.loadInspectionImageAsset
+    ?? createReportInspectionImageLoader(loadOptionalReportImageAsset);
   const frameImage = await loadBrandAsset(frame.backgroundAssetPath);
   const header = buildReportDocumentHeader(model, template, { ...frame, backgroundAssetPath: frameImage });
 
