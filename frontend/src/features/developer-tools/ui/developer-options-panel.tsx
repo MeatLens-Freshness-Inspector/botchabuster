@@ -84,6 +84,10 @@ const FLAG_DEFINITIONS: FlagDefinition[] = [
 
 export const ANALYSIS_MODEL_CATALOG = MODEL_CATALOG;
 
+export function getOfflineQueueExportLabel(isExporting: boolean): string {
+  return isExporting ? "Exporting queue..." : "Export Offline Queue JSON";
+}
+
 export function formatDeveloperModelOption(entry: AnalysisModelCatalogEntry): string {
   return `${entry.label} · ${entry.addedOn ? `Added ${formatModelAddedDate(entry.addedOn)}` : entry.addedOnLabel}`;
 }
@@ -434,7 +438,7 @@ export function DeveloperOptionsPanel() {
               disabled={!isUnlocked || isBusyAction || isExportingQueue}
             >
               <Upload className="h-4 w-4" />
-              {isExportingQueue ? "Exporting queue..." : "Export Offline Queue JSON"}
+              {getOfflineQueueExportLabel(isExportingQueue)}
             </Button>
             <Button
               type="button"
