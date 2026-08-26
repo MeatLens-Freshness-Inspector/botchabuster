@@ -334,7 +334,20 @@ export function useAdminDashboard() {
           ...developerLatestRuns.map((run) => [run.name, run.accuracy, run.precision, run.recall, run.f1Score]),
         ]
       : [];
-      const csv = [headers, ...rows, ...developerRows]
+      const modelAccuracyRows = [
+        [],
+        ["Historical Model Accuracy"],
+        ["Snapshot Date", "Model Version", "Expected Accuracy", "Observed Accuracy", "Evaluated Count", "Correct Count"],
+        ...modelAccuracyHistory.map((snapshot) => [
+          snapshot.snapshotDate,
+          snapshot.displayName || snapshot.versionKey,
+          snapshot.expectedAccuracy,
+          snapshot.observedAccuracy === null ? "Unavailable" : snapshot.observedAccuracy,
+          snapshot.evaluatedCount,
+          snapshot.correctCount,
+        ]),
+      ];
+      const csv = [headers, ...rows, ...modelAccuracyRows, ...developerRows]
         .map((record) => record.map((value) => toCsvValue(value)).join(","))
         .join("\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -373,6 +386,7 @@ export function useAdminDashboard() {
       topLocations: reportTopLocations,
       meatTypeBreakdown: reportByMeatType,
       dailyTrend: reportDailyTrend,
+      modelAccuracyHistory,
       inspections: reportExportInspections,
       ...(isDeveloper && reportDeveloperMetrics
         ? {
