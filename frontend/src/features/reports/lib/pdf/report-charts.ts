@@ -163,42 +163,50 @@ function buildLineChartSvg(
   chart: ReportChart,
   frame: Pick<ReportPageFrame, "sectionColor" | "bodyColor">,
 ): string {
-  const maxValue = Math.max(...chart.points.map((point) => point.value), 1);
+  const chartSeries = chart.series && chart.series.length > 0
+    ? chart.series
+    : [{ name: "Value", points: chart.points, color: undefined }];
+  const labels = Array.from(new Set(chartSeries.flatMap((series) => series.points.map((point) => point.label))));
+  const maxValue = Math.max(...chartSeries.flatMap((series) => series.points.map((point) => point.value)), 1);
   const plotWidth = CHART_WIDTH - CHART_MARGIN.left - CHART_MARGIN.right;
   const plotHeight = CHART_HEIGHT - CHART_MARGIN.top - CHART_MARGIN.bottom;
-  const stepX = chart.points.length > 1 ? plotWidth / (chart.points.length - 1) : 0;
+  const stepX = labels.length > 1 ? plotWidth / (labels.length - 1) : 0;
+  const colors = chartSeries.map((series) => series.color ?? frame.sectionColor);
+  const legend = chartSeries.map((series, index) => {
+    const x = 8 + index * 112;
+    return `<rect x="${round(x)}" y="2" width="8" height="8" rx="2" fill="${colors[index]}" /><text x="${round(x + 12)}" y="10" font-size="8" fill="${frame.bodyColor}">${escapeXml(series.name)}</text>`;
+  }).join("");
 
-  const plottedPoints = chart.points.map((point, index) => {
-    const x = CHART_MARGIN.left + stepX * index;
-    const y =
-      CHART_MARGIN.top + plotHeight - (point.value / maxValue) * plotHeight;
+  const seriesContent = chartSeries.map((series, seriesIndex) => {
+    const plottedPoints = series.points.map((point) => {
+      const index = labels.indexOf(point.label);
+      const x = CHART_MARGIN.left + stepX * index;
+      const y = CHART_MARGIN.top + plotHeight - (point.value / maxValue) * plotHeight;
+      return { ...point, x, y };
+    });
+    const polyline = plottedPoints.length > 0
+      ? `<polyline fill="none" stroke="${colors[seriesIndex]}" stroke-width="3" points="${plottedPoints.map((point) => `${round(point.x)},${round(point.y)}`).join(" ")}" />`
+      : "";
+    const pointMarkers = plottedPoints.map((point) => [
+      `<circle cx="${round(point.x)}" cy="${round(point.y)}" r="4" fill="${colors[seriesIndex]}" />`,
+      `<text x="${round(point.x)}" y="${round(point.y - 10)}" font-size="10" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(String(point.value))}</text>`,
+    ].join("")).join("");
+    return `${polyline}${pointMarkers}`;
+  }).join("");
 
-    return { ...point, x, y };
-  });
-
-  const polyline = plottedPoints
-    .map((point) => `${round(point.x)},${round(point.y)}`)
-    .join(" ");
-
-  const pointMarkers = plottedPoints
-    .map((point) => {
-      const labelX = round(point.x);
-      const labelY = round(CHART_MARGIN.top + plotHeight + 10);
-
-      return [
-        `<circle cx="${labelX}" cy="${round(point.y)}" r="4" fill="${frame.sectionColor}" />`,
-        `<text x="${labelX}" y="${round(point.y - 10)}" font-size="10" text-anchor="middle" fill="${frame.bodyColor}">${escapeXml(String(point.value))}</text>`,
-        `<text x="${labelX}" y="${labelY}" font-size="8.5" text-anchor="end" transform="rotate(-90 ${labelX} ${labelY})" fill="${frame.bodyColor}">${escapeXml(truncateLabel(point.label))}</text>`,
-      ].join("");
-    })
-    .join("");
+  const labelsContent = labels.map((label, index) => {
+    const x = round(CHART_MARGIN.left + stepX * index);
+    const y = round(CHART_MARGIN.top + plotHeight + 10);
+    return `<text x="${x}" y="${y}" font-size="8.5" text-anchor="end" transform="rotate(-90 ${x} ${y})" fill="${frame.bodyColor}">${escapeXml(truncateLabel(label))}</text>`;
+  }).join("");
 
   return wrapSvg(
     [
+      legend,
       buildChartGrid(frame.bodyColor),
       buildAxis(frame.bodyColor),
-      `<polyline fill="none" stroke="${frame.sectionColor}" stroke-width="3" points="${polyline}" />`,
-      pointMarkers,
+      seriesContent,
+      labelsContent,
     ].join(""),
   );
 }

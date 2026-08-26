@@ -11,9 +11,9 @@ export class RegisterModelVersion {
   constructor(private readonly repository: Pick<ModelAccuracyRepository, "registerModelVersion">) {}
 
   execute(input: RegisterModelVersionInput): Promise<ModelVersion> {
-    const versionKey = input.versionKey?.trim();
-    const displayName = input.displayName?.trim();
-    const createdBy = input.createdBy?.trim();
+    const versionKey = typeof input?.versionKey === "string" ? input.versionKey.trim() : "";
+    const displayName = typeof input?.displayName === "string" ? input.displayName.trim() : "";
+    const createdBy = typeof input?.createdBy === "string" ? input.createdBy.trim() : "";
     if (!versionKey) throw new ValidationError("versionKey is required");
     if (!displayName) throw new ValidationError("displayName is required");
     if (!createdBy) throw new ValidationError("createdBy is required");

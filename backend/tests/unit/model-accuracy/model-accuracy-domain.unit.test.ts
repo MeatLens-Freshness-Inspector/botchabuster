@@ -21,4 +21,6 @@ test("date validation accepts canonical UTC dates and ISO datetimes only", () =>
   assert.throws(() => assertValidDate("2026-8-26"), /date must be YYYY-MM-DD/i);
   assert.throws(() => assertValidDate("2026-02-30"), /date must be a valid calendar date/i);
   assert.throws(() => assertValidIsoDateTime("not-a-date"), /activeFrom must be a valid ISO datetime/i);
+  assert.throws(() => assertValidIsoDateTime("2026-02-30T00:00:00.000Z"), /must be a valid calendar date/i);
+  assert.throws(() => assertValidIsoDateTime(42), /activeFrom must be a valid ISO datetime/i);
 });

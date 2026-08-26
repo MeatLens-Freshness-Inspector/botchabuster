@@ -2,8 +2,8 @@
 
 CREATE TABLE IF NOT EXISTS public.model_versions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  version_key text NOT NULL UNIQUE CHECK (char_length(btrim(version_key)) BETWEEN 1 AND 200),
-  display_name text NOT NULL CHECK (char_length(btrim(display_name)) BETWEEN 1 AND 200),
+  version_key text NOT NULL UNIQUE CHECK (version_key = btrim(version_key) AND char_length(version_key) BETWEEN 1 AND 200),
+  display_name text NOT NULL CHECK (display_name = btrim(display_name) AND char_length(display_name) BETWEEN 1 AND 200),
   expected_accuracy numeric(5,4) NOT NULL CHECK (expected_accuracy BETWEEN 0 AND 1),
   active_from timestamptz NOT NULL,
   retired_at timestamptz,

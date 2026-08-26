@@ -59,9 +59,16 @@ export function assertValidDate(value: unknown): string {
 }
 
 export function assertValidIsoDateTime(value: unknown): string {
-  if (typeof value !== "string" || Number.isNaN(Date.parse(value))) {
+  if (typeof value !== "string") {
     throw new Error("activeFrom must be a valid ISO datetime");
   }
+
+  const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,3})?(Z|[+-]\d{2}:\d{2})$/.exec(value);
+  if (!match) throw new Error("activeFrom must be a valid ISO datetime");
+  assertValidDate(match[1]);
+
+  const parsed = Date.parse(value);
+  if (Number.isNaN(parsed)) throw new Error("activeFrom must be a valid ISO datetime");
 
   return new Date(value).toISOString();
 }

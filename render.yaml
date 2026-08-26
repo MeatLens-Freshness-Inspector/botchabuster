@@ -37,7 +37,7 @@ services:
     runtime: node
     schedule: "10 0 * * *"
     buildCommand: npm ci && npm run build
-    startCommand: npm run capture:model-accuracy
+    startCommand: npm run capture:model-accuracy --workspace backend
     envVars:
       - key: NODE_VERSION
         value: "22.22.0"

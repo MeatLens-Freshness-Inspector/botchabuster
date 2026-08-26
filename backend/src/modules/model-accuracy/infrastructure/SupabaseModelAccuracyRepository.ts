@@ -152,15 +152,11 @@ export class SupabaseModelAccuracyRepository implements ModelAccuracyRepository 
   }
 
   async captureSnapshots(snapshotDate: string): Promise<ModelAccuracySnapshot[]> {
-    const { data, error } = await this.client.rpc<SnapshotRow[]>("capture_model_accuracy_snapshots", {
+    const { error } = await this.client.rpc<SnapshotRow[]>("capture_model_accuracy_snapshots", {
       p_snapshot_date: snapshotDate,
     });
 
     if (error) throw new Error(`Failed to capture model accuracy snapshots: ${error.message}`);
-    if (!data?.length) return [];
-
-    const insertedIds = new Set(data.map((row) => row.id));
-    const history = await this.getHistory({ startDate: snapshotDate, endDate: snapshotDate });
-    return history.filter((snapshot) => insertedIds.has(snapshot.id));
+    return this.getHistory({ startDate: snapshotDate, endDate: snapshotDate });
   }
 }

@@ -105,3 +105,45 @@ test("repository maps duplicate model keys to a stable domain error", async () =
     /model version key already exists/i,
   );
 });
+
+test("repository returns existing snapshots when capture is retried", async () => {
+  const rpcCalls: Array<{ functionName: string; args?: Record<string, unknown> }> = [];
+  const historyQuery = new FakeQuery().resolve({
+    data: [{
+      id: "snapshot-1",
+      model_version_id: "model-1",
+      snapshot_date: "2026-08-25",
+      expected_accuracy: 0.92,
+      observed_accuracy: 0.875,
+      evaluated_count: 16,
+      correct_count: 14,
+      created_at: "2026-08-26T00:00:00.000Z",
+      model_versions: { version_key: "v1", display_name: "Version 1" },
+    }],
+    error: null,
+  });
+  const repository = new SupabaseModelAccuracyRepository({
+    from: () => historyQuery,
+    rpc: async (functionName, args) => {
+      rpcCalls.push({ functionName, args });
+      return { data: [], error: null };
+    },
+  });
+
+  assert.deepEqual(await repository.captureSnapshots("2026-08-25"), [{
+    id: "snapshot-1",
+    modelVersionId: "model-1",
+    versionKey: "v1",
+    displayName: "Version 1",
+    snapshotDate: "2026-08-25",
+    expectedAccuracy: 0.92,
+    observedAccuracy: 0.875,
+    evaluatedCount: 16,
+    correctCount: 14,
+    createdAt: "2026-08-26T00:00:00.000Z",
+  }]);
+  assert.deepEqual(rpcCalls, [{
+    functionName: "capture_model_accuracy_snapshots",
+    args: { p_snapshot_date: "2026-08-25" },
+  }]);
+});
