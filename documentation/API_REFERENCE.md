@@ -26,6 +26,12 @@ The backend mounts these routers under `/api`. Unless noted otherwise, protected
 - Public auth and chat endpoints are rate-limited in-process. The implementation does not require Redis.
 - Unexpected failures are serialized without internal stack traces or database details.
 
+## Developer dataset exports
+
+`POST /api/developer-dashboard/datasets/export` keeps the submitted filters, starts from the first matching row, and caps one export at 10,000 records. The export query selects only the CSV/manifest fields and does not perform an exact-count query.
+
+Every stored `image_url` is downloaded into the ZIP with bounded concurrency and retries. If an existing image cannot be downloaded after retries, the request fails with the affected inspection IDs instead of returning a partial dataset. Rows without an image URL remain valid rows and are listed in `manifest.json`; downloaded image bytes are stored without ZIP recompression.
+
 ## Health check
 
 ```bash
