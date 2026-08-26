@@ -1,5 +1,6 @@
+import React from "react";
 import { Download } from "lucide-react";
-import { Button } from "@/shared/ui";
+import { Button, ExportLoadingOverlay } from "@/shared/ui";
 import {
   Card,
   CardContent,
@@ -30,11 +31,17 @@ const ReportsTab = ({
     handleExportPDF,
     handleExportCSV,
     handleExportJSON,
+    activeReportExport,
   } = dashboard;
+  const isExporting = activeReportExport !== null;
+  const exportMessage = activeReportExport
+    ? `Preparing ${activeReportExport.toUpperCase()} export...`
+    : "";
 
   return (
     <div className="mt-6 grid min-w-0 gap-4 xl:grid-cols-[1fr_1fr]">
-      <Card className="min-w-0 rounded-3xl border-border/70 bg-card/95">
+      <Card className="relative min-w-0 rounded-3xl border-border/70 bg-card/95" aria-busy={isExporting}>
+        <ExportLoadingOverlay visible={isExporting} message={exportMessage} />
         <CardHeader>
           <CardTitle className="font-display text-sm uppercase tracking-wider">
             Generate Reports
@@ -94,6 +101,7 @@ const ReportsTab = ({
               variant="outline"
               className="flex-1 gap-2 rounded-xl"
               onClick={handleExportPDF}
+              disabled={isExporting}
             >
               <Download className="h-4 w-4" />
               PDF Summary
@@ -103,6 +111,7 @@ const ReportsTab = ({
               variant="outline"
               className="flex-1 gap-2 rounded-xl"
               onClick={handleExportCSV}
+              disabled={isExporting}
             >
               <Download className="h-4 w-4" />
               CSV Detail
@@ -111,6 +120,7 @@ const ReportsTab = ({
               type="button"
               className="flex-1 gap-2 rounded-xl"
               onClick={handleExportJSON}
+              disabled={isExporting}
             >
               <Download className="h-4 w-4" />
               JSON Snapshot
