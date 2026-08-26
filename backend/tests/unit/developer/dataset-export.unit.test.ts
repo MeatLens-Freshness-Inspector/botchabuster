@@ -245,6 +245,56 @@ test("dataset export fails when a stored image cannot be downloaded", async () =
   }
 });
 
+test("dataset export stores original bytes without recompressing ZIP entries", async () => {
+  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
+  const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
+  const originalGetDeveloperDatasetExportRows = (inspectionService as unknown as {
+    getDeveloperDatasetExportRows?: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows;
+  const originalFetch = globalThis.fetch;
+
+  (inspectionService as unknown as {
+    getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows = async () => [
+    createInspection({
+      id: "inspection-original-bytes",
+      image_url: "https://example.com/original.jpg",
+    }),
+  ];
+  globalThis.fetch = async () => new Response(new Uint8Array([0, 1, 2, 3, 4]), {
+    status: 200,
+    headers: { "Content-Type": "image/jpeg" },
+  });
+
+  try {
+    const exported = await developerDashboardService.exportDatasetZip({ limit: 100, offset: 0 });
+    const bytes = new Uint8Array(exported.buffer);
+    const methods: number[] = [];
+    for (let offset = 0; offset + 30 <= bytes.length; ) {
+      if (bytes[offset] !== 0x50 || bytes[offset + 1] !== 0x4b || bytes[offset + 2] !== 0x03 || bytes[offset + 3] !== 0x04) {
+        break;
+      }
+      methods.push(bytes[offset + 8] | (bytes[offset + 9] << 8));
+      const nameLength = bytes[offset + 26] | (bytes[offset + 27] << 8);
+      const extraLength = bytes[offset + 28] | (bytes[offset + 29] << 8);
+      const compressedSize = bytes[offset + 18] | (bytes[offset + 19] << 8) | (bytes[offset + 20] << 16) | (bytes[offset + 21] << 24);
+      offset += 30 + nameLength + extraLength + compressedSize;
+    }
+
+    assert.ok(methods.length >= 3);
+    assert.deepEqual(methods, methods.map(() => 0));
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalGetDeveloperDatasetExportRows) {
+      (inspectionService as unknown as {
+        getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+      }).getDeveloperDatasetExportRows = originalGetDeveloperDatasetExportRows;
+    } else {
+      delete (inspectionService as unknown as { getDeveloperDatasetExportRows?: unknown }).getDeveloperDatasetExportRows;
+    }
+  }
+});
+
 test("dataset export uses stored manual classifications", async () => {
   const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
   const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");

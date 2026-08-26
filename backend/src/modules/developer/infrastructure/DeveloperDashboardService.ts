@@ -155,7 +155,7 @@ export class DeveloperDashboardService {
 
     return {
       filename: `developer-dataset-${Date.now()}.zip`,
-      buffer: Buffer.from(zipSync(files)),
+      buffer: Buffer.from(zipSync(files, { level: 0 })),
     };
   }
 
