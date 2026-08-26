@@ -6,3 +6,4 @@ export { ConfirmDialog } from "./confirm-dialog";
 export { MetricCard } from "./metric-card";
 export { PageHeader } from "./page-header";
 export { NavLink } from "./nav-link";
+export { ExportLoadingOverlay, type ExportLoadingOverlayProps } from "./export-loading-overlay";
