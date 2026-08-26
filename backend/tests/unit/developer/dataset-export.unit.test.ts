@@ -210,6 +210,41 @@ test("dataset export retries transient image download failures", async () => {
   }
 });
 
+test("dataset export fails when a stored image cannot be downloaded", async () => {
+  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
+  const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
+  const originalGetDeveloperDatasetExportRows = (inspectionService as unknown as {
+    getDeveloperDatasetExportRows?: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows;
+  const originalFetch = globalThis.fetch;
+
+  (inspectionService as unknown as {
+    getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows = async () => [
+    createInspection({
+      id: "inspection-required-image",
+      image_url: "https://example.com/missing.jpg",
+    }),
+  ];
+  globalThis.fetch = async () => new Response(null, { status: 404 });
+
+  try {
+    await assert.rejects(
+      () => developerDashboardService.exportDatasetZip({ limit: 100, offset: 0 }),
+      /Failed to download required inspection images: inspection-required-image/,
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalGetDeveloperDatasetExportRows) {
+      (inspectionService as unknown as {
+        getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+      }).getDeveloperDatasetExportRows = originalGetDeveloperDatasetExportRows;
+    } else {
+      delete (inspectionService as unknown as { getDeveloperDatasetExportRows?: unknown }).getDeveloperDatasetExportRows;
+    }
+  }
+});
+
 test("dataset export uses stored manual classifications", async () => {
   const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
   const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");

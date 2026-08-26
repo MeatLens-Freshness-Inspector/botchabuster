@@ -116,6 +116,14 @@ export class DeveloperDashboardService {
       offset: 0,
     });
     const downloadedImages = await this.downloadInspectionImages(datasetItems);
+    const failedImageIds = datasetItems
+      .filter((inspection, index) => Boolean(inspection.image_url) && !downloadedImages[index])
+      .map((inspection) => inspection.id);
+
+    if (failedImageIds.length > 0) {
+      throw new Error(`Failed to download required inspection images: ${failedImageIds.join(", ")}`);
+    }
+
     const files: Record<string, Uint8Array> = {
       "inspections.csv": strToU8(this.buildInspectionCsv(datasetItems, downloadedImages)),
     };
