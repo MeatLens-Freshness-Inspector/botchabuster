@@ -31,3 +31,19 @@ services:
         value: "true"
       - key: UPLOAD_DIR
         value: /tmp/meatlens-uploads
+
+  - type: cron
+    name: meatlens-model-accuracy-snapshots
+    runtime: node
+    schedule: "10 0 * * *"
+    buildCommand: npm ci && npm run build
+    startCommand: npm run capture:model-accuracy
+    envVars:
+      - key: NODE_VERSION
+        value: "22.22.0"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false

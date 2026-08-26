@@ -9,6 +9,7 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "start": "node dist/server.js",
+    "capture:model-accuracy": "node dist/jobs/captureModelAccuracySnapshots.js",
     "test": "npm run test:unit && npm run test:integration && npm run test:architecture",
     "test:unit": "tsx --test \"tests/unit/**/*.test.ts\"",
     "test:integration": "tsx --test \"tests/integration/**/*.test.ts\"",

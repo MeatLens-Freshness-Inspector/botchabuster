@@ -305,6 +305,13 @@ src/
     │   │
     │   └── index.ts
     │
+    ├── model-accuracy/ # Versioned accuracy history and snapshot capture
+    │   ├── application/
+    │   ├── domain/
+    │   ├── infrastructure/
+    │   ├── presentation/
+    │   └── index.ts
+    │
     └── developer/   # Developer-only features
         ├── domain/    # (developer policies)
         │
@@ -531,7 +538,8 @@ supabase/
 │   ├── 20260713000000_add_manual_classification_to_inspections.sql
 │   ├── 20260805160000_add_regulatory_compliance_to_inspections.sql
 │   ├── 20260810090000_backend_query_support.sql
-│   └── 20260810100000_bounded_chat_contacts.sql
+│   ├── 20260810100000_bounded_chat_contacts.sql
+│   └── 20260826180000_add_model_accuracy_history.sql
 │
 └── templates/ # Supabase email templates
     ├── README.md

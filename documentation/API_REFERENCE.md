@@ -17,6 +17,7 @@ The backend mounts these routers under `/api`. Unless noted otherwise, protected
 | `/audit-logs` | list, create | Authenticated audit operations; writes are encrypted |
 | `/developer-options` | unlock and verify | Developer option policy |
 | `/developer-dashboard` | overview, datasets, exports, classifications, training runs/import | Developer-only |
+| `/model-accuracy` | `GET /history`, `POST /versions`, `POST /snapshots` | History is authenticated; registration and capture are developer-only |
 
 ## Common request rules
 
@@ -25,6 +26,18 @@ The backend mounts these routers under `/api`. Unless noted otherwise, protected
 - Unsafe cookie-authenticated requests (`POST`, `PUT`, `PATCH`, `DELETE`) require a valid `X-CSRF-Token` and an allowed `Origin`.
 - Public auth and chat endpoints are rate-limited in-process. The implementation does not require Redis.
 - Unexpected failures are serialized without internal stack traces or database details.
+
+## Historical model accuracy
+
+Register a model version before deploying it:
+
+- `POST /api/model-accuracy/versions` with `{ "versionKey", "displayName", "expectedAccuracy", "activeFrom" }`.
+- `GET /api/model-accuracy/history?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` returns ordered daily snapshots.
+- `POST /api/model-accuracy/snapshots` optionally accepts `{ "snapshotDate": "YYYY-MM-DD" }` for a previous-day capture or controlled backfill.
+
+Expected accuracy is immutable for a version key. A changed model or benchmark gets a new version key. New inspection submissions carry the deployed key; the backend resolves it to the registered model-version foreign key. Legacy inspections without a key remain valid and are not attributed retroactively.
+
+The scheduled job runs at `00:10 UTC` and captures the previous UTC calendar day. Observed accuracy uses only inspections with a non-null `official_classification`; it is null when no officially labeled inspections were evaluated. Snapshot writes are append-only and idempotent per model version and date.
 
 ## Developer dataset exports
 
