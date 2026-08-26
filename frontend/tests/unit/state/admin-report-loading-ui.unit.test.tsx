@@ -3,6 +3,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { test } from "node:test";
 import ReportsTab from "../../../src/widgets/admin-dashboard/ui/reports-tab";
+import MobileReportsTab from "../../../src/widgets/admin-dashboard/ui/mobile-reports-tab";
 import type { AdminDashboardPageViewModel } from "../../../src/widgets/admin-dashboard";
 
 function createDashboard(activeReportExport: "pdf" | "csv" | "json" | null): AdminDashboardPageViewModel {
@@ -26,6 +27,14 @@ test("desktop reports show a blocking loading state for the active export", () =
   const markup = renderToStaticMarkup(<ReportsTab dashboard={createDashboard("pdf")} />);
 
   assert.match(markup, /Preparing PDF export\.\.\./);
+  assert.match(markup, /aria-busy="true"/);
+  assert.match(markup, /disabled=""/);
+});
+
+test("mobile reports show the same loading state for the active export", () => {
+  const markup = renderToStaticMarkup(<MobileReportsTab dashboard={createDashboard("json")} />);
+
+  assert.match(markup, /Preparing JSON export\.\.\./);
   assert.match(markup, /aria-busy="true"/);
   assert.match(markup, /disabled=""/);
 });

@@ -1,5 +1,6 @@
+import React from "react";
 import { Download } from "lucide-react";
-import { Button } from "@/shared/ui";
+import { Button, ExportLoadingOverlay } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
@@ -23,10 +24,16 @@ const MobileReportsTab = ({
     handleExportPDF,
     handleExportCSV,
     handleExportJSON,
+    activeReportExport,
   } = dashboard;
+  const isExporting = activeReportExport !== null;
+  const exportMessage = activeReportExport
+    ? `Preparing ${activeReportExport.toUpperCase()} export...`
+    : "";
 
   return (
-    <section className="mt-4 rounded-3xl border border-border/70 bg-card/90 p-4">
+    <section className="relative mt-4 rounded-3xl border border-border/70 bg-card/90 p-4" aria-busy={isExporting}>
+      <ExportLoadingOverlay visible={isExporting} message={exportMessage} />
       <h2 className="font-display text-xl font-semibold uppercase tracking-wider">
         Generate Reports
       </h2>
@@ -71,6 +78,7 @@ const MobileReportsTab = ({
             variant="outline"
             className="gap-2 rounded-xl"
             onClick={handleExportPDF}
+            disabled={isExporting}
           >
             <Download className="h-4 w-4" />
             PDF Summary
@@ -80,6 +88,7 @@ const MobileReportsTab = ({
             variant="outline"
             className="gap-2 rounded-xl"
             onClick={handleExportCSV}
+            disabled={isExporting}
           >
             <Download className="h-4 w-4" />
             CSV Detail
@@ -88,6 +97,7 @@ const MobileReportsTab = ({
             type="button"
             className="gap-2 rounded-xl"
             onClick={handleExportJSON}
+            disabled={isExporting}
           >
             <Download className="h-4 w-4" />
             JSON Snapshot
