@@ -22,5 +22,6 @@ test("model accuracy migration creates versioned immutable daily snapshots", () 
   assert.match(sql, /official_classification is not null/);
   assert.match(sql, /on conflict \(model_version_id, snapshot_date\) do nothing/);
   assert.match(sql, /capture_model_accuracy_snapshots/);
+  assert.match(sql, /at time zone 'utc'/);
   assert.match(sql, /enable row level security/);
 });

@@ -10,8 +10,14 @@ export class GetModelAccuracyHistory {
   constructor(private readonly repository: Pick<ModelAccuracyRepository, "getHistory">) {}
 
   async execute(input: ModelAccuracyHistoryQuery): Promise<ModelAccuracySnapshot[]> {
-    const startDate = assertValidDate(input.startDate);
-    const endDate = assertValidDate(input.endDate);
+    let startDate: string;
+    let endDate: string;
+    try {
+      startDate = assertValidDate(input.startDate);
+      endDate = assertValidDate(input.endDate);
+    } catch (error) {
+      throw new ValidationError(error instanceof Error ? error.message : "Invalid date range");
+    }
     const start = Date.parse(`${startDate}T00:00:00.000Z`);
     const end = Date.parse(`${endDate}T00:00:00.000Z`);
 

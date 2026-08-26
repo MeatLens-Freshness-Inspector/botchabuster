@@ -18,11 +18,20 @@ export class RegisterModelVersion {
     if (!displayName) throw new ValidationError("displayName is required");
     if (!createdBy) throw new ValidationError("createdBy is required");
 
+    let expectedAccuracy: number;
+    let activeFrom: string;
+    try {
+      expectedAccuracy = assertValidAccuracy(input.expectedAccuracy);
+      activeFrom = assertValidIsoDateTime(input.activeFrom);
+    } catch (error) {
+      throw new ValidationError(error instanceof Error ? error.message : "Invalid model version");
+    }
+
     return this.repository.registerModelVersion({
       versionKey,
       displayName,
-      expectedAccuracy: assertValidAccuracy(input.expectedAccuracy),
-      activeFrom: assertValidIsoDateTime(input.activeFrom),
+      expectedAccuracy,
+      activeFrom,
       createdBy,
     });
   }

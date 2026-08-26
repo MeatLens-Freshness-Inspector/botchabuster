@@ -29,3 +29,16 @@ test("history use case rejects ranges longer than one year", async () => {
     /date range cannot exceed 366 days/i,
   );
 });
+
+test("history use case exposes malformed dates as validation errors", async () => {
+  const query = new GetModelAccuracyHistory({
+    getHistory: async () => [],
+    registerModelVersion: async () => { throw new Error("not used"); },
+    captureSnapshots: async () => [],
+  });
+
+  await assert.rejects(
+    query.execute({ startDate: "2026-02-30", endDate: "2026-03-01" }),
+    (error: unknown) => error instanceof Error && "statusCode" in error && error.statusCode === 400,
+  );
+});

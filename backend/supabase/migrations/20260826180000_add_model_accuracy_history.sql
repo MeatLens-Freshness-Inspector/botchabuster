@@ -75,8 +75,8 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_start timestamptz := p_snapshot_date::timestamptz;
-  v_end timestamptz := (p_snapshot_date + 1)::timestamptz;
+  v_start timestamptz := p_snapshot_date::timestamp AT TIME ZONE 'UTC';
+  v_end timestamptz := (p_snapshot_date + 1)::timestamp AT TIME ZONE 'UTC';
 BEGIN
   IF p_snapshot_date > (timezone('utc', now()))::date THEN
     RAISE EXCEPTION 'snapshot_date_cannot_be_in_future';
