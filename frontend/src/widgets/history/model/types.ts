@@ -1,5 +1,6 @@
 import type { ReportOrganization } from "@/features/reports/model/types";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
+import type { ModelAccuracySnapshot } from "@/entities/model-accuracy";
 
 export type FilterOption = "all" | FreshnessClassification;
 
@@ -19,4 +20,5 @@ export type DetailedHistoryReportInput = {
   inspections: Inspection[];
   selectedReportDay: string;
   reportOrganization: ReportOrganization | null | undefined;
+  modelAccuracyHistory?: ModelAccuracySnapshot[];
 };

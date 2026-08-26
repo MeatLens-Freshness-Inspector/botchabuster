@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { format, startOfDay, endOfDay } from "date-fns";
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
+import { useModelAccuracyHistory } from "@/entities/model-accuracy";
 import { useInspections } from "@/features/inspection-history";
 import { composeReportPdf } from "@/features/reports";
 import { getEffectiveInspectionClassification } from "@/entities/inspection";
@@ -24,6 +25,7 @@ export function useHistory() {
   const [selectedReportDay, setSelectedReportDay] = useState("");
   const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
   const reportExport = useExportTask<"pdf">();
+  const { data: modelAccuracyHistory } = useModelAccuracyHistory(selectedReportDay, selectedReportDay);
 
   const totalInspections = inspections?.length ?? 0;
   const reportDayDate = useMemo(() => {
@@ -180,6 +182,7 @@ export function useHistory() {
             inspections: selectedDayInspections,
             selectedReportDay,
             reportOrganization: profile?.report_organization ?? null,
+            modelAccuracyHistory: modelAccuracyHistory ?? [],
           });
 
         report({ current: 2, total: 3 });
@@ -200,6 +203,7 @@ export function useHistory() {
     selectedDayAverageConfidence,
     selectedDayInspections,
     selectedReportDay,
+    modelAccuracyHistory,
     reportExport.run,
   ]);
 

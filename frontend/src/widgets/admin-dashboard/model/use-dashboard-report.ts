@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { format } from "date-fns";
 import { formatInspectionLocationLabel, getEffectiveInspectionClassification, type Inspection, type FreshnessClassification } from "@/entities/inspection";
 import type { Profile } from "@/entities/user/api";
+import { useModelAccuracyHistory, type ModelAccuracySnapshot } from "@/entities/model-accuracy";
 import { buildDeveloperInAppMetrics } from "@/features/developer-tools";
 import { useAdminReport, useReportsTab } from "@/features/reports";
 import type { DeveloperOverviewMetricPoint } from "@/entities/developer-metrics";
@@ -34,6 +35,8 @@ export function useDashboardReport({
     reportFilteredInspections,
     reportStartDate,
   } = adminReport;
+  const { data: loadedModelAccuracyHistory } = useModelAccuracyHistory(reportStartDate, reportEndDate);
+  const modelAccuracyHistory: ModelAccuracySnapshot[] = loadedModelAccuracyHistory ?? [];
 
   const reportClassCounts = useMemo(() => {
     const counts: Record<FreshnessClassification, number> = {
@@ -226,5 +229,6 @@ export function useDashboardReport({
     reportDailyTrend,
     reportClassShare,
     reportDeveloperMetrics,
+    modelAccuracyHistory,
   };
 }

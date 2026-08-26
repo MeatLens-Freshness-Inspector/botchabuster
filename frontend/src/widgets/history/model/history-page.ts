@@ -51,6 +51,7 @@ export function buildDetailedHistoryReportPdfModel(
         ) ?? inspection.location,
       image_url: inspection.image_url,
     })),
+    modelAccuracyHistory: input.modelAccuracyHistory,
   });
 }
 
