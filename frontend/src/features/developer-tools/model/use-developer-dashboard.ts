@@ -11,6 +11,19 @@ import {
 import type { FreshnessClassification } from "@/entities/inspection";
 import type { DeveloperWorkspaceTabKey } from "./types";
 
+export function downloadDeveloperDatasetBlob(
+  blob: Blob,
+  filename: string,
+  revokeDelayMs = 1_000,
+): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.click();
+  globalThis.setTimeout(() => URL.revokeObjectURL(url), revokeDelayMs);
+}
+
 export function useDeveloperDashboard() {
   const [activeDeveloperTab, setActiveDeveloperTab] = useState<DeveloperWorkspaceTabKey>("overview");
   const [overview, setOverview] = useState<DeveloperOverviewResponse | null>(null);
@@ -91,12 +104,7 @@ export function useDeveloperDashboard() {
     setIsExportingDatasets(true);
     try {
       const blob = await developerDashboardClient.exportDatasets(datasetFilters);
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = `developer-dataset-${Date.now()}.zip`;
-      anchor.click();
-      URL.revokeObjectURL(url);
+      downloadDeveloperDatasetBlob(blob, `developer-dataset-${Date.now()}.zip`);
       toast.success("Dataset export started");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to export developer datasets");
