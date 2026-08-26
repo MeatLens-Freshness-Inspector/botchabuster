@@ -23,7 +23,11 @@ export type {
 } from "./model/developer-options-storage";
 export { useDeveloperDashboard } from "./model/use-developer-dashboard";
 export { DeveloperExport } from "./ui/developer-export";
-export { DeveloperOptionsPanel, getOfflineQueueExportLabel } from "./ui/developer-options-panel";
+export {
+  DeveloperOptionsPanel,
+  buildOfflineQueueExportPayload,
+  getOfflineQueueExportLabel,
+} from "./ui/developer-options-panel";
 export { DeveloperOverviewSection } from "./ui/developer-metrics";
 export { DeveloperDatasetsSection } from "./ui/datasets-section";
 export { DeveloperTrainingSection } from "./ui/training-section";

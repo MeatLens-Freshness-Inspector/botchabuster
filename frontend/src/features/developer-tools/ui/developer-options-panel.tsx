@@ -33,8 +33,9 @@ import {
   getPendingAuditCount,
   getPendingCount,
   getPendingScans,
+  type PendingScan,
 } from "@/features/offline-sync";
-import { useExportTask } from "@/shared/lib/use-export-task";
+import { useExportTask, type ExportProgressReporter } from "@/shared/lib/use-export-task";
 
 type DeveloperToggleKey = Exclude<keyof DeveloperOptionsFlags, "selectedModel">;
 
@@ -86,6 +87,30 @@ export const ANALYSIS_MODEL_CATALOG = MODEL_CATALOG;
 
 export function getOfflineQueueExportLabel(isExporting: boolean): string {
   return isExporting ? "Exporting queue..." : "Export Offline Queue JSON";
+}
+
+export function buildOfflineQueueExportPayload(
+  scans: PendingScan[],
+  report: ExportProgressReporter,
+): Array<Record<string, unknown>> {
+  return scans.map((scan, index) => {
+    report({ current: index + 1, total: scans.length });
+    return {
+      id: scan.id,
+      userId: scan.userId,
+      meatType: scan.meatType,
+      location: scan.location,
+      locationLatitude: scan.locationLatitude,
+      locationLongitude: scan.locationLongitude,
+      queuedAt: scan.queuedAt,
+      capturedAt: scan.capturedAt ?? null,
+      imageName: scan.imageName,
+      imageType: scan.imageType,
+      imageByteLength: scan.imageData.byteLength,
+      hasAnalysisResult: Boolean(scan.analysisResult),
+      analysisResult: scan.analysisResult ?? null,
+    };
+  });
 }
 
 export function formatDeveloperModelOption(entry: AnalysisModelCatalogEntry): string {
@@ -234,24 +259,10 @@ export function DeveloperOptionsPanel() {
   const handleExportQueue = async () => {
     if (!isUnlocked) return;
 
-    await queueExport.run("queue", async () => {
+    await queueExport.run("queue", async (report) => {
       try {
         const scans = await getPendingScans();
-        const payload = scans.map((scan) => ({
-          id: scan.id,
-          userId: scan.userId,
-          meatType: scan.meatType,
-          location: scan.location,
-          locationLatitude: scan.locationLatitude,
-          locationLongitude: scan.locationLongitude,
-          queuedAt: scan.queuedAt,
-          capturedAt: scan.capturedAt ?? null,
-          imageName: scan.imageName,
-          imageType: scan.imageType,
-          imageByteLength: scan.imageData.byteLength,
-          hasAnalysisResult: Boolean(scan.analysisResult),
-          analysisResult: scan.analysisResult ?? null,
-        }));
+        const payload = buildOfflineQueueExportPayload(scans, report);
         downloadJson(`meatlens-offline-queue-${Date.now()}.json`, payload);
         toast.success("Offline queue exported");
       } catch {
@@ -406,7 +417,11 @@ export function DeveloperOptionsPanel() {
         className="relative rounded-3xl border-border/70 bg-card/95"
         aria-busy={isExportingQueue}
       >
-        <ExportLoadingOverlay visible={isExportingQueue} message="Preparing offline queue export..." />
+        <ExportLoadingOverlay
+          visible={isExportingQueue}
+          message="Preparing offline queue export..."
+          progress={queueExport.progress}
+        />
         <CardHeader>
           <CardTitle className="font-display text-sm uppercase tracking-wider">Debug Utilities</CardTitle>
           <CardDescription className="text-xs">
