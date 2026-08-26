@@ -25,6 +25,7 @@ const MobileReportsTab = ({
     handleExportCSV,
     handleExportJSON,
     activeReportExport,
+    activeReportExportProgress,
   } = dashboard;
   const isExporting = activeReportExport !== null;
   const exportMessage = activeReportExport
@@ -33,7 +34,11 @@ const MobileReportsTab = ({
 
   return (
     <section className="relative mt-4 rounded-3xl border border-border/70 bg-card/90 p-4" aria-busy={isExporting}>
-      <ExportLoadingOverlay visible={isExporting} message={exportMessage} />
+      <ExportLoadingOverlay
+        visible={isExporting}
+        message={exportMessage}
+        progress={activeReportExportProgress}
+      />
       <h2 className="font-display text-xl font-semibold uppercase tracking-wider">
         Generate Reports
       </h2>

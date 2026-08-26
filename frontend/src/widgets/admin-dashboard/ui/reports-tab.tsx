@@ -32,6 +32,7 @@ const ReportsTab = ({
     handleExportCSV,
     handleExportJSON,
     activeReportExport,
+    activeReportExportProgress,
   } = dashboard;
   const isExporting = activeReportExport !== null;
   const exportMessage = activeReportExport
@@ -41,7 +42,11 @@ const ReportsTab = ({
   return (
     <div className="mt-6 grid min-w-0 gap-4 xl:grid-cols-[1fr_1fr]">
       <Card className="relative min-w-0 rounded-3xl border-border/70 bg-card/95" aria-busy={isExporting}>
-        <ExportLoadingOverlay visible={isExporting} message={exportMessage} />
+        <ExportLoadingOverlay
+          visible={isExporting}
+          message={exportMessage}
+          progress={activeReportExportProgress}
+        />
         <CardHeader>
           <CardTitle className="font-display text-sm uppercase tracking-wider">
             Generate Reports

@@ -235,7 +235,8 @@ export function useAdminDashboard() {
   const handleExportCSV = async () => {
     if (!validateReportRange()) return;
 
-    await reportExport.run("csv", () => {
+    await reportExport.run("csv", (report) => {
+      report({ current: 1, total: 2 });
       const headers = [
       "ID",
       "Created At",
@@ -336,6 +337,7 @@ export function useAdminDashboard() {
         .map((record) => record.map((value) => toCsvValue(value)).join(","))
         .join("\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      report({ current: 2, total: 2 });
       triggerDownload(blob, `MeatLens-report-detail-${getReportFileSuffix()}.csv`);
       toast.success("CSV detail report exported");
     });
@@ -344,7 +346,8 @@ export function useAdminDashboard() {
   const handleExportJSON = async () => {
     if (!validateReportRange()) return;
 
-    await reportExport.run("json", () => {
+    await reportExport.run("json", (report) => {
+      report({ current: 1, total: 2 });
       const reportExportInspections = isDeveloper
       ? reportRows
       : reportRows.map(({ manualClassification: _manualClassification, ...row }) => row);
@@ -395,6 +398,7 @@ export function useAdminDashboard() {
     };
 
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8" });
+      report({ current: 2, total: 2 });
       triggerDownload(blob, `MeatLens-report-snapshot-${getReportFileSuffix()}.json`);
       toast.success("JSON snapshot report exported");
     });
@@ -403,7 +407,8 @@ export function useAdminDashboard() {
   const handleExportPDF = async () => {
     if (!validateReportRange()) return;
 
-    await reportExport.run("pdf", async () => {
+    await reportExport.run("pdf", async (report) => {
+      report({ current: 1, total: 3 });
       try {
       const generatedAt = format(new Date(), "MMM d, yyyy h:mm a");
       const generatedBy = user?.email ?? user?.id ?? "admin";
@@ -423,10 +428,12 @@ export function useAdminDashboard() {
             : [...DEFAULT_MARKET_LOCATIONS],
       });
 
+      report({ current: 2, total: 3 });
       await composeReportPdf(
         model,
         `MeatLens-report-summary-${getReportFileSuffix()}.pdf`,
       );
+      report({ current: 3, total: 3 });
       toast.success("PDF summary exported");
       } catch (error) {
         console.error("Failed to export admin PDF report", error);
@@ -471,6 +478,7 @@ export function useAdminDashboard() {
     ...marketLocationsState,
     ...reportState,
     activeReportExport: reportExport.activeTask,
+    activeReportExportProgress: reportExport.progress,
     activeTab,
     activeTabConfig,
     previewImageUrl,
