@@ -12,6 +12,10 @@ test("developer dataset export exposes start, progress, and download routes", ()
     join(process.cwd(), "src", "modules", "developer", "presentation", "controllers", "DeveloperDashboardController.ts"),
     "utf8",
   );
+  const documentation = readFileSync(
+    join(process.cwd(), "..", "documentation", "API_REFERENCE.md"),
+    "utf8",
+  );
 
   assert.match(routes, /post\("\/datasets\/export\/start"/);
   assert.match(routes, /get\("\/datasets\/export\/:exportId\/progress"/);
@@ -19,4 +23,7 @@ test("developer dataset export exposes start, progress, and download routes", ()
   assert.match(controller, /startDatasetExport/);
   assert.match(controller, /getDatasetExportProgress/);
   assert.match(controller, /getDatasetExportBuffer/);
+  assert.match(documentation, /POST \/api\/developer-dashboard\/datasets\/export\/start/);
+  assert.match(documentation, /GET \/api\/developer-dashboard\/datasets\/export\/:exportId\/progress/);
+  assert.match(documentation, /GET \/api\/developer-dashboard\/datasets\/export\/:exportId\/download/);
 });
