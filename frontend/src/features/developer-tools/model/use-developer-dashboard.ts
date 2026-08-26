@@ -4,12 +4,29 @@ import {
   DEFAULT_DEVELOPER_DATASET_FILTERS,
   developerDashboardClient,
   type DeveloperDatasetFilterState,
+  type DeveloperDatasetExportProgress,
   type DeveloperDatasetListResponse,
   type DeveloperOverviewResponse,
   type TrainingRunRecord,
 } from "@/entities/developer-metrics";
 import type { FreshnessClassification } from "@/entities/inspection";
+import type { ExportProgress } from "@/shared/lib/use-export-task";
 import type { DeveloperWorkspaceTabKey } from "./types";
+
+function formatDatasetExportStage(progress: DeveloperDatasetExportProgress): string {
+  switch (progress.stage) {
+    case "querying":
+      return "Finding matching records...";
+    case "downloading-images":
+      return "Downloading images...";
+    case "assembling-zip":
+      return "Assembling ZIP...";
+    case "complete":
+      return "Download ready";
+    default:
+      return "Preparing dataset export...";
+  }
+}
 
 export function downloadDeveloperDatasetBlob(
   blob: Blob,
@@ -36,6 +53,8 @@ export function useDeveloperDashboard() {
   const [isLoadingDatasets, setIsLoadingDatasets] = useState(false);
   const [isLoadingTrainingRuns, setIsLoadingTrainingRuns] = useState(false);
   const [isExportingDatasets, setIsExportingDatasets] = useState(false);
+  const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
+  const [exportStage, setExportStage] = useState<string | null>(null);
   const [isImportingTrainingRun, setIsImportingTrainingRun] = useState(false);
 
   const loadOverview = useCallback(async () => {
@@ -102,14 +121,21 @@ export function useDeveloperDashboard() {
 
   const exportDatasets = useCallback(async () => {
     setIsExportingDatasets(true);
+    setExportProgress({ current: 0, total: 1 });
+    setExportStage("Starting dataset export...");
     try {
-      const blob = await developerDashboardClient.exportDatasets(datasetFilters);
+      const blob = await developerDashboardClient.exportDatasets(datasetFilters, (progress) => {
+        setExportProgress({ current: progress.current, total: progress.total });
+        setExportStage(formatDatasetExportStage(progress));
+      });
       downloadDeveloperDatasetBlob(blob, `developer-dataset-${Date.now()}.zip`);
       toast.success("Dataset export started");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to export developer datasets");
     } finally {
       setIsExportingDatasets(false);
+      setExportProgress(null);
+      setExportStage(null);
     }
   }, [datasetFilters]);
 
@@ -156,6 +182,8 @@ export function useDeveloperDashboard() {
     isLoadingDatasets,
     isLoadingTrainingRuns,
     isExportingDatasets,
+    exportProgress,
+    exportStage,
     isImportingTrainingRun,
     loadOverview,
     loadDatasets,

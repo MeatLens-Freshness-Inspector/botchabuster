@@ -50,6 +50,8 @@ const DeveloperTabContent = () => {
             onPageChange={developer.loadDatasets}
             onExport={developer.exportDatasets}
             isExporting={developer.isExportingDatasets}
+            exportProgress={developer.exportProgress}
+            exportStage={developer.exportStage}
             isLoading={developer.isLoadingDatasets}
           />
           </DeveloperExport>

@@ -17,6 +17,7 @@ import type {
   DeveloperDatasetListResponse,
 } from "@/entities/developer-metrics";
 import type { FreshnessClassification } from "@/entities/inspection";
+import type { ExportProgress } from "@/shared/lib/use-export-task";
 
 function formatDateTime(value: string | null | undefined): string {
   if (!value) return "-";
@@ -51,6 +52,8 @@ export function DeveloperDatasetsSection({
   onPageChange,
   onExport,
   isExporting,
+  exportProgress = null,
+  exportStage = null,
   isLoading,
 }: {
   datasets: DeveloperDatasetListResponse | null;
@@ -60,6 +63,8 @@ export function DeveloperDatasetsSection({
   onPageChange: (offset: number) => void | Promise<void>;
   onExport: () => Promise<void>;
   isExporting: boolean;
+  exportProgress?: ExportProgress | null;
+  exportStage?: string | null;
   isLoading: boolean;
 }) {
   const total = datasets?.total ?? 0;
@@ -70,7 +75,11 @@ export function DeveloperDatasetsSection({
 
   return (
     <section className="relative space-y-4" aria-busy={isExporting}>
-      <ExportLoadingOverlay visible={isExporting} message="Preparing dataset export..." />
+      <ExportLoadingOverlay
+        visible={isExporting}
+        message={exportStage ?? "Preparing dataset export..."}
+        progress={exportProgress}
+      />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-display text-xl font-semibold">Datasets & Ground Truth Labels</h2>

@@ -289,11 +289,30 @@ function createDeveloperDashboardFetch(options?: {
       });
     }
 
-    if (url.includes("/developer-dashboard/datasets/export")) {
+    if (url.includes("/developer-dashboard/datasets/export/start")) {
       onExport?.();
       if (typeof init?.body === "string") {
         onExportBody?.(JSON.parse(init.body as string) as unknown);
       }
+      return new Response(JSON.stringify({ exportId: "workspace-export" }), {
+        status: 202,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (url.includes("/developer-dashboard/datasets/export/workspace-export/progress")) {
+      return new Response(JSON.stringify({
+        status: "completed",
+        stage: "complete",
+        current: 1,
+        total: 1,
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (url.includes("/developer-dashboard/datasets/export/workspace-export/download")) {
       return new Response(new Blob(["zip-bytes"], { type: "application/zip" }), {
         status: 200,
       });
@@ -484,6 +503,39 @@ test("dataset export panel shows a blocking loading screen while exporting", asy
 
     assert.ok(document.querySelector('[role="status"][aria-label="Preparing dataset export..."]'));
     assert.equal(getButtonByName("Exporting...").disabled, true);
+  } finally {
+    await act(async () => {
+      root.unmount();
+    });
+    cleanup();
+  }
+});
+
+test("dataset export panel shows the backend stage and exact progress", async () => {
+  const { container, cleanup } = installDom();
+  const root: Root = createRoot(container);
+
+  try {
+    await act(async () => {
+      root.render(
+        <DeveloperDatasetsSection
+          datasets={null}
+          filters={DEFAULT_DEVELOPER_DATASET_FILTERS}
+          onFiltersChange={() => undefined}
+          onManualClassificationChange={async () => undefined}
+          onPageChange={async () => undefined}
+          onExport={async () => undefined}
+          isExporting={true}
+          exportStage="Downloading images..."
+          exportProgress={{ current: 4, total: 10 }}
+          isLoading={false}
+        />,
+      );
+    });
+    await flushEffects();
+
+    assert.ok(document.querySelector('[role="status"][aria-label="Downloading images..."]'));
+    assert.ok(document.querySelector('[role="progressbar"][aria-valuenow="4"]'));
   } finally {
     await act(async () => {
       root.unmount();
