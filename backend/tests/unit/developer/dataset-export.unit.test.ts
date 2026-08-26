@@ -43,17 +43,16 @@ test("dataset export ZIP contains manifest, inspections.csv, images, and missing
   const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
   const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
   const originalGetDeveloperDatasetPage = (inspectionService as unknown as {
-    getDeveloperDatasetPage?: typeof developerDashboardService.listDatasets;
-  }).getDeveloperDatasetPage;
+    getDeveloperDatasetExportRows?: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows;
 
   (inspectionService as unknown as {
-    getDeveloperDatasetPage: typeof developerDashboardService.listDatasets;
-  }).getDeveloperDatasetPage = async (filters) => {
+    getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows = async (filters) => {
     assert.equal(filters.limit, 10_000);
     assert.equal(filters.offset, 0);
 
-    return {
-      items: [
+    return [
         createInspection({
           id: "inspection-with-image",
           image_url: "data:image/jpeg;base64,aW1hZ2UtYnl0ZXM=",
@@ -62,11 +61,7 @@ test("dataset export ZIP contains manifest, inspections.csv, images, and missing
           id: "inspection-without-image",
           image_url: null,
         }),
-      ],
-      total: 2,
-      limit: filters.limit,
-      offset: filters.offset,
-    };
+      ];
   };
 
   try {
@@ -97,10 +92,10 @@ test("dataset export ZIP contains manifest, inspections.csv, images, and missing
   } finally {
     if (originalGetDeveloperDatasetPage) {
       (inspectionService as unknown as {
-        getDeveloperDatasetPage: typeof developerDashboardService.listDatasets;
-      }).getDeveloperDatasetPage = originalGetDeveloperDatasetPage;
+        getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+      }).getDeveloperDatasetExportRows = originalGetDeveloperDatasetPage;
     } else {
-      delete (inspectionService as unknown as { getDeveloperDatasetPage?: unknown }).getDeveloperDatasetPage;
+      delete (inspectionService as unknown as { getDeveloperDatasetExportRows?: unknown }).getDeveloperDatasetExportRows;
     }
   }
 });
@@ -109,18 +104,17 @@ test("dataset export downloads images concurrently", async () => {
   const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
   const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
   const originalGetDeveloperDatasetPage = (inspectionService as unknown as {
-    getDeveloperDatasetPage?: typeof developerDashboardService.listDatasets;
-  }).getDeveloperDatasetPage;
+    getDeveloperDatasetExportRows?: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows;
   const originalFetch = globalThis.fetch;
 
   (inspectionService as unknown as {
-    getDeveloperDatasetPage: typeof developerDashboardService.listDatasets;
-  }).getDeveloperDatasetPage = async (filters) => {
+    getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows = async (filters) => {
     assert.equal(filters.limit, 10_000);
     assert.equal(filters.offset, 0);
 
-    return {
-      items: [
+    return [
         createInspection({
           id: "inspection-a",
           image_url: "https://example.com/a.jpg",
@@ -133,11 +127,7 @@ test("dataset export downloads images concurrently", async () => {
           id: "inspection-c",
           image_url: "https://example.com/c.jpg",
         }),
-      ],
-      total: 3,
-      limit: filters.limit,
-      offset: filters.offset,
-    };
+      ];
   };
 
   let activeFetches = 0;
@@ -165,10 +155,57 @@ test("dataset export downloads images concurrently", async () => {
     globalThis.fetch = originalFetch;
     if (originalGetDeveloperDatasetPage) {
       (inspectionService as unknown as {
-        getDeveloperDatasetPage: typeof developerDashboardService.listDatasets;
-      }).getDeveloperDatasetPage = originalGetDeveloperDatasetPage;
+        getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+      }).getDeveloperDatasetExportRows = originalGetDeveloperDatasetPage;
     } else {
-      delete (inspectionService as unknown as { getDeveloperDatasetPage?: unknown }).getDeveloperDatasetPage;
+      delete (inspectionService as unknown as { getDeveloperDatasetExportRows?: unknown }).getDeveloperDatasetExportRows;
+    }
+  }
+});
+
+test("dataset export retries transient image download failures", async () => {
+  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
+  const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
+  const originalGetDeveloperDatasetExportRows = (inspectionService as unknown as {
+    getDeveloperDatasetExportRows?: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows;
+  const originalFetch = globalThis.fetch;
+  let fetchCalls = 0;
+
+  (inspectionService as unknown as {
+    getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows = async () => [
+    createInspection({
+      id: "inspection-retry",
+      image_url: "https://example.com/retry.jpg",
+    }),
+  ];
+
+  globalThis.fetch = async () => {
+    fetchCalls += 1;
+    if (fetchCalls < 3) {
+      return new Response(null, { status: 503 });
+    }
+    return new Response(new Uint8Array([9, 8, 7]), {
+      status: 200,
+      headers: { "Content-Type": "image/jpeg" },
+    });
+  };
+
+  try {
+    const exported = await developerDashboardService.exportDatasetZip({ limit: 100, offset: 0 });
+    const zipEntries = unzipSync(new Uint8Array(exported.buffer));
+
+    assert.equal(fetchCalls, 3);
+    assert.deepEqual(Array.from(zipEntries["images/inspection-retry.jpg"] ?? []), [9, 8, 7]);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalGetDeveloperDatasetExportRows) {
+      (inspectionService as unknown as {
+        getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+      }).getDeveloperDatasetExportRows = originalGetDeveloperDatasetExportRows;
+    } else {
+      delete (inspectionService as unknown as { getDeveloperDatasetExportRows?: unknown }).getDeveloperDatasetExportRows;
     }
   }
 });
@@ -177,17 +214,16 @@ test("dataset export uses stored manual classifications", async () => {
   const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
   const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
   const originalGetDeveloperDatasetPage = (inspectionService as unknown as {
-    getDeveloperDatasetPage?: typeof developerDashboardService.listDatasets;
-  }).getDeveloperDatasetPage;
+    getDeveloperDatasetExportRows?: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows;
 
   (inspectionService as unknown as {
-    getDeveloperDatasetPage: typeof developerDashboardService.listDatasets;
-  }).getDeveloperDatasetPage = async (filters) => {
+    getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows = async (filters) => {
     assert.equal(filters.limit, 10_000);
     assert.equal(filters.offset, 0);
 
-    return {
-      items: [
+    return [
         createInspection({
           id: "inspection-a",
           classification: "fresh",
@@ -199,11 +235,7 @@ test("dataset export uses stored manual classifications", async () => {
           classification: "warning",
           manual_classification: "warning",
         }),
-      ],
-      total: 2,
-      limit: filters.limit,
-      offset: filters.offset,
-    };
+      ];
   };
 
   try {
@@ -230,10 +262,10 @@ test("dataset export uses stored manual classifications", async () => {
   } finally {
     if (originalGetDeveloperDatasetPage) {
       (inspectionService as unknown as {
-        getDeveloperDatasetPage: typeof developerDashboardService.listDatasets;
-      }).getDeveloperDatasetPage = originalGetDeveloperDatasetPage;
+        getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+      }).getDeveloperDatasetExportRows = originalGetDeveloperDatasetPage;
     } else {
-      delete (inspectionService as unknown as { getDeveloperDatasetPage?: unknown }).getDeveloperDatasetPage;
+      delete (inspectionService as unknown as { getDeveloperDatasetExportRows?: unknown }).getDeveloperDatasetExportRows;
     }
   }
 });

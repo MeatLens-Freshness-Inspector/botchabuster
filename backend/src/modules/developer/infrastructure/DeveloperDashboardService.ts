@@ -15,7 +15,9 @@ import type {
 } from "../../../types/developerDashboard";
 
 const MAX_EXPORT_ROWS = 10_000;
-const IMAGE_DOWNLOAD_CONCURRENCY = 6;
+const IMAGE_DOWNLOAD_CONCURRENCY = 12;
+const IMAGE_DOWNLOAD_TIMEOUT_MS = 15_000;
+const IMAGE_DOWNLOAD_RETRIES = 2;
 
 interface DownloadedExportImage {
   id: string;
@@ -108,20 +110,20 @@ export class DeveloperDashboardService {
   }
 
   async exportDatasetZip(filters: DeveloperDatasetFilters): Promise<{ filename: string; buffer: Buffer }> {
-    const dataset = await this.listDatasets({
+    const datasetItems = await inspectionService.getDeveloperDatasetExportRows({
       ...filters,
       limit: MAX_EXPORT_ROWS,
       offset: 0,
     });
-    const downloadedImages = await this.downloadInspectionImages(dataset.items);
+    const downloadedImages = await this.downloadInspectionImages(datasetItems);
     const files: Record<string, Uint8Array> = {
-      "inspections.csv": strToU8(this.buildInspectionCsv(dataset.items, downloadedImages)),
+      "inspections.csv": strToU8(this.buildInspectionCsv(datasetItems, downloadedImages)),
     };
     const rowsMissingImages: string[] = [];
     let imageCount = 0;
 
-    for (let index = 0; index < dataset.items.length; index += 1) {
-      const inspection = dataset.items[index];
+    for (let index = 0; index < datasetItems.length; index += 1) {
+      const inspection = datasetItems[index];
       const downloadedImage = downloadedImages[index];
 
       if (!downloadedImage) {
@@ -136,8 +138,8 @@ export class DeveloperDashboardService {
     const manifest: DatasetExportManifest = {
       exportedAt: new Date().toISOString(),
       filters,
-      totalRecordCount: dataset.total,
-      exportedRecordCount: dataset.items.length,
+      totalRecordCount: datasetItems.length,
+      exportedRecordCount: datasetItems.length,
       imageCount,
       rowsMissingImages,
     };
@@ -176,20 +178,31 @@ export class DeveloperDashboardService {
       return null;
     }
 
-    try {
-      const imageResponse = await fetch(inspection.image_url);
-      if (!imageResponse.ok) {
-        return null;
-      }
+    for (let attempt = 0; attempt <= IMAGE_DOWNLOAD_RETRIES; attempt += 1) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), IMAGE_DOWNLOAD_TIMEOUT_MS);
 
-      return {
-        id: inspection.id,
-        extension: this.resolveImageExtension(inspection.image_url, imageResponse.headers.get("content-type")),
-        bytes: new Uint8Array(await imageResponse.arrayBuffer()),
-      };
-    } catch {
-      return null;
+      try {
+        const imageResponse = await fetch(inspection.image_url, { signal: controller.signal });
+        if (!imageResponse.ok) {
+          continue;
+        }
+
+        return {
+          id: inspection.id,
+          extension: this.resolveImageExtension(inspection.image_url, imageResponse.headers.get("content-type")),
+          bytes: new Uint8Array(await imageResponse.arrayBuffer()),
+        };
+      } catch {
+        if (attempt === IMAGE_DOWNLOAD_RETRIES) {
+          return null;
+        }
+      } finally {
+        clearTimeout(timeout);
+      }
     }
+
+    return null;
   }
 
   async listTrainingRuns(): Promise<TrainingRunRecord[]> {
