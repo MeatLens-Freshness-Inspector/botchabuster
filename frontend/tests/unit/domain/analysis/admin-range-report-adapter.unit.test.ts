@@ -38,6 +38,27 @@ test("buildAdminRangeReportModel includes existing aggregate metrics without pla
   assert.ok(model.sections.some((section) => section.id === "org-overview"));
   assert.ok(model.sections.some((section) => section.id === "meat-summary"));
   assert.ok(model.sections.some((section) => section.id === "meat-detail"));
+  assert.ok(model.sections.some((section) => section.id === "model-accuracy-history"));
+});
+
+test("buildAdminRangeReportModel includes historical accuracy snapshots", () => {
+  const model = buildAdminRangeReportModel({
+    ...sampleAdminInput,
+    modelAccuracyHistory: [{
+      id: "snapshot-1",
+      modelVersionId: "model-1",
+      versionKey: "primary",
+      displayName: "Primary",
+      snapshotDate: "2026-08-01",
+      expectedAccuracy: 0.9,
+      observedAccuracy: 0.8,
+      evaluatedCount: 10,
+      correctCount: 8,
+      createdAt: "2026-08-02T00:00:00.000Z",
+    }],
+  });
+
+  assert.equal(model.sections.find((section) => section.id === "model-accuracy-history")?.tables?.[0]?.rows[0]?.[3], "80.00%");
 });
 
 test("buildAdminRangeReportModel adds graph payloads and every real pork image candidate", () => {

@@ -14,6 +14,7 @@ import type { Profile } from "@/entities/user/api/profile-client";
 import { resolveReportOrganization } from "@/features/reports";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { buildAdminRangeReportModel } from "@/features/reports";
+import type { ModelAccuracySnapshot } from "@/entities/model-accuracy";
 import type { DeveloperOverviewMetricPoint } from "@/entities/developer-metrics";
 import type { ReportDocumentModel } from "@/features/reports/model/types";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
@@ -237,6 +238,7 @@ export function buildAdminDashboardReportPdfModel(input: {
   allLocations?: string[];
   isDeveloper?: boolean;
   developerLatestRuns?: DeveloperOverviewMetricPoint[];
+  modelAccuracyHistory?: ModelAccuracySnapshot[];
 }): ReportDocumentModel {
   return buildAdminRangeReportModel({
     reportOrganization: resolveReportOrganization(input.reportOrganization),
@@ -265,6 +267,7 @@ export function buildAdminDashboardReportPdfModel(input: {
       confidenceScore: row.confidenceScore,
       imageUrl: row.imageUrl,
     })),
+    modelAccuracyHistory: input.modelAccuracyHistory,
   });
 }
 

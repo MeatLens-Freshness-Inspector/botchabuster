@@ -13,6 +13,8 @@ import type {
   ReportSection,
 } from "@/features/reports/model/types";
 import { buildDeveloperInAppMetrics, type DeveloperMetricRecord } from "@/features/developer-tools";
+import { buildModelAccuracySection } from "../model-accuracy-section";
+import type { ModelAccuracySnapshot } from "@/entities/model-accuracy";
 
 type AdminSummary = {
   total: number;
@@ -70,6 +72,7 @@ export interface BuildAdminRangeReportInput {
   allLocations?: string[];
   isDeveloper?: boolean;
   developerLatestRuns?: DeveloperReportRun[];
+  modelAccuracyHistory?: ModelAccuracySnapshot[];
 }
 
 const formatMetricPercent = (value: number): string => `${Math.round(value * 1000) / 10}%`;
@@ -338,6 +341,7 @@ export function buildAdminRangeReportModel(
     title: "Administrative Report",
     subtitle: `Range: ${input.reportStartDate} to ${input.reportEndDate}`,
     generatedAt: input.generatedAt,
+    modelAccuracyHistory: input.modelAccuracyHistory,
     sections: [
       overview,
       ...developerSections,
@@ -347,6 +351,7 @@ export function buildAdminRangeReportModel(
         spoiledRateLabel: `${input.summary.spoiledRate}%`,
       }),
       graphSection,
+      buildModelAccuracySection(input.modelAccuracyHistory ?? []),
       ...(porkInspectionEvidence.length > 0
         ? [
             {

@@ -1,3 +1,5 @@
+import type { ModelAccuracySnapshot } from "@/entities/model-accuracy";
+
 export type ReportOrganization =
   | "dti"
   | "city_veterinary_office_olongapo"
@@ -75,4 +77,5 @@ export interface ReportDocumentModel {
   subtitle: string;
   generatedAt: string;
   sections: ReportSection[];
+  modelAccuracyHistory?: ModelAccuracySnapshot[];
 }

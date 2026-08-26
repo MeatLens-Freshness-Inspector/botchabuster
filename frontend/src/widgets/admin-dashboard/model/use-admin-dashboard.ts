@@ -170,6 +170,7 @@ export function useAdminDashboard() {
     reportDailyTrend,
     reportClassShare,
     reportDeveloperMetrics,
+    modelAccuracyHistory,
     getReportFileSuffix,
     validateReportRange,
   } = reportState;
@@ -420,6 +421,7 @@ export function useAdminDashboard() {
         generatedBy,
         reportSummary,
         reportRows,
+        modelAccuracyHistory,
         isDeveloper,
         developerLatestRuns,
         allLocations:

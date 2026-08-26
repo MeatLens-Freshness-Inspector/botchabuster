@@ -6,6 +6,8 @@ import {
   buildSharedMeatSummarySection,
 } from "@/features/reports/lib/meat-sections";
 import type { ReportChart, ReportDocumentModel, ReportSection } from "@/features/reports/model/types";
+import { buildModelAccuracySection } from "../model-accuracy-section";
+import type { ModelAccuracySnapshot } from "@/entities/model-accuracy";
 
 // commit 14: chart builders for inspector daily report
 // -------------------------------------------------------
@@ -28,6 +30,7 @@ export interface BuildInspectorDailyReportInput {
   generatedAt: string;
   averageConfidence: number;
   inspections: InspectorDailyInspection[];
+  modelAccuracyHistory?: ModelAccuracySnapshot[];
 }
 
 const INSPECTOR_CLASSIFICATION_ORDER = [
@@ -151,11 +154,13 @@ export function buildInspectorDailyReportModel(
     title: "Inspector Daily Report",
     subtitle: `Inspection Day: ${input.selectedReportDay}`,
     generatedAt: input.generatedAt,
+    modelAccuracyHistory: input.modelAccuracyHistory,
     sections: [
       buildSharedMeatSummarySection({
         totalInspections: input.inspections.length,
         averageConfidence: input.averageConfidence,
       }),
+      buildModelAccuracySection(input.modelAccuracyHistory ?? []),
       graphSection,
       {
         id: "meat-detail",
