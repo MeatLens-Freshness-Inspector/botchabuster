@@ -5,6 +5,7 @@ import { useAuth } from "@/entities/user";
 import { useInspections } from "@/features/inspection-history";
 import { composeReportPdf } from "@/features/reports";
 import { getEffectiveInspectionClassification } from "@/entities/inspection";
+import { useExportTask } from "@/shared/lib/use-export-task";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import type { FilterOption, HistoryMonthlyCount } from "./types";
 import {
@@ -22,6 +23,7 @@ export function useHistory() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedReportDay, setSelectedReportDay] = useState("");
   const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
+  const reportExport = useExportTask<"pdf">();
 
   const totalInspections = inspections?.length ?? 0;
   const reportDayDate = useMemo(() => {
@@ -168,35 +170,39 @@ export function useHistory() {
       return;
     }
 
-    try {
-      const generatedAt = format(new Date(), "MMM d, yyyy h:mm a");
-      const model = buildDetailedHistoryReportPdfModel({
-          averageConfidence: selectedDayAverageConfidence,
-          generatedAt,
-          inspections: selectedDayInspections,
-          selectedReportDay,
-          reportOrganization: profile?.report_organization ?? null,
-        });
+    await reportExport.run("pdf", async () => {
+      try {
+        const generatedAt = format(new Date(), "MMM d, yyyy h:mm a");
+        const model = buildDetailedHistoryReportPdfModel({
+            averageConfidence: selectedDayAverageConfidence,
+            generatedAt,
+            inspections: selectedDayInspections,
+            selectedReportDay,
+            reportOrganization: profile?.report_organization ?? null,
+          });
 
-      await composeReportPdf(
-        model,
-        `MeatLens-inspector-detailed-${selectedReportDay}.pdf`,
-      );
-      toast.success("Inspector PDF report exported");
-    } catch (error) {
-      console.error("Failed to export inspector PDF report", error);
-      toast.error("Failed to export inspector PDF report");
-    }
+        await composeReportPdf(
+          model,
+          `MeatLens-inspector-detailed-${selectedReportDay}.pdf`,
+        );
+        toast.success("Inspector PDF report exported");
+      } catch (error) {
+        console.error("Failed to export inspector PDF report", error);
+        toast.error("Failed to export inspector PDF report");
+      }
+    });
   }, [
     hasValidReportDay,
     profile?.report_organization,
     selectedDayAverageConfidence,
     selectedDayInspections,
     selectedReportDay,
+    reportExport.run,
   ]);
 
   return {
     isLoading,
+    isExportingDetailedPdf: reportExport.activeTask !== null,
     activeFilter,
     searchText,
     selectedReportDay,
