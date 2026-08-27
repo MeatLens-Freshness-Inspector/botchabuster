@@ -42,6 +42,7 @@ test("buildPreScanReportFields converts nullable protocol fields into export-fri
       lightColorObserved: "green",
       areaClean: "Yes",
       regulatoryCompliance: "Non-Compliant",
+      regulatoryComplianceReason: "Failed checks: Storage Correct, Light Color Correct.",
       decisionSource: "Pre-scan protocol",
       protocolSpoiledReason: "failed_pre_scan_safety_protocol",
     },
@@ -63,7 +64,12 @@ test("buildPreScanReportFields marks pre-feature inspections as unavailable", ()
     protocol_spoiled_reason: null,
   };
 
-  assert.equal(buildPreScanReportFields(inspection).regulatoryCompliance, "Not available");
+  const fields = buildPreScanReportFields(inspection);
+  assert.equal(fields.regulatoryCompliance, "Not available");
+  assert.equal(
+    fields.regulatoryComplianceReason,
+    "Regulatory compliance was not available for this record.",
+  );
 });
 
 test("buildPreScanReportFields includes compliance on the feature date", () => {
@@ -81,7 +87,9 @@ test("buildPreScanReportFields includes compliance on the feature date", () => {
     protocol_spoiled_reason: null,
   };
 
-  assert.equal(buildPreScanReportFields(inspection).regulatoryCompliance, "Compliant");
+  const fields = buildPreScanReportFields(inspection);
+  assert.equal(fields.regulatoryCompliance, "Compliant");
+  assert.equal(fields.regulatoryComplianceReason, "All pre-scan safety checks passed.");
 });
 
 test("buildPreScanReportFields keeps post-feature missing compliance distinct", () => {
@@ -99,5 +107,7 @@ test("buildPreScanReportFields keeps post-feature missing compliance distinct", 
     protocol_spoiled_reason: null,
   };
 
-  assert.equal(buildPreScanReportFields(inspection).regulatoryCompliance, "Not Recorded");
+  const fields = buildPreScanReportFields(inspection);
+  assert.equal(fields.regulatoryCompliance, "Not Recorded");
+  assert.equal(fields.regulatoryComplianceReason, "No pre-scan safety checks were recorded.");
 });

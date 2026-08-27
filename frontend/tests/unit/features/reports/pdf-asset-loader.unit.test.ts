@@ -35,3 +35,11 @@ test("report inspection image loader caches duplicate paths and bounds concurren
   ]);
   assert.equal(await load(null), null);
 });
+
+test("report inspection image loader propagates image-load failures", async () => {
+  const load = createReportInspectionImageLoader(async () => {
+    throw new Error("broken image error");
+  });
+
+  await assert.rejects(load("broken"), /broken image error/);
+});

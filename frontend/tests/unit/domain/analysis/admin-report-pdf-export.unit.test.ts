@@ -100,6 +100,7 @@ test("buildAdminDashboardReportPdfModel preserves graph payloads and nullable po
         lightColorObserved: "-",
         areaClean: "Yes",
         regulatoryCompliance: "Compliant",
+        regulatoryComplianceReason: "All pre-scan safety checks passed.",
         flaggedDeviations: "-",
         explanation: "Looks good",
         inspectorNotes: "Routine check",
@@ -152,6 +153,10 @@ test("buildAdminDashboardReportPdfModel preserves graph payloads and nullable po
   assert.equal(
     porkGallery?.inspectionEvidence?.[0].regulatoryCompliance,
     "Compliant",
+  );
+  assert.equal(
+    porkGallery?.inspectionEvidence?.[0].regulatoryComplianceReason,
+    "All pre-scan safety checks passed.",
   );
 
   const detailSection = model.sections.find((section) => section.id === "meat-detail");

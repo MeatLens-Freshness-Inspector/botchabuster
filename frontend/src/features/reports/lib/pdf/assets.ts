@@ -27,14 +27,24 @@ export function getReportFrameAssetPath(
   return REPORT_TEMPLATE_FRAME_ASSET_PATHS[templateKey];
 }
 
-async function readReportAssetAsDataUrl(path: string): Promise<string> {
+async function readReportAssetAsDataUrl(
+  path: string,
+  expectedImage = false,
+): Promise<string> {
   const response = await fetch(path);
 
   if (!response.ok) {
-    throw new Error(`Failed to load report asset: ${path}`);
+    throw new Error(
+      `Failed to load report asset "${path}" (HTTP ${response.status} ${response.statusText})`,
+    );
   }
 
   const blob = await response.blob();
+  if (expectedImage && (blob.size === 0 || !blob.type.startsWith("image/"))) {
+    throw new Error(
+      `Failed to load inspection image "${path}" (response was not image data)`,
+    );
+  }
 
   return await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -61,14 +71,23 @@ export async function loadOptionalReportImageAsset(
   }
 }
 
+export async function loadReportImageAsset(
+  path: string | null | undefined,
+): Promise<string | null> {
+  if (!path) return null;
+
+  return readReportAssetAsDataUrl(path, true);
+}
+
 export function createReportInspectionImageLoader(
-  loadAsset: ReportInspectionImageLoader = loadOptionalReportImageAsset,
+  loadAsset: ReportInspectionImageLoader = loadReportImageAsset,
   concurrency = 6,
 ): ReportInspectionImageLoader {
   const cache = new Map<string, Promise<string | null>>();
   const pending: Array<{
     path: string;
     resolve: (value: string | null) => void;
+    reject: (reason?: unknown) => void;
   }> = [];
   let active = 0;
   const workerLimit = Math.max(1, Math.trunc(concurrency));
@@ -80,7 +99,7 @@ export function createReportInspectionImageLoader(
 
       active += 1;
       void Promise.resolve(loadAsset(next.path))
-        .then(next.resolve, () => next.resolve(null))
+        .then(next.resolve, next.reject)
         .finally(() => {
           active -= 1;
           pump();
@@ -94,8 +113,8 @@ export function createReportInspectionImageLoader(
     const cached = cache.get(path);
     if (cached) return cached;
 
-    const result = new Promise<string | null>((resolve) => {
-      pending.push({ path, resolve });
+    const result = new Promise<string | null>((resolve, reject) => {
+      pending.push({ path, resolve, reject });
       pump();
     });
     cache.set(path, result);

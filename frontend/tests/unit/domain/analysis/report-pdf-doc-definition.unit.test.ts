@@ -162,6 +162,7 @@ const sampleDtiAdminPorkModel: ReportDocumentModel = {
           confidenceLabel: "88%",
           location: "East Market",
           regulatoryCompliance: "Non-Compliant",
+          regulatoryComplianceReason: "Failed checks: Storage Correct, Area Clean.",
           inspectorLabel: "Inspector One",
         },
         {
@@ -173,6 +174,7 @@ const sampleDtiAdminPorkModel: ReportDocumentModel = {
           confidenceLabel: "92%",
           location: "West Market",
           regulatoryCompliance: "Compliant",
+          regulatoryComplianceReason: "All pre-scan safety checks passed.",
           inspectorLabel: "Inspector Two",
         },
       ],
@@ -521,10 +523,13 @@ test("buildReportDocDefinition renders inspector labels in dti admin pork eviden
   assert.ok(sectionTexts.includes("Inspector Two"));
   assert.ok(sectionTexts.includes("Regulatory Compliance"));
   assert.ok(sectionTexts.includes("Non-Compliant"));
+  assert.ok(sectionTexts.includes("Reason"));
+  assert.ok(sectionTexts.includes("Failed checks: Storage Correct, Area Clean."));
 });
 
-test("buildReportDocDefinition keeps city vet admin pork evidence cards when an image cannot be loaded", async () => {
-  const docDefinition = await buildReportDocDefinition(
+test("buildReportDocDefinition rejects city vet admin evidence when an image cannot be loaded", async () => {
+  await assert.rejects(
+    buildReportDocDefinition(
     {
       ...sampleDtiAdminPorkModel,
       organization: "city_veterinary_office_olongapo",
@@ -534,16 +539,9 @@ test("buildReportDocDefinition keeps city vet admin pork evidence cards when an 
       loadBrandAsset: async (path) => `mocked:${path}`,
       loadInspectionImageAsset: async () => null,
     },
+    ),
+    /Failed to load inspection image/,
   );
-
-  const porkSection = findSectionBlock(
-    docDefinition.content,
-    "Pork Meat Veterinary Evidence",
-  );
-
-  assert.ok(porkSection);
-  assert.deepEqual(collectNodeImages(porkSection), []);
-  assert.match(JSON.stringify(porkSection), /Inspection image unavailable/);
 });
 
 test("buildReportDocDefinition does not load admin pork evidence images for gcccs exports", async () => {
@@ -664,24 +662,15 @@ test("buildReportDocDefinition keeps gcccs inspector exports technical-first wit
   assert.match(JSON.stringify(detailSection), /2026-08-01 08:05:30/);
 });
 
-test("buildReportDocDefinition falls back to a placeholder when an inspector image fails to load", async () => {
-  const docDefinition = await buildReportDocDefinition(sampleDtiInspectorModel, {
-    loadBrandAsset: async (path) => `mocked:${path}`,
-    loadInspectionImageAsset: async () => {
-      throw new Error("image fetch failed");
-    },
-  });
-
-  const detailSection = findSectionBlock(
-    docDefinition.content,
-    "Market Field Inspection Evidence",
-  );
-
-  assert.ok(detailSection);
-  assert.deepEqual(collectNodeImages(detailSection), []);
-  assert.match(
-    JSON.stringify(detailSection),
-    /Inspection image unavailable/,
+test("buildReportDocDefinition rejects an inspector export when an image fails to load", async () => {
+  await assert.rejects(
+    buildReportDocDefinition(sampleDtiInspectorModel, {
+      loadBrandAsset: async (path) => `mocked:${path}`,
+      loadInspectionImageAsset: async () => {
+        throw new Error("image fetch failed");
+      },
+    }),
+    /image fetch failed/,
   );
 });
 
