@@ -90,6 +90,9 @@ async function buildInspectionEvidenceContent(
               ...(evidenceItem.regulatoryCompliance !== undefined
                 ? [buildInspectionEvidenceField("Regulatory Compliance", evidenceItem.regulatoryCompliance)]
                 : []),
+              ...(evidenceItem.regulatoryComplianceReason !== undefined
+                ? [buildInspectionEvidenceField("Reason", evidenceItem.regulatoryComplianceReason)]
+                : []),
               buildInspectionEvidenceField("Location", evidenceItem.location),
             ],
           },
@@ -105,14 +108,13 @@ async function buildInspectionEvidenceContent(
 async function resolveInspectionImageState(
   path: string | null | undefined,
   loadInspectionImageAsset: InspectionImageLoader,
-): Promise<{ kind: "loaded"; dataUrl: string } | { kind: "missing" } | { kind: "unavailable" }> {
+): Promise<{ kind: "loaded"; dataUrl: string } | { kind: "missing" }> {
   if (!path) return { kind: "missing" };
-  try {
-    const asset = await loadInspectionImageAsset(path);
-    return asset ? { kind: "loaded", dataUrl: asset } : { kind: "unavailable" };
-  } catch {
-    return { kind: "unavailable" };
+  const asset = await loadInspectionImageAsset(path);
+  if (!asset) {
+    throw new Error(`Failed to load inspection image "${path}"`);
   }
+  return { kind: "loaded", dataUrl: asset };
 }
 
 function buildInspectionEvidenceField(label: string, value: string): Content {
@@ -124,11 +126,9 @@ function buildInspectionEvidenceField(label: string, value: string): Content {
   };
 }
 
-function buildInspectionImagePlaceholder(kind: "missing" | "unavailable"): Content[] {
-  const title = kind === "missing" ? "No image captured" : "Inspection image unavailable";
-  const body = kind === "missing"
-    ? "This inspection record has no raw capture attached."
-    : "The export kept the evidence row, but the raw capture could not be loaded.";
+function buildInspectionImagePlaceholder(kind: "missing"): Content[] {
+  const title = "No image captured";
+  const body = "This inspection record has no raw capture attached.";
   return [
     {
       canvas: [{ type: "rect" as const, x: 0, y: 0, w: 220, h: 130, r: 4, lineColor: "#CBD5E1", color: "#F8FAFC" }],

@@ -35,6 +35,7 @@ type AdminReportRow = {
   manualClassification?: string;
   confidenceScore: number;
   regulatoryCompliance: string;
+  regulatoryComplianceReason?: string;
   imageUrl: string | null;
 };
 
@@ -284,6 +285,7 @@ function buildPorkInspectionEvidence(
       confidenceLabel: `${row.confidenceScore}%`,
       location: row.location,
       regulatoryCompliance: row.regulatoryCompliance,
+      regulatoryComplianceReason: row.regulatoryComplianceReason,
       inspectorLabel: row.inspector,
     }));
 }

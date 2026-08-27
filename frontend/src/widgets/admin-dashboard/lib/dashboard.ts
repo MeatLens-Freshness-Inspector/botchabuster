@@ -197,6 +197,32 @@ const formatRegulatoryComplianceLabelForInspection = (
   return formatRegulatoryComplianceLabel(compliance);
 };
 
+export const formatRegulatoryComplianceReasonForInspection = (
+  createdAt: string,
+  compliance: boolean | null | undefined,
+  storageCorrect: boolean | null | undefined,
+  lightColorCorrect: boolean | null | undefined,
+  areaClean: boolean | null | undefined,
+): string => {
+  if (createdAt.slice(0, 10) < REGULATORY_COMPLIANCE_AVAILABLE_FROM) {
+    return "Regulatory compliance was not available for this record.";
+  }
+  if (compliance === true) return "All pre-scan safety checks passed.";
+  if (compliance === null || compliance === undefined) {
+    return "No pre-scan safety checks were recorded.";
+  }
+
+  const failedChecks = [
+    storageCorrect !== true ? "Storage Correct" : null,
+    lightColorCorrect !== true ? "Light Color Correct" : null,
+    areaClean !== true ? "Area Clean" : null,
+  ].filter((value): value is string => value !== null);
+
+  return failedChecks.length > 0
+    ? `Failed checks: ${failedChecks.join(", ")}.`
+    : "The pre-scan checks did not all pass.";
+};
+
 export const buildPreScanReportFields = (
   inspection: Pick<
     Inspection,
@@ -223,6 +249,13 @@ export const buildPreScanReportFields = (
   regulatoryCompliance: formatRegulatoryComplianceLabelForInspection(
     inspection.created_at,
     resolveRegulatoryComplianceStatus(inspection),
+  ),
+  regulatoryComplianceReason: formatRegulatoryComplianceReasonForInspection(
+    inspection.created_at,
+    resolveRegulatoryComplianceStatus(inspection),
+    inspection.storage_correct,
+    inspection.light_color_correct,
+    inspection.area_clean,
   ),
   decisionSource:
     inspection.inspection_decision_source === "protocol_pre_scan"
@@ -279,6 +312,7 @@ export function buildAdminDashboardReportPdfModel(input: {
       manualClassification: row.manualClassification,
       confidenceScore: row.confidenceScore,
       regulatoryCompliance: row.regulatoryCompliance,
+      regulatoryComplianceReason: row.regulatoryComplianceReason,
       imageUrl: row.imageUrl,
     })),
     modelAccuracyHistory: input.modelAccuracyHistory,

@@ -54,6 +54,7 @@ export type ReportRow = {
   lightColorObserved: string;
   areaClean: string;
   regulatoryCompliance: string;
+  regulatoryComplianceReason?: string;
   flaggedDeviations: string;
   explanation: string;
   inspectorNotes: string;
