@@ -15,6 +15,7 @@ import type {
 import { buildDeveloperInAppMetrics, type DeveloperMetricRecord } from "@/features/developer-tools";
 import { buildModelAccuracySection } from "../model-accuracy-section";
 import type { ModelAccuracySnapshot } from "@/entities/model-accuracy";
+import { formatInspectorNameForExport } from "../formatting";
 
 type AdminSummary = {
   total: number;
@@ -286,7 +287,7 @@ function buildPorkInspectionEvidence(
       location: row.location,
       regulatoryCompliance: row.regulatoryCompliance,
       regulatoryComplianceReason: row.regulatoryComplianceReason,
-      inspectorLabel: row.inspector,
+      inspectorLabel: formatInspectorNameForExport(row.inspector),
     }));
 }
 
@@ -379,7 +380,7 @@ export function buildAdminRangeReportModel(
         ],
         rows: input.reportRows.map((row) => [
           row.createdAt,
-          row.inspector,
+          formatInspectorNameForExport(row.inspector),
           row.location,
           row.meatType,
           row.classification,

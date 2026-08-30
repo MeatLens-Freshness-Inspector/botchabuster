@@ -144,8 +144,35 @@ test("buildAdminRangeReportModel adds graph payloads and every real pork image c
   );
   assert.deepEqual(
     porkGallery?.inspectionEvidence?.map((item) => item.inspectorLabel),
-    ["Inspector One", "Inspector Two"],
+    ["I. One", "I. Two"],
   );
+  const detailSection = model.sections.find((section) => section.id === "meat-detail");
+  assert.equal(detailSection?.tables?.[0].rows[0][1], "I. One");
+});
+
+test("buildAdminRangeReportModel abbreviates inspector names for every report organization", () => {
+  for (const reportOrganization of [
+    "dti",
+    "gordon_college_ccs",
+    "city_veterinary_office_olongapo",
+  ] as const) {
+    const model = buildAdminRangeReportModel({
+      ...sampleAdminInput,
+      reportOrganization,
+      reportRows: [{
+        ...sampleAdminInput.reportRows[0],
+        inspector: "Maria Santos",
+        meatType: "pork",
+        imageUrl: "https://example.com/pork.jpg",
+      }],
+    });
+
+    const porkGallery = model.sections.find((section) => section.id === "pork-gallery");
+    const detailSection = model.sections.find((section) => section.id === "meat-detail");
+
+    assert.equal(porkGallery?.inspectionEvidence?.[0].inspectorLabel, "M. Santos");
+    assert.equal(detailSection?.tables?.[0].rows[0][1], "M. Santos");
+  }
 });
 
 test("buildAdminRangeReportModel includes developer analytics only for developers", () => {
