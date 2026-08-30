@@ -19,6 +19,7 @@ import {
   PIE_COLORS,
   buildAdminDashboardReportPdfModel,
   formatReportRowForExport,
+  formatTopInspectorForExport,
   toCsvValue,
 } from "../lib/dashboard";
 import { useDashboardSession } from "./use-dashboard-session";
@@ -369,6 +370,8 @@ export function useAdminDashboard() {
       const reportExportInspections = isDeveloper
       ? reportRows
       : reportRows.map(({ manualClassification: _manualClassification, ...row }) => row);
+      const exportedReportInspections = reportExportInspections.map(formatReportRowForExport);
+      const exportedTopInspectors = reportTopInspectors.map(formatTopInspectorForExport);
       const payload = {
       generatedAt: new Date().toISOString(),
       generatedBy: user?.email ?? user?.id ?? "admin",
@@ -386,12 +389,12 @@ export function useAdminDashboard() {
         classificationBreakdown: reportClassCounts,
         classificationShare: reportClassShare,
       },
-      topInspectors: reportTopInspectors,
+      topInspectors: exportedTopInspectors,
       topLocations: reportTopLocations,
       meatTypeBreakdown: reportByMeatType,
       dailyTrend: reportDailyTrend,
       modelAccuracyHistory,
-      inspections: reportExportInspections,
+      inspections: exportedReportInspections,
       ...(isDeveloper && reportDeveloperMetrics
         ? {
             developerAnalytics: {

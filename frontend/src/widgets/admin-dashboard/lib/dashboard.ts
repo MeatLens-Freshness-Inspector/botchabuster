@@ -152,6 +152,10 @@ export function formatReportRowForExport(row: ReportRow): ReportRow {
   return { ...row, inspector: formatInspectorNameForExport(row.inspector) };
 }
 
+export function formatTopInspectorForExport<T extends { inspector: string }>(entry: T): T {
+  return { ...entry, inspector: formatInspectorNameForExport(entry.inspector) };
+}
+
 export const getOptionalText = (
   value: string | null | undefined,
 ): string => value?.trim() || "-";

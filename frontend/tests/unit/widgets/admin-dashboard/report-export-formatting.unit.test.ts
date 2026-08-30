@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  formatTopInspectorForExport,
   formatReportRowForExport,
 } from "../../../../src/widgets/admin-dashboard/lib/dashboard";
 import type { ReportRow } from "../../../../src/widgets/admin-dashboard/model/types";
@@ -43,4 +44,18 @@ test("formatReportRowForExport abbreviates the inspector without changing separa
   assert.equal(exported.inspector, "A. Dimate");
   assert.equal(exported.inspectorEmail, "adriaan@example.com");
   assert.equal(exported.inspectorCode, "INSP-01");
+});
+
+test("formatTopInspectorForExport abbreviates the inspector without changing metrics", () => {
+  const exported = formatTopInspectorForExport({
+    inspector: "Adriaan Dimate",
+    count: 4,
+    averageConfidence: 91,
+  });
+
+  assert.deepEqual(exported, {
+    inspector: "A. Dimate",
+    count: 4,
+    averageConfidence: 91,
+  });
 });
