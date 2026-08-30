@@ -12,6 +12,7 @@ export {
 export { buildAdminRangeReportModel } from "./lib/adapters/admin-range-report";
 export { buildInspectorDailyReportModel } from "./lib/adapters/inspector-daily-report";
 export { buildModelAccuracySection } from "./lib/model-accuracy-section";
+export { formatInspectorNameForExport } from "./lib/formatting";
 export { buildReportDocDefinition } from "./lib/pdf/build-doc-definition";
 export { loadPdfMake } from "./lib/pdf/runtime";
 export {

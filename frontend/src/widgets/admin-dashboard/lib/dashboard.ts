@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import type { Profile } from "@/entities/user/api/profile-client";
-import { resolveReportOrganization } from "@/features/reports";
+import { formatInspectorNameForExport, resolveReportOrganization } from "@/features/reports";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { buildAdminRangeReportModel } from "@/features/reports";
 import type { ModelAccuracySnapshot } from "@/entities/model-accuracy";
@@ -147,6 +147,10 @@ export const toCsvValue = (value: unknown): string => {
   }
   return raw;
 };
+
+export function formatReportRowForExport(row: ReportRow): ReportRow {
+  return { ...row, inspector: formatInspectorNameForExport(row.inspector) };
+}
 
 export const getOptionalText = (
   value: string | null | undefined,
