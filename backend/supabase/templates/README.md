@@ -33,5 +33,5 @@ In Supabase Dashboard:
 
 ## Notes
 
-- The templates use Supabase variables like `{{ .ConfirmationURL }}`, `{{ .Token }}`, `{{ .Email }}`, and `{{ .NewEmail }}`.
+- The recovery template uses `{{ .ConfirmationURL }}` as its only action. Other templates may use Supabase variables like `{{ .Token }}`, `{{ .Email }}`, and `{{ .NewEmail }}` where their email flow intentionally includes a code or address detail.
 - Design tokens mirror MeatLens app UI: dark charcoal surfaces, green primary action, amber security accent, and mono uppercase headings.

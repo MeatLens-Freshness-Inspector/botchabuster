@@ -18,12 +18,9 @@
       h1 { margin: 0; color: #ffffff; font-family: "JetBrains Mono", "Courier New", monospace; font-size: 24px; line-height: 1.25; text-transform: uppercase; }
       p { margin: 12px 0 0; color: #c4cdd8; font-size: 15px; line-height: 1.65; }
       .button { display: inline-block; border-radius: 12px; padding: 12px 20px; background: #2eb860; color: #14181f !important; font-family: "JetBrains Mono", "Courier New", monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-decoration: none; text-transform: uppercase; }
-      .code-wrap { margin-top: 14px; border: 1px dashed rgba(245, 159, 10, 0.45); border-radius: 12px; background: rgba(245, 159, 10, 0.08); padding: 11px 14px; }
-      .code-label { margin: 0; color: #f3bf63; font-family: "JetBrains Mono", "Courier New", monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
-      .code-value { margin: 8px 0 0; color: #f8d487; font-family: "JetBrains Mono", "Courier New", monospace; font-size: 22px; letter-spacing: 0.25em; }
       .muted { margin-top: 14px; color: #7b899d; font-size: 12px; line-height: 1.6; }
       a { color: #7fd79d; }
-      @media only screen and (max-width: 620px) { .pad { padding: 18px !important; } h1 { font-size: 21px; } .code-value { font-size: 20px; letter-spacing: 0.18em; } }
+      @media only screen and (max-width: 620px) { .pad { padding: 18px !important; } h1 { font-size: 21px; } }
     </style>
   </head>
   <body>
@@ -42,16 +39,12 @@
           <p>We received a password reset request for <strong>{{ .Email }}</strong>.</p>
           <p>Use the secure link below to set a new password. If this was not your request, ignore this email.</p>
           <p style="margin-top: 22px;"><a class="button" href="{{ .ConfirmationURL }}">Reset Password</a></p>
-          <div class="code-wrap">
-            <p class="code-label">Recovery Code</p>
-            <p class="code-value">{{ .Token }}</p>
-          </div>
           <p class="muted">
             Button not working? Open this secure link:
             <br />
             <a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a>
           </p>
-          <p class="muted">Sent by MeatLens security. This link/code is time-limited and should not be shared.</p>
+          <p class="muted">Sent by MeatLens security. This link is time-limited and should not be shared.</p>
         </div>
       </div>
     </div>
