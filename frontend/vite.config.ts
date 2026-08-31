@@ -1,7 +1,9 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import path from "path";
+import path from "node:path";
 import { VitePWA } from "vite-plugin-pwa";
+
+const sourceDirectory = path.resolve(process.cwd(), "src");
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -146,7 +148,7 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": sourceDirectory,
     },
     dedupe: ["react", "react-dom", "react-router-dom"],
   },

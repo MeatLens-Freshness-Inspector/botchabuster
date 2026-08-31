@@ -73,6 +73,7 @@ export async function requestCameraStream(
         facingMode: { ideal: "environment" },
         width: { ideal: 1280 },
         height: { ideal: 960 },
+        focusMode: { ideal: "continuous" },
         torch: true,
       },
     });

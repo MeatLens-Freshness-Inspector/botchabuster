@@ -81,6 +81,7 @@ test("requestCameraStream falls back to a basic video request", async () => {
         facingMode: { ideal: "environment" },
         width: { ideal: 1280 },
         height: { ideal: 960 },
+        focusMode: { ideal: "continuous" },
         torch: true,
       },
     },
