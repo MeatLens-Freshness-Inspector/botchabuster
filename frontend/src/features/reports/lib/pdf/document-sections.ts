@@ -85,6 +85,9 @@ async function buildInspectionEvidenceContent(
               ...(evidenceItem.inspectorLabel ? [buildInspectionEvidenceField("Inspector", evidenceItem.inspectorLabel)] : []),
               buildInspectionEvidenceField("Captured", evidenceItem.capturedAt),
               buildInspectionEvidenceField("Meat", evidenceItem.meatType),
+              ...(evidenceItem.meatTypeScopeLabel
+                ? [buildInspectionEvidenceField("Meat Scope", evidenceItem.meatTypeScopeLabel)]
+                : []),
               buildInspectionEvidenceField("Classification", evidenceItem.classification),
               buildInspectionEvidenceField("Confidence", evidenceItem.confidenceLabel),
               ...(evidenceItem.regulatoryCompliance !== undefined

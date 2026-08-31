@@ -43,6 +43,11 @@ export function LogTicker() {
             <span className={`font-display text-[10px] uppercase tracking-widest ${item.textCol}`}>
               {item.result} · {item.conf}%
             </span>
+            {item.scopeLabel && (
+              <span className="font-display text-[9px] uppercase tracking-widest text-warning">
+                {item.scopeLabel}
+              </span>
+            )}
             <span className="font-display text-[9px] uppercase tracking-widest text-muted-foreground/60">
               {item.market}
             </span>

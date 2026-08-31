@@ -316,6 +316,7 @@ export function buildAdminDashboardReportPdfModel(input: {
       inspector: row.inspector,
       location: row.location,
       meatType: row.meatType,
+      meatTypeScopeLabel: row.meatTypeScopeLabel,
       classification: row.classification,
       manualClassification: row.manualClassification,
       confidenceScore: row.confidenceScore,

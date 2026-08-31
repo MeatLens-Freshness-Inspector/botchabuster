@@ -1,6 +1,10 @@
 import { useState } from "react";
 import type { Inspection } from "@/entities/inspection";
-import { FreshnessBadge, getEffectiveInspectionClassification } from "@/entities/inspection";
+import {
+  FreshnessBadge,
+  getEffectiveInspectionClassification,
+  getMeatTypeScopeLabel,
+} from "@/entities/inspection";
 import { Card, CardContent } from "@/shared/ui/card";
 import { Dialog, DialogContent } from "@/shared/ui/dialog";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
@@ -77,6 +81,11 @@ export function InspectionListItem({ inspection, onClick, onSelect, className }:
           </div>
 
           <p className="font-display text-sm font-semibold capitalize truncate">{inspection.meat_type}</p>
+          {getMeatTypeScopeLabel(inspection.meat_type) && (
+            <p className="mt-1 text-[10px] uppercase tracking-wider text-warning">
+              {getMeatTypeScopeLabel(inspection.meat_type)}
+            </p>
+          )}
           <p className="text-xs text-muted-foreground mt-0.5">{format(new Date(inspection.created_at), "h:mm a")}</p>
 
           {locationLabel && (

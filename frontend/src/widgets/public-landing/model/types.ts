@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { MeatType } from "@/entities/inspection";
 
 export type AnimatedStatData = {
   label: string;
@@ -11,7 +12,9 @@ export type TickerItem = {
   id: string;
   label: string;
   market: string;
+  meatType: MeatType;
   result: string;
+  scopeLabel: string | null;
   textCol: string;
 };
 
@@ -27,13 +30,6 @@ export type LandingWorkflowStep = {
   title: string;
 };
 
-export type LandingTestimonial = {
-  name: string;
-  quote: string;
-  rating: number;
-  role: string;
-};
-
 export type LandingMockSample = {
   border: string;
   color: string;
@@ -41,6 +37,8 @@ export type LandingMockSample = {
   icon: LucideIcon;
   id: string;
   label: string;
+  meatType: MeatType;
+  scopeLabel: string | null;
   text: string;
   textCol: string;
   type: string;

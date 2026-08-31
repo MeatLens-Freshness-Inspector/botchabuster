@@ -11,20 +11,20 @@ import {
 import type {
   LandingFeature,
   LandingMockSample,
-  LandingTestimonial,
   LandingWorkflowStep,
   TickerItem,
 } from "../model/types";
+import { getMeatTypeScopeLabel } from "@/entities/inspection";
 
 export const tickerItems: TickerItem[] = [
-  { id: "t1", label: "Pork Shoulder", result: "Fresh", conf: 91, market: "Divisoria Wet Mkt", textCol: "text-fresh" },
-  { id: "t2", label: "Chicken Breast", result: "Acceptable", conf: 76, market: "Caloocan Public Mkt", textCol: "text-acceptable" },
-  { id: "t3", label: "Beef Brisket", result: "Fresh", conf: 95, market: "Pasig Market", textCol: "text-fresh" },
-  { id: "t4", label: "Bangus Fillet", result: "Warning", conf: 43, market: "Quiapo Market", textCol: "text-warning" },
-  { id: "t5", label: "Pork Liempo", result: "Fresh", conf: 89, market: "SM Fairview", textCol: "text-fresh" },
-  { id: "t6", label: "Chicken Thigh", result: "Spoiled", conf: 9, market: "Balintawak Market", textCol: "text-spoiled" },
-  { id: "t7", label: "Beef Tenderloin", result: "Acceptable", conf: 74, market: "Cubao Farmers", textCol: "text-acceptable" },
-  { id: "t8", label: "Tilapia Whole", result: "Fresh", conf: 92, market: "Las Piñas City Mkt", textCol: "text-fresh" },
+  { id: "t1", label: "Pork Shoulder", meatType: "pork", scopeLabel: getMeatTypeScopeLabel("pork"), result: "Fresh", conf: 91, market: "Divisoria Wet Mkt", textCol: "text-fresh" },
+  { id: "t2", label: "Chicken Breast", meatType: "chicken", scopeLabel: getMeatTypeScopeLabel("chicken"), result: "Acceptable", conf: 76, market: "Caloocan Public Mkt", textCol: "text-acceptable" },
+  { id: "t3", label: "Beef Brisket", meatType: "beef", scopeLabel: getMeatTypeScopeLabel("beef"), result: "Fresh", conf: 95, market: "Pasig Market", textCol: "text-fresh" },
+  { id: "t4", label: "Bangus Fillet", meatType: "fish", scopeLabel: getMeatTypeScopeLabel("fish"), result: "Warning", conf: 43, market: "Quiapo Market", textCol: "text-warning" },
+  { id: "t5", label: "Pork Liempo", meatType: "pork", scopeLabel: getMeatTypeScopeLabel("pork"), result: "Fresh", conf: 89, market: "SM Fairview", textCol: "text-fresh" },
+  { id: "t6", label: "Chicken Thigh", meatType: "chicken", scopeLabel: getMeatTypeScopeLabel("chicken"), result: "Spoiled", conf: 9, market: "Balintawak Market", textCol: "text-spoiled" },
+  { id: "t7", label: "Beef Tenderloin", meatType: "beef", scopeLabel: getMeatTypeScopeLabel("beef"), result: "Acceptable", conf: 74, market: "Cubao Farmers", textCol: "text-acceptable" },
+  { id: "t8", label: "Tilapia Whole", meatType: "fish", scopeLabel: getMeatTypeScopeLabel("fish"), result: "Fresh", conf: 92, market: "Las Piñas City Mkt", textCol: "text-fresh" },
 ];
 
 export const landingFeatures: LandingFeature[] = [
@@ -57,31 +57,12 @@ export const landingWorkflow: LandingWorkflowStep[] = [
   { icon: ClipboardCheck, title: "Record", desc: "Save official inspection log" },
 ];
 
-export const landingTestimonials: LandingTestimonial[] = [
-  {
-    name: "Maria Santos",
-    role: "Barangay Health Inspector",
-    quote: "MeatLens helped us standardize inspections. It is easier to explain findings when you have objective values.",
-    rating: 5,
-  },
-  {
-    name: "Carlos Reyes",
-    role: "Municipal Food Safety Officer",
-    quote: "The app catches subtle quality issues that pure visual checks can miss, especially in crowded market shifts.",
-    rating: 5,
-  },
-  {
-    name: "Ana Dela Cruz",
-    role: "Wet Market Inspector",
-    quote: "Simple mobile flow, fast analysis, and clean records. It made our daily inspection routine much smoother.",
-    rating: 4,
-  },
-];
-
 export const landingMockSamples: LandingMockSample[] = [
   {
     id: "fresh",
     label: "Prime Beef Cut",
+    meatType: "beef",
+    scopeLabel: getMeatTypeScopeLabel("beef"),
     type: "Fresh",
     color: "bg-fresh",
     border: "border-fresh/50",
@@ -93,6 +74,8 @@ export const landingMockSamples: LandingMockSample[] = [
   {
     id: "acceptable",
     label: "Standard Pork",
+    meatType: "pork",
+    scopeLabel: getMeatTypeScopeLabel("pork"),
     type: "Acceptable",
     color: "bg-acceptable",
     border: "border-acceptable/50",
@@ -104,6 +87,8 @@ export const landingMockSamples: LandingMockSample[] = [
   {
     id: "warning",
     label: "Questionable Poultry",
+    meatType: "chicken",
+    scopeLabel: getMeatTypeScopeLabel("chicken"),
     type: "Warning",
     color: "bg-warning",
     border: "border-warning/50",
@@ -115,6 +100,8 @@ export const landingMockSamples: LandingMockSample[] = [
   {
     id: "spoiled",
     label: "Discarded Sample",
+    meatType: "other",
+    scopeLabel: getMeatTypeScopeLabel("other"),
     type: "Spoiled",
     color: "bg-spoiled",
     border: "border-spoiled/50",

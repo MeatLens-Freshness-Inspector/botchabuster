@@ -51,6 +51,7 @@ export interface ReportInspectionEvidenceItem {
   imageUrl: string | null;
   capturedAt: string;
   meatType: string;
+  meatTypeScopeLabel?: string;
   classification: string;
   confidenceLabel: string;
   location: string;

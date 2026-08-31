@@ -50,7 +50,7 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
             visually apparent.
           </li>
           <li>
-            The system produces advisory risk indicators (e.g., Fresh, Suspect, Spoiled). It does not issue
+            The system produces advisory risk indicators (e.g., Fresh, Warning, Spoiled). It does not issue
             certifications, official findings, or regulatory rulings.
           </li>
         </ul>
@@ -117,7 +117,7 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
         <h3 className="font-display text-base font-semibold">5. AI Output Limitations</h3>
         <p>Users acknowledge that:</p>
         <ul className="list-disc space-y-1 pl-5">
-          <li>Results are advisory in nature (for example Fresh, Suspect, Spoiled).</li>
+          <li>Results are advisory in nature (for example Fresh, Warning, Spoiled).</li>
           <li>The system may produce false positives or false negatives.</li>
           <li>Environmental conditions affect accuracy, including lighting, camera quality, and storage conditions.</li>
         </ul>

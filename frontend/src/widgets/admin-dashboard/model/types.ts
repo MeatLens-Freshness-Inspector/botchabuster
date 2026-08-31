@@ -41,6 +41,7 @@ export type ReportRow = {
   locationLongitude: number | null;
   profileLocation: string;
   meatType: string;
+  meatTypeScopeLabel?: string | null;
   classification: FreshnessClassification;
   manualClassification?: FreshnessClassification;
   confidenceScore: number;

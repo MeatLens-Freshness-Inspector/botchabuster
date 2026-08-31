@@ -1,5 +1,9 @@
 import type { ReportOrganization } from "@/features/reports/model/types";
-import { getEffectiveInspectionClassification, type FreshnessClassification } from "@/entities/inspection";
+import {
+  getEffectiveInspectionClassification,
+  getMeatTypeScopeLabel,
+  type FreshnessClassification,
+} from "@/entities/inspection";
 import { formatDateTime as formatReportDateTime } from "@/shared/lib/date-time";
 import { getTemplateKeyForOrganization } from "@/features/reports/lib/pdf/assets";
 import {
@@ -172,6 +176,7 @@ export function buildInspectorDailyReportModel(
             inspection.captured_at ?? inspection.created_at,
           ),
           meatType: inspection.meat_type,
+          meatTypeScopeLabel: getMeatTypeScopeLabel(inspection.meat_type) ?? undefined,
           classification: getEffectiveInspectionClassification(inspection),
           confidenceLabel: `${inspection.confidence_score}%`,
           location: inspection.location ?? "-",

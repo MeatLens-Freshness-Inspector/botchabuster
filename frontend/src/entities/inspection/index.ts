@@ -33,6 +33,12 @@ export {
   type InspectionCoordinates,
 } from "./model/location";
 export {
+  getMeatTypeScope,
+  getMeatTypeScopeLabel,
+  isValidatedMeatType,
+  type MeatTypeScope,
+} from "./model/meat-type-scope";
+export {
   InspectionClient,
   inspectionClient,
   type InspectionScope,

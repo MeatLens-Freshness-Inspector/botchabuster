@@ -6,7 +6,6 @@ import {
   LandingFooter,
   LandingHeader,
   LogTicker,
-  TestimonialsSection,
   WorkflowSection,
 } from "@/widgets/public-landing";
 import { useLandingStats } from "@/features/public-landing";
@@ -32,7 +31,6 @@ const LandingPage = () => {
 
         <WorkflowSection />
         <FeaturesSection />
-        <TestimonialsSection />
         <BottomCtaSection isSignedIn={isSignedIn} />
       </main>
 

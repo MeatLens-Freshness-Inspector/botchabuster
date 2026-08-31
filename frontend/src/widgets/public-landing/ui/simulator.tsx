@@ -60,6 +60,11 @@ export function Simulator() {
             <span className="font-display text-sm font-medium text-foreground/80">
               {activeSample.label}
             </span>
+            {activeSample.scopeLabel && (
+              <span className="text-center font-display text-[9px] uppercase tracking-widest text-warning">
+                {activeSample.scopeLabel}
+              </span>
+            )}
           </div>
 
           {scanning && (
@@ -138,6 +143,11 @@ export function Simulator() {
                   <p className="mt-2 font-display text-[11px] uppercase tracking-wider text-muted-foreground">
                     Confidence Score
                   </p>
+                  {scannedResult.scopeLabel && (
+                    <p className="mt-1 font-display text-[9px] uppercase tracking-wider text-warning">
+                      {scannedResult.scopeLabel}
+                    </p>
+                  )}
                 </div>
                 <div className={`font-display text-3xl font-bold ${scannedResult.textCol}`}>
                   {scannedResult.conf}%

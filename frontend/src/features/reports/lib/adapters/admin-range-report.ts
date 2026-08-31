@@ -32,6 +32,7 @@ type AdminReportRow = {
   inspector: string;
   location: string;
   meatType: string;
+  meatTypeScopeLabel?: string | null;
   classification: string;
   manualClassification?: string;
   confidenceScore: number;
@@ -374,6 +375,7 @@ export function buildAdminRangeReportModel(
           "Inspector",
           "Location",
           "Meat",
+          "Meat Type Scope",
           "Classification",
           "Confidence",
           "Regulatory Compliance",
@@ -383,6 +385,7 @@ export function buildAdminRangeReportModel(
           formatInspectorNameForExport(row.inspector),
           row.location,
           row.meatType,
+          row.meatTypeScopeLabel ?? "",
           row.classification,
           `${row.confidenceScore}%`,
           row.regulatoryCompliance,

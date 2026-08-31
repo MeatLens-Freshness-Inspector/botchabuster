@@ -1,6 +1,12 @@
 import { useMemo } from "react";
 import { format } from "date-fns";
-import { formatInspectionLocationLabel, getEffectiveInspectionClassification, type Inspection, type FreshnessClassification } from "@/entities/inspection";
+import {
+  formatInspectionLocationLabel,
+  getEffectiveInspectionClassification,
+  getMeatTypeScopeLabel,
+  type Inspection,
+  type FreshnessClassification,
+} from "@/entities/inspection";
 import type { Profile } from "@/entities/user/api";
 import { useModelAccuracyHistory, type ModelAccuracySnapshot } from "@/entities/model-accuracy";
 import { buildDeveloperInAppMetrics } from "@/features/developer-tools";
@@ -78,6 +84,7 @@ export function useDashboardReport({
         locationLongitude: inspection.location_longitude,
         profileLocation: getOptionalText(profile?.location),
         meatType: inspection.meat_type,
+        meatTypeScopeLabel: getMeatTypeScopeLabel(inspection.meat_type),
         classification: getEffectiveInspectionClassification(inspection),
         manualClassification: inspection.manual_classification,
         confidenceScore: inspection.confidence_score,
