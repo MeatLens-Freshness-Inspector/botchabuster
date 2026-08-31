@@ -86,8 +86,8 @@ test("dataset export ZIP contains manifest, inspections.csv, images, and missing
     assert.deepEqual(manifest.rowsMissingImages, ["inspection-without-image"]);
 
     const csv = Buffer.from(zipEntries["inspections.csv"]).toString("utf-8");
-    assert.match(csv, /^date,meat,manual classification,confidence,image file$/m);
-    assert.match(csv, /"2026-07-13","pork","fresh","0.94","inspection-with-image\.jpg"/);
+    assert.match(csv, /^date,meat,meat type scope,manual classification,confidence,image file$/m);
+    assert.match(csv, /"2026-07-13","pork","","fresh","0.94","inspection-with-image\.jpg"/);
     assert.doesNotMatch(csv, /source_classification/);
   } finally {
     if (originalGetDeveloperDatasetPage) {
@@ -357,6 +357,7 @@ test("dataset export uses stored manual classifications", async () => {
         }),
         createInspection({
           id: "inspection-b",
+          meat_type: "beef",
           classification: "warning",
           manual_classification: "warning",
         }),
@@ -376,8 +377,9 @@ test("dataset export uses stored manual classifications", async () => {
     const overriddenRow = csv.split("\n").find((line) => line.includes("\"spoiled\""));
 
     assert.ok(overriddenRow);
-    assert.match(csv, /^date,meat,manual classification,confidence,image file$/m);
-    assert.match(overriddenRow, /"2026-07-13","pork","spoiled","0.94","inspection-a\.jpg"/);
+    assert.match(csv, /^date,meat,meat type scope,manual classification,confidence,image file$/m);
+    assert.match(overriddenRow, /"2026-07-13","pork","","spoiled","0.94","inspection-a\.jpg"/);
+    assert.match(csv, /"2026-07-13","beef","Future validation \/ research use","warning","0.94",/);
     assert.doesNotMatch(csv, /source_classification/);
 
     const manifest = JSON.parse(Buffer.from(zipEntries["manifest.json"]).toString("utf-8")) as {

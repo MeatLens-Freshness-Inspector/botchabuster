@@ -1,6 +1,10 @@
 import { format } from "date-fns";
 import { ClipboardList, Trash2 } from "lucide-react";
-import { FreshnessBadge, getEffectiveInspectionClassification } from "@/entities/inspection";
+import {
+  FreshnessBadge,
+  getEffectiveInspectionClassification,
+  getMeatTypeScopeLabel,
+} from "@/entities/inspection";
 import { Button } from "@/shared/ui";
 import {
   Card,
@@ -102,6 +106,11 @@ const InspectionsTab = ({ dashboard }: InspectionsTabContentProps) => {
                           size="sm"
                         />
                       </div>
+                      {getMeatTypeScopeLabel(inspection.meat_type) && (
+                        <p className="mb-1 text-[10px] font-medium text-warning">
+                          {getMeatTypeScopeLabel(inspection.meat_type)}
+                        </p>
+                      )}
                       <p className="truncate text-xs font-medium text-foreground/80">
                         {getInspectorLabel(
                           inspection.user_id

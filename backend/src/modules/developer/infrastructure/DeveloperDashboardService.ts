@@ -21,6 +21,7 @@ const IMAGE_DOWNLOAD_TIMEOUT_MS = 15_000;
 const IMAGE_DOWNLOAD_RETRIES = 2;
 const MAX_DATASET_EXPORT_SESSIONS = 20;
 const DATASET_EXPORT_SESSION_TTL_MS = 10 * 60 * 1000;
+const FUTURE_MEAT_TYPE_SCOPE_LABEL = "Future validation / research use";
 
 export interface DatasetExportProgress {
   status: "running" | "completed" | "failed";
@@ -75,6 +76,10 @@ function csvEscape(value: unknown): string {
     ? JSON.stringify(value)
     : String(value);
   return `"${text.replace(/"/g, '""')}"`;
+}
+
+function getMeatTypeScopeLabel(meatType: string): string {
+  return meatType === "pork" ? "" : FUTURE_MEAT_TYPE_SCOPE_LABEL;
 }
 
 function metricPointFromRun(run: TrainingRunRecord): DeveloperOverviewMetricPoint {
@@ -437,6 +442,7 @@ export class DeveloperDashboardService {
     const headers = [
       "date",
       "meat",
+      "meat type scope",
       "manual classification",
       "confidence",
       "image file",
@@ -448,6 +454,7 @@ export class DeveloperDashboardService {
       return [
         inspection.captured_at.slice(0, 10),
         inspection.meat_type,
+        getMeatTypeScopeLabel(inspection.meat_type),
         manualClassification,
         inspection.confidence_score,
         imageFile,

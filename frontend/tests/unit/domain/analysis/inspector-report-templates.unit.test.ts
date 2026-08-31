@@ -64,6 +64,24 @@ test("gcccs inspector template converts normalized evidence into a compact techn
     ...sampleInspectorModel,
     organization: "gordon_college_ccs",
     templateKey: "gcccs",
+    sections: [
+      {
+        id: "meat-detail",
+        title: "Daily Inspection Evidence",
+        inspectionEvidence: [
+          {
+            id: "inspection-beef",
+            imageUrl: null,
+            capturedAt: "2026-08-01 08:05:30",
+            meatType: "beef",
+            meatTypeScopeLabel: "Future validation / research use",
+            classification: "fresh",
+            confidenceLabel: "88%",
+            location: "East Market",
+          },
+        ],
+      },
+    ],
   };
 
   const sections = getOrganizationReportTemplate("gcccs").buildSections(gcccsModel);
@@ -71,7 +89,16 @@ test("gcccs inspector template converts normalized evidence into a compact techn
 
   assert.equal(detailSection?.title, "Technical Inspection Evidence Log");
   assert.equal(detailSection?.inspectionEvidence, undefined);
+  assert.deepEqual(detailSection?.tables?.[0].columns, [
+    "Captured",
+    "Meat",
+    "Meat Type Scope",
+    "Classification",
+    "Confidence",
+    "Location",
+  ]);
   assert.equal(detailSection?.tables?.[0].rows[0][0], "2026-08-01 08:05:30");
+  assert.equal(detailSection?.tables?.[0].rows[0][2], "Future validation / research use");
 });
 
 // commit 11

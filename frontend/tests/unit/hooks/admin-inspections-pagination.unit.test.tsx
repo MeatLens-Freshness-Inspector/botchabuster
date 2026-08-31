@@ -174,6 +174,7 @@ test("InspectionsTabContent paginates admin inspections to 10 items per page", a
     assert.match(text, /All Inspections/);
     assert.match(text, /Showing 1-10 of 15/);
     assert.match(text, /inspection-10/);
+    assert.match(text, /Future validation \/ research use/);
     assert.doesNotMatch(text, /inspection-11/);
   } finally {
     await act(async () => {

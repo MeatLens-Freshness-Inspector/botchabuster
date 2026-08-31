@@ -1,6 +1,11 @@
 import { useState } from "react";
 import type { Inspection, FreshnessClassification } from "@/entities/inspection";
-import { FreshnessBadge, FRESHNESS_CLASSIFICATIONS, getEffectiveInspectionClassification } from "@/entities/inspection";
+import {
+  FreshnessBadge,
+  FRESHNESS_CLASSIFICATIONS,
+  getEffectiveInspectionClassification,
+  getMeatTypeScopeLabel,
+} from "@/entities/inspection";
 import { useInspectionDisputes, useSubmitInspectionDispute } from "@/features/inspection-disputes/model/use-inspection-disputes";
 import {
   Dialog,
@@ -106,6 +111,11 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
                 <DialogTitle className="font-display text-lg font-semibold capitalize">
                   {inspection.meat_type}
                 </DialogTitle>
+                {getMeatTypeScopeLabel(inspection.meat_type) && (
+                  <p className="mt-1 text-xs font-medium text-warning">
+                    {getMeatTypeScopeLabel(inspection.meat_type)}
+                  </p>
+                )}
                 <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                   <Hash className="h-3 w-3" />
                   {inspection.id.slice(0, 12)}…

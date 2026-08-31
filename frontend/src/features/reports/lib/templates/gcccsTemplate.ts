@@ -52,6 +52,7 @@ export const gcccsTemplate = {
                 columns: [
                   "Captured",
                   "Meat",
+                  "Meat Type Scope",
                   "Classification",
                   "Confidence",
                   "Location",
@@ -59,6 +60,7 @@ export const gcccsTemplate = {
                 rows: section.inspectionEvidence.map((item) => [
                   item.capturedAt,
                   item.meatType,
+                  item.meatTypeScopeLabel ?? "",
                   item.classification,
                   item.confidenceLabel,
                   item.location,
