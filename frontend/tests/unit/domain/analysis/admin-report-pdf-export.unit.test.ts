@@ -165,9 +165,10 @@ test("buildAdminDashboardReportPdfModel preserves graph payloads and nullable po
     "Inspector",
     "Location",
     "Meat",
+    "Meat Type Scope",
     "Classification",
     "Confidence",
     "Regulatory Compliance",
   ]);
-  assert.equal(detailSection?.tables?.[0].rows[0][6], "Compliant");
+  assert.equal(detailSection?.tables?.[0].rows[0][7], "Compliant");
 });
