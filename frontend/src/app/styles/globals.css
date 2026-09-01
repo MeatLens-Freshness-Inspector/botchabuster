@@ -139,6 +139,29 @@
   }
 }
 
+@layer components {
+  .landing-page {
+    --landing-surface: #ffffff;
+    --landing-surface-muted: #f7f7f8;
+    --landing-ink: #17191c;
+    --landing-ink-muted: #5d6570;
+    --landing-rule: #d9dee5;
+    --landing-accent: #ff4f00;
+    background: var(--landing-surface);
+    color: var(--landing-ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  .landing-page :where(h1, h2, h3, h4, h5, h6, button, a, label) {
+    font-family: inherit;
+  }
+
+  .landing-page :where(button, a, [role="button"]):focus-visible {
+    outline: 2px solid var(--landing-accent);
+    outline-offset: 3px;
+  }
+}
+
 @layer utilities {
   .font-display {
     font-family: var(--font-display);
