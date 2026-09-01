@@ -16,15 +16,15 @@ type LandingHeaderProps = {
 
 export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 border-b border-border/30 bg-background/60 backdrop-blur-xl">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-[#d9dee5] bg-white/95 backdrop-blur-sm">
+      <div className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner ring-1 ring-primary/30">
-            <Fingerprint className="h-5 w-5 text-primary" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#17191c]">
+            <Fingerprint className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-display text-sm font-bold uppercase tracking-widest">MeatLens</p>
-            <p className="font-display text-[9px] uppercase tracking-widest text-muted-foreground">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#17191c]">MeatLens</p>
+            <p className="text-[9px] uppercase tracking-[0.18em] text-[#5d6570]">
               Inspection Intelligence
             </p>
           </div>
@@ -35,7 +35,7 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
             <Link to="/inspect">
               <Button
                 size="sm"
-                className="gap-2 rounded-xl font-display uppercase tracking-wider shadow-lg shadow-primary/20 transition-all hover:scale-105"
+                className="gap-2 rounded-lg bg-[#ff4f00] px-4 text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#d93f00]"
               >
                 Open App <ChevronRight className="h-4 w-4" />
               </Button>
@@ -46,7 +46,7 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="rounded-xl font-display uppercase tracking-wider hover:bg-muted/60"
+                  className="rounded-lg px-4 text-xs font-bold uppercase tracking-[0.14em] text-[#17191c] hover:bg-[#f7f7f8]"
                 >
                   Sign In
                 </Button>
@@ -54,7 +54,7 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
               <Link to="/signup">
                 <Button
                   size="sm"
-                  className="rounded-xl bg-gradient-to-r from-primary to-emerald-500 font-display uppercase tracking-wider text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-primary/40"
+                  className="rounded-lg bg-[#ff4f00] px-4 text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#d93f00]"
                 >
                   Get Started
                 </Button>
@@ -69,7 +69,7 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-xl border border-border/40 bg-card/60 backdrop-blur-md"
+                className="rounded-lg border border-[#d9dee5] bg-white text-[#17191c] hover:bg-[#f7f7f8]"
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" />
@@ -77,16 +77,16 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
             </SheetTrigger>
             <SheetContent
               side="right"
-              className="w-[85vw] max-w-xs border-border/40 bg-background/95 backdrop-blur-xl"
+              className="w-[85vw] max-w-xs border-[#d9dee5] bg-white"
             >
-              <SheetHeader className="mb-6 border-b border-border/30 pb-4 text-left">
-                <SheetTitle className="font-display uppercase tracking-widest">Menu</SheetTitle>
+              <SheetHeader className="mb-6 border-b border-[#d9dee5] pb-4 text-left">
+                <SheetTitle className="text-sm uppercase tracking-[0.16em] text-[#17191c]">Menu</SheetTitle>
               </SheetHeader>
               <div className="grid gap-3">
                 {isSignedIn ? (
                   <SheetClose asChild>
                     <Link to="/inspect">
-                      <Button className="w-full gap-2 rounded-xl font-display uppercase tracking-wider">
+                      <Button className="w-full gap-2 rounded-lg bg-[#ff4f00] text-xs font-bold uppercase tracking-[0.14em] text-white hover:bg-[#d93f00]">
                         Open App <ChevronRight className="h-4 w-4" />
                       </Button>
                     </Link>
@@ -95,7 +95,7 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
                   <>
                     <SheetClose asChild>
                       <Link to="/signup">
-                        <Button className="w-full rounded-xl bg-gradient-to-r from-primary to-emerald-500 font-display uppercase tracking-wider">
+                        <Button className="w-full rounded-lg bg-[#ff4f00] text-xs font-bold uppercase tracking-[0.14em] text-white hover:bg-[#d93f00]">
                           Get Started
                         </Button>
                       </Link>
@@ -104,7 +104,7 @@ export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
                       <Link to="/login">
                         <Button
                           variant="outline"
-                          className="w-full rounded-xl border-border/40 font-display uppercase tracking-wider"
+                          className="w-full rounded-lg border-[#d9dee5] text-xs font-bold uppercase tracking-[0.14em] text-[#17191c] hover:bg-[#f7f7f8]"
                         >
                           Sign In
                         </Button>

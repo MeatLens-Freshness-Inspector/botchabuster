@@ -14,34 +14,34 @@ export function HeroSection({ isSignedIn, statCards }: HeroSectionProps) {
   return (
     <section
       id="hero"
-      className="relative mb-20 mt-10 grid items-center gap-12 lg:grid-cols-2 lg:gap-8"
+      className="relative mb-24 mt-12 grid items-center gap-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)] lg:gap-16"
     >
-      <div className="z-10 text-center lg:text-left">
-        <div className="mb-6 inline-flex animate-fade-in items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 backdrop-blur-sm">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <span className="font-display text-xs font-semibold uppercase tracking-widest text-primary">
+      <div className="z-10 text-left">
+        <div className="mb-7 inline-flex animate-fade-in items-center gap-2 border-l-2 border-[#ff4f00] pl-3">
+          <Sparkles className="h-4 w-4 text-[#ff4f00]" />
+          <span className="text-xs font-bold uppercase tracking-[0.14em] text-[#ff4f00]">
             AI-assisted Field Inspection
           </span>
         </div>
 
-        <h1 className="mb-6 font-display text-4xl font-extrabold uppercase leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
+        <h1 className="mb-7 max-w-3xl text-4xl font-semibold leading-[0.98] tracking-[-0.055em] text-[#17191c] sm:text-5xl lg:text-[4.5rem]">
           Objective Meat Freshness Checks,{" "}
-          <span className="bg-gradient-to-r from-primary via-emerald-400 to-accent bg-clip-text text-transparent">
+          <span className="text-[#ff4f00]">
             Designed for Real Market Flow
           </span>
         </h1>
 
-        <p className="mx-auto mb-8 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0">
+        <p className="mb-9 max-w-xl text-base leading-relaxed text-[#5d6570] sm:text-lg">
           MeatLens helps inspectors perform faster and more consistent decisions using
           image-based color and texture analytics aligned to health guidance.
         </p>
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <Link to={isSignedIn ? "/inspect" : "/signup"} className="w-full sm:w-auto">
             <Button
               id="btn-hero-inspect"
               size="lg"
-              className="w-full gap-2 rounded-xl bg-gradient-to-r from-primary to-emerald-500 px-8 font-display uppercase tracking-wider shadow-lg shadow-primary/25 transition-all hover:-translate-y-1 hover:shadow-primary/40 sm:w-auto"
+              className="w-full gap-2 rounded-lg bg-[#ff4f00] px-7 text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#d93f00] sm:w-auto"
             >
               {isSignedIn ? "Start Inspecting" : "Create Inspector Account"}
               <ChevronRight className="h-4 w-4" />
@@ -52,14 +52,14 @@ export function HeroSection({ isSignedIn, statCards }: HeroSectionProps) {
               id="btn-hero-history"
               variant="outline"
               size="lg"
-              className="w-full rounded-xl border-border/40 bg-card/40 px-8 font-display uppercase tracking-wider backdrop-blur-sm transition-all hover:bg-card/70 sm:w-auto"
+              className="w-full rounded-lg border-[#d9dee5] bg-white px-7 text-xs font-bold uppercase tracking-[0.14em] text-[#17191c] transition-colors hover:bg-[#f7f7f8] sm:w-auto"
             >
               {isSignedIn ? "View History" : "Sign In"}
             </Button>
           </Link>
         </div>
 
-        <div className="mt-12 grid grid-cols-3 gap-4 border-t border-border/20 pt-8">
+        <div className="mt-14 grid grid-cols-3 gap-4 border-t border-[#d9dee5] pt-6">
           {statCards.map((stat) => (
             <AnimatedStat
               key={stat.label}
