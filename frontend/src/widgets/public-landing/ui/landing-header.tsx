@@ -16,7 +16,7 @@ type LandingHeaderProps = {
 
 export function LandingHeader({ isSignedIn }: LandingHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 border-b border-[#d9dee5] bg-white/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-[#d9dee5] bg-white/95">
       <div className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#17191c]">
