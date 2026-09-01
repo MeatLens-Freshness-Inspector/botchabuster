@@ -1,64 +1,39 @@
 import { landingFeatures } from "../lib/landing-data";
 
-const mockConfidenceScores = [92, 88, 79, 95];
-
 export function FeaturesSection() {
   return (
     <section
       id="features"
-      className="mb-24 rounded-[3rem] border border-border/30 bg-gradient-to-b from-card/30 to-background p-8 sm:p-12"
+      className="mb-24 border-y border-[#d9dee5] bg-[#f7f7f8] px-6 py-10 sm:px-10 sm:py-12"
     >
-      <div className="mb-12 text-center lg:text-left">
-        <h2 className="font-display text-3xl font-bold uppercase tracking-tight">
+      <div className="mb-10 border-b border-[#d9dee5] pb-5 text-left">
+        <h2 className="text-3xl font-semibold tracking-[-0.04em] text-[#17191c]">
           Capability Blocks
         </h2>
-        <p className="mt-3 text-muted-foreground">
+        <p className="mt-3 text-[#5d6570]">
           Powered by advanced mobile vision and secure records.
         </p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2">
-        {landingFeatures.map((feature, index) => {
-          const mockConfidence = mockConfidenceScores[index];
-
-          return (
-            <div
-              key={feature.title}
-              className="group flex flex-col gap-4 rounded-3xl border border-border/30 bg-card/30 p-6 backdrop-blur-sm transition-all hover:bg-card/50"
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border/30 bg-background transition-transform group-hover:scale-110">
-                  <feature.icon className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="mb-2 font-display text-base font-bold uppercase tracking-wider">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {feature.desc}
-                  </p>
-                </div>
+      <div className="grid gap-x-8 sm:grid-cols-2 sm:divide-x sm:divide-[#d9dee5]">
+        {landingFeatures.map((feature) => (
+          <div
+            key={feature.title}
+            className="group border-t border-[#d9dee5] py-7 first:border-t-0 sm:px-8 sm:first:border-t-0 lg:py-8"
+          >
+            <div className="flex items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-[#d9dee5] bg-white text-[#ff4f00] transition-colors group-hover:border-[#ff4f00]">
+                <feature.icon className="h-5 w-5" />
               </div>
-
-              <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <span className="font-display text-[9px] uppercase tracking-widest text-muted-foreground">
-                    Accuracy Index
-                  </span>
-                  <span className="font-display text-[9px] font-bold text-primary">
-                    {mockConfidence}%
-                  </span>
-                </div>
-                <div className="h-1 w-full overflow-hidden rounded-full bg-border/40">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-primary to-emerald-400 transition-all duration-700 group-hover:opacity-100"
-                    style={{ width: `${mockConfidence}%`, opacity: 0.6 }}
-                  />
-                </div>
+              <div>
+                <h3 className="mb-2 text-base font-semibold tracking-[-0.02em] text-[#17191c]">
+                  {feature.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-[#5d6570]">{feature.desc}</p>
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </section>
   );
