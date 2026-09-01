@@ -24,6 +24,7 @@
 ## File map
 
 - `frontend/src/pages/public/landing-page.tsx`: page shell, section order, landing-only surface treatment.
+- `frontend/index.html`: Vite stylesheet entry for the route-scoped landing styles.
 - `frontend/src/widgets/public-landing/ui/landing-header.tsx`: sticky navigation, brand identity, responsive menu, auth-aware actions.
 - `frontend/src/widgets/public-landing/ui/hero-section.tsx`: hero copy, CTAs, stats, and simulator placement.
 - `frontend/src/widgets/public-landing/ui/animated-stat.tsx`: real landing metric presentation.
@@ -33,7 +34,7 @@
 - `frontend/src/widgets/public-landing/ui/features-section.tsx`: four capability blocks.
 - `frontend/src/widgets/public-landing/ui/bottom-cta-section.tsx`: final signed-in/anonymous CTA.
 - `frontend/src/widgets/public-landing/ui/landing-footer.tsx`: footer identity and description.
-- `frontend/src/app/styles/globals.css`: landing-only font/surface tokens and reduced-motion fallback.
+- `frontend/src/pages/public/landing-page.css`: landing-only font/surface tokens, focus states, and reduced-motion fallback.
 - `frontend/tests/unit/features/public-landing/public-landing-ownership.unit.test.tsx`: ownership/content invariants.
 
 ---
@@ -42,7 +43,8 @@
 
 **Files:**
 - Modify: `frontend/src/pages/public/landing-page.tsx`
-- Modify: `frontend/src/app/styles/globals.css`
+- Modify: `frontend/index.html`
+- Create: `frontend/src/pages/public/landing-page.css`
 - Test: `frontend/tests/unit/features/public-landing/public-landing-ownership.unit.test.tsx`
 
 **Interfaces:**
@@ -61,7 +63,7 @@ Expected: all matching public-landing tests pass.
 
 - [ ] **Step 2: Add landing-only tokens without changing app themes**
 
-Append a `landing-page` rule inside `@layer components` in `globals.css`:
+Create `landing-page.css` with the route-scoped visual tokens and focus state:
 
 ```css
 .landing-page {
@@ -86,7 +88,7 @@ Append a `landing-page` rule inside `@layer components` in `globals.css`:
 }
 ```
 
-Keep the existing root theme variables unchanged so authenticated dark mode is unaffected.
+Reference this stylesheet from `frontend/index.html` so Vite loads it in production while Node-based component tests can continue importing `LandingPage` without trying to execute CSS. Keep `globals.css` and the existing root theme variables unchanged so authenticated dark mode and the global-style ownership test are unaffected.
 
 - [ ] **Step 3: Replace shell decoration with a white ruled page**
 
@@ -122,7 +124,7 @@ Expected: both commands pass with no route/export changes.
 - [ ] **Step 5: Commit the shell slice**
 
 ```powershell
-git add frontend/src/pages/public/landing-page.tsx frontend/src/app/styles/globals.css frontend/tests/unit/features/public-landing/public-landing-ownership.unit.test.tsx
+git add frontend/src/pages/public/landing-page.tsx frontend/index.html frontend/src/pages/public/landing-page.css frontend/tests/unit/features/public-landing/landing-visual-system.unit.test.ts
 git commit -m "feat: establish white landing page shell"
 ```
 
@@ -268,7 +270,7 @@ git commit -m "feat: structure landing workflow and capabilities"
 **Files:**
 - Modify: `frontend/src/widgets/public-landing/ui/bottom-cta-section.tsx`
 - Modify: `frontend/src/widgets/public-landing/ui/landing-footer.tsx`
-- Modify: `frontend/src/app/styles/globals.css`
+- Modify: `frontend/src/pages/public/landing-page.css`
 
 **Interfaces:**
 - Consumes: existing `isSignedIn`, CTA routes, CTA labels, Fingerprint icon, footer copy, ticker keyframe, and scan-line animation.
@@ -284,7 +286,7 @@ Keep Fingerprint, MeatLens, and the existing footer sentence. Use a top hairline
 
 - [ ] **Step 3: Add landing motion reduction**
 
-Add this rule after the existing animation declarations in `globals.css`:
+Add this rule after the landing focus styles in `landing-page.css`:
 
 ```css
 @media (prefers-reduced-motion: reduce) {
@@ -330,7 +332,7 @@ Run `npm run dev:frontend`, inspect `/` at approximately 1440px and 390px widths
 - [ ] **Step 6: Commit the final polish slice**
 
 ```powershell
-git add frontend/src/widgets/public-landing/ui/bottom-cta-section.tsx frontend/src/widgets/public-landing/ui/landing-footer.tsx frontend/src/app/styles/globals.css
+git add frontend/src/widgets/public-landing/ui/bottom-cta-section.tsx frontend/src/widgets/public-landing/ui/landing-footer.tsx frontend/src/pages/public/landing-page.css
 git commit -m "feat: finish MeatLens landing page polish"
 ```
 

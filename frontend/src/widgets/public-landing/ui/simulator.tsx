@@ -44,24 +44,27 @@ export function Simulator() {
   const activeSample = landingMockSamples[selectedIdx];
 
   return (
-    <div className="relative mx-auto w-full max-w-sm rounded-[2.5rem] border-[8px] border-border/60 bg-card/90 shadow-2xl backdrop-blur-xl">
-      <div className="absolute left-1/2 top-2 h-4 w-20 -translate-x-1/2 rounded-full bg-border/60" />
-
-      <div className="flex h-[580px] flex-col p-4 pt-8">
-        <div className="mb-4 text-center font-display text-xs uppercase tracking-widest text-muted-foreground">
-          MeatLens Live Demo
+    <div className="relative mx-auto w-full max-w-md border border-[#17191c] bg-white p-2 shadow-[10px_10px_0_#f0f1f3]">
+      <div className="flex h-[580px] flex-col border border-[#d9dee5] bg-white p-5 sm:h-[600px]">
+        <div className="mb-5 flex items-center justify-between border-b border-[#d9dee5] pb-3">
+          <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#17191c]">
+            MeatLens Live Demo
+          </div>
+          <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.14em] text-[#5d6570]">
+            <span className="h-2 w-2 rounded-full bg-[#ff4f00]" />
+            Ready
+          </div>
         </div>
 
-        <div className="relative mb-4 flex h-48 w-full items-center justify-center overflow-hidden rounded-2xl border border-border/80 bg-background/50 shadow-inner">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:12px_12px] opacity-20" />
+        <div className="relative mb-4 flex h-52 w-full items-center justify-center overflow-hidden border border-[#d9dee5] bg-[#f7f7f8]">
 
           <div className="z-10 flex flex-col items-center justify-center space-y-2">
-            <Camera className="h-10 w-10 text-muted-foreground/50" />
-            <span className="font-display text-sm font-medium text-foreground/80">
+            <Camera className="h-10 w-10 text-[#5d6570]/50" />
+            <span className="text-sm font-semibold text-[#17191c]">
               {activeSample.label}
             </span>
             {activeSample.scopeLabel && (
-              <span className="text-center font-display text-[9px] uppercase tracking-widest text-warning">
+              <span className="text-center text-[9px] font-bold uppercase tracking-[0.12em] text-warning">
                 {activeSample.scopeLabel}
               </span>
             )}
@@ -69,11 +72,11 @@ export function Simulator() {
 
           {scanning && (
             <>
-              <div className="absolute inset-0 z-20 animate-scan-line border-b-2 border-primary bg-gradient-to-b from-transparent to-primary/20 shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
-              <div className="absolute left-4 top-4 h-6 w-6 border-l-2 border-t-2 border-primary" />
-              <div className="absolute right-4 top-4 h-6 w-6 border-r-2 border-t-2 border-primary" />
-              <div className="absolute bottom-4 left-4 h-6 w-6 border-b-2 border-l-2 border-primary" />
-              <div className="absolute bottom-4 right-4 h-6 w-6 border-b-2 border-r-2 border-primary" />
+              <div className="absolute inset-0 z-20 animate-scan-line border-b-2 border-[#ff4f00] bg-[#ff4f00]/10" />
+              <div className="absolute left-4 top-4 h-6 w-6 border-l-2 border-t-2 border-[#ff4f00]" />
+              <div className="absolute right-4 top-4 h-6 w-6 border-r-2 border-t-2 border-[#ff4f00]" />
+              <div className="absolute bottom-4 left-4 h-6 w-6 border-b-2 border-l-2 border-[#ff4f00]" />
+              <div className="absolute bottom-4 right-4 h-6 w-6 border-b-2 border-r-2 border-[#ff4f00]" />
             </>
           )}
         </div>
@@ -90,10 +93,11 @@ export function Simulator() {
                 }
               }}
               disabled={scanning}
-              className={`flex items-center justify-center rounded-xl border p-2 font-display text-[10px] uppercase tracking-wider transition-all duration-200 ${selectedIdx === index
-                ? "border-primary bg-primary/10 text-primary shadow-sm"
-                : "border-border/50 bg-background/40 text-muted-foreground hover:bg-background/80"
+              className={`flex items-center justify-center rounded-xl border p-2 text-[10px] font-bold uppercase tracking-[0.1em] transition-all duration-200 ${selectedIdx === index
+                ? "border-[#ff4f00] bg-[#ff4f00]/10 text-[#ff4f00]"
+                : "border-[#d9dee5] bg-white text-[#5d6570] hover:bg-[#f7f7f8]"
                 }`}
+              aria-pressed={selectedIdx === index}
             >
               {sample.type}
             </button>
@@ -104,7 +108,7 @@ export function Simulator() {
           id="btn-simulator-scan"
           onClick={handleScan}
           disabled={scanning}
-          className="mb-4 w-full rounded-xl font-display uppercase tracking-widest transition-all hover:scale-[1.02]"
+          className="mb-4 w-full rounded-lg bg-[#ff4f00] text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#d93f00]"
         >
           {scanning ? (
             <span className="flex items-center gap-2">
@@ -117,15 +121,18 @@ export function Simulator() {
           )}
         </Button>
 
-        <div className="mt-auto h-32 rounded-2xl border border-border/70 bg-background/60 p-4 backdrop-blur-sm">
+        <div
+          className="mt-auto h-32 border border-[#d9dee5] bg-[#f7f7f8] p-4"
+          aria-live="polite"
+        >
           {scanning ? (
             <div className="flex h-full flex-col items-center justify-center space-y-3">
-              <div className="font-display animate-pulse text-xs text-primary">
+              <div className="animate-pulse text-xs font-semibold text-[#ff4f00]">
                 {scanMessages[scanStep]}
               </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-border/50">
+              <div className="h-1.5 w-full overflow-hidden bg-[#d9dee5]">
                 <div
-                  className="h-full bg-primary transition-all duration-500 ease-out"
+                  className="h-full bg-[#ff4f00] transition-all duration-500 ease-out"
                   style={{ width: `${(scanStep + 1) * 25}%` }}
                 />
               </div>
@@ -135,30 +142,30 @@ export function Simulator() {
               <div className="flex items-start justify-between">
                 <div>
                   <div
-                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-display text-[10px] uppercase tracking-wider ${scannedResult.color}/10 ${scannedResult.textCol} ${scannedResult.border}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em] ${scannedResult.color}/10 ${scannedResult.textCol} ${scannedResult.border}`}
                   >
                     <scannedResult.icon className="h-3 w-3" />
                     {scannedResult.type}
                   </div>
-                  <p className="mt-2 font-display text-[11px] uppercase tracking-wider text-muted-foreground">
+                  <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#5d6570]">
                     Confidence Score
                   </p>
                   {scannedResult.scopeLabel && (
-                    <p className="mt-1 font-display text-[9px] uppercase tracking-wider text-warning">
+                    <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.12em] text-warning">
                       {scannedResult.scopeLabel}
                     </p>
                   )}
                 </div>
-                <div className={`font-display text-3xl font-bold ${scannedResult.textCol}`}>
+                <div className={`text-3xl font-bold tracking-[-0.04em] ${scannedResult.textCol}`}>
                   {scannedResult.conf}%
                 </div>
               </div>
-              <div className={`font-display text-xs font-semibold uppercase tracking-wider ${scannedResult.textCol}`}>
+              <div className={`text-xs font-bold uppercase tracking-[0.12em] ${scannedResult.textCol}`}>
                 {scannedResult.text}
               </div>
             </div>
           ) : (
-            <div className="flex h-full items-center justify-center text-center font-display text-xs text-muted-foreground">
+            <div className="flex h-full items-center justify-center text-center text-xs text-[#5d6570]">
               Select a sample and run analysis to view pure client-side simulated results.
             </div>
           )}
