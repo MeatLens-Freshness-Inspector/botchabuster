@@ -24,6 +24,7 @@
 ## File map
 
 - `frontend/src/pages/public/landing-page.tsx`: page shell, section order, landing-only surface treatment.
+- `frontend/index.html`: Vite stylesheet entry for the route-scoped landing styles.
 - `frontend/src/widgets/public-landing/ui/landing-header.tsx`: sticky navigation, brand identity, responsive menu, auth-aware actions.
 - `frontend/src/widgets/public-landing/ui/hero-section.tsx`: hero copy, CTAs, stats, and simulator placement.
 - `frontend/src/widgets/public-landing/ui/animated-stat.tsx`: real landing metric presentation.
@@ -42,6 +43,7 @@
 
 **Files:**
 - Modify: `frontend/src/pages/public/landing-page.tsx`
+- Modify: `frontend/index.html`
 - Create: `frontend/src/pages/public/landing-page.css`
 - Test: `frontend/tests/unit/features/public-landing/public-landing-ownership.unit.test.tsx`
 
@@ -86,7 +88,7 @@ Create `landing-page.css` with the route-scoped visual tokens and focus state:
 }
 ```
 
-Import this stylesheet from `landing-page.tsx`. Keep `globals.css` and the existing root theme variables unchanged so authenticated dark mode and the global-style ownership test are unaffected.
+Reference this stylesheet from `frontend/index.html` so Vite loads it in production while Node-based component tests can continue importing `LandingPage` without trying to execute CSS. Keep `globals.css` and the existing root theme variables unchanged so authenticated dark mode and the global-style ownership test are unaffected.
 
 - [ ] **Step 3: Replace shell decoration with a white ruled page**
 
@@ -122,7 +124,7 @@ Expected: both commands pass with no route/export changes.
 - [ ] **Step 5: Commit the shell slice**
 
 ```powershell
-git add frontend/src/pages/public/landing-page.tsx frontend/src/pages/public/landing-page.css frontend/tests/unit/features/public-landing/landing-visual-system.unit.test.ts
+git add frontend/src/pages/public/landing-page.tsx frontend/index.html frontend/src/pages/public/landing-page.css frontend/tests/unit/features/public-landing/landing-visual-system.unit.test.ts
 git commit -m "feat: establish white landing page shell"
 ```
 

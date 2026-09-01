@@ -1,5 +1,4 @@
 import { useAuth } from "@/entities/user";
-import "./landing-page.css";
 import {
   BottomCtaSection,
   FeaturesSection,
