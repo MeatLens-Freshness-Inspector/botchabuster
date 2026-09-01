@@ -11,9 +11,9 @@ const landingStylesSource = readFileSync(
   "utf8",
 );
 
-test("landing page publishes its white Swiss visual system", () => {
+test("landing page publishes its green and white visual system", () => {
   assert.match(landingPageSource, /landing-page/);
   assert.match(landingStylesSource, /--landing-surface: #ffffff/);
-  assert.match(landingStylesSource, /--landing-accent: #ff4f00/);
+  assert.match(landingStylesSource, /--landing-accent: #218c5a/);
   assert.match(landingStylesSource, /Helvetica Neue/);
 });

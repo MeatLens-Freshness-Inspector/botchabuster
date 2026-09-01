@@ -1,10 +1,10 @@
 .landing-page {
   --landing-surface: #ffffff;
-  --landing-surface-muted: #f7f7f8;
-  --landing-ink: #17191c;
-  --landing-ink-muted: #5d6570;
-  --landing-rule: #d9dee5;
-  --landing-accent: #ff4f00;
+  --landing-surface-muted: #f4faf6;
+  --landing-ink: #15231b;
+  --landing-ink-muted: #5d6d63;
+  --landing-rule: #d8e5dc;
+  --landing-accent: #218c5a;
   background: var(--landing-surface);
   color: var(--landing-ink);
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;

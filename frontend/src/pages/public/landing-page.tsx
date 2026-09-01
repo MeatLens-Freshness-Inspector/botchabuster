@@ -16,7 +16,7 @@ const LandingPage = () => {
   const isSignedIn = Boolean(user);
 
   return (
-    <div className="landing-page min-h-screen overflow-x-hidden selection:bg-orange-100 selection:text-[#17191c]">
+    <div className="landing-page min-h-screen overflow-x-hidden selection:bg-emerald-100 selection:text-[#15231b]">
       <LandingHeader isSignedIn={isSignedIn} />
 
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

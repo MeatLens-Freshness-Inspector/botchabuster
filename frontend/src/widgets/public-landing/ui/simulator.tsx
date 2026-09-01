@@ -44,23 +44,23 @@ export function Simulator() {
   const activeSample = landingMockSamples[selectedIdx];
 
   return (
-    <div className="relative mx-auto w-full max-w-md border border-[#17191c] bg-white p-2 shadow-[10px_10px_0_#f0f1f3]">
-      <div className="flex h-[580px] flex-col border border-[#d9dee5] bg-white p-5 sm:h-[600px]">
-        <div className="mb-5 flex items-center justify-between border-b border-[#d9dee5] pb-3">
-          <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#17191c]">
+    <div className="relative mx-auto w-full max-w-md border border-[#15231b] bg-white p-2 shadow-[10px_10px_0_#e7f0ea]">
+      <div className="flex h-[580px] flex-col border border-[#d8e5dc] bg-white p-5 sm:h-[600px]">
+        <div className="mb-5 flex items-center justify-between border-b border-[#d8e5dc] pb-3">
+          <div className="text-xs font-bold uppercase tracking-[0.14em] text-[#15231b]">
             MeatLens Live Demo
           </div>
-          <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.14em] text-[#5d6570]">
-            <span className="h-2 w-2 rounded-full bg-[#ff4f00]" />
+          <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.14em] text-[#5d6d63]">
+            <span className="h-2 w-2 rounded-full bg-[#218c5a]" />
             Ready
           </div>
         </div>
 
-        <div className="relative mb-4 flex h-52 w-full items-center justify-center overflow-hidden border border-[#d9dee5] bg-[#f7f7f8]">
+        <div className="relative mb-4 flex h-52 w-full items-center justify-center overflow-hidden border border-[#d8e5dc] bg-[#f4faf6]">
 
           <div className="z-10 flex flex-col items-center justify-center space-y-2">
-            <Camera className="h-10 w-10 text-[#5d6570]/50" />
-            <span className="text-sm font-semibold text-[#17191c]">
+            <Camera className="h-10 w-10 text-[#5d6d63]/50" />
+            <span className="text-sm font-semibold text-[#15231b]">
               {activeSample.label}
             </span>
             {activeSample.scopeLabel && (
@@ -72,11 +72,11 @@ export function Simulator() {
 
           {scanning && (
             <>
-              <div className="absolute inset-0 z-20 animate-scan-line border-b-2 border-[#ff4f00] bg-[#ff4f00]/10" />
-              <div className="absolute left-4 top-4 h-6 w-6 border-l-2 border-t-2 border-[#ff4f00]" />
-              <div className="absolute right-4 top-4 h-6 w-6 border-r-2 border-t-2 border-[#ff4f00]" />
-              <div className="absolute bottom-4 left-4 h-6 w-6 border-b-2 border-l-2 border-[#ff4f00]" />
-              <div className="absolute bottom-4 right-4 h-6 w-6 border-b-2 border-r-2 border-[#ff4f00]" />
+              <div className="absolute inset-0 z-20 animate-scan-line border-b-2 border-[#218c5a] bg-[#218c5a]/10" />
+              <div className="absolute left-4 top-4 h-6 w-6 border-l-2 border-t-2 border-[#218c5a]" />
+              <div className="absolute right-4 top-4 h-6 w-6 border-r-2 border-t-2 border-[#218c5a]" />
+              <div className="absolute bottom-4 left-4 h-6 w-6 border-b-2 border-l-2 border-[#218c5a]" />
+              <div className="absolute bottom-4 right-4 h-6 w-6 border-b-2 border-r-2 border-[#218c5a]" />
             </>
           )}
         </div>
@@ -94,8 +94,8 @@ export function Simulator() {
               }}
               disabled={scanning}
               className={`flex items-center justify-center rounded-xl border p-2 text-[10px] font-bold uppercase tracking-[0.1em] transition-all duration-200 ${selectedIdx === index
-                ? "border-[#ff4f00] bg-[#ff4f00]/10 text-[#ff4f00]"
-                : "border-[#d9dee5] bg-white text-[#5d6570] hover:bg-[#f7f7f8]"
+                ? "border-[#218c5a] bg-[#218c5a]/10 text-[#218c5a]"
+                : "border-[#d8e5dc] bg-white text-[#5d6d63] hover:bg-[#f4faf6]"
                 }`}
               aria-pressed={selectedIdx === index}
             >
@@ -108,7 +108,7 @@ export function Simulator() {
           id="btn-simulator-scan"
           onClick={handleScan}
           disabled={scanning}
-          className="mb-4 w-full rounded-lg bg-[#ff4f00] text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#d93f00]"
+          className="mb-4 w-full rounded-lg bg-[#218c5a] text-xs font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#176b43]"
         >
           {scanning ? (
             <span className="flex items-center gap-2">
@@ -122,17 +122,17 @@ export function Simulator() {
         </Button>
 
         <div
-          className="mt-auto h-32 border border-[#d9dee5] bg-[#f7f7f8] p-4"
+          className="mt-auto h-32 border border-[#d8e5dc] bg-[#f4faf6] p-4"
           aria-live="polite"
         >
           {scanning ? (
             <div className="flex h-full flex-col items-center justify-center space-y-3">
-              <div className="animate-pulse text-xs font-semibold text-[#ff4f00]">
+              <div className="animate-pulse text-xs font-semibold text-[#218c5a]">
                 {scanMessages[scanStep]}
               </div>
-              <div className="h-1.5 w-full overflow-hidden bg-[#d9dee5]">
+              <div className="h-1.5 w-full overflow-hidden bg-[#d8e5dc]">
                 <div
-                  className="h-full bg-[#ff4f00] transition-all duration-500 ease-out"
+                  className="h-full bg-[#218c5a] transition-all duration-500 ease-out"
                   style={{ width: `${(scanStep + 1) * 25}%` }}
                 />
               </div>
@@ -147,7 +147,7 @@ export function Simulator() {
                     <scannedResult.icon className="h-3 w-3" />
                     {scannedResult.type}
                   </div>
-                  <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#5d6570]">
+                  <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#5d6d63]">
                     Confidence Score
                   </p>
                   {scannedResult.scopeLabel && (
@@ -165,7 +165,7 @@ export function Simulator() {
               </div>
             </div>
           ) : (
-            <div className="flex h-full items-center justify-center text-center text-xs text-[#5d6570]">
+            <div className="flex h-full items-center justify-center text-center text-xs text-[#5d6d63]">
               Select a sample and run analysis to view pure client-side simulated results.
             </div>
           )}
