@@ -6,14 +6,14 @@ const landingPageSource = readFileSync(
   new URL("../../../../src/pages/public/landing-page.tsx", import.meta.url),
   "utf8",
 );
-const globalStylesSource = readFileSync(
-  new URL("../../../../src/app/styles/globals.css", import.meta.url),
+const landingStylesSource = readFileSync(
+  new URL("../../../../src/pages/public/landing-page.css", import.meta.url),
   "utf8",
 );
 
 test("landing page publishes its white Swiss visual system", () => {
   assert.match(landingPageSource, /landing-page/);
-  assert.match(globalStylesSource, /--landing-surface: #ffffff/);
-  assert.match(globalStylesSource, /--landing-accent: #ff4f00/);
-  assert.match(globalStylesSource, /Helvetica Neue/);
+  assert.match(landingStylesSource, /--landing-surface: #ffffff/);
+  assert.match(landingStylesSource, /--landing-accent: #ff4f00/);
+  assert.match(landingStylesSource, /Helvetica Neue/);
 });

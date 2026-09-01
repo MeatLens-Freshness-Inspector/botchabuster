@@ -44,6 +44,8 @@ The visual differentiator is a flat inspection instrument in the hero. The exist
 - Structure: 1 px rules, visible section boundaries, left alignment, asymmetric spacing, and restrained corner radii.
 - Motion: retain useful scan/ticker/count-up motion, add only subtle hover movement, and honor reduced-motion preferences.
 
+The visual rules are loaded from the landing route's own stylesheet so the app-wide stylesheet ownership contract and authenticated theme behavior remain unchanged.
+
 ## Constraints
 
 - Do not rewrite landing-page copy.
