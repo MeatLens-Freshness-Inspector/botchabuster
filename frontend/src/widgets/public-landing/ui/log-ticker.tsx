@@ -13,11 +13,11 @@ export function LogTicker() {
   const doubled = useMemo(() => [...tickerItems, ...tickerItems], []);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-card/30 py-4 backdrop-blur-md">
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-background to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-background to-transparent" />
+    <div className="relative overflow-hidden border-y border-[#d9dee5] bg-white py-4">
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-white to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-white to-transparent" />
 
-      <p className="mb-3 px-6 font-display text-[10px] uppercase tracking-widest text-muted-foreground">
+      <p className="mb-3 px-6 text-[10px] font-bold uppercase tracking-[0.14em] text-[#5d6570]">
         Live Inspection Feed
       </p>
 
@@ -32,23 +32,23 @@ export function LogTicker() {
         {doubled.map((item, index) => (
           <div
             key={`${item.id}-${index}`}
-            className="flex shrink-0 items-center gap-3 rounded-xl border border-white/5 bg-background/60 px-4 py-2.5 backdrop-blur-sm"
+            className="flex shrink-0 items-center gap-3 rounded-md border border-[#d9dee5] bg-[#f7f7f8] px-4 py-2.5"
           >
             <div
               className={`h-2 w-2 shrink-0 rounded-full ${getTickerDotClass(item.result)} animate-pulse`}
             />
-            <span className="font-display text-[11px] font-semibold uppercase tracking-wider text-foreground/80">
+            <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#17191c]">
               {item.label}
             </span>
-            <span className={`font-display text-[10px] uppercase tracking-widest ${item.textCol}`}>
+            <span className={`text-[10px] font-bold uppercase tracking-[0.1em] ${item.textCol}`}>
               {item.result} · {item.conf}%
             </span>
             {item.scopeLabel && (
-              <span className="font-display text-[9px] uppercase tracking-widest text-warning">
+              <span className="text-[9px] font-bold uppercase tracking-[0.1em] text-warning">
                 {item.scopeLabel}
               </span>
             )}
-            <span className="font-display text-[9px] uppercase tracking-widest text-muted-foreground/60">
+            <span className="text-[9px] font-semibold uppercase tracking-[0.1em] text-[#5d6570]">
               {item.market}
             </span>
           </div>
