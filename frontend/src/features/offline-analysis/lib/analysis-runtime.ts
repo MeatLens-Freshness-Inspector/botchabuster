@@ -9,6 +9,7 @@ import {
   getActiveMobileNetModelVariant,
   getLoadedModelPath as getLoadedMobileNetModelPath,
   isModelReady as isMobileNetReady,
+  loadMobileNetV3ModelVariant,
   loadMobileNetV3Model,
   setActiveMobileNetModelVariant,
   type ModelPredictionResult,
@@ -20,8 +21,10 @@ import {
   loadResNet50Model,
 } from "@/features/offline-analysis/lib/resnet-runtime";
 import {
+  MOBILE_NET_MODEL_VARIANTS,
   PRIMARY_ANALYSIS_MODEL,
   getAnalysisModelVersionKey,
+  type MobileNetModelVariant,
   type AnalysisModelSelection,
 } from "./model-catalog";
 import { DEFAULT_DISABLE_ROI_SEGMENTATION } from "./preprocessing-defaults";
@@ -45,6 +48,18 @@ export interface ActiveAnalysisPrediction {
 export interface AnalyzeOptions {
   guideBox?: SquareGuideBox | null;
   disableRoiSegmentation?: boolean;
+}
+
+export interface AnalysisModelLoadOptions {
+  forceRetry?: boolean;
+}
+
+export interface AnalysisWarmupLoaders {
+  loadMobileNetV3ModelVariant: (
+    variant: MobileNetModelVariant,
+    options?: AnalysisModelLoadOptions,
+  ) => Promise<boolean>;
+  loadResNet50Model: (options?: AnalysisModelLoadOptions) => Promise<boolean>;
 }
 
 let activeAnalysisMode: AnalysisMode = "mobilenetv3";
@@ -147,6 +162,23 @@ export function getActiveAnalysisModelVersionKey(): string {
   return getAnalysisModelVersionKey(activeAnalysisModel);
 }
 
+const defaultWarmupLoaders: AnalysisWarmupLoaders = {
+  loadMobileNetV3ModelVariant,
+  loadResNet50Model,
+};
+
+export function loadAllAnalysisModels(
+  options: AnalysisModelLoadOptions = {},
+  loaders: AnalysisWarmupLoaders = defaultWarmupLoaders,
+): Promise<PromiseSettledResult<boolean>[]> {
+  return Promise.allSettled([
+    ...MOBILE_NET_MODEL_VARIANTS.map((variant) =>
+      loaders.loadMobileNetV3ModelVariant(variant, options),
+    ),
+    loaders.loadResNet50Model(options),
+  ]);
+}
+
 export function isAnalysisReady(): boolean {
   if (activeAnalysisMode === "ensemble") {
     return isMobileNetReady() && isResNet50Ready();
@@ -179,7 +211,7 @@ export async function loadActiveAnalysisModel(options: { forceRetry?: boolean } 
 
 export function prewarmAnalysisModel(): void {
   if (navigator.onLine) {
-    void loadActiveAnalysisModel();
+    void loadAllAnalysisModels();
   }
 }
 

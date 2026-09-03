@@ -4,6 +4,12 @@ export type AnalysisModelSelection = MobileNetModelVariant | "resnet50" | "ensem
 
 export type AnalysisModelRuntime = "mobilenetv3" | "resnet50" | "ensemble";
 
+export const MOBILE_NET_MODEL_VARIANTS: readonly MobileNetModelVariant[] = [
+  "primary",
+  "seed123_model2",
+  "default",
+] as const;
+
 export interface AnalysisModelCatalogEntry {
   value: AnalysisModelSelection;
   label: string;
