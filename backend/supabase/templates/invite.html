@@ -6,23 +6,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>You Are Invited to MeatLens</title>
     <style>
-      body { margin: 0; padding: 0; background: #14181f; color: #e0e6eb; font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-      .wrapper { width: 100%; padding: 24px 12px; background: radial-gradient(circle at top left, rgba(46, 184, 96, 0.22), rgba(20, 24, 31, 0.96) 52%), #14181f; }
-      .card { max-width: 640px; margin: 0 auto; background: #1b1f27; border: 1px solid #303541; border-radius: 18px; overflow: hidden; }
-      .pad { padding: 22px 26px; }
-      .brand-badge { display: inline-block; width: 30px; height: 30px; line-height: 30px; text-align: center; border-radius: 10px; background: rgba(46, 184, 96, 0.16); border: 1px solid rgba(46, 184, 96, 0.5); color: #2eb860; font-family: "JetBrains Mono", "Courier New", monospace; font-size: 12px; font-weight: 700; }
-      .brand { display: inline-block; vertical-align: top; margin-left: 10px; }
-      .brand-name { margin: 0; font-family: "JetBrains Mono", "Courier New", monospace; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
-      .brand-tag { margin: 2px 0 0; color: #7b899d; font-size: 11px; }
-      .kicker { margin: 0 0 8px; color: #f59f0a; font-family: "JetBrains Mono", "Courier New", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
-      h1 { margin: 0; color: #ffffff; font-family: "JetBrains Mono", "Courier New", monospace; font-size: 24px; line-height: 1.25; text-transform: uppercase; }
-      p { margin: 12px 0 0; color: #c4cdd8; font-size: 15px; line-height: 1.65; }
-      .button { display: inline-block; border-radius: 12px; padding: 12px 20px; background: #2eb860; color: #14181f !important; font-family: "JetBrains Mono", "Courier New", monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-decoration: none; text-transform: uppercase; }
-      .code-wrap { margin-top: 14px; border: 1px dashed rgba(245, 159, 10, 0.45); border-radius: 12px; background: rgba(245, 159, 10, 0.08); padding: 11px 14px; }
-      .code-label { margin: 0; color: #f3bf63; font-family: "JetBrains Mono", "Courier New", monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
-      .code-value { margin: 8px 0 0; color: #f8d487; font-family: "JetBrains Mono", "Courier New", monospace; font-size: 22px; letter-spacing: 0.25em; }
-      .muted { margin-top: 14px; color: #7b899d; font-size: 12px; line-height: 1.6; }
-      a { color: #7fd79d; }
+      body { 
+        margin: 0; 
+        padding: 0; 
+        background: #14181f; 
+        color: #e0e6eb; 
+        font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      }
+      .wrapper { 
+        width: 100%; 
+        padding: 24px 12px; 
+        background: radial-gradient(circle at top left, rgba(46, 184, 96, 0.22), rgba(20, 24, 31, 0.96) 52%), #14181f; 
+      }
+      .card { 
+        max-width: 640px; 
+        margin: 0 auto; 
+        background: #1b1f27; 
+        border: 1px solid #303541; 
+        border-radius: 18px; 
+        overflow: hidden; }
+      .pad { 
+        padding: 22px 26px; 
+      }
+      .brand-badge { 
+        display: inline-block; 
+        width: 30px; 
+        height: 30px; 
+        line-height: 30px; 
+        text-align: center; 
+        border-radius: 10px; 
+        background: rgba(46, 184, 96, 0.16); 
+        border: 1px solid rgba(46, 184, 96, 0.5); 
+        color: #2eb860; 
+        font-family: "JetBrains Mono", "Courier New", monospace; 
+        font-size: 12px; font-weight: 700; 
+      }
+      .brand { 
+        display: inline-block; 
+        vertical-align: top; 
+        margin-left: 10px; }
+      .brand-name { 
+        margin: 0; 
+        font-family: "JetBrains Mono", "Courier New", monospace; 
+        font-size: 13px; letter-spacing: 0.12em; 
+        text-transform: uppercase; 
+      }
+      .brand-tag {
+        margin: 2px 0 0; 
+        color: #7b899d; 
+        font-size: 11px; 
+      }
+      .kicker { 
+        margin: 0 0 8px; 
+        color: #f59f0a; 
+        font-family: "JetBrains Mono", "Courier New", monospace; 
+        font-size: 11px; letter-spacing: 0.1em; 
+        text-transform: uppercase; 
+      }
+      h1 { 
+        margin: 0; 
+        color: #ffffff; 
+        font-family: "JetBrains Mono", "Courier New", monospace; 
+        font-size: 24px; 
+        line-height: 1.25; 
+        text-transform: uppercase; 
+      }
+      p { 
+        margin: 12px 0 0; 
+        color: #c4cdd8; 
+        font-size: 15px; 
+        line-height: 1.65; 
+      }
+      .button { 
+        display: inline-block; 
+        border-radius: 12px; 
+        padding: 12px 20px; 
+        background: #2eb860; 
+        color: #14181f !important; 
+        font-family: "JetBrains Mono", "Courier New", monospace; 
+        font-size: 12px; 
+        font-weight: 700; 
+        letter-spacing: 0.08em; 
+        text-decoration: none; 
+        text-transform: uppercase; 
+      }
+      .code-wrap { 
+        margin-top: 14px; 
+        border: 1px dashed rgba(245, 159, 10, 0.45); 
+        border-radius: 12px;
+        background: rgba(245, 159, 10, 0.08); 
+        padding: 11px 14px; }
+      .code-label { 
+        margin: 0; 
+        color: #f3bf63; 
+        font-family: "JetBrains Mono", "Courier New", monospace; 
+        font-size: 11px; 
+        letter-spacing: 0.08em; 
+        text-transform: uppercase; 
+      }
+      .code-value { 
+        margin: 8px 0 0; 
+        color: #f8d487; 
+        font-family: "JetBrains Mono", "Courier New", monospace; 
+        font-size: 22px; 
+        letter-spacing: 0.25em; 
+      }
+      .muted { 
+        margin-top: 14px; 
+        color: #7b899d; 
+        font-size: 12px; 
+        line-height: 1.6; 
+      }
+      a { 
+        color: #7fd79d;
+       }
       @media only screen and (max-width: 620px) { .pad { padding: 18px !important; } h1 { font-size: 21px; } .code-value { font-size: 20px; letter-spacing: 0.18em; } }
     </style>
   </head>
@@ -42,14 +139,10 @@
           <p>You have been invited to join MeatLens using <strong>{{ .Email }}</strong>.</p>
           <p>Accept the invite below to create your account and access inspector workflows.</p>
           <p style="margin-top: 22px;"><a class="button" href="{{ .ConfirmationURL }}">Accept Invite</a></p>
-          <div class="code-wrap">
-            <p class="code-label">Invitation Code</p>
-            <p class="code-value">{{ .Token }}</p>
-          </div>
           <p class="muted">
             Button not working? Open this secure link:
             <br />
-            <a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a>
+            <a href="{{ .ConfirmationURL }}">Click this link</a>
           </p>
           <p class="muted">Sent by MeatLens security. This link/code is time-limited and should not be shared.</p>
         </div>

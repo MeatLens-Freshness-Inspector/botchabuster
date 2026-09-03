@@ -42,14 +42,10 @@
           <p>We received a request to change your login email from <strong>{{ .Email }}</strong> to <strong>{{ .NewEmail }}</strong>.</p>
           <p>Confirm this update below. If this was not your request, ignore this email.</p>
           <p style="margin-top: 22px;"><a class="button" href="{{ .ConfirmationURL }}">Confirm New Email</a></p>
-          <div class="code-wrap">
-            <p class="code-label">Verification Code</p>
-            <p class="code-value">{{ .Token }}</p>
-          </div>
           <p class="muted">
             Button not working? Open this secure link:
             <br />
-            <a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a>
+            <a href="{{ .ConfirmationURL }}">Click this link</a>
           </p>
           <p class="muted">Sent by MeatLens security. This link/code is time-limited and should not be shared.</p>
         </div>
