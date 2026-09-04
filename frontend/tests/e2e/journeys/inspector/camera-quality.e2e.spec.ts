@@ -305,9 +305,9 @@ test.describe("Camera quality integration", () => {
   test("in-app cam path: quality banner appears after capture with warning result", async ({ page }) => {
     await installQualityMock(page, "warning");
     await installMockCamera(page);
-    await seedSignedInSession(page, { userId: "admin-1", isAdmin: true });
+    await seedSignedInSession(page, { userId: "admin-1", isAdmin: true, isDeveloper: true });
     await seedDeveloperOptionsSession(page, "admin-1");
-    await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
+    await mockCommonApi(page, { userId: "admin-1", isAdmin: true, isDeveloper: true, developerOptionsValid: true });
 
     await page.goto("/inspect");
     await completePreScanChecklist(page);

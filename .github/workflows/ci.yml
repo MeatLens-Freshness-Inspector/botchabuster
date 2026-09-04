@@ -302,7 +302,7 @@ jobs:
       - run: timeout 110s npm run test:infrastructure
 
   full-playwright:
-    name: Full Playwright (shard ${{ matrix.shard }}/3)
+    name: Full Playwright (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
     timeout-minutes: 8
     needs: changes
@@ -314,6 +314,7 @@ jobs:
           - 1
           - 2
           - 3
+          - 4
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -330,7 +331,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Run full Playwright tests
-        run: timeout 110s npm run test:e2e:full -- --shard=${{ matrix.shard }}/3
+        run: timeout 110s npm run test:e2e:full -- --shard=${{ matrix.shard }}/4
       - name: Upload full Playwright diagnostics
         if: failure()
         uses: actions/upload-artifact@v4

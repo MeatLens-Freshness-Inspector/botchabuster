@@ -15,7 +15,7 @@ Local measurements on the current test suite provide a safe optimization target:
 - Frontend unit tests: 384 tests, passed with eight-way Node test concurrency in 102.8 seconds.
 - Frontend component and integration suites: 23 tests combined, passed in approximately 32 seconds.
 
-Implementation measurements revised the execution layout without reducing coverage: the current full suite is 132 tests, and an unsharded four-worker run exceeds the 110-second Playwright budget. Three file-parallel Playwright shards pass 51, 41, and 40 tests in 37, 80, and 96 seconds. The current frontend unit suite is 388 tests; serialized execution took 252.4 seconds and eight-way in-process concurrency took 426.2 seconds, while four weighted file shards each passed in 25.1–26.3 seconds.
+Implementation measurements revised the execution layout without reducing coverage: the current full suite is 132 tests, and an unsharded four-worker run exceeds the 110-second Playwright budget. Three file-parallel shards were still too large for the slower GitHub runner, so the blocking suite uses four shards with a 110-second command guard. The current frontend unit suite is 388 tests; serialized execution took 252.4 seconds and eight-way in-process concurrency took 426.2 seconds, while four weighted file shards each passed in 25.1–26.3 seconds.
 
 There are also known sources of future flakiness in the E2E data: browser/Node timezone defaults are not pinned, live pre-scan data contains dates that will eventually become historical, and developer-only scenarios need an explicit developer session in the test fixture.
 
@@ -40,7 +40,7 @@ There are also known sources of future flakiness in the E2E data: browser/Node t
 
 ### 1. Deterministic Playwright execution
 
-Update the Playwright configuration to use four workers with files parallelized but tests within each file kept serial, and one worker locally by default. Keep the suite's current file isolation settings, and first fix any shared-state assumptions exposed by parallel execution rather than reducing coverage. Run the full suite as three CI shards so every shard stays below the explicit 110-second budget. Use a CI-friendly list reporter alongside the HTML reporter, pin the browser timezone to UTC, and set an explicit test-run budget below two minutes.
+Update the Playwright configuration to use four workers with files parallelized but tests within each file kept serial, and one worker locally by default. Keep the suite's current file isolation settings, and first fix any shared-state assumptions exposed by parallel execution rather than reducing coverage. Run the full suite as four CI shards so every shard stays below the explicit 110-second budget, including slower GitHub-hosted runners. Use a CI-friendly list reporter alongside the HTML reporter, pin the browser timezone to UTC, and set an explicit test-run budget below two minutes.
 
 Use one retry in CI only for collecting a trace and distinguishing a transient failure; a retry must not hide the final failure. Keep `forbidOnly` enabled in CI.
 
@@ -67,7 +67,7 @@ The quality gate remains the final blocking status and should continue to summar
 ## Acceptance criteria
 
 - `npm run test:e2e:critical` passes locally within 120 seconds.
-- All three `npm run test:e2e:full -- --shard=N/3` lanes pass locally within 120 seconds using the CI worker configuration.
+- All four `npm run test:e2e:full -- --shard=N/4` lanes pass locally within 120 seconds using the CI worker configuration.
 - All four unit shards, component, and integration validation pass within 120 seconds; the frontend validation matrix completes concurrently.
 - Repeated E2E runs use the same UTC interpretation and do not rely on a hardcoded live date that becomes invalid as the calendar advances.
 - Developer-only E2E journeys pass with the explicit developer fixture.

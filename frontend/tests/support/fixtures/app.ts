@@ -6,6 +6,7 @@ export interface MockedSessionOptions {
   userId?: string;
   email?: string;
   isAdmin?: boolean;
+  isDeveloper?: boolean;
   developerOptionsValid?: boolean;
   showDetailedResults?: boolean;
   onboardingCompletedAt?: string | null;
@@ -43,6 +44,8 @@ function buildBootstrapSessionResponse(
     options.onboardingCompletedAt === undefined
       ? "2026-05-31T03:00:00.000Z"
       : options.onboardingCompletedAt;
+  const isDeveloper = options.isDeveloper ?? false;
+  const effectiveIsAdmin = isAdmin || isDeveloper;
 
   return {
     user: {
@@ -71,10 +74,10 @@ function buildBootstrapSessionResponse(
       expires_in: 3600,
       expires_at: Date.now() + 3600_000,
     },
-    roles: isAdmin ? ["admin"] : [],
-    primaryRole: isAdmin ? "admin" : "inspector",
-    isAdmin,
-    isDeveloper: false,
+    roles: isDeveloper ? ["developer"] : effectiveIsAdmin ? ["admin"] : [],
+    primaryRole: isDeveloper ? "developer" : effectiveIsAdmin ? "admin" : "inspector",
+    isAdmin: effectiveIsAdmin,
+    isDeveloper,
     csrfToken: "mock-csrf-token",
     authenticatedAt,
     offlineExpiresAt,

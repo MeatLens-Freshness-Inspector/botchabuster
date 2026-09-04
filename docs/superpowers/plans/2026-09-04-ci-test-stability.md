@@ -277,17 +277,18 @@ Remove-Item Env:CI
 
 Expected: 14 named route tests pass with no test timeout.
 
-- [ ] **Step 4: Run the full Playwright suite in three shards**
+- [ ] **Step 4: Run the full Playwright suite in four shards**
 
 ```powershell
 $env:CI = "1"
-npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=1/3 --reporter=line
-npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=2/3 --reporter=line
-npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=3/3 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=1/4 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=2/4 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=3/4 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=4/4 --reporter=line
 Remove-Item Env:CI
 ```
 
-Expected: all full-suite tests pass across three shards, with each shard staying within 120 seconds. If parallel-state failure appears, isolate the leaking fixture or storage key before changing worker count.
+Expected: all full-suite tests pass across four shards, with each shard staying within 120 seconds. If parallel-state failure appears, isolate the leaking fixture or storage key before changing worker count.
 
 - [ ] **Step 5: Commit the Playwright changes**
 
@@ -387,7 +388,7 @@ Add `timeout-minutes: 8` under `runs-on` for both `e2e-critical` and `full-playw
 
 ```yaml
       - name: Run full Playwright tests
-        run: npm run test:e2e:full -- --shard=${{ matrix.shard }}/3
+        run: npm run test:e2e:full -- --shard=${{ matrix.shard }}/4
       - name: Upload full Playwright diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -455,13 +456,14 @@ Expected: all critical tests pass within 120 seconds.
 
 ```powershell
 $env:CI = "1"
-npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=1/3 --reporter=line
-npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=2/3 --reporter=line
-npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=3/3 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=1/4 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=2/4 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=3/4 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=4/4 --reporter=line
 Remove-Item Env:CI
 ```
 
-Expected: all full-suite tests pass across three shards, each within 120 seconds, and the report is generated without timeout.
+Expected: all full-suite tests pass across four shards, each within 120 seconds, and the report is generated without timeout.
 
 - [ ] **Step 4: Run non-E2E validation**
 

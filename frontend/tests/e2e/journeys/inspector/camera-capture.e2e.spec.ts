@@ -154,11 +154,12 @@ test("open camera uses a directly tappable capture input for iOS compatibility",
 
 test("developer-unlocked admins can use the in-app camera option", async ({ page }) => {
   await installMockCamera(page);
-  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true });
+  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true, isDeveloper: true });
   await seedDeveloperOptionsSession(page, "admin-1");
   await mockCommonApi(page, {
     userId: "admin-1",
     isAdmin: true,
+    isDeveloper: true,
     developerOptionsValid: true,
   });
 
@@ -171,7 +172,7 @@ test("developer-unlocked admins can use the in-app camera option", async ({ page
 });
 
 test("developer bypass allows camera access without completing the pre-scan checklist", async ({ page }) => {
-  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true });
+  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true, isDeveloper: true });
   await seedDeveloperOptionsSession(page, "admin-1");
   await seedDeveloperOptionsFlags(page, "admin-1", {
     enableDebugFileUpload: false,
@@ -182,7 +183,7 @@ test("developer bypass allows camera access without completing the pre-scan chec
     showModelInputPreview: true,
     selectedModel: "primary",
   });
-  await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
+  await mockCommonApi(page, { userId: "admin-1", isAdmin: true, isDeveloper: true, developerOptionsValid: true });
 
   await page.goto("/inspect");
   await expect(page.getByText(/developer bypass active/i)).toBeVisible();
@@ -191,9 +192,9 @@ test("developer bypass allows camera access without completing the pre-scan chec
 
 test("manual camera controls apply focus and exposure constraints when supported", async ({ page }) => {
   await installMockCamera(page);
-  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true });
+  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true, isDeveloper: true });
   await seedDeveloperOptionsSession(page, "admin-1");
-  await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
+  await mockCommonApi(page, { userId: "admin-1", isAdmin: true, isDeveloper: true, developerOptionsValid: true });
 
   await page.goto("/inspect");
   await completePreScanChecklist(page);
@@ -256,9 +257,9 @@ test("shows unsupported message when manual controls are unavailable", async ({ 
     },
     settings: {},
   });
-  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true });
+  await seedSignedInSession(page, { userId: "admin-1", isAdmin: true, isDeveloper: true });
   await seedDeveloperOptionsSession(page, "admin-1");
-  await mockCommonApi(page, { userId: "admin-1", isAdmin: true, developerOptionsValid: true });
+  await mockCommonApi(page, { userId: "admin-1", isAdmin: true, isDeveloper: true, developerOptionsValid: true });
 
   await page.goto("/inspect");
   await completePreScanChecklist(page);
