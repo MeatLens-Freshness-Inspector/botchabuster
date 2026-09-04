@@ -210,7 +210,7 @@ const isCI = !!process.env.CI;
 export default defineConfig({
   testDir: "./tests/e2e",
   testMatch: "**/*.e2e.spec.ts",
-  fullyParallel: false,
+  fullyParallel: isCI,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
   workers: isCI ? 4 : 1,
@@ -277,15 +277,17 @@ Remove-Item Env:CI
 
 Expected: 14 named route tests pass with no test timeout.
 
-- [ ] **Step 4: Run the full Playwright suite with four workers**
+- [ ] **Step 4: Run the full Playwright suite in three shards**
 
 ```powershell
 $env:CI = "1"
-npm run test:e2e:full
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=1/3 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=2/3 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=3/3 --reporter=line
 Remove-Item Env:CI
 ```
 
-Expected: all 119 tests pass within 120 seconds. If parallel-state failure appears, isolate the leaking fixture or storage key before changing worker count.
+Expected: all full-suite tests pass across three shards, with each shard staying within 120 seconds. If parallel-state failure appears, isolate the leaking fixture or storage key before changing worker count.
 
 - [ ] **Step 5: Commit the Playwright changes**
 
@@ -297,6 +299,7 @@ git commit -m "test: parallelize and diagnose Playwright routes"
 ### Task 4: Parallelize frontend validation and bound CI diagnostics
 
 **Files:**
+- Create: `frontend/scripts/run-unit-tests-ci.mjs`
 - Modify: `frontend/package.json`
 - Modify: `.github/workflows/ci.yml`
 
@@ -305,15 +308,16 @@ git commit -m "test: parallelize and diagnose Playwright routes"
 - Playwright jobs continue to run `npm run test:e2e:critical` and `npm run test:e2e:full`.
 - Artifact paths are `frontend/playwright-report` and `frontend/test-results`.
 
-- [ ] **Step 1: Enable measured unit-test concurrency**
+- [ ] **Step 1: Add deterministic unit-test file sharding**
 
-Change only this frontend package script:
+Add a `test:unit:ci` script that discovers every `tests/unit/**/*.test.ts` and `tests/unit/**/*.test.tsx` file, sorts the paths, and assigns them round-robin to the requested `--shard=N/4`. The runner must execute the selected files in one serial Node test process. Keep the existing local `test:unit` script unchanged.
 
 ```json
-"test:unit": "tsx --test --test-concurrency=8 \"tests/unit/**/*.test.ts\" \"tests/unit/**/*.test.tsx\""
+"test:unit": "tsx --test \"tests/unit/**/*.test.ts\" \"tests/unit/**/*.test.tsx\"",
+"test:unit:ci": "node scripts/run-unit-tests-ci.mjs"
 ```
 
-Leave component, integration, E2E, and production scripts unchanged.
+In the measured repository state, four shards each pass in under 31 seconds. Automatic file discovery keeps newly added unit files inside the CI gate.
 
 - [ ] **Step 2: Replace the frontend test job with a matrix**
 
@@ -328,10 +332,19 @@ Replace the existing `frontend-tests` job with:
     strategy:
       fail-fast: false
       matrix:
-        suite:
-          - unit
-          - component
-          - integration
+        include:
+          - suite: unit shard 1/4
+            command: timeout 110s npm run test:unit:ci -w frontend -- --shard=1/4
+          - suite: unit shard 2/4
+            command: timeout 110s npm run test:unit:ci -w frontend -- --shard=2/4
+          - suite: unit shard 3/4
+            command: timeout 110s npm run test:unit:ci -w frontend -- --shard=3/4
+          - suite: unit shard 4/4
+            command: timeout 110s npm run test:unit:ci -w frontend -- --shard=4/4
+          - suite: component
+            command: timeout 110s npm run test:component -w frontend
+          - suite: integration
+            command: timeout 110s npm run test:integration -w frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -339,7 +352,8 @@ Replace the existing `frontend-tests` job with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run test:${{ matrix.suite }} -w frontend
+      - name: Run ${{ matrix.suite }}
+        run: ${{ matrix.command }}
 ```
 
 Any failed matrix copy makes the aggregated `frontend-tests` result fail.
@@ -372,12 +386,12 @@ Add `timeout-minutes: 8` under `runs-on` for both `e2e-critical` and `full-playw
 
 ```yaml
       - name: Run full Playwright tests
-        run: npm run test:e2e:full
+        run: npm run test:e2e:full -- --shard=${{ matrix.shard }}/3
       - name: Upload full Playwright diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-full-${{ github.run_id }}
+          name: playwright-full-shard-${{ matrix.shard }}-${{ github.run_id }}
           path: |
             frontend/playwright-report
             frontend/test-results
@@ -390,13 +404,19 @@ Retain the existing full-suite push condition and quality-gate `needs` list. Nei
 - [ ] **Step 4: Validate scripts and workflow content locally**
 
 ```powershell
-npm run test:unit -w frontend
-npm run test:component -w frontend
-npm run test:integration -w frontend
-npm run test:scripts
+$unitShards = 1..4 | ForEach-Object {
+  $timer = [System.Diagnostics.Stopwatch]::StartNew()
+  npm.cmd run test:unit:ci -w frontend -- --shard="$_/4"
+  $code = $LASTEXITCODE
+  $timer.Stop()
+  if ($code -ne 0 -or $timer.Elapsed.TotalSeconds -ge 110) { throw "Unit shard $_ failed or exceeded its budget." }
+}
+npm.cmd run test:component -w frontend
+npm.cmd run test:integration -w frontend
+npm.cmd run test:scripts
 ```
 
-Expected: all commands pass, each stays below 120 seconds, and unit output reports 384 passing tests. Validate the workflow with a YAML parser if available; otherwise inspect the GitHub Actions workflow editor after pushing the branch.
+Expected: every unit shard, component, integration, and script lane passes under 120 seconds. Validate the workflow with a YAML parser if available; otherwise inspect the GitHub Actions workflow editor after pushing the branch.
 
 - [ ] **Step 5: Commit the CI changes**
 
@@ -414,11 +434,11 @@ git commit -m "ci: parallelize frontend tests and upload E2E diagnostics"
 - [ ] **Step 1: Check the intended diff and worktree boundaries**
 
 ```powershell
-git diff --check HEAD~4..HEAD
+git diff --check 9ab9cf6..HEAD
 git status --short --untracked-files=all
 ```
 
-Expected: the four implementation commits contain only planned files and pre-existing user changes remain visible but unstaged.
+Expected: the implementation commits contain only planned files and pre-existing user changes remain visible but unstaged.
 
 - [ ] **Step 2: Run critical Playwright under CI configuration**
 
@@ -434,11 +454,13 @@ Expected: all critical tests pass within 120 seconds.
 
 ```powershell
 $env:CI = "1"
-npm run test:e2e:full
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=1/3 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=2/3 --reporter=line
+npx.cmd playwright test --config=frontend/playwright.config.ts --workers=4 --shard=3/3 --reporter=line
 Remove-Item Env:CI
 ```
 
-Expected: all full-suite tests pass within 120 seconds and the report is generated without timeout.
+Expected: all full-suite tests pass across three shards, each within 120 seconds, and the report is generated without timeout.
 
 - [ ] **Step 4: Run non-E2E validation**
 
@@ -448,6 +470,10 @@ npm run typecheck
 npm run test:scripts
 npm run test:documentation
 npm run test:contract
+npm run test:unit:ci -w frontend -- --shard=1/4
+npm run test:unit:ci -w frontend -- --shard=2/4
+npm run test:unit:ci -w frontend -- --shard=3/4
+npm run test:unit:ci -w frontend -- --shard=4/4
 npm run test:unit -w backend
 npm run test:architecture -w backend
 ```

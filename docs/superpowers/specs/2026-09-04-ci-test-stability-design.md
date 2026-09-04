@@ -2,7 +2,7 @@
 
 ## Status
 
-Design approved in discussion; written specification pending user review.
+Design approved in discussion; implementation is in progress.
 
 ## Context
 
@@ -14,6 +14,8 @@ Local measurements on the current test suite provide a safe optimization target:
 - Full Playwright with four workers: 119 tests, passed in 1.5 minutes.
 - Frontend unit tests: 384 tests, passed with eight-way Node test concurrency in 102.8 seconds.
 - Frontend component and integration suites: 23 tests combined, passed in approximately 32 seconds.
+
+Implementation measurements revised the execution layout without reducing coverage: the current full suite is 132 tests, and an unsharded four-worker run exceeds the 110-second Playwright budget. Three Playwright shards pass 44 tests each in 58, 78, and 90 seconds. The current frontend unit suite is 388 tests; serialized execution took 252.4 seconds and eight-way in-process concurrency took 426.2 seconds, while four deterministic file shards each passed in 26.7–30.7 seconds.
 
 There are also known sources of future flakiness in the E2E data: browser/Node timezone defaults are not pinned, live pre-scan data contains dates that will eventually become historical, and developer-only scenarios need an explicit developer session in the test fixture.
 
@@ -38,7 +40,7 @@ There are also known sources of future flakiness in the E2E data: browser/Node t
 
 ### 1. Deterministic Playwright execution
 
-Update the Playwright configuration to use four workers in CI and one worker locally by default. Keep the suite's current file isolation settings, and first fix any shared-state assumptions exposed by parallel execution rather than reducing coverage. Use a CI-friendly list reporter alongside the HTML reporter, pin the browser timezone to UTC, and set an explicit test-run budget below two minutes.
+Update the Playwright configuration to use four workers and fully parallel files in CI, and one worker locally by default. Keep the suite's current file isolation settings, and first fix any shared-state assumptions exposed by parallel execution rather than reducing coverage. Run the full suite as three CI shards so every shard stays below the explicit 110-second budget. Use a CI-friendly list reporter alongside the HTML reporter, pin the browser timezone to UTC, and set an explicit test-run budget below two minutes.
 
 Use one retry in CI only for collecting a trace and distinguishing a transient failure; a retry must not hide the final failure. Keep `forbidOnly` enabled in CI.
 
@@ -54,7 +56,7 @@ Refactor the legacy route contract from one serial loop into independently named
 
 ### 4. Parallel frontend validation lanes
 
-Run frontend unit, component, and integration suites as separate matrix entries so they execute concurrently and report the failing suite directly. Apply the measured unit-test concurrency setting where it is supported, while retaining the existing assertions and test files. The matrix must still aggregate as one required frontend validation result for the quality gate.
+Run frontend component and integration suites as separate matrix entries, and run the unit suite as four deterministic file-shard entries so they execute concurrently and report the failing lane directly. Keep the local serialized unit script unchanged because in-process concurrency is slower and less predictable. The matrix must still aggregate as one required frontend validation result for the quality gate.
 
 ### 5. CI diagnostics and bounded jobs
 
@@ -65,8 +67,8 @@ The quality gate remains the final blocking status and should continue to summar
 ## Acceptance criteria
 
 - `npm run test:e2e:critical` passes locally within 120 seconds.
-- `npm run test:e2e:full` passes locally within 120 seconds using the CI worker configuration.
-- Unit, component, and integration validation each pass within 120 seconds; the frontend validation matrix completes concurrently.
+- All three `npm run test:e2e:full -- --shard=N/3` lanes pass locally within 120 seconds using the CI worker configuration.
+- All four unit shards, component, and integration validation pass within 120 seconds; the frontend validation matrix completes concurrently.
 - Repeated E2E runs use the same UTC interpretation and do not rely on a hardcoded live date that becomes invalid as the calendar advances.
 - Developer-only E2E journeys pass with the explicit developer fixture.
 - A deliberately failing E2E test produces a named failure in the log and an available Playwright report/trace artifact, then causes the quality gate to fail.
