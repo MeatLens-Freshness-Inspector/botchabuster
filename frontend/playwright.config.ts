@@ -5,7 +5,7 @@ const isCI = !!process.env.CI;
 export default defineConfig({
   testDir: "./tests/e2e",
   testMatch: "**/*.e2e.spec.ts",
-  fullyParallel: isCI,
+  fullyParallel: false,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
   workers: isCI ? 4 : 1,
