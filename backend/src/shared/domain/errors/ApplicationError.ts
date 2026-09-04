@@ -23,6 +23,12 @@ export class AuthorizationError extends ApplicationError {
   }
 }
 
+export class AuthenticationError extends ApplicationError {
+  constructor(message = "Authentication required") {
+    super(message, 401);
+  }
+}
+
 export class NotFoundError extends ApplicationError {
   constructor(resource: string) {
     super(`${resource} not found`, 404);

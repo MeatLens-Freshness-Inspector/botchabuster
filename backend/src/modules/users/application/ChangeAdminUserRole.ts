@@ -1,4 +1,5 @@
 import type { AuthGateway } from "../../auth/domain/ports/AuthGateway";
+import { AuthenticationError } from "../../../shared/domain/errors/ApplicationError";
 
 export const MANAGED_ROLES = ["user", "admin", "developer"] as const;
 export type ManagedRole = (typeof MANAGED_ROLES)[number];
@@ -37,15 +38,6 @@ export interface ChangeAdminUserRoleInput {
   };
 }
 
-export class DeveloperPasswordError extends Error {
-  readonly status = 401;
-
-  constructor() {
-    super("Developer password is incorrect");
-    this.name = "DeveloperPasswordError";
-  }
-}
-
 export class ChangeAdminUserRole {
   constructor(
     private readonly roleService: AdminUserRoleService,
@@ -68,22 +60,22 @@ export class ChangeAdminUserRole {
     }
 
     if (!input.actor.id.trim() || !input.actor.email?.trim()) {
-      throw new DeveloperPasswordError();
+      throw new AuthenticationError("Developer password is incorrect");
     }
 
     if (!input.password.trim()) {
-      throw new DeveloperPasswordError();
+      throw new AuthenticationError("Developer password is incorrect");
     }
 
     let verifiedUser: Awaited<ReturnType<AuthGateway["signIn"]>>;
     try {
       verifiedUser = await this.passwordVerifier.signIn(input.actor.email.trim(), input.password);
     } catch {
-      throw new DeveloperPasswordError();
+      throw new AuthenticationError("Developer password is incorrect");
     }
 
     if (verifiedUser.id !== input.actor.id) {
-      throw new DeveloperPasswordError();
+      throw new AuthenticationError("Developer password is incorrect");
     }
 
     const change = await this.roleService.changeUserRoleByAdmin(targetUserId, input.role);

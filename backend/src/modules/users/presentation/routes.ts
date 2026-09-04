@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ProfileController } from "./controllers/ProfileController";
-import { requireAdmin, requireSelfOrAdmin } from "../../../middleware/auth";
+import { requireAdmin, requireDeveloper, requireSelfOrAdmin } from "../../../middleware/auth";
 import { GetProfileController, GetProfile, ProfileServiceGateway } from "..";
 import { profileService } from "../infrastructure/ProfileService";
 
@@ -14,6 +14,7 @@ const getProfileController = new GetProfileController(
 router.get("/stats", requireAdmin, (req, res) => controller.getUserStats(req, res));
 router.get("/", requireAdmin, (req, res) => controller.getAllProfiles(req, res));
 router.post("/admin/users", requireAdmin, (req, res) => controller.createUserByAdmin(req, res));
+router.put("/admin/users/:id/role", requireDeveloper, (req, res) => controller.changeUserRoleByDeveloper(req, res));
 router.put("/admin/users/:id", requireAdmin, (req, res) => controller.updateUserByAdmin(req, res));
 router.delete("/admin/users/:id", requireAdmin, (req, res) => controller.deleteUserByAdmin(req, res));
 router.get("/:id", requireSelfOrAdmin("id"), (req, res, next) => {

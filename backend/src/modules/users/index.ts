@@ -12,7 +12,6 @@ export { UpdateAdminUser } from "./application/UpdateAdminUser";
 export { DeleteAdminUser } from "./application/DeleteAdminUser";
 export {
   ChangeAdminUserRole,
-  DeveloperPasswordError,
   MANAGED_ROLES,
   isManagedRole,
 } from "./application/ChangeAdminUserRole";

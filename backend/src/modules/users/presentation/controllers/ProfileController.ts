@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { profileService } from "../../infrastructure/ProfileService";
 import { auditLogService } from "../../../audit/infrastructure/AuditLogService";
 import { isReportOrganization } from "../../../../types/reportOrganization";
-import { getRequestAuthContext, resolveTrackedRequestAuthContext, toAuditActor } from "../../../../middleware/auth";
+import { getErrorStatus, getRequestAuthContext, resolveTrackedRequestAuthContext, toAuditActor } from "../../../../middleware/auth";
 import { ListProfiles } from "../../application/ListProfiles";
 import { UpdateProfile } from "../../application/UpdateProfile";
 import { GetUserStats } from "../../application/GetUserStats";
@@ -10,6 +10,13 @@ import { CheckUserRole } from "../../application/CheckUserRole";
 import { CreateAdminUser } from "../../application/CreateAdminUser";
 import { UpdateAdminUser } from "../../application/UpdateAdminUser";
 import { DeleteAdminUser } from "../../application/DeleteAdminUser";
+import {
+  ChangeAdminUserRole,
+  isManagedRole,
+} from "../../application/ChangeAdminUserRole";
+import { AuthenticationError } from "../../../../shared/domain/errors/ApplicationError";
+import { AuthOperationsGateway } from "../../../auth/infrastructure/AuthOperationsGateway";
+import { authOperations } from "../../../auth/infrastructure/SupabaseAuthFactory";
 
 export class ProfileController {
   private readonly listProfiles = new ListProfiles(profileService);
@@ -19,6 +26,11 @@ export class ProfileController {
   private readonly createAdminUser = new CreateAdminUser(profileService);
   private readonly updateAdminUser = new UpdateAdminUser(profileService);
   private readonly deleteAdminUser = new DeleteAdminUser(profileService);
+  private readonly changeAdminUserRole = new ChangeAdminUserRole(
+    profileService,
+    new AuthOperationsGateway(authOperations),
+    auditLogService,
+  );
   private async resolveActor(req: Request): Promise<{ id: string; role: string } | null> {
     try {
       const authContext = req.auth ?? getRequestAuthContext(req);
@@ -340,6 +352,64 @@ export class ProfileController {
     } catch (error) {
       console.error("Delete user by admin error:", error);
       res.status(500).json({ error: error instanceof Error ? error.message : "Failed to delete user" });
+    }
+  }
+
+  async changeUserRoleByDeveloper(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { role, password } = req.body as { role?: unknown; password?: unknown };
+
+      if (!id) {
+        res.status(400).json({ error: "User ID is required" });
+        return;
+      }
+
+      if (!isManagedRole(role)) {
+        res.status(400).json({ error: "Role must be one of: user, admin, developer" });
+        return;
+      }
+
+      if (typeof password !== "string" || !password.trim()) {
+        res.status(400).json({ error: "Developer password is required" });
+        return;
+      }
+
+      const actor = getRequestAuthContext(req);
+      const change = await this.changeAdminUserRole.execute({
+        targetUserId: id,
+        role,
+        password,
+        actor: {
+          id: actor.userId,
+          email: actor.email,
+          role: actor.primaryRole,
+        },
+        source: {
+          ip: req.ip || null,
+          userAgent: req.header("user-agent") || null,
+        },
+      });
+
+      res.json({
+        user_id: id,
+        previous_role: change.previousRole,
+        role: change.role,
+      });
+    } catch (error) {
+      if (error instanceof AuthenticationError) {
+        res.status(401).json({ error: error.message });
+        return;
+      }
+
+      const status = getErrorStatus(error);
+      if (status === 400 || status === 401) {
+        res.status(status).json({ error: error instanceof Error ? error.message : "Role change failed" });
+        return;
+      }
+
+      console.error("Change user role error:", error);
+      res.status(500).json({ error: "Failed to change user role" });
     }
   }
 }
