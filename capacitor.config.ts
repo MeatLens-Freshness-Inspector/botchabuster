@@ -5,7 +5,8 @@ const config: CapacitorConfig = {
   appName: 'botchabuster',
   webDir: 'frontend/dist',
   server: {
-    cleartext: true
+    cleartext: true,
+    androidScheme: 'https'
   }
 };
 
