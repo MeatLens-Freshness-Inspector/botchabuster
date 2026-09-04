@@ -20,6 +20,7 @@ import {
   getReportOrganizationLabel,
   type ReportOrganization,
 } from "@/features/reports";
+import { MANAGED_USER_ROLES, type ManagedRole } from "@/entities/user/api";
 import { Button } from "@/shared/ui";
 import { SmartPagination } from "@/shared/ui/SmartPagination";
 import {
@@ -55,6 +56,7 @@ type UsersTabContentProps = {
 const UserTable = ({ dashboard }: UsersTabContentProps) => {
   const {
     user,
+    isDeveloper,
     userForm,
     editingUserId,
     editingUser,
@@ -82,6 +84,7 @@ const UserTable = ({ dashboard }: UsersTabContentProps) => {
   const startRange =
     filteredProfiles.length === 0 ? 0 : (userPage - 1) * userPageSize + 1;
   const endRange = Math.min(userPage * userPageSize, filteredProfiles.length);
+  const editingUserRole = editingUser?.role ?? "user";
 
   return (
     <UserActions><div className="grid min-w-0 gap-4 xl:grid-cols-[0.95fr_1.05fr]">
@@ -324,6 +327,9 @@ const UserTable = ({ dashboard }: UsersTabContentProps) => {
                             >
                               {isSelf ? "You" : "User"}
                             </span>
+                            <span className="shrink-0 rounded-full border border-primary/20 bg-primary/5 px-1.5 py-0.2 text-[9px] font-semibold uppercase tracking-wider text-primary">
+                              {profile.role ?? "user"}
+                            </span>
                           </div>
                           <p className="truncate text-[11px] text-muted-foreground">
                             {profile.email || "No email"}
@@ -508,6 +514,56 @@ const UserTable = ({ dashboard }: UsersTabContentProps) => {
                 className="h-10 rounded-xl"
               />
             </div>
+
+            {isDeveloper ? (
+              <div className="space-y-1">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+                  User Role
+                </Label>
+                <Select
+                  value={editUserForm.role}
+                  onValueChange={(value) =>
+                    setEditUserForm((prev) => ({
+                      ...prev,
+                      role: value as ManagedRole,
+                    }))
+                  }
+                >
+                  <SelectTrigger aria-label="User role" className="h-10 rounded-xl bg-background/80">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MANAGED_USER_ROLES.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {role.charAt(0).toUpperCase() + role.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
+
+            {isDeveloper && editUserForm.role !== editingUserRole ? (
+              <div className="space-y-1">
+                <Label className="text-xs uppercase tracking-widest text-muted-foreground">
+                  Developer Password
+                </Label>
+                <Input
+                  type="password"
+                  aria-label="Developer password"
+                  value={editUserForm.rolePassword}
+                  onChange={(event) =>
+                    setEditUserForm((prev) => ({
+                      ...prev,
+                      rolePassword: event.target.value,
+                    }))
+                  }
+                  placeholder="Confirm your personal password"
+                  autoComplete="current-password"
+                  className="h-10 rounded-xl"
+                />
+              </div>
+            ) : null}
 
             <div className="space-y-1">
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">
