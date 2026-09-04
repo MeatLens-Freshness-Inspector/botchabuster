@@ -20,7 +20,6 @@ import {
   getReportOrganizationLabel,
   type ReportOrganization,
 } from "@/features/reports";
-import { MANAGED_USER_ROLES, type ManagedRole } from "@/entities/user/api";
 import { Button } from "@/shared/ui";
 import { SmartPagination } from "@/shared/ui/SmartPagination";
 import {
@@ -48,6 +47,7 @@ import {
 } from "@/shared/ui/select";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 import { UserActions } from "./user-actions";
+import { UserRoleFields } from "./user-role-fields";
 
 type UsersTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
@@ -515,55 +515,18 @@ const UserTable = ({ dashboard }: UsersTabContentProps) => {
               />
             </div>
 
-            {isDeveloper ? (
-              <div className="space-y-1">
-                <Label className="text-xs uppercase tracking-widest text-muted-foreground">
-                  User Role
-                </Label>
-                <Select
-                  value={editUserForm.role}
-                  onValueChange={(value) =>
-                    setEditUserForm((prev) => ({
-                      ...prev,
-                      role: value as ManagedRole,
-                    }))
-                  }
-                >
-                  <SelectTrigger aria-label="User role" className="h-10 rounded-xl bg-background/80">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MANAGED_USER_ROLES.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {role.charAt(0).toUpperCase() + role.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ) : null}
-
-            {isDeveloper && editUserForm.role !== editingUserRole ? (
-              <div className="space-y-1">
-                <Label className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Developer Password
-                </Label>
-                <Input
-                  type="password"
-                  aria-label="Developer password"
-                  value={editUserForm.rolePassword}
-                  onChange={(event) =>
-                    setEditUserForm((prev) => ({
-                      ...prev,
-                      rolePassword: event.target.value,
-                    }))
-                  }
-                  placeholder="Confirm your personal password"
-                  autoComplete="current-password"
-                  className="h-10 rounded-xl"
-                />
-              </div>
-            ) : null}
+            <UserRoleFields
+              isDeveloper={isDeveloper}
+              currentRole={editingUserRole}
+              role={editUserForm.role}
+              rolePassword={editUserForm.rolePassword}
+              onRoleChange={(role) =>
+                setEditUserForm((prev) => ({ ...prev, role }))
+              }
+              onPasswordChange={(rolePassword) =>
+                setEditUserForm((prev) => ({ ...prev, rolePassword }))
+              }
+            />
 
             <div className="space-y-1">
               <Label className="text-xs uppercase tracking-widest text-muted-foreground">
