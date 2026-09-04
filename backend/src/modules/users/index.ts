@@ -10,6 +10,20 @@ export { CheckUserRole } from "./application/CheckUserRole";
 export { CreateAdminUser } from "./application/CreateAdminUser";
 export { UpdateAdminUser } from "./application/UpdateAdminUser";
 export { DeleteAdminUser } from "./application/DeleteAdminUser";
+export {
+  ChangeAdminUserRole,
+  DeveloperPasswordError,
+  MANAGED_ROLES,
+  isManagedRole,
+} from "./application/ChangeAdminUserRole";
+export type {
+  AdminUserRoleChange,
+  AdminUserRoleService,
+  AuditWriter,
+  ChangeAdminUserRoleInput,
+  ManagedRole,
+  RoleChangeActor,
+} from "./application/ChangeAdminUserRole";
 export type { UserProfile, UserRepository } from "./domain/ports/UserRepository";
 export { ProfileServiceGateway } from "./infrastructure/ProfileServiceGateway";
 export { ProfileService, profileService } from "./infrastructure/ProfileService";
