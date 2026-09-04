@@ -14,8 +14,9 @@ const DEFAULT_DEV_ALLOWED_ORIGINS = [
   "http://127.0.0.1:8080",
   "http://localhost:4173",
   "http://127.0.0.1:4173",
-  // Capacitor Android/iOS WebViews use these origins.
-  // Also add these to ALLOWED_ORIGINS in the Render environment for production.
+  // Capacitor Android 8 uses https://localhost by default. Older Capacitor
+  // builds and iOS may use one of the other native WebView origins.
+  "https://localhost",
   "capacitor://localhost",
   "http://localhost",
 ];
