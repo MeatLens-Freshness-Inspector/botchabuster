@@ -1,11 +1,12 @@
 import { test, expect, type Page } from "@playwright/test";
 import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 import { uploadSamplePhoto } from "../../../support/factories/image";
+import { futureDateOnly } from "../../../support/factories/dates";
 
 async function completePreScanChecklist(page: Page) {
   await page.getByLabel(/stall number/i).fill("12-A");
   await page.getByLabel(/meat inspection certificate proof/i).fill("CERT-77");
-  await page.getByLabel(/meat expiry date|expiry of meat/i).fill("2026-07-10");
+  await page.getByLabel(/meat expiry date|expiry of meat/i).fill(futureDateOnly());
   await page.getByLabel(/storage correct/i).selectOption("yes");
   await page.getByLabel(/light color correct/i).selectOption("yes");
   await page.getByLabel(/area clean/i).selectOption("yes");
@@ -229,10 +230,12 @@ test("protocol failure auto-classifies the capture as spoiled and skips analyze"
     await route.fallback();
   });
 
+  const meatExpiryDate = futureDateOnly();
+
   await page.goto("/inspect");
   await page.getByLabel(/stall number/i).fill("12-A");
   await page.getByLabel(/meat inspection certificate proof/i).fill("CERT-77");
-  await page.getByLabel(/meat expiry date|expiry of meat/i).fill("2026-07-10");
+  await page.getByLabel(/meat expiry date|expiry of meat/i).fill(meatExpiryDate);
   await page.getByLabel(/storage correct/i).selectOption("yes");
   await page.getByLabel(/light color correct/i).selectOption("no");
   await page.getByLabel(/what color/i).fill("green");
@@ -251,7 +254,7 @@ test("protocol failure auto-classifies the capture as spoiled and skips analyze"
   expect(JSON.parse(createPayload)).toMatchObject({
     stall_number: "12-A",
     meat_inspection_certificate_proof: "CERT-77",
-    meat_expiry_date: "2026-07-10",
+    meat_expiry_date: meatExpiryDate,
     storage_correct: true,
     light_color_correct: false,
     light_color_observed: "green",

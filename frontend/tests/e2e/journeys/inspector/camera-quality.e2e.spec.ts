@@ -24,6 +24,7 @@ import {
   seedDeveloperOptionsSession,
   seedSignedInSession,
 } from "../../../support/fixtures/app";
+import { futureDateOnly } from "../../../support/factories/dates";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -152,7 +153,7 @@ async function resolveCssColor(page: Page, colorExpression: string): Promise<str
 async function completePreScanChecklist(page: Page): Promise<void> {
   await page.getByLabel(/stall number/i).fill("12-A");
   await page.getByLabel(/meat inspection certificate proof/i).fill("CERT-77");
-  await page.getByLabel(/meat expiry date|expiry of meat/i).fill("2026-07-10");
+  await page.getByLabel(/meat expiry date|expiry of meat/i).fill(futureDateOnly());
   await page.getByLabel(/storage correct/i).selectOption("yes");
   await page.getByLabel(/light color correct/i).selectOption("yes");
   await page.getByLabel(/area clean/i).selectOption("yes");

@@ -1,11 +1,12 @@
 import { test, expect, type Page } from "@playwright/test";
 import { mockCommonApi, seedSignedInSession } from "../../support/fixtures/app";
 import { uploadSamplePhoto } from "../../support/factories/image";
+import { futureDateOnly } from "../../support/factories/dates";
 
 async function completePreScanChecklist(page: Page) {
   await page.getByLabel(/stall number/i).fill("12-A");
   await page.getByLabel(/meat inspection certificate proof/i).fill("CERT-77");
-  await page.getByLabel(/meat expiry date|expiry of meat/i).fill("2026-07-10");
+  await page.getByLabel(/meat expiry date|expiry of meat/i).fill(futureDateOnly());
   await page.getByLabel(/storage correct/i).selectOption("yes");
   await page.getByLabel(/light color correct/i).selectOption("yes");
   await page.getByLabel(/area clean/i).selectOption("yes");
@@ -86,10 +87,12 @@ test("offline protocol failure queues a spoiled protocol result without AI analy
   await mockCommonApi(page, { userId: "user-1" });
   await installMockQualityGate(page);
 
+  const meatExpiryDate = futureDateOnly();
+
   await page.goto("/inspect");
   await page.getByLabel(/stall number/i).fill("12-A");
   await page.getByLabel(/meat inspection certificate proof/i).fill("CERT-77");
-  await page.getByLabel(/meat expiry date|expiry of meat/i).fill("2026-07-10");
+  await page.getByLabel(/meat expiry date|expiry of meat/i).fill(meatExpiryDate);
   await page.getByLabel(/storage correct/i).selectOption("no");
   await page.getByLabel(/light color correct/i).selectOption("yes");
   await page.getByLabel(/area clean/i).selectOption("yes");
@@ -123,7 +126,7 @@ test("offline protocol failure queues a spoiled protocol result without AI analy
   expect(queuedScan).toMatchObject({
     stallNumber: "12-A",
     meatInspectionCertificateProof: "CERT-77",
-    meatExpiryDate: "2026-07-10",
+    meatExpiryDate,
     storageCorrect: false,
     lightColorCorrect: true,
     lightColorObserved: null,
