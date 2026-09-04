@@ -21,6 +21,12 @@ const DEFAULT_DEV_ALLOWED_ORIGINS = [
   "http://localhost",
 ];
 
+const NATIVE_APP_ALLOWED_ORIGINS = [
+  "https://localhost",
+  "capacitor://localhost",
+  "http://localhost",
+] as const;
+
 export function parseAllowedOrigins(value: string | undefined): string[] {
   return (value ?? "")
     .split(",")
@@ -32,7 +38,7 @@ export function getAllowedOrigins(env: NodeJS.ProcessEnv): string[] {
   const configuredOrigins = parseAllowedOrigins(env.ALLOWED_ORIGINS);
 
   if (configuredOrigins.length > 0) {
-    return configuredOrigins;
+    return Array.from(new Set([...configuredOrigins, ...NATIVE_APP_ALLOWED_ORIGINS]));
   }
 
   return env.NODE_ENV === "production" ? [] : DEFAULT_DEV_ALLOWED_ORIGINS;
