@@ -1,16 +1,20 @@
 import { expect, test } from "@playwright/test";
 import { ROUTE_CONTRACT_PATHS } from "../../../src/app/router/paths";
 
-test("all established route URLs resolve through the SPA contract", async ({ page }) => {
-  for (const routePath of ROUTE_CONTRACT_PATHS) {
+const publicRoutePaths = new Set(["/", "/login", "/signup", "/forgot-password", "/reset-password"]);
+
+for (const routePath of ROUTE_CONTRACT_PATHS) {
+  test("route contract resolves " + routePath, async ({ page }) => {
     await page.goto(routePath);
     await expect(page.locator("#root")).not.toBeEmpty();
     await expect(page.getByText("The page you requested does not exist", { exact: false })).toHaveCount(0);
 
-    if (routePath === "/" || routePath === "/login" || routePath === "/signup" || routePath === "/forgot-password" || routePath === "/reset-password") {
-      await expect(page).toHaveURL(new RegExp(`${routePath === "/" ? "\\/" : routePath.replaceAll("/", "\\/")}(?:$|\\?)`));
-    } else {
-      await expect(page).toHaveURL(/\/login(?:\?.*)?$/);
+    if (publicRoutePaths.has(routePath)) {
+      const expectedPath = routePath === "/" ? "\\/" : routePath.replaceAll("/", "\\/");
+      await expect(page).toHaveURL(new RegExp(expectedPath + "(?:$|\\?)"));
+      return;
     }
-  }
-});
+
+    await expect(page).toHaveURL(/\/login(?:\?.*)?$/);
+  });
+}
