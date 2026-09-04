@@ -1,4 +1,8 @@
 import { applyApiRequestInit, refreshApiSessionForCsrf } from "./request";
+import {
+  recordApiTransportFailure,
+  recordApiTransportResponseFailure,
+} from "./api-transport-diagnostics";
 
 export const API_REQUEST_TIMEOUT_MESSAGE = "Request timed out. Please check your connection and try again.";
 export const DEFAULT_API_REQUEST_TIMEOUT_MS = 15_000;
@@ -33,16 +37,33 @@ async function fetchOnceWithTimeout(
 
   try {
     const nextInit = applyApiRequestInit(init);
-    return await fetch(input, {
+    const response = await fetch(input, {
       ...nextInit,
       signal: controller.signal,
     });
-  } catch (error) {
-    if (didTimeout && isAbortError(error)) {
-      throw new Error(API_REQUEST_TIMEOUT_MESSAGE);
+
+    if (!response.ok) {
+      recordApiTransportResponseFailure({
+        input,
+        init: nextInit,
+        response,
+      });
     }
 
-    throw error;
+    return response;
+  } catch (error) {
+    let requestError = error;
+    if (didTimeout && isAbortError(error)) {
+      requestError = new Error(API_REQUEST_TIMEOUT_MESSAGE);
+    }
+
+    recordApiTransportFailure({
+      input,
+      init,
+      error: requestError,
+    });
+
+    throw requestError;
   } finally {
     globalThis.clearTimeout(timeoutId);
     if (sourceSignal) {
