@@ -610,6 +610,3 @@ Run `npm run build`. Expected: backend TypeScript compilation and frontend Vite 
 - [ ] **Step 6: Report remote CI accurately**
 
 If pushed, inspect and report the corresponding GitHub Actions run. If not pushed or inaccessible, report remote CI as unverified rather than inferring its result.
-
-
-
