@@ -16,6 +16,9 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  TZ: UTC
+
 jobs:
   changes:
     name: Detect Changed Paths
@@ -178,10 +181,26 @@ jobs:
       - run: npm run test:architecture -w backend
 
   frontend-tests:
-    name: Frontend Unit, Component, and Integration Tests
+    name: Frontend Unit, Component, and Integration Tests (${{ matrix.suite }})
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - suite: unit shard 1/4
+            command: timeout 110s npm run test:unit:ci -w frontend -- --shard=1/4
+          - suite: unit shard 2/4
+            command: timeout 110s npm run test:unit:ci -w frontend -- --shard=2/4
+          - suite: unit shard 3/4
+            command: timeout 110s npm run test:unit:ci -w frontend -- --shard=3/4
+          - suite: unit shard 4/4
+            command: timeout 110s npm run test:unit:ci -w frontend -- --shard=4/4
+          - suite: component
+            command: timeout 110s npm run test:component -w frontend
+          - suite: integration
+            command: timeout 110s npm run test:integration -w frontend
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -189,9 +208,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run test:unit -w frontend
-      - run: npm run test:component -w frontend
-      - run: npm run test:integration -w frontend
+      - name: Run ${{ matrix.suite }}
+        run: ${{ matrix.command }}
 
   backend-integration:
     name: Backend Integration Tests
@@ -238,6 +256,7 @@ jobs:
   e2e-critical:
     name: Critical Playwright
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     needs: changes
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
     steps:
@@ -255,7 +274,18 @@ jobs:
             ${{ runner.os }}-playwright-
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e:critical
+      - name: Run critical Playwright tests
+        run: npm run test:e2e:critical
+      - name: Upload critical Playwright diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-critical-${{ github.run_id }}
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+          if-no-files-found: ignore
+          retention-days: 7
 
   infrastructure-tests:
     name: Infrastructure Tests
@@ -272,10 +302,18 @@ jobs:
       - run: npm run test:infrastructure
 
   full-playwright:
-    name: Full Playwright
+    name: Full Playwright (shard ${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     needs: changes
     if: github.event_name != 'pull_request' && needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          - 1
+          - 2
+          - 3
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -291,7 +329,18 @@ jobs:
             ${{ runner.os }}-playwright-
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e:full
+      - name: Run full Playwright tests
+        run: npm run test:e2e:full -- --shard=${{ matrix.shard }}/3
+      - name: Upload full Playwright diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-full-shard-${{ matrix.shard }}-${{ github.run_id }}
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+          if-no-files-found: ignore
+          retention-days: 7
 
   quality-gate:
     name: CI Quality Gate
