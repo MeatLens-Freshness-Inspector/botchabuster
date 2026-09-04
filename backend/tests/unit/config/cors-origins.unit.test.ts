@@ -62,6 +62,15 @@ test("getAllowedOrigins retains configured web origins beside native origins", (
   assert.equal(isOriginAllowed("https://meatlensv2.netlify.app", allowedOrigins), true);
 });
 
+test("getAllowedOrigins de-duplicates native origins already in configuration", () => {
+  const allowedOrigins = getAllowedOrigins({
+    NODE_ENV: "production",
+    ALLOWED_ORIGINS: "https://meatlensv2.netlify.app,https://localhost",
+  } as NodeJS.ProcessEnv);
+
+  assert.equal(allowedOrigins.filter((origin) => origin === "https://localhost").length, 1);
+});
+
 test("createCorsOptions allows requests without an origin header", async () => {
   const options = createCorsOptions([]);
 
