@@ -32,7 +32,7 @@ SUPABASE_SERVICE_KEY=your-server-only-service-role-key
 SUPABASE_PUBLISHABLE_KEY=your-publishable-or-anon-key
 APP_SESSION_SECRET=use-a-long-random-value
 AUDIT_LOG_KEY=64-hex-characters-or-base64-for-32-bytes
-ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080
+ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080,https://localhost,capacitor://localhost,http://localhost
 UPLOAD_DIR=./uploads
 ```
 
@@ -49,6 +49,10 @@ VITE_API_BASE_URL=http://localhost:3001/api
 ```
 
 The frontend does not need the Supabase service key.
+
+For Android Capacitor builds, the WebView origin is `https://localhost`. Keep that
+origin in the backend allowlist so API requests with the native bearer token can
+complete their CORS preflight.
 
 ## Database and storage
 
