@@ -1,9 +1,9 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { toast } from "sonner";
-import { profileClient, type Profile } from "@/entities/user/api";
+import { profileClient, type ManagedRole, type Profile } from "@/entities/user/api";
 import { isReportOrganization } from "@/features/reports";
 import type { AdminDashboardStats } from "./use-overview-tab";
-import type { ManagedUserForm } from "./types";
+import type { ManagedUserEditForm, ManagedUserForm } from "./types";
 
 const EMPTY_USER_FORM: ManagedUserForm = {
   full_name: "",
@@ -14,8 +14,27 @@ const EMPTY_USER_FORM: ManagedUserForm = {
   location: "",
 };
 
+const EMPTY_EDIT_USER_FORM: ManagedUserEditForm = {
+  ...EMPTY_USER_FORM,
+  role: "user",
+  rolePassword: "",
+};
+
+export function buildRoleChangeRequest(input: {
+  isDeveloper: boolean;
+  currentRole: ManagedRole;
+  nextRole: ManagedRole;
+  password: string;
+}): { role: ManagedRole; password: string } | null {
+  if (!input.isDeveloper || input.currentRole === input.nextRole) return null;
+  const password = input.password.trim();
+  if (!password) throw new Error("Developer password is required");
+  return { role: input.nextRole, password };
+}
+
 interface UseUserActionsOptions {
   currentUserId?: string;
+  isDeveloper: boolean;
   profiles: Profile[];
   setProfiles: Dispatch<SetStateAction<Profile[]>>;
   setStats: Dispatch<SetStateAction<AdminDashboardStats | null>>;
@@ -24,6 +43,7 @@ interface UseUserActionsOptions {
 
 export function useUserActions({
   currentUserId,
+  isDeveloper,
   profiles: _profiles,
   setProfiles,
   setStats,
@@ -32,7 +52,7 @@ export function useUserActions({
   const [userForm, setUserForm] = useState<ManagedUserForm>({ ...EMPTY_USER_FORM });
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
-  const [editUserForm, setEditUserForm] = useState<ManagedUserForm>({ ...EMPTY_USER_FORM });
+  const [editUserForm, setEditUserForm] = useState<ManagedUserEditForm>({ ...EMPTY_EDIT_USER_FORM });
   const [isSavingUser, setIsSavingUser] = useState(false);
   const [pendingDeleteUserId, setPendingDeleteUserId] = useState<string | null>(null);
 
@@ -48,13 +68,15 @@ export function useUserActions({
       inspector_code: profile.inspector_code || "",
       report_organization: profile.report_organization || "",
       location: profile.location || "",
+      role: profile.role ?? "user",
+      rolePassword: "",
     });
   };
 
   const closeEditUserModal = () => {
     setEditingUserId(null);
     setEditingUser(null);
-    setEditUserForm({ ...EMPTY_USER_FORM });
+    setEditUserForm({ ...EMPTY_EDIT_USER_FORM });
   };
 
   const handleSubmitUserForm = async () => {
@@ -117,6 +139,19 @@ export function useUserActions({
       return;
     }
 
+    let roleChange: { role: ManagedRole; password: string } | null;
+    try {
+      roleChange = buildRoleChangeRequest({
+        isDeveloper,
+        currentRole: editingUser?.role ?? "user",
+        nextRole: editUserForm.role,
+        password: editUserForm.rolePassword,
+      });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Developer password is required");
+      return;
+    }
+
     setIsSavingUser(true);
     try {
       const updated = await profileClient.updateUserByAdmin(editingUserId, {
@@ -128,8 +163,15 @@ export function useUserActions({
         ...(password ? { password } : {}),
       });
 
-      setProfiles((previous) => previous.map((profile) => (profile.id === editingUserId ? updated : profile)));
-      toast.success("User credentials updated");
+      const roleChangeResult = roleChange
+        ? await profileClient.changeUserRoleByAdmin(editingUserId, roleChange.role, roleChange.password)
+        : null;
+      const updatedWithRole = roleChangeResult
+        ? { ...updated, role: roleChangeResult.role }
+        : updated;
+
+      setProfiles((previous) => previous.map((profile) => (profile.id === editingUserId ? updatedWithRole : profile)));
+      toast.success(roleChangeResult ? "User role and credentials updated" : "User credentials updated");
       closeEditUserModal();
     } catch (error) {
       console.error("Failed to update user:", error);

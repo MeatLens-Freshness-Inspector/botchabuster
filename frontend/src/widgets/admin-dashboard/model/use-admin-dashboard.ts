@@ -64,6 +64,7 @@ export function useAdminDashboard() {
   const usersTab = useUsersTab(profiles);
   const userActions = useUserActions({
     currentUserId: user?.id,
+    isDeveloper,
     setProfiles,
     setStats,
     setUserPage: usersTab.setUserPage,
