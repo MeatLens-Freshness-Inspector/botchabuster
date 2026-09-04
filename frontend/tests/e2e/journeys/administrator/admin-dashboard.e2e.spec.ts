@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
+import { mockCommonApi, seedSignedInSession, type ApiSpy } from "../../../support/fixtures/app";
 
 const adminInspections = [
   {
@@ -106,6 +106,8 @@ test("admin can assign report header organizations when creating and editing use
 
   const blairCard = page.locator("div.rounded-2xl").filter({ hasText: "blair@example.com" }).first();
   await blairCard.getByRole("button", { name: /^Edit$/i }).click();
+  await expect(page.getByRole("combobox", { name: "User role" })).toHaveCount(0);
+  await expect(page.getByLabel("Developer password")).toHaveCount(0);
   await page
     .getByRole("dialog")
     .getByRole("combobox", { name: "Report header organization" })
@@ -116,6 +118,43 @@ test("admin can assign report header organizations when creating and editing use
   await expect(blairCard).toContainText(
     /Report Header:\s*City Veterinary Office of Olongapo/i,
   );
+});
+
+test("developer can change a user role with password confirmation", async ({ page }) => {
+  const spies: ApiSpy[] = [];
+  await seedSignedInSession(page, {
+    userId: "developer-1",
+    email: "developer@example.com",
+    isAdmin: true,
+    isDeveloper: true,
+  });
+  await mockCommonApi(page, {
+    userId: "developer-1",
+    email: "developer@example.com",
+    isAdmin: true,
+    isDeveloper: true,
+  }, spies);
+
+  await page.goto("/admin");
+  await page.getByRole("button", { name: /^Users$/i }).click();
+  const blairCard = page.locator("div.rounded-2xl")
+    .filter({ hasText: "blair@example.com" }).first();
+  await blairCard.getByRole("button", { name: /^Edit$/i }).click();
+  await page.getByRole("dialog")
+    .getByRole("combobox", { name: "User role" }).click();
+  await expect(page.getByRole("option")).toHaveText(["User", "Admin", "Developer"]);
+  await page.getByRole("option", { name: "Admin" }).click();
+  await page.getByLabel("Developer password").fill("developer-password");
+  await page.getByRole("button", { name: /Save Changes/i }).click();
+
+  await expect(blairCard).toContainText(/Admin/i);
+  const request = spies.find((spy) =>
+    spy.url.includes("/api/profiles/admin/users/user-2/role"));
+  expect(request).toBeDefined();
+  expect(JSON.parse(request?.postData ?? "{}")).toEqual({
+    role: "admin",
+    password: "developer-password",
+  });
 });
 
 test.describe("mobile viewport", () => {

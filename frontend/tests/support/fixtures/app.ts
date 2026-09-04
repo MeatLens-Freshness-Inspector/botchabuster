@@ -46,6 +46,7 @@ function buildBootstrapSessionResponse(
       : options.onboardingCompletedAt;
   const isDeveloper = options.isDeveloper ?? false;
   const effectiveIsAdmin = isAdmin || isDeveloper;
+  const currentRole = isDeveloper ? "developer" : effectiveIsAdmin ? "admin" : "user";
 
   return {
     user: {
@@ -63,6 +64,7 @@ function buildBootstrapSessionResponse(
       onboarding_completed_at: onboardingCompletedAt,
       onboarding_version: 1,
       email,
+      role: currentRole,
       location: "North Market",
       created_at: "2026-04-01T00:00:00.000Z",
       updated_at: "2026-04-01T00:00:00.000Z",
@@ -122,6 +124,7 @@ export async function seedOfflineAuthEnvelope(
   const userId = options.userId ?? "user-1";
   const email = options.email ?? "inspector@example.com";
   const isAdmin = options.isAdmin ?? false;
+  const isDeveloper = options.isDeveloper ?? false;
   const onboardingCompletedAt =
     options.onboardingCompletedAt === undefined
       ? "2026-05-31T03:00:00.000Z"
@@ -145,6 +148,7 @@ export async function seedOfflineAuthEnvelope(
       onboarding_completed_at: onboardingCompletedAt,
       onboarding_version: 1,
       email,
+      role: isDeveloper ? "developer" : isAdmin ? "admin" : "user",
       location: "North Market",
       created_at: "2026-04-01T00:00:00.000Z",
       updated_at: "2026-04-01T00:00:00.000Z",
@@ -269,6 +273,7 @@ export async function mockCommonApi(
   const userId = options.userId ?? "user-1";
   const email = options.email ?? "inspector@example.com";
   const isAdmin = options.isAdmin ?? false;
+  const isDeveloper = options.isDeveloper ?? false;
   const developerOptionsValid = options.developerOptionsValid ?? false;
   const showDetailedResults = options.showDetailedResults ?? true;
   const onboardingCompletedAt =
@@ -288,6 +293,7 @@ export async function mockCommonApi(
       onboarding_completed_at: onboardingCompletedAt,
       onboarding_version: 1,
       email,
+      role: isDeveloper ? "developer" : isAdmin ? "admin" : "user",
       location: "North Market",
       created_at: "2026-04-01T00:00:00.000Z",
       updated_at: "2026-04-01T00:00:00.000Z",
@@ -303,6 +309,7 @@ export async function mockCommonApi(
       onboarding_completed_at: "2026-04-02T03:00:00.000Z",
       onboarding_version: 1,
       email: "blair@example.com",
+      role: "user",
       location: "South Market",
       created_at: "2026-04-02T00:00:00.000Z",
       updated_at: "2026-04-02T00:00:00.000Z",
@@ -437,6 +444,7 @@ export async function mockCommonApi(
         onboarding_completed_at: null,
         onboarding_version: 1,
         email: payload.email ?? null,
+        role: "user",
         location: payload.location ?? null,
         created_at: "2026-04-03T00:00:00.000Z",
         updated_at: "2026-04-03T00:00:00.000Z",
@@ -444,6 +452,40 @@ export async function mockCommonApi(
 
       profilesState.unshift(createdUser);
       await route.fulfill(jsonResponse(createdUser, 201));
+      return;
+    }
+
+    if (/^\/api\/profiles\/admin\/users\/[^/]+\/role$/.test(path) && method === "PUT") {
+      const userIdToUpdate = path.split("/").slice(-2, -1)[0];
+      const payload = JSON.parse(request.postData() ?? "{}") as {
+        role?: string;
+        password?: string;
+      };
+      const profileState = profilesState.find((profile) => profile.id === userIdToUpdate);
+
+      if (!profileState) {
+        await route.fulfill(jsonResponse({ error: "Profile not found" }, 404));
+        return;
+      }
+
+      if (!payload.password?.trim()) {
+        await route.fulfill(jsonResponse({ error: "Developer password is required" }, 400));
+        return;
+      }
+
+      if (!payload.role || !["user", "admin", "developer"].includes(payload.role)) {
+        await route.fulfill(jsonResponse({ error: "Role must be one of: user, admin, developer" }, 400));
+        return;
+      }
+
+      const previousRole = profileState.role ?? "user";
+      profileState.role = payload.role;
+      profileState.updated_at = "2026-04-04T00:00:00.000Z";
+      await route.fulfill(jsonResponse({
+        user_id: userIdToUpdate,
+        previous_role: previousRole,
+        role: profileState.role,
+      }));
       return;
     }
 
