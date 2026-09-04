@@ -301,6 +301,7 @@ git commit -m "test: parallelize and diagnose Playwright routes"
 **Files:**
 - Create: `frontend/scripts/run-unit-tests-ci.mjs`
 - Modify: `frontend/package.json`
+- Modify: `package.json`
 - Modify: `.github/workflows/ci.yml`
 
 **Interfaces:**
@@ -310,14 +311,14 @@ git commit -m "test: parallelize and diagnose Playwright routes"
 
 - [ ] **Step 1: Add deterministic unit-test file sharding**
 
-Add a `test:unit:ci` script that discovers every `tests/unit/**/*.test.ts` and `tests/unit/**/*.test.tsx` file, sorts the paths, and assigns them round-robin to the requested `--shard=N/4`. The runner must execute the selected files in one serial Node test process. Keep the existing local `test:unit` script unchanged.
+Add a `test:unit:ci` script that discovers every `tests/unit/**/*.test.ts` and `tests/unit/**/*.test.tsx` file, sorts the paths, estimates each file's cost from its test count/source size/component overhead plus measured slow-file overrides, and greedily assigns expensive files to the lightest requested `--shard=N/4` bucket. The runner must execute the selected files in one serial Node test process. Keep the existing local `test:unit` script unchanged.
 
 ```json
 "test:unit": "tsx --test \"tests/unit/**/*.test.ts\" \"tests/unit/**/*.test.tsx\"",
 "test:unit:ci": "node scripts/run-unit-tests-ci.mjs"
 ```
 
-In the measured repository state, four shards each pass in under 31 seconds. Automatic file discovery keeps newly added unit files inside the CI gate.
+In the measured repository state, four weighted shards each pass in under 27 seconds. Automatic file discovery keeps newly added unit files inside the CI gate, and weighted assignment prevents a newly enlarged file from being placed by filename alone.
 
 - [ ] **Step 2: Replace the frontend test job with a matrix**
 

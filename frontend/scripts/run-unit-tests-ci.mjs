@@ -1,4 +1,4 @@
-import { readdir } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -36,7 +36,43 @@ async function collectTestFiles(directory) {
 
 const unitTestRoot = path.resolve("tests/unit");
 const testFiles = (await collectTestFiles(unitTestRoot)).sort();
-const shardFiles = testFiles.filter((_, index) => index % totalShards === shard - 1);
+
+const historicalCostOverrides = new Map([
+  ["tests/unit/hooks/admin-dashboard-summary.unit.test.tsx", 50],
+  ["tests/unit/hooks/admin-inspections-pagination.unit.test.tsx", 50],
+]);
+
+const weightedFiles = await Promise.all(
+  testFiles.map(async (filePath) => {
+    const source = await readFile(filePath, "utf8");
+    const relativePath = path.relative(process.cwd(), filePath).replaceAll(path.sep, "/");
+    const testCount = Math.max(1, (source.match(/\b(?:test|it)\s*\(/g) ?? []).length);
+    const componentWeight = filePath.endsWith(".tsx") ? 2 : 1;
+    const estimatedCost =
+      historicalCostOverrides.get(relativePath) ?? testCount * 2 + componentWeight + source.length / 4000;
+
+    return { filePath, estimatedCost, relativePath };
+  }),
+);
+
+const buckets = Array.from({ length: totalShards }, (_, index) => ({
+  files: [],
+  index,
+  estimatedCost: 0,
+}));
+
+for (const file of weightedFiles.sort(
+  (left, right) => right.estimatedCost - left.estimatedCost || left.relativePath.localeCompare(right.relativePath),
+)) {
+  const bucket = buckets.reduce((lightest, candidate) =>
+    candidate.estimatedCost < lightest.estimatedCost ? candidate : lightest,
+  );
+
+  bucket.files.push(file.filePath);
+  bucket.estimatedCost += file.estimatedCost;
+}
+
+const shardFiles = buckets[shard - 1].files;
 
 if (shardFiles.length === 0) {
   console.error(`No unit test files assigned to shard ${shard}/${totalShards}.`);

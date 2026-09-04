@@ -56,7 +56,7 @@ Refactor the legacy route contract from one serial loop into independently named
 
 ### 4. Parallel frontend validation lanes
 
-Run frontend component and integration suites as separate matrix entries, and run the unit suite as four deterministic file-shard entries so they execute concurrently and report the failing lane directly. Keep the local serialized unit script unchanged because in-process concurrency is slower and less predictable. The matrix must still aggregate as one required frontend validation result for the quality gate.
+Run frontend component and integration suites as separate matrix entries, and run the unit suite as four deterministic, weighted file-shard entries so they execute concurrently and report the failing lane directly. The sharder estimates file cost from test count, source size, component overhead, and measured slow-file overrides, then assigns expensive files to the lightest bucket. Keep the local serialized unit script unchanged because in-process concurrency is slower and less predictable. The matrix must still aggregate as one required frontend validation result for the quality gate.
 
 ### 5. CI diagnostics and bounded jobs
 

@@ -33,7 +33,7 @@
     "test:scripts": "node --test \"scripts/*.test.mjs\"",
     "test:documentation": "node scripts/check-documentation.mjs",
     "test:e2e:critical": "npm run test:e2e:critical -w frontend",
-    "test:e2e:full": "npm run test:e2e -w frontend",
+    "test:e2e:full": "npm run test:e2e -w frontend --",
     "test:e2e": "npm run test:e2e:full",
     "test:ci": "npm run lint && npm run typecheck && npm run test:scripts && npm run test:documentation && npm run test:fast && npm run test:backend:integration && npm run test:contract",
     "test:watch": "npm run test:e2e:ui -w frontend",
