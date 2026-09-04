@@ -4,7 +4,7 @@
 
 **Goal:** Make the blocking CI test gate deterministic and keep each test execution lane under 120 seconds without reducing coverage.
 
-**Architecture:** Keep the existing GitHub workflow and quality-gate aggregation, but parallelize independent frontend suites and Playwright workers. Move live E2E dates into a UTC-based test factory, split the route contract into named tests, and add CI diagnostics so failures are visible and downloadable.
+**Architecture:** Keep the existing GitHub workflow and quality-gate aggregation, but parallelize independent frontend suites and Playwright workers. Install workspace and Playwright dependencies once through lockfile-keyed shared caches so matrix jobs do not compete on repeated setup. Move live E2E dates into a UTC-based test factory, split the route contract into named tests, and add CI diagnostics so failures are visible and downloadable.
 
 **Tech Stack:** GitHub Actions, Node.js 22, npm workspaces, TypeScript, `tsx --test`, Playwright 1.57, Chromium.
 
@@ -369,7 +369,9 @@ env:
   TZ: UTC
 ```
 
-Add `timeout-minutes: 8` under `runs-on` for both `e2e-critical` and `full-playwright`. Keep their existing install and browser-cache steps. Replace each final test step with a named run step and append the corresponding failure artifact step:
+Add shared `dependencies` and `playwright-dependencies` setup jobs. The first installs the workspace once and saves `node_modules` under a lockfile-keyed cache. The second restores that cache, installs Chromium and its OS dependencies once, and saves the Playwright browser cache. Make every dependency-using test job depend on `dependencies`, and make both E2E jobs depend on `playwright-dependencies`; they should restore the caches and only fall back to installation on a cache miss.
+
+Add `timeout-minutes: 8` under `runs-on` for both `e2e-critical` and `full-playwright`. Replace each final test step with a named run step and append the corresponding failure artifact step:
 
 ```yaml
       - name: Run critical Playwright tests
@@ -401,7 +403,7 @@ Add `timeout-minutes: 8` under `runs-on` for both `e2e-critical` and `full-playw
           retention-days: 7
 ```
 
-Retain the existing full-suite push condition and quality-gate `needs` list. Neither Playwright job becomes advisory.
+Retain the existing full-suite push condition and quality-gate `needs` list, adding the shared setup jobs so setup failures are also blocking. Neither Playwright job becomes advisory.
 
 - [ ] **Step 4: Validate scripts and workflow content locally**
 

@@ -58,9 +58,11 @@ Refactor the legacy route contract from one serial loop into independently named
 
 Run frontend component and integration suites as separate matrix entries, and run the unit suite as four deterministic, weighted file-shard entries so they execute concurrently and report the failing lane directly. The sharder estimates file cost from test count, source size, component overhead, and measured slow-file overrides, then assigns expensive files to the lightest bucket. Keep the local serialized unit script unchanged because in-process concurrency is slower and less predictable. The matrix must still aggregate as one required frontend validation result for the quality gate.
 
-### 5. CI diagnostics and bounded jobs
+### 5. Shared CI setup, diagnostics, and bounded jobs
 
-Add explicit `timeout-minutes` values to the E2E jobs that allow dependency/browser setup but prevent a hung job from consuming ten minutes. On E2E failure, upload `frontend/playwright-report` and `frontend/test-results` when present. Keep artifacts optional on success and ignore missing paths so artifact collection cannot create a second unrelated failure.
+Install workspace dependencies once in a lockfile-keyed cache job, then restore that cache in every test job. Install the Playwright browser once in a dependent setup job and restore its browser cache in the blocking E2E jobs. This prevents parallel GitHub runners from competing to download the same dependency tree while preserving clean-checkout reproducibility. Keep OS-level Playwright dependencies available on the E2E runners.
+
+Add explicit `timeout-minutes` values to the E2E jobs that allow dependency/browser setup but prevent a hung job from consuming ten minutes. Bound each actual test command to 110 seconds. On E2E failure, upload `frontend/playwright-report` and `frontend/test-results` when present. Keep artifacts optional on success and ignore missing paths so artifact collection cannot create a second unrelated failure.
 
 The quality gate remains the final blocking status and should continue to summarize all required job results. Improve its output only as needed to show the named matrix/E2E statuses clearly.
 

@@ -96,6 +96,67 @@ jobs:
             echo "- Any relevant changes: ${{ steps.classify.outputs.anyRelevantChanges }}"
           } >> "$GITHUB_STEP_SUMMARY"
 
+  dependencies:
+    name: Install Shared Node Dependencies
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Cache installed dependencies
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
+      - name: Install dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+  playwright-dependencies:
+    name: Install Shared Playwright Dependencies
+    runs-on: ubuntu-latest
+    needs:
+      - changes
+      - dependencies
+    if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Cache installed dependencies
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+      - name: Install dependencies if the shared cache is unavailable
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
+        run: npm ci --prefer-offline --no-audit --no-fund
+      - name: Install Playwright browser and OS dependencies
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
   docs-only:
     name: Docs-only Skip
     runs-on: ubuntu-latest
@@ -126,7 +187,9 @@ jobs:
   lint-and-types:
     name: Lint and Typecheck
     runs-on: ubuntu-latest
-    needs: changes
+    needs:
+      - changes
+      - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -134,14 +197,26 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Restore installed dependencies
+        id: node-modules-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
+      - run: npm ci --prefer-offline --no-audit --no-fund
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: npm run lint
       - run: npm run typecheck
 
   script-tests:
     name: Script Tests
     runs-on: ubuntu-latest
-    needs: changes
+    needs:
+      - changes
+      - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -149,13 +224,25 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Restore installed dependencies
+        id: node-modules-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
+      - run: npm ci --prefer-offline --no-audit --no-fund
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: timeout 110s npm run test:scripts
 
   backend-unit:
     name: Backend Unit Tests
     runs-on: ubuntu-latest
-    needs: changes
+    needs:
+      - changes
+      - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -163,13 +250,25 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Restore installed dependencies
+        id: node-modules-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
+      - run: npm ci --prefer-offline --no-audit --no-fund
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: timeout 110s npm run test:unit -w backend
 
   backend-architecture:
     name: Backend Architecture Tests
     runs-on: ubuntu-latest
-    needs: changes
+    needs:
+      - changes
+      - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -177,13 +276,25 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Restore installed dependencies
+        id: node-modules-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
+      - run: npm ci --prefer-offline --no-audit --no-fund
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: timeout 110s npm run test:architecture -w backend
 
   frontend-tests:
     name: Frontend Unit, Component, and Integration Tests (${{ matrix.suite }})
     runs-on: ubuntu-latest
-    needs: changes
+    needs:
+      - changes
+      - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
     strategy:
       fail-fast: false
@@ -207,14 +318,26 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Restore installed dependencies
+        id: node-modules-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
+      - run: npm ci --prefer-offline --no-audit --no-fund
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - name: Run ${{ matrix.suite }}
         run: ${{ matrix.command }}
 
   backend-integration:
     name: Backend Integration Tests
     runs-on: ubuntu-latest
-    needs: changes
+    needs:
+      - changes
+      - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -222,13 +345,25 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Restore installed dependencies
+        id: node-modules-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
+      - run: npm ci --prefer-offline --no-audit --no-fund
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: timeout 110s npm run test:backend:integration
 
   contract-tests:
     name: Contract Tests
     runs-on: ubuntu-latest
-    needs: changes
+    needs:
+      - changes
+      - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -236,13 +371,25 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Restore installed dependencies
+        id: node-modules-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
+      - run: npm ci --prefer-offline --no-audit --no-fund
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: timeout 110s npm run test:contract
 
   build:
     name: Build Verification
     runs-on: ubuntu-latest
-    needs: changes
+    needs:
+      - changes
+      - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -250,14 +397,27 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Restore installed dependencies
+        id: node-modules-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
+      - run: npm ci --prefer-offline --no-audit --no-fund
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: npm run build
 
   e2e-critical:
     name: Critical Playwright
     runs-on: ubuntu-latest
     timeout-minutes: 8
-    needs: changes
+    needs:
+      - changes
+      - dependencies
+      - playwright-dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -265,15 +425,29 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Restore installed dependencies
+        id: node-modules-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        id: playwright-cache
+        uses: actions/cache/restore@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'frontend/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
-      - run: npm ci
+      - run: npm ci --prefer-offline --no-audit --no-fund
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: npx playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      - name: Install Playwright OS dependencies on this runner
+        run: npx playwright install-deps chromium
       - name: Run critical Playwright tests
         run: timeout 110s npm run test:e2e:critical
       - name: Upload critical Playwright diagnostics
@@ -290,7 +464,9 @@ jobs:
   infrastructure-tests:
     name: Infrastructure Tests
     runs-on: ubuntu-latest
-    needs: changes
+    needs:
+      - changes
+      - dependencies
     if: github.event_name != 'pull_request' && needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
     steps:
       - uses: actions/checkout@v4
@@ -298,14 +474,27 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Restore installed dependencies
+        id: node-modules-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
+      - run: npm ci --prefer-offline --no-audit --no-fund
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: timeout 110s npm run test:infrastructure
 
   full-playwright:
     name: Full Playwright (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
     timeout-minutes: 8
-    needs: changes
+    needs:
+      - changes
+      - dependencies
+      - playwright-dependencies
     if: github.event_name != 'pull_request' && needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
     strategy:
       fail-fast: false
@@ -321,15 +510,29 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Restore installed dependencies
+        id: node-modules-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            backend/node_modules
+          key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        id: playwright-cache
+        uses: actions/cache/restore@v4
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'frontend/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-playwright-
-      - run: npm ci
+      - run: npm ci --prefer-offline --no-audit --no-fund
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: npx playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      - name: Install Playwright OS dependencies on this runner
+        run: npx playwright install-deps chromium
       - name: Run full Playwright tests
         run: timeout 110s npm run test:e2e:full -- --shard=${{ matrix.shard }}/4
       - name: Upload full Playwright diagnostics
@@ -349,6 +552,8 @@ jobs:
     if: always()
     needs:
       - changes
+      - dependencies
+      - playwright-dependencies
       - docs-only
       - docs-validation
       - lint-and-types
@@ -366,6 +571,8 @@ jobs:
       - name: Summarize job results
         env:
           CHANGES: ${{ needs['changes'].result }}
+          DEPENDENCIES: ${{ needs['dependencies'].result }}
+          PLAYWRIGHT_DEPENDENCIES: ${{ needs['playwright-dependencies'].result }}
           DOCS_ONLY: ${{ needs['docs-only'].result }}
           DOCS_VALIDATION: ${{ needs['docs-validation'].result }}
           LINT_TYPES: ${{ needs['lint-and-types'].result }}
@@ -386,6 +593,8 @@ jobs:
             echo
             printf '| Job | Result |\n| --- | --- |\n'
             printf '| Change detection | %s |\n' "$CHANGES"
+            printf '| Shared dependencies | %s |\n' "$DEPENDENCIES"
+            printf '| Shared Playwright dependencies | %s |\n' "$PLAYWRIGHT_DEPENDENCIES"
             printf '| Docs-only summary | %s |\n' "$DOCS_ONLY"
             printf '| Documentation validation | %s |\n' "$DOCS_VALIDATION"
             printf '| Lint and typecheck | %s |\n' "$LINT_TYPES"
@@ -401,7 +610,7 @@ jobs:
             printf '| Full Playwright | %s |\n' "$FULL_PLAYWRIGHT"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          for result in "$CHANGES" "$DOCS_ONLY" "$DOCS_VALIDATION" "$LINT_TYPES" "$SCRIPT_TESTS" "$BACKEND_UNIT" "$BACKEND_ARCHITECTURE" "$FRONTEND_TESTS" "$BACKEND_INTEGRATION" "$CONTRACT_TESTS" "$BUILD" "$E2E_CRITICAL" "$INFRASTRUCTURE" "$FULL_PLAYWRIGHT"; do
+          for result in "$CHANGES" "$DEPENDENCIES" "$PLAYWRIGHT_DEPENDENCIES" "$DOCS_ONLY" "$DOCS_VALIDATION" "$LINT_TYPES" "$SCRIPT_TESTS" "$BACKEND_UNIT" "$BACKEND_ARCHITECTURE" "$FRONTEND_TESTS" "$BACKEND_INTEGRATION" "$CONTRACT_TESTS" "$BUILD" "$E2E_CRITICAL" "$INFRASTRUCTURE" "$FULL_PLAYWRIGHT"; do
             if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
               exit 1
             fi
