@@ -121,7 +121,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm run test:documentation
+      - run: timeout 110s npm run test:documentation
 
   lint-and-types:
     name: Lint and Typecheck
@@ -150,7 +150,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run test:scripts
+      - run: timeout 110s npm run test:scripts
 
   backend-unit:
     name: Backend Unit Tests
@@ -164,7 +164,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run test:unit -w backend
+      - run: timeout 110s npm run test:unit -w backend
 
   backend-architecture:
     name: Backend Architecture Tests
@@ -178,7 +178,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run test:architecture -w backend
+      - run: timeout 110s npm run test:architecture -w backend
 
   frontend-tests:
     name: Frontend Unit, Component, and Integration Tests (${{ matrix.suite }})
@@ -223,7 +223,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run test:backend:integration
+      - run: timeout 110s npm run test:backend:integration
 
   contract-tests:
     name: Contract Tests
@@ -237,7 +237,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run test:contract
+      - run: timeout 110s npm run test:contract
 
   build:
     name: Build Verification
@@ -275,7 +275,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Run critical Playwright tests
-        run: npm run test:e2e:critical
+        run: timeout 110s npm run test:e2e:critical
       - name: Upload critical Playwright diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -299,7 +299,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run test:infrastructure
+      - run: timeout 110s npm run test:infrastructure
 
   full-playwright:
     name: Full Playwright (shard ${{ matrix.shard }}/3)
@@ -330,7 +330,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Run full Playwright tests
-        run: npm run test:e2e:full -- --shard=${{ matrix.shard }}/3
+        run: timeout 110s npm run test:e2e:full -- --shard=${{ matrix.shard }}/3
       - name: Upload full Playwright diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
