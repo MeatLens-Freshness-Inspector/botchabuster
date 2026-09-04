@@ -155,6 +155,12 @@ test("developer can change a user role with password confirmation", async ({ pag
     role: "admin",
     password: "developer-password",
   });
+  const profileUpdate = spies.find((spy) =>
+    spy.url.includes("/api/profiles/admin/users/user-2") && !spy.url.includes("/role"));
+  expect(profileUpdate).toBeDefined();
+  const profilePayload = JSON.parse(profileUpdate?.postData ?? "{}");
+  expect(profilePayload).not.toHaveProperty("role");
+  expect(profilePayload).not.toHaveProperty("rolePassword");
 });
 
 test.describe("mobile viewport", () => {
