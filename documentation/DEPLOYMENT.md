@@ -45,7 +45,7 @@ SUPABASE_PUBLISHABLE_KEY=your-publishable-or-anon-key
 APP_SESSION_SECRET=<long-random-secret>
 CSRF_TOKEN_SECRET=<different-long-random-secret>
 AUDIT_LOG_KEY=<64-hex-characters-or-base64-for-32-bytes>
-ALLOWED_ORIGINS=https://your-site.netlify.app,https://*--your-site.netlify.app
+ALLOWED_ORIGINS=https://your-site.netlify.app,https://*--your-site.netlify.app,https://localhost
 APP_SESSION_COOKIE_SECURE=true
 UPLOAD_DIR=/tmp/meatlens-uploads
 ```
