@@ -7,11 +7,15 @@
   --landing-accent: #218c5a;
   background: var(--landing-surface);
   color: var(--landing-ink);
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
-.landing-page :where(h1, h2, h3, h4, h5, h6, button, a, label) {
-  font-family: inherit;
+.landing-page :where(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-display);
+}
+
+.landing-page :where(button, a, label) {
+  font-family: var(--font-body);
 }
 
 .landing-page :where(button, a, [role="button"]):focus-visible {
