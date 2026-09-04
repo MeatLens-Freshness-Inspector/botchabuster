@@ -36,7 +36,7 @@ Use a slice's public `index.ts` when one exists. Do not import private implement
 
 ## Security and transport
 
-The client does not contain the Supabase service key. Browser requests use `VITE_API_BASE_URL`, credentialed cookies, and the CSRF token returned by the backend auth bootstrap. Native clients may use the bearer-token transport.
+The client does not contain the Supabase service key. Browser requests use `VITE_API_BASE_URL`, credentialed cookies, and the CSRF token returned by the backend auth bootstrap. Native clients use the bearer-token transport. Capacitor Android serves the bundled app from `https://localhost`, so the backend CORS allowlist must include that native origin.
 
 Keep credentials, authorization headers, CSRF tokens, and sensitive response data out of API Docs cURL/history output. Redaction behavior is covered by the developer-tools tests.
 
