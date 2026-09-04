@@ -53,6 +53,15 @@ test("getAllowedOrigins always permits Capacitor native WebView origins", () => 
   assert.equal(isOriginAllowed("capacitor://localhost", allowedOrigins), true);
 });
 
+test("getAllowedOrigins retains configured web origins beside native origins", () => {
+  const allowedOrigins = getAllowedOrigins({
+    NODE_ENV: "production",
+    ALLOWED_ORIGINS: "https://meatlensv2.netlify.app",
+  } as NodeJS.ProcessEnv);
+
+  assert.equal(isOriginAllowed("https://meatlensv2.netlify.app", allowedOrigins), true);
+});
+
 test("createCorsOptions allows requests without an origin header", async () => {
   const options = createCorsOptions([]);
 
