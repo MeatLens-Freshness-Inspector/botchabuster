@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { API_BASE_URL } from "@/shared/api/base-url";
-import { applyApiRequestInit, getApiCsrfToken } from "@/shared/api/request";
+import { fetchWithTimeout } from "@/shared/api/fetch-with-timeout";
+import { getApiCsrfToken } from "@/shared/api/request";
 
 export type AssistantMessage = {
   role: "user" | "assistant";
@@ -61,9 +62,9 @@ export function useAssistant(): AssistantWorkflow {
     const allMessages = [...messages, userMessage];
 
     try {
-      const response = await fetch(
+      const response = await fetchWithTimeout(
         CHAT_URL,
-        applyApiRequestInit({
+        {
           method: "POST",
           headers: getChatRequestHeaders(),
           body: JSON.stringify({
@@ -72,7 +73,7 @@ export function useAssistant(): AssistantWorkflow {
               content: message.content,
             })),
           }),
-        }),
+        },
       );
 
       if (!response.ok) {

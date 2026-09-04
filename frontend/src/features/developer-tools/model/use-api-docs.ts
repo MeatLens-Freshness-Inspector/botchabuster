@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { applyApiRequestInit } from "@/shared/api/request";
+import { fetchWithTimeout } from "@/shared/api/fetch-with-timeout";
 import {
   API_DOCS_CATEGORIES,
   API_DOCS_OPERATION_BY_ID,
@@ -145,7 +145,7 @@ export function useApiDocs(): ApiDocsHookState {
     const startedAt = performance.now();
 
     try {
-      const fetchResponse = await fetch(request.url, applyApiRequestInit(request.init));
+      const fetchResponse = await fetchWithTimeout(request.url, request.init);
       const normalizedResponse = await readApiDocsResponse(fetchResponse, Math.round(performance.now() - startedAt));
       setResponse(normalizedResponse);
       const entry = toApiDocsHistoryEntry({

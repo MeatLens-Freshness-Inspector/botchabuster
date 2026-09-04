@@ -7,6 +7,10 @@ import {
   parseMessageEventStream,
   type UserChatStreamEvent,
 } from "../../../../src/entities/message/api/message-event-stream";
+import {
+  clearApiTransportDiagnostics,
+  getApiTransportDiagnostics,
+} from "../../../../src/shared/api/api-transport-diagnostics";
 
 const encoder = new TextEncoder();
 
@@ -134,6 +138,34 @@ test("notifies the app when the stream handshake returns 401", async () => {
         error.retryable === false,
     );
     assert.equal(expiredEvents, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+    cleanup();
+  }
+});
+
+test("records a stream handshake network failure for Android diagnostics", async () => {
+  const cleanup = installDom();
+  const originalFetch = globalThis.fetch;
+
+  try {
+    clearApiTransportDiagnostics();
+    globalThis.fetch = (async () => {
+      throw new TypeError("Failed to fetch");
+    }) as typeof globalThis.fetch;
+
+    await assert.rejects(
+      () => openMessageEventStream({
+        signal: new AbortController().signal,
+        onMessage: () => {},
+        onStatus: () => {},
+      }),
+      /Failed to fetch/,
+    );
+
+    const [diagnostic] = getApiTransportDiagnostics();
+    assert.equal(diagnostic?.stage, "network-error");
+    assert.match(diagnostic?.url ?? "", /\/api\/user-chat\/events$/);
   } finally {
     globalThis.fetch = originalFetch;
     cleanup();

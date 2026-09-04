@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "@/shared/api/base-url";
 import { createAuthHeaders } from "@/shared/api/auth-headers";
-import { applyApiRequestInit, notifyApiAuthExpired } from "@/shared/api/request";
+import { fetchWithTimeout } from "@/shared/api/fetch-with-timeout";
+import { notifyApiAuthExpired } from "@/shared/api/request";
 import type { UserChatMessage } from "../model/types";
 
 export type UserChatStreamStatus = "connecting" | "connected" | "realtime_unavailable";
@@ -130,12 +131,12 @@ export async function* parseMessageEventStream(
 export async function openMessageEventStream(
   options: OpenMessageEventStreamOptions,
 ): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/user-chat/events`, applyApiRequestInit({
+  const response = await fetchWithTimeout(`${API_BASE_URL}/user-chat/events`, {
     method: "GET",
     headers: createAuthHeaders({ Accept: "text/event-stream" }),
     cache: "no-store",
     signal: options.signal,
-  }));
+  });
 
   if (response.status === 401) {
     notifyApiAuthExpired();
