@@ -7,6 +7,15 @@ export type ReportOrganization =
   | "city_veterinary_office_olongapo"
   | "gordon_college_ccs";
 
+export const MANAGED_USER_ROLES = ["user", "admin", "developer"] as const;
+export type ManagedRole = (typeof MANAGED_USER_ROLES)[number];
+
+export interface AdminUserRoleChange {
+  user_id: string;
+  previous_role: ManagedRole | null;
+  role: ManagedRole;
+}
+
 async function readApiError(response: Response, fallback: string): Promise<string> {
   try {
     const payload = await response.json() as { error?: unknown; message?: unknown };
@@ -38,6 +47,7 @@ export interface Profile {
   onboarding_completed_at: string | null;
   onboarding_version: number;
   email?: string | null;
+  role?: ManagedRole | null;
   location: string | null;
   created_at: string;
   updated_at: string;
@@ -132,6 +142,20 @@ export class ProfileClient {
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error(await readApiError(res, "Failed to update user"));
+    return res.json();
+  }
+
+  async changeUserRoleByAdmin(
+    userId: string,
+    role: ManagedRole,
+    password: string,
+  ): Promise<AdminUserRoleChange> {
+    const res = await fetchWithTimeout(`${API_BASE_URL}/profiles/admin/users/${userId}/role`, {
+      method: "PUT",
+      headers: this.createHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ role, password }),
+    });
+    if (!res.ok) throw new Error(await readApiError(res, "Failed to change user role"));
     return res.json();
   }
 

@@ -1,5 +1,6 @@
 import type { ReportOrganization } from "@/features/reports/model/types";
 import type { FreshnessClassification } from "@/entities/inspection";
+import type { ManagedRole } from "@/entities/user/api";
 
 export type AdminDashboardTabKey =
   | "overview"
@@ -26,6 +27,11 @@ export type ManagedUserForm = {
   inspector_code: string;
   report_organization: ReportOrganization | "";
   location: string;
+};
+
+export type ManagedUserEditForm = ManagedUserForm & {
+  role: ManagedRole;
+  rolePassword: string;
 };
 
 export type ReportRow = {
