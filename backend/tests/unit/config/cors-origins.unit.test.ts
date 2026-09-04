@@ -42,6 +42,17 @@ test("getAllowedOrigins requires explicit origins in production", () => {
   assert.deepEqual(getAllowedOrigins({ NODE_ENV: "production" } as NodeJS.ProcessEnv), []);
 });
 
+test("getAllowedOrigins always permits Capacitor native WebView origins", () => {
+  const allowedOrigins = getAllowedOrigins({
+    NODE_ENV: "production",
+    ALLOWED_ORIGINS: "https://meatlensv2.netlify.app",
+  } as NodeJS.ProcessEnv);
+
+  assert.equal(isOriginAllowed("https://localhost", allowedOrigins), true);
+  assert.equal(isOriginAllowed("http://localhost", allowedOrigins), true);
+  assert.equal(isOriginAllowed("capacitor://localhost", allowedOrigins), true);
+});
+
 test("createCorsOptions allows requests without an origin header", async () => {
   const options = createCorsOptions([]);
 
