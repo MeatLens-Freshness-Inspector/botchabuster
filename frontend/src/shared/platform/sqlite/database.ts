@@ -220,7 +220,7 @@ const DDL_004 = `
 /** Migration 006 — Add regulatory_compliance to pending_scans */
 const DDL_006 = `
   ALTER TABLE pending_scans
-    ADD COLUMN IF NOT EXISTS regulatory_compliance INTEGER;
+    ADD COLUMN regulatory_compliance INTEGER;
 `;
 
 /** Migration 007 — Preserve the deployed model key for queued scans */
