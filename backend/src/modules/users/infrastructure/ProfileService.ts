@@ -1,5 +1,10 @@
 import { supabase } from "../../../integrations/supabase";
 import type { ReportOrganization } from "../../../types/reportOrganization";
+import {
+  MANAGED_ROLES,
+  type AdminUserRoleChange,
+  type ManagedRole,
+} from "../application/ChangeAdminUserRole";
 
 export interface Profile {
   id: string;
@@ -18,6 +23,7 @@ export interface Profile {
 
 export interface AdminProfile extends Profile {
   email: string | null;
+  role: ManagedRole | null;
 }
 
 export type AppRole = "developer" | "admin" | "moderator" | "user";
@@ -47,10 +53,15 @@ export interface AdminCreateUserInput {
 }
 
 const ROLE_PRIORITY: AppRole[] = ["developer", "admin", "moderator", "user"];
+const MANAGED_ROLE_PRIORITY: ManagedRole[] = ["developer", "admin", "user"];
 const PROFILE_COLUMNS = "id, full_name, avatar_url, inspector_code, report_organization, is_dark_mode, show_detailed_results, onboarding_completed_at, onboarding_version, location, created_at, updated_at";
 
 function isAppRole(value: string): value is AppRole {
   return ROLE_PRIORITY.includes(value as AppRole);
+}
+
+function resolveManagedRole(roles: UserRole[]): ManagedRole | null {
+  return MANAGED_ROLE_PRIORITY.find((role) => roles.some((entry) => entry.role === role)) ?? null;
 }
 
 export interface AdminUpdateUserInput {
@@ -145,12 +156,30 @@ export class ProfileService {
     if (error) throw new Error(`Failed to fetch profiles: ${error.message}`);
 
     const profiles = (data as unknown as Profile[]) ?? [];
+    const profileIds = profiles.map((profile) => profile.id);
+    const rolesByUserId = new Map<string, UserRole[]>();
+
+    if (profileIds.length > 0) {
+      const { data: roleData, error: roleError } = await (supabase
+        .from("user_roles") as any)
+        .select("id, user_id, role")
+        .in("user_id", profileIds);
+      if (roleError) throw new Error(`Failed to fetch profile roles: ${roleError.message}`);
+
+      for (const role of (roleData as UserRole[] | null) ?? []) {
+        const userRoles = rolesByUserId.get(role.user_id) ?? [];
+        userRoles.push(role);
+        rolesByUserId.set(role.user_id, userRoles);
+      }
+    }
+
     const authUsers = await this.listAllAuthUsers();
     const emailByUserId = new Map(authUsers.map((authUser) => [authUser.id, authUser.email]));
 
     return profiles.map((profile) => ({
       ...profile,
       email: emailByUserId.get(profile.id) ?? null,
+      role: resolveManagedRole(rolesByUserId.get(profile.id) ?? []),
     }));
   }
 
@@ -199,6 +228,7 @@ export class ProfileService {
     return {
       ...(profileData as Profile),
       email: createdAuthUser.user?.email ?? input.email.trim(),
+      role: await this.getManagedRole(createdUserId),
     };
   }
 
@@ -314,6 +344,7 @@ export class ProfileService {
     return {
       ...updatedProfile,
       email: updatedEmail,
+      role: await this.getManagedRole(userId),
     };
   }
 
@@ -329,6 +360,27 @@ export class ProfileService {
       .eq("user_id", userId);
     if (error) throw new Error(`Failed to fetch roles: ${error.message}`);
     return (data as unknown as UserRole[]) ?? [];
+  }
+
+  async getManagedRole(userId: string): Promise<ManagedRole | null> {
+    return resolveManagedRole(await this.getUserRoles(userId));
+  }
+
+  async changeUserRoleByAdmin(userId: string, role: ManagedRole): Promise<AdminUserRoleChange> {
+    const currentRoles = await this.getUserRoles(userId);
+    const previousRole = resolveManagedRole(currentRoles);
+
+    const { error: deleteError } = await (supabase.from("user_roles") as any)
+      .delete()
+      .eq("user_id", userId)
+      .in("role", MANAGED_ROLES);
+    if (deleteError) throw new Error(`Failed to replace user role: ${deleteError.message}`);
+
+    const { error: insertError } = await (supabase.from("user_roles") as any)
+      .insert({ user_id: userId, role });
+    if (insertError) throw new Error(`Failed to assign user role: ${insertError.message}`);
+
+    return { previousRole, role };
   }
 
   async hasRole(userId: string, role: string): Promise<boolean> {
