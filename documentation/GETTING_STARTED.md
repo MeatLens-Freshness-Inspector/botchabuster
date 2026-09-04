@@ -118,4 +118,23 @@ Add the exact frontend origin to `ALLOWED_ORIGINS`, restart the backend, and use
 
 Check that `UPLOAD_DIR` is writable and that the multipart field is named `image` for inspection uploads or `package` for developer training-run imports.
 
+### Android shows “Failed to fetch”
+
+The Capacitor client records the last 25 API transport failures in Android Logcat and in session storage. The records include the sanitized endpoint, HTTP method, app origin, native platform, online state, and either the network error or HTTP status; authorization headers, query strings, and request bodies are not recorded.
+
+With the Android device connected, clear the old log, reproduce the failure, and filter for the client marker:
+
+```powershell
+adb logcat -c
+adb logcat -v time | Select-String -Pattern "MeatLens|chromium|Capacitor"
+```
+
+In Android Studio, use the Logcat panel with the same device selected and search for `MeatLens][API`. A browser inspection session can also read the retained records from the WebView console with:
+
+```js
+JSON.parse(sessionStorage.getItem("meatlens-api-transport-diagnostics") || "[]")
+```
+
+For a CORS failure, the useful record will show `stage=network-error`, `errorMessage=Failed to fetch`, `platform=android`, and `appOrigin=https://localhost`. Rebuild and reinstall the APK after frontend changes, and redeploy the backend after CORS changes.
+
 See [Architecture](ARCHITECTURE.md), [API reference](API_REFERENCE.md), and [Security](SECURITY.md) for the corresponding runtime rules.
