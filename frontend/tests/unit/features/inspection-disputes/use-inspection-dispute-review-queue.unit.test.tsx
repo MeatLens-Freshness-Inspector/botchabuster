@@ -5,6 +5,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { InspectionResultDispute } from "../../../../src/entities/inspection";
 import { useInspectionDisputeReviewQueue } from "../../../../src/features/inspection-disputes/model/use-inspection-dispute-review-queue";
+import { installEncryptedFetch } from "../../../support/encrypted-fetch";
 
 type HookState = ReturnType<typeof useInspectionDisputeReviewQueue>;
 
@@ -28,7 +29,6 @@ test("review queue loads pending disputes and removes a reviewed dispute", async
   const dom = new JSDOM("<!doctype html><html><body></body></html>", { url: "http://localhost/" });
   const previousWindow = globalThis.window;
   const previousDocument = globalThis.document;
-  const previousFetch = globalThis.fetch;
   const previousActEnvironment = (globalThis as typeof globalThis & {
     IS_REACT_ACT_ENVIRONMENT?: boolean;
   }).IS_REACT_ACT_ENVIRONMENT;
@@ -39,7 +39,7 @@ test("review queue loads pending disputes and removes a reviewed dispute", async
   Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", { configurable: true, value: true });
 
   const requests: Array<{ url: string; method: string }> = [];
-  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+  const restoreTransportFetch = installEncryptedFetch(({ input, init }) => {
     const url = String(input);
     const method = init?.method ?? "GET";
     requests.push({ url, method });
@@ -50,7 +50,7 @@ test("review queue loads pending disputes and removes a reviewed dispute", async
       dispute: { ...dispute, status: "approved" },
       inspection: { id: "inspection-1", classification: "fresh" },
     }), { status: 200 });
-  }) as typeof fetch;
+  });
 
   let latest: HookState | null = null;
   function Harness() {
@@ -62,9 +62,13 @@ test("review queue loads pending disputes and removes a reviewed dispute", async
   try {
     await act(async () => {
       root.render(<Harness />);
-      await Promise.resolve();
-      await new Promise((resolve) => setTimeout(resolve, 0));
     });
+    for (let attempt = 0; attempt < 40 && latest?.disputes.length !== 1; attempt += 1) {
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+    }
+    await act(async () => {});
 
     assert.equal(latest?.disputes.length, 1);
     assert.equal(requests.filter((request) => request.method === "GET").length, 1);
@@ -83,7 +87,7 @@ test("review queue loads pending disputes and removes a reviewed dispute", async
       configurable: true,
       value: previousActEnvironment,
     });
-    globalThis.fetch = previousFetch;
+    restoreTransportFetch();
     dom.window.close();
   }
 });

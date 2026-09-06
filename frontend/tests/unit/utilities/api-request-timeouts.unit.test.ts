@@ -9,6 +9,7 @@ import {
   setApiSessionRefreshHandler,
 } from "../../../src/shared/api/request";
 import { fetchWithTimeout } from "../../../src/shared/api";
+import { installEncryptedFetch } from "../../support/encrypted-fetch";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -96,7 +97,7 @@ function createAbortError(): DOMException {
 
 test("refreshes an expired csrf token and retries the request once", async () => {
   const restoreDom = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
 
   try {
     setStoredSession();
@@ -109,8 +110,8 @@ test("refreshes an expired csrf token and retries the request once", async () =>
       return "csrf-fresh";
     });
 
-    globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
-      csrfHeaders.push(new Headers(init?.headers).get("x-csrf-token"));
+    restoreTransportFetch = installEncryptedFetch(({ headers }) => {
+      csrfHeaders.push(headers.get("x-csrf-token"));
 
       if (csrfHeaders.length === 1) {
         return new Response(JSON.stringify({ error: "Invalid CSRF token" }), {
@@ -120,7 +121,7 @@ test("refreshes an expired csrf token and retries the request once", async () =>
       }
 
       return createJsonResponse({ updated: true });
-    }) as typeof globalThis.fetch;
+    });
 
     const response = await fetchWithTimeout("/api/profiles/admin/users/user-2", {
       method: "PUT",
@@ -134,14 +135,14 @@ test("refreshes an expired csrf token and retries the request once", async () =>
   } finally {
     setApiSessionRefreshHandler(null);
     clearApiCsrfToken();
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     restoreDom();
   }
 });
 
 test("does not refresh or retry a non-CSRF forbidden response", async () => {
   const restoreDom = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
 
   try {
     setStoredSession();
@@ -154,13 +155,13 @@ test("does not refresh or retry a non-CSRF forbidden response", async () => {
       return "csrf-fresh";
     });
 
-    globalThis.fetch = (async () => {
+    restoreTransportFetch = installEncryptedFetch(() => {
       requestCount += 1;
       return new Response(JSON.stringify({ error: "Admin access required" }), {
         status: 403,
         headers: { "Content-Type": "application/json" },
       });
-    }) as typeof globalThis.fetch;
+    });
 
     const response = await fetchWithTimeout("/api/profiles/admin/users/user-2", {
       method: "PUT",
@@ -173,20 +174,20 @@ test("does not refresh or retry a non-CSRF forbidden response", async () => {
   } finally {
     setApiSessionRefreshHandler(null);
     clearApiCsrfToken();
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     restoreDom();
   }
 });
 
 test("frontend API clients attach abort signals to representative requests", async () => {
   const restoreDom = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
 
   try {
     setStoredSession();
 
     const capturedSignals: Array<AbortSignal | null | undefined> = [];
-    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    restoreTransportFetch = installEncryptedFetch(({ input, init }) => {
       capturedSignals.push(init?.signal);
 
       const url = String(input);
@@ -207,7 +208,7 @@ test("frontend API clients attach abort signals to representative requests", asy
       }
 
       return createJsonResponse({});
-    }) as typeof globalThis.fetch;
+    });
 
     await authClient.signIn("inspector@example.com", "secret-123");
     await authClient.updateEmail("user-1", "updated@example.com");
@@ -219,14 +220,14 @@ test("frontend API clients attach abort signals to representative requests", asy
       assert.equal(signal.aborted, false);
     }
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     restoreDom();
   }
 });
 
 test("AuthClient aborts stalled requests with a timeout error", async () => {
   const restoreDom = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   const originalSetTimeout = globalThis.setTimeout;
   const originalWindowSetTimeout = window.setTimeout.bind(window);
 
@@ -239,7 +240,7 @@ test("AuthClient aborts stalled requests with a timeout error", async () => {
     globalThis.setTimeout = fastSetTimeout;
     window.setTimeout = fastSetTimeout as typeof window.setTimeout;
 
-    globalThis.fetch = ((_: RequestInfo | URL, init?: RequestInit) => {
+    restoreTransportFetch = installEncryptedFetch(({ init }) => {
       const signal = init?.signal;
       if (!(signal instanceof AbortSignal)) {
         return Promise.reject(new Error("Missing AbortSignal"));
@@ -259,7 +260,7 @@ test("AuthClient aborts stalled requests with a timeout error", async () => {
           { once: true },
         );
       });
-    }) as typeof globalThis.fetch;
+    });
 
     await assert.rejects(
       () => authClient.updateEmail("user-1", "updated@example.com"),
@@ -270,7 +271,7 @@ test("AuthClient aborts stalled requests with a timeout error", async () => {
       },
     );
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     globalThis.setTimeout = originalSetTimeout;
     window.setTimeout = originalWindowSetTimeout;
     restoreDom();

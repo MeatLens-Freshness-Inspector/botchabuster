@@ -15,6 +15,7 @@ import {
   loadOfflineAuthEnvelope,
   saveOfflineAuthEnvelope,
 } from "../../../src/entities/user/model/offline-auth-envelope";
+import { installEncryptedFetch } from "../../support/encrypted-fetch";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -208,7 +209,7 @@ test("bootstraps online auth from /api/auth/session and writes the offline auth 
 test("bootstrapping online auth keeps the cached session token available for the /api/auth/session request", async () => {
   const { container, cleanup } = installDom(true);
   const root: Root = createRoot(container);
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   let authorizationHeader: string | null = null;
 
   try {
@@ -231,8 +232,7 @@ test("bootstrapping online auth keeps the cached session token available for the
       }),
     );
 
-    globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
-      const headers = new Headers(init?.headers);
+    restoreTransportFetch = installEncryptedFetch(({ headers }) => {
       authorizationHeader = headers.get("authorization");
 
       return new Response(JSON.stringify(createBootstrapPayload()), {
@@ -241,7 +241,7 @@ test("bootstrapping online auth keeps the cached session token available for the
           "Content-Type": "application/json",
         },
       });
-    }) as typeof globalThis.fetch;
+    });
 
     await act(async () => {
       root.render(
@@ -250,11 +250,11 @@ test("bootstrapping online auth keeps the cached session token available for the
         </AuthProvider>,
       );
     });
-    await flushEffects();
+    await flushEffectsUntil(() => authorizationHeader !== null, 20);
 
     assert.equal(authorizationHeader, "Bearer cached-session-token");
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     await act(async () => {
       root.unmount();
     });

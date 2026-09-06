@@ -11,6 +11,10 @@ import { profileService } from "../../backend/src/modules/users/infrastructure/P
 import { getSessionLimitService } from "../../backend/src/modules/auth/infrastructure/SessionLimitService";
 import { startTestServer } from "../../backend/tests/support/appFactory";
 import { createProfileFixture, createUserFixture } from "../../backend/tests/support/fixtures";
+import {
+  createEncryptedJsonRequest,
+  getEncryptedTestClient,
+} from "../../backend/tests/support/requestFactory";
 import { assertAnalysisResponseSchema } from "./schemas/analysis-response.schema";
 import { assertErrorResponseSchema } from "./schemas/error-response.schema";
 import { assertInspectionListSchema } from "./schemas/inspection.schema";
@@ -95,14 +99,12 @@ test("auth sign-in responses match the frontend bootstrap contract", async () =>
   const { baseUrl, close } = await startTestServer();
 
   try {
-    const response = await fetch(`${baseUrl}/api/auth/sign-in`, {
-      method: "POST",
-      headers: {
-        Origin: "http://localhost:8080",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email: user.email, password: "correct-horse-battery-staple" }),
-    });
+    const response = await createEncryptedJsonRequest(
+      baseUrl,
+      "/api/auth/sign-in",
+      { email: user.email, password: "correct-horse-battery-staple" },
+      { method: "POST", headers: { Origin: "http://localhost:8080" } },
+    );
     const body = await response.json();
 
     assert.equal(response.status, 200);
@@ -144,7 +146,8 @@ test("inspection list responses match the shared frontend and backend inspection
   const { baseUrl, close } = await startTestServer();
 
   try {
-    const response = await fetch(`${baseUrl}/api/inspections?limit=1&offset=0&scope=all`, {
+    const client = await getEncryptedTestClient(baseUrl);
+    const response = await client.request("/api/inspections?limit=1&offset=0&scope=all", {
       headers: {
         Authorization: "Bearer admin-token",
       },
@@ -166,7 +169,8 @@ test("error responses stay on the shared error envelope contract", async () => {
   const { baseUrl, close } = await startTestServer();
 
   try {
-    const response = await fetch(`${baseUrl}/api/auth/sign-in`, {
+    const client = await getEncryptedTestClient(baseUrl);
+    const response = await client.request("/api/auth/sign-in", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -44,11 +44,27 @@ SUPABASE_SERVICE_KEY=your-service-role-key
 SUPABASE_PUBLISHABLE_KEY=your-publishable-or-anon-key
 APP_SESSION_SECRET=<long-random-secret>
 CSRF_TOKEN_SECRET=<different-long-random-secret>
+TRANSPORT_KEY_ID=v1
+TRANSPORT_RSA_PRIVATE_KEY=<escaped-newline-encoded-rsa-private-key>
 AUDIT_LOG_KEY=<64-hex-characters-or-base64-for-32-bytes>
 ALLOWED_ORIGINS=https://your-site.netlify.app,https://*--your-site.netlify.app,https://localhost
 APP_SESSION_COOKIE_SECURE=true
 UPLOAD_DIR=/tmp/meatlens-uploads
 ```
+
+Generate the transport key once and keep the private key only in the backend
+secret store. The browser receives the matching public key from
+`GET /api/transport/public-key`; it never receives `TRANSPORT_RSA_PRIVATE_KEY`
+or a reusable AES key.
+
+```bash
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out transport-private.pem
+```
+
+When a hosting dashboard does not preserve multiline values, replace each PEM
+line break with the two characters `\n` before saving the value as
+`TRANSPORT_RSA_PRIVATE_KEY`. Do not add any `VITE_TRANSPORT_*` variable to the
+frontend environment.
 
 Optional values:
 

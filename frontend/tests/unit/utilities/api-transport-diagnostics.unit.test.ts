@@ -9,6 +9,7 @@ import {
   recordApiTransportFailure,
 } from "../../../src/shared/api/api-transport-diagnostics";
 import { fetchWithTimeout } from "../../../src/shared/api/fetch-with-timeout";
+import { installEncryptedFetch } from "../../support/encrypted-fetch";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -115,12 +116,12 @@ test("records a failed fetch from the shared request wrapper", async () => {
 
 test("records failed HTTP responses from the shared request wrapper", async () => {
   const restoreDom = installDom();
-  const originalFetch = globalThis.fetch;
+  const restoreTransportFetch = installEncryptedFetch(() =>
+    new Response(null, { status: 503, statusText: "Service Unavailable" }),
+  );
 
   try {
     clearApiTransportDiagnostics();
-    globalThis.fetch = (async () =>
-      new Response(null, { status: 503, statusText: "Service Unavailable" })) as typeof globalThis.fetch;
 
     const response = await fetchWithTimeout("https://meatlens-backend.onrender.com/api/health");
 
@@ -130,7 +131,7 @@ test("records failed HTTP responses from the shared request wrapper", async () =
     assert.equal(diagnostic?.status, 503);
     assert.equal(diagnostic?.statusText, "Service Unavailable");
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     restoreDom();
   }
 });

@@ -31,6 +31,10 @@ Supabase PostgreSQL/Auth/Storage and SMTP (when configured)
 
 No Redis, Grafana, message broker, or external observability platform is required.
 
+The transport boundary is implemented in the shared frontend fetch wrapper and
+the backend transport middleware. A browser-visible RSA public key bootstraps
+fresh per-request AES keys; the RSA private key stays in the backend runtime.
+
 ## Modular monolith
 
 Each bounded context has a public `index.ts` composition surface and four layers:

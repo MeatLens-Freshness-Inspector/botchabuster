@@ -34,8 +34,12 @@ test("transport middleware decrypts JSON before the controller runs", async () =
   const app = express();
   app.use(express.json());
   app.use(createTransportMiddleware(store, { maxPayloadBytes: 1024 }));
+  let receivedBody: unknown;
+  let hasContext = false;
   app.post("/echo", (req, res) => {
-    res.json({ body: req.body, hasContext: Boolean(req.transportContext) });
+    receivedBody = req.body;
+    hasContext = Boolean(req.transportContext);
+    res.status(204).end();
   });
 
   const { baseUrl, close } = await startTestServer(app);
@@ -49,11 +53,9 @@ test("transport middleware decrypts JSON before the controller runs", async () =
       },
       body: encrypted.body,
     });
-    const payload = await response.json() as { body?: unknown; hasContext?: boolean };
-
-    assert.equal(response.status, 200);
-    assert.deepEqual(payload.body, { ok: true });
-    assert.equal(payload.hasContext, true);
+    assert.equal(response.status, 204);
+    assert.deepEqual(receivedBody, { ok: true });
+    assert.equal(hasContext, true);
   } finally {
     await close();
   }

@@ -6,6 +6,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { developerDashboardClient, DEFAULT_DEVELOPER_DATASET_FILTERS, type DeveloperDatasetListResponse } from "../../../src/entities/developer-metrics";
 import { DeveloperDatasetsSection } from "../../../src/features/developer-tools";
+import { installEncryptedFetch, type EncryptedMockRequest } from "../../support/encrypted-fetch";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -193,6 +194,15 @@ async function flushEffects(): Promise<void> {
   });
 }
 
+async function waitForText(pattern: RegExp, timeoutMs = 2_000): Promise<void> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (pattern.test(document.body.textContent ?? "")) return;
+    await flushEffects();
+  }
+  assert.match(document.body.textContent ?? "", pattern);
+}
+
 function getButtonByName(name: string): HTMLButtonElement {
   const button = Array.from(document.querySelectorAll("button"))
     .find((candidate) => candidate.textContent?.trim() === name);
@@ -255,14 +265,14 @@ function createDeveloperDashboardFetch(options?: {
   onDatasetUpdateBody?: (body: unknown) => void;
   onDatasetRequest?: () => void;
   datasets?: unknown[];
-}): typeof globalThis.fetch {
+}): (request: EncryptedMockRequest) => Response {
   const onExport = options?.onExport;
   const onExportBody = options?.onExportBody;
   const onDatasetUpdateBody = options?.onDatasetUpdateBody;
   const onDatasetRequest = options?.onDatasetRequest;
   const datasets = options?.datasets ?? [];
 
-  return (async (input: RequestInfo | URL, init?: RequestInit) => {
+  return ({ input, init, logicalPayload }: EncryptedMockRequest) => {
     const url = String(input);
 
     if (url.includes("/developer-dashboard/overview")) {
@@ -291,8 +301,8 @@ function createDeveloperDashboardFetch(options?: {
 
     if (url.includes("/developer-dashboard/datasets/export/start")) {
       onExport?.();
-      if (typeof init?.body === "string") {
-        onExportBody?.(JSON.parse(init.body as string) as unknown);
+      if (logicalPayload?.kind === "json" && typeof logicalPayload.value === "string") {
+        onExportBody?.(JSON.parse(logicalPayload.value) as unknown);
       }
       return new Response(JSON.stringify({ exportId: "workspace-export" }), {
         status: 202,
@@ -322,8 +332,8 @@ function createDeveloperDashboardFetch(options?: {
       const pathParts = new URL(url).pathname.split("/").filter(Boolean);
       const inspectionId = pathParts[pathParts.length - 2] ?? "inspection-unknown";
       let manualClassification = "fresh";
-      if (typeof init?.body === "string") {
-        const parsed = JSON.parse(init.body as string) as { manualClassification?: unknown };
+      if (logicalPayload?.kind === "json" && typeof logicalPayload.value === "string") {
+        const parsed = JSON.parse(logicalPayload.value) as { manualClassification?: unknown };
         onDatasetUpdateBody?.(parsed);
         if (typeof parsed.manualClassification === "string") {
           manualClassification = parsed.manualClassification;
@@ -371,16 +381,16 @@ function createDeveloperDashboardFetch(options?: {
     }
 
     return new Response(JSON.stringify({ error: "unexpected request" }), { status: 404 });
-  }) as typeof globalThis.fetch;
+  };
 }
 
 test("developer workspace renders the five internal tabs", async () => {
   const { container, cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   const root: Root = createRoot(container);
 
   try {
-    globalThis.fetch = createDeveloperDashboardFetch();
+    restoreTransportFetch = installEncryptedFetch(createDeveloperDashboardFetch());
     const { DeveloperTabContent } = await import("../../../src/widgets/admin-dashboard");
 
     await act(async () => {
@@ -404,7 +414,7 @@ test("developer workspace renders the five internal tabs", async () => {
     assert.match(tabList?.className ?? "", /md:grid-cols-5/);
     assert.doesNotMatch(tabList?.className ?? "", /md:grid-cols-6/);
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     await act(async () => {
       root.unmount();
     });
@@ -414,16 +424,16 @@ test("developer workspace renders the five internal tabs", async () => {
 
 test("developer overview uses the overview metrics without loading 10000 dataset rows", async () => {
   const { container, cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   const root: Root = createRoot(container);
   let datasetRequests = 0;
 
   try {
-    globalThis.fetch = createDeveloperDashboardFetch({
+    restoreTransportFetch = installEncryptedFetch(createDeveloperDashboardFetch({
       onDatasetRequest: () => {
         datasetRequests += 1;
       },
-    });
+    }));
     const { DeveloperTabContent } = await import("../../../src/widgets/admin-dashboard");
 
     await act(async () => {
@@ -432,9 +442,9 @@ test("developer overview uses the overview metrics without loading 10000 dataset
     await flushEffects();
 
     assert.equal(datasetRequests, 0);
-    assert.match(document.body.textContent ?? "", /1 of 2 records/);
+    await waitForText(/1 of 2 records/);
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     await act(async () => {
       root.unmount();
     });
@@ -588,11 +598,11 @@ test("developer datasets show confidence scores as raw percentages", async () =>
 
 test("developer overview derives in-app calculations from dataset manual classifications", async () => {
   const { container, cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   const root: Root = createRoot(container);
 
   try {
-    globalThis.fetch = createDeveloperDashboardFetch({
+    restoreTransportFetch = installEncryptedFetch(createDeveloperDashboardFetch({
       datasets: [
         {
           id: "dataset-1",
@@ -625,7 +635,7 @@ test("developer overview derives in-app calculations from dataset manual classif
           updated_at: "2026-07-12T00:00:00.000Z",
         },
       ],
-    });
+    }));
     const { DeveloperTabContent } = await import("../../../src/widgets/admin-dashboard");
 
     await act(async () => {
@@ -639,7 +649,7 @@ test("developer overview derives in-app calculations from dataset manual classif
     assert.match(pageText, /50%/);
     assert.match(pageText, /1 of 2 records/);
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     await act(async () => {
       root.unmount();
     });
@@ -732,15 +742,15 @@ test("developer dataset manual classification can be changed and cleared locally
 
 test("developer dataset manual classification updates through the client", async () => {
   const { cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   let updateBody: unknown = null;
 
   try {
-    globalThis.fetch = createDeveloperDashboardFetch({
+    restoreTransportFetch = installEncryptedFetch(createDeveloperDashboardFetch({
       onDatasetUpdateBody: (body) => {
         updateBody = body;
       },
-    });
+    }));
     const updatedInspection = await developerDashboardClient.updateDatasetManualClassification(
       "inspection-1",
       "spoiled",
@@ -751,22 +761,22 @@ test("developer dataset manual classification updates through the client", async
     });
     assert.equal(updatedInspection.manual_classification, "spoiled");
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     cleanup();
   }
 });
 
 test("developer dataset export sends filters only", async () => {
   const { cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   let exportBody: unknown = null;
 
   try {
-    globalThis.fetch = createDeveloperDashboardFetch({
+    restoreTransportFetch = installEncryptedFetch(createDeveloperDashboardFetch({
       onExportBody: (body) => {
         exportBody = body;
       },
-    });
+    }));
     await developerDashboardClient.exportDatasets(DEFAULT_DEVELOPER_DATASET_FILTERS);
 
     assert.deepEqual(exportBody, {
@@ -774,7 +784,7 @@ test("developer dataset export sends filters only", async () => {
       offset: "0",
     });
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     cleanup();
   }
 });

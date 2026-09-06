@@ -32,6 +32,7 @@ const request: ApiDocsRequest = {
       "X-CSRF-Token": "csrf-do-not-copy",
       "Content-Type": "application/json",
       "X-Debug": "enabled",
+      "X-Transport-Key": "test-v1.private-material",
     }),
     body: '{"ok":true}',
   },
@@ -40,6 +41,7 @@ const request: ApiDocsRequest = {
     "X-CSRF-Token": "csrf-do-not-copy",
     "Content-Type": "application/json",
     "X-Debug": "enabled",
+    "X-Transport-Key": "test-v1.private-material",
   }),
   bodyPreview: '{"ok":true}',
   curlBodyParts: [],
@@ -55,6 +57,7 @@ function historyEntry(id: number): ApiDocsHistoryEntry {
       Authorization: "Bearer do-not-copy",
       "X-CSRF-Token": "csrf-do-not-copy",
       "Content-Type": "application/json",
+      "X-Transport-Key": "test-v1.private-material",
     },
     values: { path: {}, query: {}, headers: { "X-Debug": "enabled" }, body: '{"ok":true}' },
     status: 200,
@@ -70,7 +73,7 @@ test("builds cURL without protected authentication headers", () => {
   assert.match(curl, /-H 'content-type: application\/json'/);
   assert.match(curl, /-H 'x-debug: enabled'/);
   assert.match(curl, /--data-raw '\{"ok":true\}'$/);
-  assert.doesNotMatch(curl, /Authorization|X-CSRF-Token|do-not-copy|csrf-do-not-copy/);
+  assert.doesNotMatch(curl, /Authorization|X-CSRF-Token|X-Transport-Key|do-not-copy|csrf-do-not-copy|private-material/);
 });
 
 test("caps history at 20 records and removes protected headers", () => {

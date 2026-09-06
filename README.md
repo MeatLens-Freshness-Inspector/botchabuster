@@ -69,9 +69,15 @@ Copy `backend/.env.example` to `backend/.env`:
 ```
 SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_KEY=your_supabase_service_role_key
+TRANSPORT_KEY_ID=v1
+TRANSPORT_RSA_PRIVATE_KEY=your_backend_only_rsa_private_key_with_escaped_newlines
 PORT=3001
 ALLOWED_ORIGINS=http://localhost:8080,http://127.0.0.1:8080
 ```
+
+`TRANSPORT_RSA_PRIVATE_KEY` belongs only in the backend environment. The
+frontend needs no transport secret; application bodies are encrypted by the
+shared API client using a fresh per-request AES-256-GCM key.
 
 ## Frontend
 

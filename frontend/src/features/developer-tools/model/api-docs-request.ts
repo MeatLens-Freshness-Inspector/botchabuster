@@ -7,7 +7,7 @@ import type {
   ApiDocsOperation,
 } from "@/features/developer-tools";
 
-const PROTECTED_HEADERS = new Set(["authorization", "x-csrf-token"]);
+const PROTECTED_HEADERS = new Set(["authorization", "x-csrf-token", "x-transport-key"]);
 
 export interface ApiDocsRequest {
   url: string;

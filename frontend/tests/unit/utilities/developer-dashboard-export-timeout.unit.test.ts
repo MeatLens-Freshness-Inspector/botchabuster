@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { developerDashboardClient, DEFAULT_DEVELOPER_DATASET_FILTERS } from "../../../src/entities/developer-metrics";
+import { installEncryptedFetch } from "../../support/encrypted-fetch";
 
 test("developer dataset export uses a longer timeout than uploads", async () => {
-  const originalFetch = globalThis.fetch;
   const originalSetTimeout = globalThis.setTimeout;
   const originalClearTimeout = globalThis.clearTimeout;
   const recordedTimeouts: number[] = [];
@@ -13,7 +13,7 @@ test("developer dataset export uses a longer timeout than uploads", async () => 
     return 1 as unknown as ReturnType<typeof globalThis.setTimeout>;
   }) as typeof globalThis.setTimeout;
   globalThis.clearTimeout = (() => undefined) as typeof globalThis.clearTimeout;
-  globalThis.fetch = (async (input) => {
+  const restoreTransportFetch = installEncryptedFetch(({ input }) => {
     const url = String(input);
     if (url.includes("/export/start")) {
       return new Response(JSON.stringify({ exportId: "export-1" }), { status: 202 });
@@ -25,7 +25,7 @@ test("developer dataset export uses a longer timeout than uploads", async () => 
       status: 200,
       headers: { "Content-Type": "application/zip" },
     });
-  }) as typeof globalThis.fetch;
+  });
 
   try {
     await developerDashboardClient.exportDatasets(DEFAULT_DEVELOPER_DATASET_FILTERS);
@@ -35,18 +35,17 @@ test("developer dataset export uses a longer timeout than uploads", async () => 
       `expected download timeout to exceed 30s, got ${recordedTimeouts.join(", ")}`,
     );
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     globalThis.setTimeout = originalSetTimeout;
     globalThis.clearTimeout = originalClearTimeout;
   }
 });
 
 test("developer dataset export forwards session progress before downloading the ZIP", async () => {
-  const originalFetch = globalThis.fetch;
   const progress: string[] = [];
   let progressRequests = 0;
 
-  globalThis.fetch = (async (input) => {
+  const restoreTransportFetch = installEncryptedFetch(({ input }) => {
     const url = String(input);
     if (url.includes("/export/start")) {
       return new Response(JSON.stringify({ exportId: "export-progress" }), { status: 202 });
@@ -63,7 +62,7 @@ test("developer dataset export forwards session progress before downloading the 
       status: 200,
       headers: { "Content-Type": "application/zip" },
     });
-  }) as typeof globalThis.fetch;
+  });
 
   try {
     const exported = await developerDashboardClient.exportDatasets(
@@ -74,6 +73,6 @@ test("developer dataset export forwards session progress before downloading the 
     assert.equal(await exported.arrayBuffer().then((bytes) => bytes.byteLength), 3);
     assert.deepEqual(progress, ["downloading-images:1/3", "complete:1/1"]);
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
   }
 });

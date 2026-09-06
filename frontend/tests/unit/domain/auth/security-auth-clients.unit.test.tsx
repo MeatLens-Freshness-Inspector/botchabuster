@@ -5,6 +5,7 @@ import { authClient } from "../../../../src/features/auth/api/auth-client";
 import { uploadClient } from "../../../../src/features/inspection-submission";
 import { clearApiCsrfToken, setApiCsrfToken } from "../../../../src/shared/api/request";
 import { getChatRequestHeaders } from "../../../../src/features/assistant";
+import { installEncryptedFetch } from "../../../support/encrypted-fetch";
 
 type GlobalWithDom = typeof globalThis & {
   window: Window & typeof globalThis;
@@ -90,7 +91,7 @@ function setStoredSession(accessToken = "session-token"): void {
 
 test("AuthClient reuses the cached bearer token alongside cookie credentials and in-memory csrf for self-service email and password changes", async () => {
   const restoreDom = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
 
   try {
     setStoredSession();
@@ -102,16 +103,15 @@ test("AuthClient reuses the cached bearer token alongside cookie credentials and
       csrf: string | null;
       body: string;
     }> = [];
-    globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
-      const headers = new Headers(init?.headers);
+    restoreTransportFetch = installEncryptedFetch(({ input, init, headers, logicalPayload }) => {
       requests.push({
         authorization: headers.get("authorization"),
         credentials: init?.credentials,
         csrf: headers.get("x-csrf-token"),
-        body: typeof init?.body === "string" ? init.body : "",
+        body: logicalPayload?.kind === "json" ? logicalPayload.value ?? "" : "",
       });
 
-      if (String(_input).includes("/email")) {
+      if (String(input).includes("/email")) {
         return new Response(
           JSON.stringify({
             id: "user-1",
@@ -127,7 +127,7 @@ test("AuthClient reuses the cached bearer token alongside cookie credentials and
       }
 
       return new Response(null, { status: 204 });
-    }) as typeof globalThis.fetch;
+    });
 
     await authClient.updateEmail("user-1", "updated@example.com");
     await authClient.updatePassword("user-1", "old-password", "new-password-123");
@@ -138,14 +138,14 @@ test("AuthClient reuses the cached bearer token alongside cookie credentials and
     ]);
   } finally {
     clearApiCsrfToken();
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     restoreDom();
   }
 });
 
 test("UploadClient reuses the cached bearer token, sends csrf, and does not send a caller-controlled userId field", async () => {
   const restoreDom = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
 
   try {
     setStoredSession();
@@ -157,14 +157,16 @@ test("UploadClient reuses the cached bearer token, sends csrf, and does not send
     let userIdValue: FormDataEntryValue | null = null;
     let hasImage = false;
 
-    globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
-      const headers = new Headers(init?.headers);
+    restoreTransportFetch = installEncryptedFetch(({ headers, init, logicalPayload }) => {
       authorization = headers.get("authorization");
       csrf = headers.get("x-csrf-token");
       credentials = init?.credentials;
-      assert.ok(init?.body instanceof FormData);
-      userIdValue = init.body.get("userId");
-      hasImage = init.body.has("image");
+      const files = logicalPayload?.kind === "form-data" ? logicalPayload.files ?? [] : [];
+      const fields = logicalPayload?.kind === "form-data" && logicalPayload.value
+        ? JSON.parse(logicalPayload.value) as Record<string, unknown>
+        : {};
+      userIdValue = typeof fields.userId === "string" ? fields.userId : null;
+      hasImage = files.some((file) => file.fieldName === "image");
 
       return new Response(
         JSON.stringify({
@@ -177,7 +179,7 @@ test("UploadClient reuses the cached bearer token, sends csrf, and does not send
           },
         },
       );
-    }) as typeof globalThis.fetch;
+    });
 
     const file = new File(["image-bytes"], "inspection.jpg", { type: "image/jpeg" });
     await uploadClient.uploadInspectionImage(file as File);
@@ -189,7 +191,7 @@ test("UploadClient reuses the cached bearer token, sends csrf, and does not send
     assert.equal(userIdValue, null);
   } finally {
     clearApiCsrfToken();
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     restoreDom();
   }
 });

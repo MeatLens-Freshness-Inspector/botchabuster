@@ -30,7 +30,14 @@ PORT=3001
 SUPABASE_URL=your_supabase_url
 SUPABASE_SERVICE_KEY=your_service_key
 APP_SESSION_SECRET=your_long_random_app_session_secret
+TRANSPORT_KEY_ID=v1
+TRANSPORT_RSA_PRIVATE_KEY=your_backend_only_rsa_private_key_with_escaped_newlines
 ```
+
+`TRANSPORT_RSA_PRIVATE_KEY` is backend-only. The frontend bootstraps the
+corresponding public key and creates a fresh AES-256-GCM request key for each
+application request; no reusable symmetric transport key belongs in frontend
+environment files.
 
 ## Architecture
 

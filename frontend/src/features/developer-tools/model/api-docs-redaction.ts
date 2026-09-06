@@ -1,5 +1,7 @@
 export const API_DOCS_REDACTED_VALUE = "[redacted]";
 
+const TRANSPORT_SECRET_HEADERS = new Set(["authorization", "x-csrf-token", "x-transport-key"]);
+
 const SENSITIVE_KEY_PATTERN = /(password|token|secret|api[-_]?key|authorization|credential)/i;
 
 export function isSensitiveKey(name: string, explicitNames: string[] = []): boolean {
@@ -43,7 +45,7 @@ export function redactRecord(
 export function redactHeaders(headers: Record<string, string>): Record<string, string> {
   return Object.fromEntries(
     Object.entries(headers)
-      .filter(([name]) => !["authorization", "x-csrf-token"].includes(name.toLowerCase()))
+      .filter(([name]) => !TRANSPORT_SECRET_HEADERS.has(name.toLowerCase()))
       .map(([name, value]) => [
         name,
         isSensitiveKey(name) ? API_DOCS_REDACTED_VALUE : value,

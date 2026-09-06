@@ -1,7 +1,7 @@
 import type { ApiDocsRequest } from "./api-docs-request";
 import { redactHeaders } from "./api-docs-redaction";
 
-const PROTECTED_HEADERS = new Set(["authorization", "x-csrf-token"]);
+const PROTECTED_HEADERS = new Set(["authorization", "x-csrf-token", "x-transport-key"]);
 
 function quote(value: string): string {
   return `'${value.replaceAll("'", "'\"'\"'")}'`;

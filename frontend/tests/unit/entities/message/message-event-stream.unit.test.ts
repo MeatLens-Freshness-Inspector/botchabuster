@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { constants, generateKeyPairSync, privateDecrypt, webcrypto } from "node:crypto";
 import { test } from "node:test";
 import { JSDOM } from "jsdom";
 import {
@@ -11,6 +12,10 @@ import {
   clearApiTransportDiagnostics,
   getApiTransportDiagnostics,
 } from "../../../../src/shared/api/api-transport-diagnostics";
+import {
+  clearTransportPublicKeyCache,
+  encryptTransportBytes,
+} from "../../../../src/shared/api/transport-crypto";
 
 const encoder = new TextEncoder();
 
@@ -38,6 +43,15 @@ function installDom() {
     Object.defineProperty(globalThis, "CustomEvent", { configurable: true, value: previousCustomEvent });
     dom.window.close();
   };
+}
+
+function transportPublicKeyResponse(publicKey: string): Response {
+  return new Response(JSON.stringify({
+    version: 1,
+    algorithm: "RSA-OAEP-256",
+    keyId: "test-v1",
+    publicKey,
+  }), { status: 200 });
 }
 
 test("parses fragmented CRLF frames, ignores heartbeats, and validates messages", async () => {
@@ -81,16 +95,34 @@ test("preserves CRLF framing at every network chunk boundary", async () => {
 test("opens the events endpoint with auth and treats unexpected EOF as reconnectable", async () => {
   const cleanup = installDom();
   const originalFetch = globalThis.fetch;
+  const originalCrypto = globalThis.crypto;
+  const pair = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const publicKey = pair.publicKey.export({ type: "spki", format: "der" }).toString("base64url");
   let capturedUrl = "";
   let capturedInit: RequestInit | undefined;
   const messages: string[] = [];
 
   try {
+    Object.defineProperty(globalThis, "crypto", { configurable: true, value: webcrypto });
+    clearTransportPublicKeyCache();
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
       capturedUrl = String(input);
       capturedInit = init;
+      if (capturedUrl.endsWith("/transport/public-key")) return transportPublicKeyResponse(publicKey);
+
+      const transportHeader = new Headers(init?.headers).get("X-Transport-Key") ?? "";
+      const wrappedKey = Buffer.from(transportHeader.slice(transportHeader.indexOf(".") + 1), "base64url");
+      const rawKey = privateDecrypt({
+        key: pair.privateKey,
+        padding: constants.RSA_PKCS1_OAEP_PADDING,
+        oaepHash: "sha256",
+      }, wrappedKey);
+      const aesKey = await webcrypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["encrypt"]);
+      const aad = new TextEncoder().encode("GET /api/user-chat/events");
+      const plaintext = "event: message\ndata: {\"id\":\"message-1\",\"sender_id\":\"sender-1\",\"recipient_id\":\"recipient-1\",\"content\":\"Hello\",\"created_at\":\"2026-08-20T12:00:00.000Z\"}\n\n";
+      const encrypted = await encryptTransportBytes(new TextEncoder().encode(plaintext), aesKey, aad);
       return new Response(streamFromChunks([
-        "event: message\ndata: {\"id\":\"message-1\",\"sender_id\":\"sender-1\",\"recipient_id\":\"recipient-1\",\"content\":\"Hello\",\"created_at\":\"2026-08-20T12:00:00.000Z\"}\n\n",
+        `data: ${JSON.stringify({ version: 1, algorithm: "A256GCM", keyId: "test-v1", ...encrypted })}\n\n`,
       ]), { status: 200, headers: { "Content-Type": "text/event-stream" } });
     }) as typeof globalThis.fetch;
 
@@ -111,7 +143,9 @@ test("opens the events endpoint with auth and treats unexpected EOF as reconnect
     assert.equal(capturedInit?.cache, "no-store");
     assert.deepEqual(messages, ["message-1"]);
   } finally {
+    clearTransportPublicKeyCache();
     globalThis.fetch = originalFetch;
+    Object.defineProperty(globalThis, "crypto", { configurable: true, value: originalCrypto });
     cleanup();
   }
 });
@@ -119,13 +153,22 @@ test("opens the events endpoint with auth and treats unexpected EOF as reconnect
 test("notifies the app when the stream handshake returns 401", async () => {
   const cleanup = installDom();
   const originalFetch = globalThis.fetch;
+  const originalCrypto = globalThis.crypto;
+  const pair = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const publicKey = pair.publicKey.export({ type: "spki", format: "der" }).toString("base64url");
   let expiredEvents = 0;
   window.addEventListener("meatlens:auth-expired", () => {
     expiredEvents += 1;
   });
 
   try {
-    globalThis.fetch = (async () => new Response(null, { status: 401 })) as typeof globalThis.fetch;
+    Object.defineProperty(globalThis, "crypto", { configurable: true, value: webcrypto });
+    clearTransportPublicKeyCache();
+    globalThis.fetch = (async (input: RequestInfo | URL) => (
+      String(input).endsWith("/transport/public-key")
+        ? transportPublicKeyResponse(publicKey)
+        : new Response(null, { status: 401 })
+    )) as typeof globalThis.fetch;
     await assert.rejects(
       () => openMessageEventStream({
         signal: new AbortController().signal,
@@ -139,7 +182,9 @@ test("notifies the app when the stream handshake returns 401", async () => {
     );
     assert.equal(expiredEvents, 1);
   } finally {
+    clearTransportPublicKeyCache();
     globalThis.fetch = originalFetch;
+    Object.defineProperty(globalThis, "crypto", { configurable: true, value: originalCrypto });
     cleanup();
   }
 });

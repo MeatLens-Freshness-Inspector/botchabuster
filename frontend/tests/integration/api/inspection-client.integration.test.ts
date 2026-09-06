@@ -6,6 +6,7 @@ import { JSDOM } from "jsdom";
 import { AUTH_EXPIRED_EVENT } from "../../../src/shared/api/request";
 import { inspectionClient } from "../../../src/entities/inspection/api";
 import { SESSION_STORAGE_KEY, USER_STORAGE_KEY } from "../../../src/entities/user/model/session-cache-storage";
+import { installEncryptedFetch } from "../../support/encrypted-fetch";
 
 function installDom() {
   const dom = new JSDOM("<!doctype html><html><body></body></html>", {
@@ -47,58 +48,58 @@ function seedSession(): void {
 
 test("sends bearer auth and scopes inspection list requests to the signed-in user by default", async () => {
   const { cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   let capturedUrl = "";
   let authorization = "";
 
   try {
     seedSession();
-    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    restoreTransportFetch = installEncryptedFetch(({ input, headers }) => {
       capturedUrl = String(input);
-      authorization = new Headers(init?.headers).get("Authorization") ?? "";
+      authorization = headers.get("Authorization") ?? "";
       return new Response(JSON.stringify([]), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
-    }) as typeof globalThis.fetch;
+    });
 
     await inspectionClient.getAll(25, 5);
 
     assert.match(capturedUrl, /\/api\/inspections\?limit=25&offset=5&scope=mine$/);
     assert.equal(authorization, "Bearer session-token");
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     cleanup();
   }
 });
 
 test("allows callers to request the full inspection dataset explicitly", async () => {
   const { cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   let capturedUrl = "";
 
   try {
     seedSession();
-    globalThis.fetch = (async (input: RequestInfo | URL) => {
+    restoreTransportFetch = installEncryptedFetch(({ input }) => {
       capturedUrl = String(input);
       return new Response(JSON.stringify([]), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
-    }) as typeof globalThis.fetch;
+    });
 
     await inspectionClient.getAll(200, 0, "all");
 
     assert.match(capturedUrl, /\/api\/inspections\?limit=200&offset=0&scope=all$/);
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     cleanup();
   }
 });
 
 test("emits auth-expired and throws a re-login error when inspection requests return unauthorized", async () => {
   const { cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   let authExpiredEvents = 0;
 
   try {
@@ -106,11 +107,11 @@ test("emits auth-expired and throws a re-login error when inspection requests re
     window.addEventListener(AUTH_EXPIRED_EVENT, () => {
       authExpiredEvents += 1;
     });
-    globalThis.fetch = (async () =>
+    restoreTransportFetch = installEncryptedFetch(() =>
       new Response(JSON.stringify({ error: "Invalid or expired access token" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
-      })) as typeof globalThis.fetch;
+      }));
 
     await assert.rejects(
       () => inspectionClient.getAll(),
@@ -118,7 +119,7 @@ test("emits auth-expired and throws a re-login error when inspection requests re
     );
     assert.equal(authExpiredEvents, 1);
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     cleanup();
   }
 });

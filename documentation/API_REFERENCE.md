@@ -23,6 +23,8 @@ The backend mounts these routers under `/api`. Unless noted otherwise, protected
 
 - JSON bodies are parsed by Express and malformed JSON returns a JSON `400` response.
 - Multipart image uploads are limited by the configured backend upload policy (10 MB maximum by default).
+- Application request and response bodies use the encrypted AES-256-GCM transport envelope. The browser obtains public-key metadata from `GET /api/transport/public-key` and sends a fresh RSA-wrapped AES key in `X-Transport-Key` for each application request.
+- `GET /api/analysis/health` and `GET /api/transport/public-key` are the only plaintext application endpoints. Paths, queries, auth headers, CSRF headers, and `X-Transport-Key` remain visible by design.
 - Unsafe cookie-authenticated requests (`POST`, `PUT`, `PATCH`, `DELETE`) require a valid `X-CSRF-Token` and an allowed `Origin`.
 - Public auth and chat endpoints are rate-limited in-process. The implementation does not require Redis.
 - Unexpected failures are serialized without internal stack traces or database details.

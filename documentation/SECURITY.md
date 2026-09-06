@@ -12,6 +12,18 @@ Required backend secrets are configured only on the server:
 
 Use different values for development and production. Do not commit `.env` files, service keys, session secrets, SMTP passwords, or developer unlock passwords.
 
+The backend-only `TRANSPORT_RSA_PRIVATE_KEY` unwraps per-request AES keys;
+`TRANSPORT_KEY_ID` identifies the active public-key metadata. Neither value is
+provided through frontend environment variables.
+
+## Encrypted application transport
+
+- The browser fetches only the RSA public-key metadata from `GET /api/transport/public-key`.
+- Each application request generates a fresh 32-byte AES-256-GCM key in Web Crypto, wraps it with RSA-OAEP-SHA-256, and sends the wrapped key in `X-Transport-Key`.
+- JSON, binary, form-data, image, ZIP, error, and SSE application bodies are encrypted with authenticated AES-256-GCM envelopes. The request method and pathname are authenticated as additional data.
+- Only `GET /api/analysis/health` and `GET /api/transport/public-key` are intentionally plaintext. URL paths, query strings, authentication headers, CSRF headers, and the transport key header remain visible to the network layer by design.
+- No reusable AES key or RSA private key is stored in frontend environment variables, browser storage, or frontend source.
+
 ## Authentication and sessions
 
 - Supabase Auth handles credential and passkey verification.

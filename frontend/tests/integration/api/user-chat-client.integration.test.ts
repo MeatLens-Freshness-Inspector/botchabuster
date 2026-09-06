@@ -5,6 +5,7 @@ import { JSDOM } from "jsdom";
 
 import { userChatClient } from "../../../src/entities/message";
 import { SESSION_STORAGE_KEY, USER_STORAGE_KEY } from "../../../src/entities/user/model/session-cache-storage";
+import { installEncryptedFetch } from "../../support/encrypted-fetch";
 
 function installDom() {
   const dom = new JSDOM("<!doctype html><html><body></body></html>", {
@@ -43,42 +44,42 @@ function seedSession(): void {
 
 test("lists chat contacts with bearer authentication", async () => {
   const { cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   let capturedUrl = "";
   let authorization = "";
 
   try {
     seedSession();
-    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    restoreTransportFetch = installEncryptedFetch(({ input, headers }) => {
       capturedUrl = String(input);
-      authorization = new Headers(init?.headers).get("Authorization") ?? "";
+      authorization = headers.get("Authorization") ?? "";
       return new Response(JSON.stringify([]), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
-    }) as typeof globalThis.fetch;
+    });
 
     await userChatClient.getContacts();
 
     assert.match(capturedUrl, /\/api\/user-chat\/contacts$/);
     assert.equal(authorization, "Bearer session-token");
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     cleanup();
   }
 });
 
 test("posts chat message payload with recipient and content", async () => {
   const { cleanup } = installDom();
-  const originalFetch = globalThis.fetch;
+  let restoreTransportFetch = () => {};
   let requestBody = "";
   let authorization = "";
 
   try {
     seedSession();
-    globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
-      requestBody = String(init?.body ?? "");
-      authorization = new Headers(init?.headers).get("Authorization") ?? "";
+    restoreTransportFetch = installEncryptedFetch(({ headers, logicalPayload }) => {
+      requestBody = logicalPayload?.kind === "json" ? logicalPayload.value ?? "" : "";
+      authorization = headers.get("Authorization") ?? "";
       return new Response(JSON.stringify({
         id: "msg-1",
         sender_id: "admin-1",
@@ -89,7 +90,7 @@ test("posts chat message payload with recipient and content", async () => {
         status: 201,
         headers: { "Content-Type": "application/json" },
       });
-    }) as typeof globalThis.fetch;
+    });
 
     const message = await userChatClient.sendMessage("user-1", "Hello user.");
 
@@ -98,7 +99,7 @@ test("posts chat message payload with recipient and content", async () => {
     assert.match(requestBody, /"content":"Hello user\."/);
     assert.equal(message.recipient_id, "user-1");
   } finally {
-    globalThis.fetch = originalFetch;
+    restoreTransportFetch();
     cleanup();
   }
 });

@@ -102,6 +102,29 @@ function readLogicalResponsePayload(value: unknown): TransportResponsePayload {
   return payload as unknown as TransportResponsePayload;
 }
 
+function decryptEncryptedSseBody(
+  rawBody: string,
+  aesKey: Buffer,
+  aad: Buffer,
+  expectedKeyId: string,
+): string {
+  return rawBody
+    .split(/\r?\n\r?\n/)
+    .filter((frame) => frame.trim().length > 0)
+    .map((frame) => {
+      const dataLines = frame
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith("data: "));
+      if (dataLines.length !== 1) throw new Error("Invalid encrypted SSE frame");
+      const envelope = parseEncryptedTransportEnvelope(
+        JSON.parse(dataLines[0].slice("data: ".length)) as EncryptedTransportEnvelope,
+        { expectedKeyId, maxCiphertextBytes: 16 * 1024 * 1024 },
+      );
+      return decryptAesGcm(envelope, aesKey, aad).toString("utf8");
+    })
+    .join("");
+}
+
 export interface EncryptedRequestClient {
   request(path: string, init?: RequestInit): Promise<Response>;
   json(path: string, body: unknown, init?: RequestInit): Promise<Response>;
@@ -144,6 +167,16 @@ export function createEncryptedRequestClient(
       if (response.status === 204 || response.status === 304 || !response.body) return response;
       const rawBody = await response.text();
       if (!rawBody) return response;
+      if (response.headers.get("Content-Type")?.toLowerCase().startsWith("text/event-stream")) {
+        const responseHeaders = new Headers(response.headers);
+        responseHeaders.set("Content-Type", "text/event-stream; charset=utf-8");
+        responseHeaders.delete("Content-Length");
+        return new Response(decryptEncryptedSseBody(rawBody, aesKey, aad, publicKeyMetadata.keyId), {
+          status: response.status,
+          statusText: response.statusText,
+          headers: responseHeaders,
+        });
+      }
       const envelope = parseEncryptedTransportEnvelope(JSON.parse(rawBody) as EncryptedTransportEnvelope, {
         expectedKeyId: publicKeyMetadata.keyId,
         maxCiphertextBytes: 16 * 1024 * 1024,
