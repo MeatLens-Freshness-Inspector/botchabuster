@@ -3,6 +3,7 @@ import test from "node:test";
 import "../../setup/env";
 import { createCookieFixture } from "../../support/authFactory";
 import { startTestServer } from "../../support/appFactory";
+import { getEncryptedTestClient } from "../../support/requestFactory";
 
 test("protected admin data endpoints reject untracked sessions instead of re-registering them", async () => {
   const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
@@ -27,13 +28,14 @@ test("protected admin data endpoints reject untracked sessions instead of re-reg
 
   const { session } = await createCookieFixture({ id: "admin-1", email: "admin@example.com" });
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
     for (const path of [
       "/api/access-codes",
       "/api/inspections?limit=200&offset=0&scope=all",
     ]) {
-      const response = await fetch(`${baseUrl}${path}`, {
+      const response = await client.request(path, {
         headers: {
           Cookie: `meatlens_session=${session.access_token}`,
           Origin: "http://localhost:8080",

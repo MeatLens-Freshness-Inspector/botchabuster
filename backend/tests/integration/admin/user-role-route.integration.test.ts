@@ -3,6 +3,7 @@ import test from "node:test";
 import "../../setup/env";
 
 import { startTestServer } from "../../support/appFactory";
+import { getEncryptedTestClient } from "../../support/requestFactory";
 import { authService } from "../../../src/modules/auth/infrastructure/SupabaseAuthFactory";
 import { auditLogService } from "../../../src/modules/audit/infrastructure/AuditLogService";
 import { profileService } from "../../../src/modules/users/infrastructure/ProfileService";
@@ -19,9 +20,10 @@ test("ordinary admins cannot call the role-change endpoint", async () => {
     return { previousRole: "user", role: "developer" };
   };
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const response = await fetch(`${baseUrl}/api/profiles/admin/users/user-2/role`, {
+    const response = await client.request("/api/profiles/admin/users/user-2/role", {
       method: "PUT",
       headers: { Authorization: "Bearer admin-token", "Content-Type": "application/json" },
       body: JSON.stringify({ role: "developer", password: "developer-password" }),
@@ -59,9 +61,10 @@ test("developers receive the audited role-change result", async () => {
   };
   auditLogService.write = async () => { auditCalled = true; };
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const response = await fetch(`${baseUrl}/api/profiles/admin/users/user-2/role`, {
+    const response = await client.request("/api/profiles/admin/users/user-2/role", {
       method: "PUT",
       headers: { Authorization: "Bearer developer-token", "Content-Type": "application/json" },
       body: JSON.stringify({ role: "admin", password: "developer-password" }),

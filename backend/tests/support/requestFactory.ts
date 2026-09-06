@@ -30,6 +30,10 @@ export async function getTransportPublicKeyMetadata(baseUrl: string): Promise<Tr
   return response.json() as Promise<TransportPublicKey>;
 }
 
+export async function getEncryptedTestClient(baseUrl: string): Promise<EncryptedRequestClient> {
+  return createEncryptedRequestClient(baseUrl, await getTransportPublicKeyMetadata(baseUrl));
+}
+
 function resolveRequestUrl(baseUrl: string, path: string): string {
   if (/^https?:\/\//i.test(path)) return path;
   return `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;

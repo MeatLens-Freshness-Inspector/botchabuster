@@ -4,6 +4,7 @@ import "../../setup/env";
 import { createCookieFixture, parseSessionCookie } from "../../support/authFactory";
 import { createProfileFixture, createUserFixture } from "../../support/fixtures";
 import { startTestServer } from "../../support/appFactory";
+import { getEncryptedTestClient } from "../../support/requestFactory";
 
 test("sign-in sets a secure cookie, returns a bootstrap payload, and registers the device slot", async () => {
   const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
@@ -44,9 +45,10 @@ test("sign-in sets a secure cookie, returns a bootstrap payload, and registers t
   };
 
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const response = await fetch(`${baseUrl}/api/auth/sign-in`, {
+    const response = await client.request("/api/auth/sign-in", {
       method: "POST",
       headers: {
         Origin: "http://localhost:8080",
@@ -127,9 +129,10 @@ test("sign-in rejects before issuing a session cookie when the device limit is r
   };
 
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const response = await fetch(`${baseUrl}/api/auth/sign-in`, {
+    const response = await client.request("/api/auth/sign-in", {
       method: "POST",
       headers: {
         Origin: "http://localhost:8080",
@@ -187,9 +190,10 @@ test("session bootstrap accepts a bearer-backed app session, preserves authentic
   sessionLimit.registerSession = async () => undefined;
 
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const signInResponse = await fetch(`${baseUrl}/api/auth/sign-in`, {
+    const signInResponse = await client.request("/api/auth/sign-in", {
       method: "POST",
       headers: {
         Origin: "http://localhost:8080",
@@ -200,7 +204,7 @@ test("session bootstrap accepts a bearer-backed app session, preserves authentic
     const signInBody = await signInResponse.json() as Record<string, unknown>;
     const issuedSession = signInBody.session as { access_token?: string };
 
-    const bootstrapResponse = await fetch(`${baseUrl}/api/auth/session`, {
+    const bootstrapResponse = await client.request("/api/auth/session", {
       headers: {
         Authorization: `Bearer ${issuedSession.access_token ?? ""}`,
       },
@@ -270,9 +274,10 @@ test("cookie-authenticated inspection requests reuse the session slot registered
   };
 
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const signInResponse = await fetch(`${baseUrl}/api/auth/sign-in`, {
+    const signInResponse = await client.request("/api/auth/sign-in", {
       method: "POST",
       headers: {
         Origin: "http://localhost:8080",
@@ -287,7 +292,7 @@ test("cookie-authenticated inspection requests reuse the session slot registered
     assert.equal(registeredToken, cookieToken);
     assert.equal(registerCalls, 1);
 
-    const inspectionResponse = await fetch(`${baseUrl}/api/inspections?limit=1&offset=0&scope=all`, {
+    const inspectionResponse = await client.request("/api/inspections?limit=1&offset=0&scope=all", {
       headers: {
         Cookie: issuedCookie,
       },
@@ -334,9 +339,10 @@ test("sign-out clears the session cookie and removes the registered app session"
 
   const { session, csrfToken } = await createCookieFixture();
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const response = await fetch(`${baseUrl}/api/auth/sign-out`, {
+    const response = await client.request("/api/auth/sign-out", {
       method: "POST",
       headers: {
         Cookie: `meatlens_session=${session.access_token}`,
@@ -385,16 +391,17 @@ test("a session removed by server-side idle cleanup cannot bootstrap again", asy
   };
 
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const activeResponse = await fetch(`${baseUrl}/api/auth/session`, {
+    const activeResponse = await client.request("/api/auth/session", {
       headers: { Cookie: `meatlens_session=${session.access_token}` },
     });
     assert.equal(activeResponse.status, 200);
     assert.equal(touchCalls, 1);
 
     sessionActive = false;
-    const idleResponse = await fetch(`${baseUrl}/api/auth/session`, {
+    const idleResponse = await client.request("/api/auth/session", {
       headers: { Cookie: `meatlens_session=${session.access_token}` },
     });
     const body = await idleResponse.json() as { error?: string };
@@ -448,9 +455,10 @@ test("passkey authenticate verify mirrors the cookie/bootstrap contract and regi
   };
 
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const response = await fetch(`${baseUrl}/api/auth/passkeys/authenticate/verify`, {
+    const response = await client.request("/api/auth/passkeys/authenticate/verify", {
       method: "POST",
       headers: {
         Origin: "http://localhost:8080",
@@ -525,9 +533,10 @@ test("passkey register, list, and delete routes accept cookie auth without an Au
 
   const { session, csrfToken } = await createCookieFixture();
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const beginRegistrationResponse = await fetch(`${baseUrl}/api/auth/passkeys/register/options`, {
+    const beginRegistrationResponse = await client.request("/api/auth/passkeys/register/options", {
       method: "POST",
       headers: {
         Cookie: `meatlens_session=${session.access_token}`,
@@ -537,7 +546,7 @@ test("passkey register, list, and delete routes accept cookie auth without an Au
     });
     assert.equal(beginRegistrationResponse.status, 200);
 
-    const listResponse = await fetch(`${baseUrl}/api/auth/passkeys`, {
+    const listResponse = await client.request("/api/auth/passkeys", {
       headers: {
         Cookie: `meatlens_session=${session.access_token}`,
       },
@@ -546,7 +555,7 @@ test("passkey register, list, and delete routes accept cookie auth without an Au
     assert.equal(listResponse.status, 200);
     assert.equal(listed.length, 1);
 
-    const deleteResponse = await fetch(`${baseUrl}/api/auth/passkeys/credential-1`, {
+    const deleteResponse = await client.request("/api/auth/passkeys/credential-1", {
       method: "DELETE",
       headers: {
         Cookie: `meatlens_session=${session.access_token}`,

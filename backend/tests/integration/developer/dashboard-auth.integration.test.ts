@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import "../../setup/env";
 import { startTestServer } from "../../support/appFactory";
+import { getEncryptedTestClient } from "../../support/requestFactory";
 
 test("developer dashboard overview denies plain admins and allows developers", async () => {
   const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
@@ -35,14 +36,15 @@ test("developer dashboard overview denies plain admins and allows developers", a
   });
 
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const denied = await fetch(`${baseUrl}/api/developer-dashboard/overview`, {
+    const denied = await client.request("/api/developer-dashboard/overview", {
       headers: { Authorization: "Bearer admin-token" },
     });
     assert.equal(denied.status, 403);
 
-    const allowed = await fetch(`${baseUrl}/api/developer-dashboard/overview`, {
+    const allowed = await client.request("/api/developer-dashboard/overview", {
       headers: { Authorization: "Bearer developer-token" },
     });
     assert.equal(allowed.status, 200);

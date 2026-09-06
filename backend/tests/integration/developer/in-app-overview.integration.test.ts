@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import "../../setup/env";
 import { startTestServer } from "../../support/appFactory";
+import { getEncryptedTestClient } from "../../support/requestFactory";
 
 test("developer dashboard overview returns inAppMetrics payload", async () => {
   const { authService } = await import("../../../src/modules/auth/infrastructure/SupabaseAuthFactory");
@@ -52,9 +53,10 @@ test("developer dashboard overview returns inAppMetrics payload", async () => {
   });
 
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const res = await fetch(`${baseUrl}/api/developer-dashboard/overview`, {
+    const res = await client.request("/api/developer-dashboard/overview", {
       headers: { Authorization: "Bearer dev-token" },
     });
     assert.equal(res.status, 200);

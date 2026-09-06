@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import "../../setup/env";
 import { startTestServer } from "../../support/appFactory";
+import { getEncryptedTestClient } from "../../support/requestFactory";
 
 test("api responses include baseline security headers", async () => {
   const { baseUrl, close } = await startTestServer();
@@ -20,9 +21,10 @@ test("api responses include baseline security headers", async () => {
 
 test("access-code validation is no longer publicly callable", async () => {
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const response = await fetch(`${baseUrl}/api/access-codes/validate`, {
+    const response = await client.request("/api/access-codes/validate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -41,13 +43,14 @@ test("access-code validation is no longer publicly callable", async () => {
 
 test("public auth endpoints are rate limited after repeated requests", async () => {
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
     const statuses: number[] = [];
     let retryAfter: string | null = null;
 
     for (let attempt = 0; attempt < 10; attempt += 1) {
-      const response = await fetch(`${baseUrl}/api/auth/sign-in`, {
+      const response = await client.request("/api/auth/sign-in", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -111,9 +114,10 @@ test("cookie-authenticated mutating requests reject a missing csrf token", async
   });
 
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
-    const response = await fetch(`${baseUrl}/api/chat`, {
+    const response = await client.request("/api/chat", {
       method: "POST",
       headers: {
         Cookie: `meatlens_session=${session.access_token}`,
@@ -164,13 +168,14 @@ test("chat requests are rate limited per authenticated user", async () => {
   };
 
   const { baseUrl, close } = await startTestServer();
+  const client = await getEncryptedTestClient(baseUrl);
 
   try {
     const statuses: number[] = [];
     let retryAfter: string | null = null;
 
     for (let attempt = 0; attempt < 10; attempt += 1) {
-      const response = await fetch(`${baseUrl}/api/chat`, {
+      const response = await client.request("/api/chat", {
         method: "POST",
         headers: {
           Authorization: "Bearer session-token",
