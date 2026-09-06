@@ -26,10 +26,8 @@ test("serializes JSON and binary request bodies into logical transport payloads"
   assert.equal(blob?.contentType, "application/zip");
 
   assert.equal(await serializeTransportRequestBody(undefined), null);
-  await assert.rejects(
-    () => serializeTransportRequestBody(new FormData()),
-    /Unsupported transport request body/,
-  );
+  const formData = await serializeTransportRequestBody(new FormData());
+  assert.equal(formData?.kind, "form-data");
 });
 
 test("prepares a request with an ephemeral AES key and wrapped transport header", async () => {

@@ -225,6 +225,46 @@ function bytesToTransportPayload(bytes: Uint8Array, contentType: string): Transp
   };
 }
 
+export async function serializeTransportFormData(formData: FormData): Promise<TransportRequestPayload> {
+  const fields: Record<string, string> = {};
+  const files: NonNullable<TransportRequestPayload["files"]> = [];
+  let totalBytes = 0;
+
+  for (const [fieldName, value] of formData.entries()) {
+    if (typeof value === "string") {
+      totalBytes += new TextEncoder().encode(value).length;
+      if (totalBytes > MAX_TRANSPORT_REQUEST_BYTES) throw new Error("Transport request body is too large");
+      fields[fieldName] = value;
+      continue;
+    }
+
+    if (typeof Blob === "undefined" || !(value instanceof Blob)) {
+      throw new Error("Unsupported transport form field");
+    }
+    const bytes = new Uint8Array(await value.arrayBuffer());
+    totalBytes += bytes.length;
+    if (totalBytes > MAX_TRANSPORT_REQUEST_BYTES) throw new Error("Transport request body is too large");
+    const namedValue = value as Blob & { name?: unknown };
+    const fileName = typeof namedValue.name === "string" && namedValue.name.length > 0
+      ? namedValue.name
+      : "blob";
+    files.push({
+      fieldName,
+      fileName,
+      mimeType: value.type || "application/octet-stream",
+      size: bytes.length,
+      bytes: encodeBase64Url(bytes),
+    });
+  }
+
+  return {
+    kind: "form-data",
+    contentType: "multipart/form-data",
+    value: JSON.stringify(fields),
+    files,
+  };
+}
+
 export async function serializeTransportRequestBody(
   body: BodyInit | null | undefined,
   contentType = "",
@@ -242,6 +282,10 @@ export async function serializeTransportRequestBody(
         : { kind: "json", contentType, value: body };
     }
     return bytesToTransportPayload(bytes, contentTypeForBody(contentType || "text/plain;charset=UTF-8"));
+  }
+
+  if (typeof FormData !== "undefined" && body instanceof FormData) {
+    return serializeTransportFormData(body);
   }
 
   if (typeof URLSearchParams !== "undefined" && body instanceof URLSearchParams) {
