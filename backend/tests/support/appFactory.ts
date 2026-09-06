@@ -4,10 +4,11 @@ import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import type { Express } from "express";
 import { createApp } from "../../src/app";
+import { createTestTransportKeyStore } from "../../src/modules/transport/infrastructure/TransportKeyStore";
 import { closeServer } from "../setup/lifecycle";
 
 export function createTestApp(): Express {
-  return createApp();
+  return createApp(undefined, createTestTransportKeyStore());
 }
 
 export async function startTestServer(app = createTestApp()): Promise<{ baseUrl: string; close: () => Promise<void> }> {

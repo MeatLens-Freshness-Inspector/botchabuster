@@ -14,14 +14,24 @@ import developerOptionsRoutes from "../modules/developer/presentation/options-ro
 import developerDashboardRoutes from "../modules/developer/presentation/dashboard-routes";
 import userChatRoutes from "../modules/chat/presentation/user-chat-routes";
 import { createDefaultModelAccuracyRouter } from "../modules/model-accuracy/presentation/routes";
+import { createPublicKeyRouter } from "../modules/transport/presentation/public-key-routes";
+import type { TransportKeyStore } from "../modules/transport/infrastructure/TransportKeyStore";
 
 export interface BackendRoute {
   readonly prefix: string;
   readonly router: Router;
 }
 
-export function createBackendRoutes(_modules?: ModuleRegistry): readonly BackendRoute[] {
+export function createBackendRoutes(
+  _modules?: ModuleRegistry,
+  transportKeyStore?: TransportKeyStore,
+): readonly BackendRoute[] {
+  if (!transportKeyStore) {
+    throw new Error("Transport key store is required");
+  }
+
   return [
+    { prefix: "/api/transport", router: createPublicKeyRouter(transportKeyStore) },
     { prefix: "/api/analysis", router: analysisRoutes },
     { prefix: "/api/profiles", router: profileRoutes },
     { prefix: "/api/inspections", router: inspectionRoutes },

@@ -9,6 +9,11 @@ import { applySecurityHeaders } from "./middleware/securityHeaders";
 import { createBackendDependencies } from "./bootstrap/dependencies";
 import { createModuleRegistry } from "./bootstrap/modules";
 import { createBackendRoutes } from "./bootstrap/routes";
+import {
+  createTestTransportKeyStore,
+  createTransportKeyStore,
+  type TransportKeyStore,
+} from "./modules/transport/infrastructure/TransportKeyStore";
 
 export function isSafeMethod(method: string): boolean {
   return method === "GET" || method === "HEAD" || method === "OPTIONS";
@@ -31,10 +36,27 @@ function ensureUploadDirectory(uploadDir: string): void {
   }
 }
 
-export function createApp(config = Config.getInstance()) {
+export function createApp(
+  config = Config.getInstance(),
+  transportKeyStore?: TransportKeyStore,
+) {
   const app = express();
   const dependencies = createBackendDependencies(config);
   const modules = createModuleRegistry(dependencies);
+  const resolvedTransportKeyStore = transportKeyStore ?? (
+    config.transportRsaPrivateKey
+      ? createTransportKeyStore({
+        privateKey: config.transportRsaPrivateKey,
+        keyId: config.transportKeyId,
+        nodeEnv: process.env.NODE_ENV,
+      })
+      : process.env.NODE_ENV === "production"
+        ? createTransportKeyStore({
+          keyId: config.transportKeyId,
+          nodeEnv: process.env.NODE_ENV,
+        })
+        : createTestTransportKeyStore()
+  );
 
   ensureUploadDirectory(config.uploadDir);
 
@@ -43,7 +65,7 @@ export function createApp(config = Config.getInstance()) {
   app.use(cors(createCorsOptions(config.allowedOrigins)));
   app.use(express.json());
 
-  for (const route of createBackendRoutes(modules)) {
+  for (const route of createBackendRoutes(modules, resolvedTransportKeyStore)) {
     app.use(route.prefix, route.router);
   }
   app.use(globalErrorHandler);
