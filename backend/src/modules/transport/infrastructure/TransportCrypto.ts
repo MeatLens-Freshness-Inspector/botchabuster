@@ -1,4 +1,12 @@
+import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
+
 const BASE64_URL_PATTERN = /^(?:[A-Za-z0-9_-]{2,})?$/;
+
+export interface AesGcmCiphertext {
+  iv: Buffer;
+  ciphertext: Buffer;
+  tag: Buffer;
+}
 
 export function encodeBase64Url(value: Uint8Array): string {
   return Buffer.from(value)
@@ -28,4 +36,44 @@ export function decodeBase64Url(value: string): Uint8Array {
   }
 
   return new Uint8Array(decoded);
+}
+
+export function encryptAesGcm(
+  plaintext: Uint8Array,
+  key: Uint8Array,
+  aad: Uint8Array,
+): AesGcmCiphertext {
+  if (key.length !== 32) {
+    throw new Error("Transport AES key must be 32 bytes");
+  }
+
+  const iv = randomBytes(12);
+  const cipher = createCipheriv("aes-256-gcm", Buffer.from(key), iv);
+  cipher.setAAD(Buffer.from(aad));
+  const ciphertext = Buffer.concat([cipher.update(Buffer.from(plaintext)), cipher.final()]);
+
+  return {
+    iv,
+    ciphertext,
+    tag: cipher.getAuthTag(),
+  };
+}
+
+export function decryptAesGcm(
+  encrypted: AesGcmCiphertext,
+  key: Uint8Array,
+  aad: Uint8Array,
+): Buffer {
+  if (key.length !== 32 || encrypted.iv.length !== 12 || encrypted.tag.length !== 16) {
+    throw new Error("Transport decryption failed");
+  }
+
+  try {
+    const decipher = createDecipheriv("aes-256-gcm", Buffer.from(key), encrypted.iv);
+    decipher.setAAD(Buffer.from(aad));
+    decipher.setAuthTag(encrypted.tag);
+    return Buffer.concat([decipher.update(encrypted.ciphertext), decipher.final()]);
+  } catch {
+    throw new Error("Transport decryption failed");
+  }
 }
