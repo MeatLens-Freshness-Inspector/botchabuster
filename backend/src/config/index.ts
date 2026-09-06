@@ -25,6 +25,10 @@ export class Config {
   readonly csrfTokenTtlSeconds: number;
   readonly sessionIdleTimeoutSeconds: number;
   readonly sessionCleanupIntervalMs: number;
+  readonly transportRsaPrivateKey: string;
+  readonly transportKeyId: string;
+  readonly transportMaxEnvelopeBytes: number;
+  readonly transportMaxPayloadBytes: number;
 
   private constructor() {
     this.port = parseInt(process.env.PORT || "3001", 10);
@@ -53,6 +57,10 @@ export class Config {
     const sessionTiming = resolveSessionTiming(process.env);
     this.sessionIdleTimeoutSeconds = sessionTiming.sessionIdleTimeoutSeconds;
     this.sessionCleanupIntervalMs = sessionTiming.sessionCleanupIntervalMs;
+    this.transportRsaPrivateKey = process.env.TRANSPORT_RSA_PRIVATE_KEY?.trim() || "";
+    this.transportKeyId = process.env.TRANSPORT_KEY_ID?.trim() || "v1";
+    this.transportMaxEnvelopeBytes = 16 * 1024 * 1024;
+    this.transportMaxPayloadBytes = 12 * 1024 * 1024;
   }
 
   static getInstance(): Config {
