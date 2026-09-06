@@ -123,6 +123,85 @@ export async function decryptTransportBytes(
   }
 }
 
+function parseTransportResponseEnvelope(value: unknown, expectedKeyId: string): TransportCiphertext {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Invalid encrypted response");
+  }
+  const envelope = value as Record<string, unknown>;
+  if (
+    envelope.version !== 1
+    || envelope.algorithm !== "A256GCM"
+    || envelope.keyId !== expectedKeyId
+    || typeof envelope.iv !== "string"
+    || typeof envelope.ciphertext !== "string"
+  ) {
+    throw new Error("Invalid encrypted response");
+  }
+  const iv = decodeBase64Url(envelope.iv);
+  if (iv.length !== 12) throw new Error("Invalid encrypted response");
+  decodeBase64Url(envelope.ciphertext);
+  return { iv: envelope.iv, ciphertext: envelope.ciphertext };
+}
+
+function readLogicalResponsePayload(value: unknown): {
+  contentType: string;
+  headers: Record<string, string>;
+  body: string;
+  bodyEncoding: "utf8" | "base64";
+} {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Invalid encrypted response");
+  }
+  const payload = value as Record<string, unknown>;
+  if (
+    typeof payload.contentType !== "string"
+    || typeof payload.body !== "string"
+    || (payload.bodyEncoding !== "utf8" && payload.bodyEncoding !== "base64")
+    || !payload.headers
+    || typeof payload.headers !== "object"
+    || Array.isArray(payload.headers)
+    || Object.entries(payload.headers).some(([name, headerValue]) => (
+      name.trim().length === 0 || typeof headerValue !== "string"
+    ))
+  ) {
+    throw new Error("Invalid encrypted response");
+  }
+  return {
+    contentType: payload.contentType,
+    headers: payload.headers as Record<string, string>,
+    body: payload.body,
+    bodyEncoding: payload.bodyEncoding,
+  };
+}
+
+export async function decryptTransportResponse(
+  response: Response,
+  transport: NonNullable<PreparedTransportRequest["transport"]>,
+): Promise<Response> {
+  if (response.status === 204 || response.status === 304 || !response.body) return response;
+
+  const rawBody = await response.text();
+  if (rawBody.length === 0) return response;
+
+  try {
+    const envelope = parseTransportResponseEnvelope(JSON.parse(rawBody) as unknown, transport.keyId);
+    const plaintext = await decryptTransportBytes(envelope, transport.key, transport.aad);
+    const payload = readLogicalResponsePayload(JSON.parse(new TextDecoder().decode(plaintext)) as unknown);
+    const headers = new Headers(payload.headers);
+    headers.set("Content-Type", payload.contentType);
+    const body = payload.bodyEncoding === "base64"
+      ? decodeBase64Url(payload.body)
+      : payload.body;
+    return new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  } catch {
+    throw new Error("Invalid encrypted response");
+  }
+}
+
 function contentTypeForBody(contentType: string | undefined): string {
   return contentType?.trim() || "application/octet-stream";
 }

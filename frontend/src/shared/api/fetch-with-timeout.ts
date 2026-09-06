@@ -1,5 +1,5 @@
 import { applyApiRequestInit, refreshApiSessionForCsrf } from "./request";
-import { createEncryptedRequest } from "./transport-crypto";
+import { createEncryptedRequest, decryptTransportResponse } from "./transport-crypto";
 import {
   recordApiTransportFailure,
   recordApiTransportResponseFailure,
@@ -39,10 +39,13 @@ async function fetchOnceWithTimeout(
   try {
     const nextInit = applyApiRequestInit(init);
     const preparedRequest = await createEncryptedRequest(input, nextInit);
-    const response = await fetch(input, {
+    const networkResponse = await fetch(input, {
       ...preparedRequest.init,
       signal: controller.signal,
     });
+    const response = preparedRequest.transport
+      ? await decryptTransportResponse(networkResponse, preparedRequest.transport)
+      : networkResponse;
 
     if (!response.ok) {
       recordApiTransportResponseFailure({
