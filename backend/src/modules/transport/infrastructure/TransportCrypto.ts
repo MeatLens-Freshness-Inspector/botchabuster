@@ -7,6 +7,12 @@ import {
   constants,
   type KeyObject,
 } from "node:crypto";
+import {
+  assertTransportEnvelope,
+  TRANSPORT_ALGORITHM,
+  TRANSPORT_VERSION,
+  type EncryptedTransportEnvelope,
+} from "../domain/transport";
 
 const BASE64_URL_PATTERN = /^(?:[A-Za-z0-9_-]{2,})?$/;
 
@@ -14,6 +20,11 @@ export interface AesGcmCiphertext {
   iv: Buffer;
   ciphertext: Buffer;
   tag: Buffer;
+}
+
+export interface TransportEnvelopeLimits {
+  expectedKeyId?: string;
+  maxCiphertextBytes: number;
 }
 
 export function encodeBase64Url(value: Uint8Array): string {
@@ -116,4 +127,66 @@ export function unwrapAesKey(wrappedKey: string, privateKey: KeyObject): Buffer 
   } catch {
     throw new Error("Transport key unwrap failed");
   }
+}
+
+export function getTransportAad(method: string, path: string): Buffer {
+  let pathname = path;
+  try {
+    pathname = new URL(path, "http://transport.invalid").pathname;
+  } catch {
+    pathname = path.split("?")[0] || "/";
+  }
+  return Buffer.from(method.toUpperCase() + " " + (pathname || "/"), "utf8");
+}
+
+export function createEncryptedTransportEnvelope(
+  keyId: string,
+  plaintext: Uint8Array,
+  key: Uint8Array,
+  aad: Uint8Array,
+): EncryptedTransportEnvelope {
+  const encrypted = encryptAesGcm(plaintext, key, aad);
+  return {
+    version: TRANSPORT_VERSION,
+    algorithm: TRANSPORT_ALGORITHM,
+    keyId,
+    iv: encodeBase64Url(encrypted.iv),
+    ciphertext: encodeBase64Url(Buffer.concat([encrypted.ciphertext, encrypted.tag])),
+  };
+}
+
+export function parseEncryptedTransportEnvelope(
+  value: unknown,
+  limits: TransportEnvelopeLimits,
+): AesGcmCiphertext & { keyId: string } {
+  const envelope = assertTransportEnvelope(value);
+  if (limits.expectedKeyId && envelope.keyId !== limits.expectedKeyId) {
+    throw new Error("Transport envelope key ID is not accepted");
+  }
+
+  let iv: Uint8Array;
+  let ciphertextWithTag: Uint8Array;
+  try {
+    iv = decodeBase64Url(envelope.iv);
+    ciphertextWithTag = decodeBase64Url(envelope.ciphertext);
+  } catch {
+    throw new Error("Invalid encrypted transport envelope");
+  }
+
+  if (iv.length !== 12) {
+    throw new Error("Transport envelope IV is invalid");
+  }
+  if (ciphertextWithTag.length > limits.maxCiphertextBytes) {
+    throw new Error("Transport envelope exceeds the maximum size");
+  }
+  if (ciphertextWithTag.length < 16) {
+    throw new Error("Transport envelope ciphertext is invalid");
+  }
+
+  return {
+    keyId: envelope.keyId,
+    iv: Buffer.from(iv),
+    ciphertext: Buffer.from(ciphertextWithTag.slice(0, -16)),
+    tag: Buffer.from(ciphertextWithTag.slice(-16)),
+  };
 }
