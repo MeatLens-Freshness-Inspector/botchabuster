@@ -8,6 +8,7 @@ import {
   getApiTransportDiagnostics,
   recordApiTransportFailure,
 } from "../../../src/shared/api/api-transport-diagnostics";
+import { API_BASE_URL } from "../../../src/shared/api/base-url";
 import { fetchWithTimeout } from "../../../src/shared/api/fetch-with-timeout";
 import { installEncryptedFetch } from "../../support/encrypted-fetch";
 
@@ -130,6 +131,47 @@ test("records failed HTTP responses from the shared request wrapper", async () =
     assert.equal(diagnostic?.stage, "http-error");
     assert.equal(diagnostic?.status, 503);
     assert.equal(diagnostic?.statusText, "Service Unavailable");
+  } finally {
+    restoreTransportFetch();
+    restoreDom();
+  }
+});
+
+test("does not diagnose the expected anonymous auth session response", async () => {
+  const restoreDom = installDom();
+  const restoreTransportFetch = installEncryptedFetch(() => (
+    new Response(null, { status: 401, statusText: "Unauthorized" })
+  ));
+
+  try {
+    clearApiTransportDiagnostics();
+
+    const response = await fetchWithTimeout(`${API_BASE_URL}/auth/session`);
+
+    assert.equal(response.status, 401);
+    assert.deepEqual(getApiTransportDiagnostics(), []);
+  } finally {
+    restoreTransportFetch();
+    restoreDom();
+  }
+});
+
+test("continues diagnosing unauthorized responses from protected endpoints", async () => {
+  const restoreDom = installDom();
+  const restoreTransportFetch = installEncryptedFetch(() => (
+    new Response(null, { status: 401, statusText: "Unauthorized" })
+  ));
+
+  try {
+    clearApiTransportDiagnostics();
+
+    const response = await fetchWithTimeout(`${API_BASE_URL}/profiles`);
+
+    assert.equal(response.status, 401);
+    const [diagnostic] = getApiTransportDiagnostics();
+    assert.equal(diagnostic?.stage, "http-error");
+    assert.equal(diagnostic?.status, 401);
+    assert.equal(diagnostic?.url, `${API_BASE_URL}/profiles`);
   } finally {
     restoreTransportFetch();
     restoreDom();
