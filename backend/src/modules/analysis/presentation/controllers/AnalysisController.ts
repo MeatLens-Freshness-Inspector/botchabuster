@@ -4,7 +4,12 @@ import { RetiredServerAnalysis } from "../../application/RetiredServerAnalysis";
 export class AnalysisController {
   private readonly retiredAnalysis = new RetiredServerAnalysis();
   async analyze(req: Request, res: Response): Promise<void> {
-    const result = this.retiredAnalysis.execute(Boolean(req.file));
+    const image = req.transportFiles?.image;
+    if (image && !["image/jpeg", "image/png", "image/webp"].includes(image.mimeType)) {
+      res.status(400).json({ error: "Only JPEG, PNG, and WebP images are allowed" });
+      return;
+    }
+    const result = this.retiredAnalysis.execute(Boolean(image));
     res.status(result.status).json(result.body);
   }
 
