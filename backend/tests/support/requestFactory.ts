@@ -39,10 +39,40 @@ function resolveRequestUrl(baseUrl: string, path: string): string {
   return `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-function serializeBody(body: BodyInit | null | undefined, contentType: string): { kind: "json" | "bytes"; contentType: string; value?: string } | undefined {
+async function serializeBody(body: BodyInit | null | undefined, contentType: string): Promise<{
+  kind: "json" | "bytes" | "form-data";
+  contentType: string;
+  value?: string;
+  files?: Array<{ fieldName: string; fileName: string; mimeType: string; size: number; bytes: string }>;
+} | undefined> {
   if (body === undefined || body === null) return undefined;
   if (typeof body === "string" && contentType.toLowerCase().includes("application/json")) {
     return { kind: "json", contentType, value: body };
+  }
+
+  if (body instanceof FormData) {
+    const fields: Record<string, string> = {};
+    const files: Array<{ fieldName: string; fileName: string; mimeType: string; size: number; bytes: string }> = [];
+    for (const [fieldName, value] of body.entries()) {
+      if (typeof value === "string") {
+        fields[fieldName] = value;
+        continue;
+      }
+      const bytes = Buffer.from(await value.arrayBuffer());
+      files.push({
+        fieldName,
+        fileName: "name" in value && typeof value.name === "string" ? value.name : "blob",
+        mimeType: value.type || "application/octet-stream",
+        size: bytes.length,
+        bytes: bytes.toString("base64url"),
+      });
+    }
+    return {
+      kind: "form-data",
+      contentType: "multipart/form-data",
+      value: JSON.stringify(fields),
+      files,
+    };
   }
 
   let bytes: Buffer;
@@ -98,7 +128,7 @@ export function createEncryptedRequestClient(
       const wrappedKey = wrapAesKey(aesKey, publicKey);
       headers.set("X-Transport-Key", `${publicKeyMetadata.keyId}.${wrappedKey}`);
 
-      const logicalBody = serializeBody(init.body, headers.get("Content-Type") ?? "");
+      const logicalBody = await serializeBody(init.body, headers.get("Content-Type") ?? "");
       const nextInit: RequestInit = { ...init, method, headers };
       if (logicalBody) {
         nextInit.body = JSON.stringify(createEncryptedTransportEnvelope(

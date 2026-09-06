@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
+import { rm } from "node:fs/promises";
 import { storageService } from "../../infrastructure/StorageService";
 import { getRequestAuthContext } from "../../../../middleware/auth";
+import { materializeTransportFile, type MaterializedTransportFile } from "../../../../middleware/upload";
 import { UploadInspectionImage } from "../../application/UploadInspectionImage";
 
 export class UploadController {
@@ -11,30 +13,29 @@ export class UploadController {
    * Uploads an inspection image to secure storage
    * Requires authentication
    *
-   * Body: multipart/form-data with 'image' field
+   * Body: encrypted logical form data with an 'image' transport file
    * Returns: { imageUrl: string }
    */
   async uploadInspectionImage(req: Request, res: Response): Promise<void> {
+    let uploadedFile: MaterializedTransportFile | undefined;
     try {
-      if (!req.file) {
+      const transportFile = req.transportFiles?.image;
+      if (!transportFile) {
         res.status(400).json({ error: "No image file provided" });
         return;
       }
 
       const { userId } = getRequestAuthContext(req);
-
-      // Validate file size (already done by multer, but double-check)
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      if (req.file.size > maxSize) {
-        res.status(400).json({ error: "File size exceeds 10MB limit" });
-        return;
-      }
+      uploadedFile = await materializeTransportFile(transportFile, {
+        maxBytes: 10 * 1024 * 1024,
+        allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
+      });
 
       // Upload to storage
       const imageUrl = await this.uploadImage.execute({
-        filePath: req.file.path,
+        filePath: uploadedFile.path,
         userId,
-        originalName: req.file.originalname,
+        originalName: uploadedFile.originalname,
       });
 
       res.json({ imageUrl });
@@ -44,6 +45,8 @@ export class UploadController {
         error: "Image upload failed",
         message: error instanceof Error ? error.message : "Unknown error",
       });
+    } finally {
+      if (uploadedFile?.path) await rm(uploadedFile.path, { force: true }).catch(() => undefined);
     }
   }
 }
