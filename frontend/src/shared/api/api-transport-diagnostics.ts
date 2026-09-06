@@ -1,4 +1,5 @@
 import { Capacitor } from "@capacitor/core";
+import { API_BASE_URL } from "./base-url";
 
 export const API_TRANSPORT_DIAGNOSTICS_STORAGE_KEY = "meatlens-api-transport-diagnostics";
 export const MAX_API_TRANSPORT_DIAGNOSTICS = 25;
@@ -29,6 +30,30 @@ interface RecordApiTransportResponseFailureOptions {
   input: RequestInfo | URL;
   init?: RequestInit;
   response: Response;
+}
+
+export function isExpectedAnonymousSessionResponse({
+  input,
+  init,
+  response,
+}: RecordApiTransportResponseFailureOptions): boolean {
+  if (response.status !== 401 || getMethod(init) !== "GET") {
+    return false;
+  }
+
+  const fallbackOrigin = getAppOrigin() === "unknown" ? "http://localhost" : getAppOrigin();
+
+  try {
+    const requestUrl = new URL(getInputUrl(input), fallbackOrigin);
+    const sessionUrl = new URL(
+      `${API_BASE_URL.replace(/\/+$/, "")}/auth/session`,
+      fallbackOrigin,
+    );
+
+    return requestUrl.origin === sessionUrl.origin && requestUrl.pathname === sessionUrl.pathname;
+  } catch {
+    return false;
+  }
 }
 
 function getAppOrigin(): string {

@@ -5,6 +5,7 @@ import {
   TransportResponseDecryptionError,
 } from "./transport-crypto";
 import {
+  isExpectedAnonymousSessionResponse,
   recordApiTransportFailure,
   recordApiTransportResponseFailure,
 } from "./api-transport-diagnostics";
@@ -52,7 +53,7 @@ async function fetchOnceWithTimeout(
       ? await decryptTransportResponse(networkResponse, preparedRequest.transport)
       : networkResponse;
 
-    if (!response.ok) {
+    if (!response.ok && !isExpectedAnonymousSessionResponse({ input, init: preparedRequest.init, response })) {
       recordApiTransportResponseFailure({
         input,
         init: preparedRequest.init,
