@@ -1,6 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
 import {
   decodeBase64Url,
+  createEncryptedTransportEnvelope,
   decryptAesGcm,
   getTransportAad,
   parseEncryptedTransportEnvelope,
@@ -8,6 +9,7 @@ import {
 } from "../modules/transport/infrastructure/TransportCrypto";
 import type {
   DecodedTransportFile,
+  TransportResponsePayload,
   TransportRequestPayload,
 } from "../modules/transport/domain/transport";
 import type { TransportKeyStore } from "../modules/transport/infrastructure/TransportKeyStore";
@@ -24,6 +26,132 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function rejectRequest(res: Response): void {
   res.status(400).json({ error: "Invalid encrypted request" });
+}
+
+function headerValueToString(value: string | number | string[] | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  return Array.isArray(value) ? value.join(", ") : String(value);
+}
+
+function collectLogicalResponseHeaders(res: Response): Record<string, string> {
+  const headers: Record<string, string> = {};
+  for (const [name, value] of Object.entries(res.getHeaders())) {
+    const lowerName = name.toLowerCase();
+    if (
+      lowerName === "content-type"
+      || lowerName === "content-length"
+      || lowerName === "content-encoding"
+      || lowerName === "transfer-encoding"
+      || lowerName === "set-cookie"
+    ) {
+      continue;
+    }
+    const stringValue = headerValueToString(value);
+    if (stringValue !== undefined) headers[lowerName] = stringValue;
+  }
+  return headers;
+}
+
+function responseBodyBytes(chunk: unknown, encoding?: BufferEncoding): Buffer {
+  if (Buffer.isBuffer(chunk)) return chunk;
+  if (chunk instanceof Uint8Array) return Buffer.from(chunk);
+  if (typeof chunk === "string") return Buffer.from(chunk, encoding);
+  if (chunk === undefined || chunk === null) return Buffer.alloc(0);
+  return Buffer.from(JSON.stringify(chunk));
+}
+
+function installResponseEncryption(res: Response, context: NonNullable<Request["transportContext"]>): void {
+  const originalEnd = res.end.bind(res);
+  const originalWrite = res.write.bind(res);
+  let responseFinalized = false;
+
+  const setWireResponseHeaders = (contentType: string): void => {
+    res.removeHeader("Content-Length");
+    res.removeHeader("Content-Encoding");
+    res.removeHeader("Transfer-Encoding");
+    res.setHeader("Content-Type", contentType);
+  };
+
+  const writeEncryptedStreamChunk = (chunk: unknown, encoding?: BufferEncoding): boolean => {
+    const plaintext = responseBodyBytes(chunk, encoding);
+    if (plaintext.length === 0) return true;
+    const envelope = createEncryptedTransportEnvelope(
+      context.keyId,
+      plaintext,
+      context.aesKey,
+      context.aad,
+    );
+    return originalWrite(`data: ${JSON.stringify(envelope)}\n\n`);
+  };
+
+  const emitEncryptedResponse = (
+    body: Buffer,
+    contentType: string,
+    bodyEncoding: TransportResponsePayload["bodyEncoding"],
+  ): Response => {
+    if (responseFinalized) return res;
+    responseFinalized = true;
+    const logicalPayload: TransportResponsePayload = {
+      contentType,
+      headers: collectLogicalResponseHeaders(res),
+      body: bodyEncoding === "base64" ? body.toString("base64url") : body.toString("utf8"),
+      bodyEncoding,
+    };
+    const envelope = createEncryptedTransportEnvelope(
+      context.keyId,
+      Buffer.from(JSON.stringify(logicalPayload), "utf8"),
+      context.aesKey,
+      context.aad,
+    );
+    setWireResponseHeaders("application/json; charset=utf-8");
+    originalEnd(JSON.stringify(envelope));
+    return res;
+  };
+
+  res.json = ((value: unknown): Response => {
+    const body = Buffer.from(JSON.stringify(value === undefined ? null : value), "utf8");
+    const contentType = headerValueToString(res.getHeader("Content-Type"))
+      ?? "application/json; charset=utf-8";
+    return emitEncryptedResponse(body, contentType, "utf8");
+  }) as Response["json"];
+
+  res.send = ((body?: unknown): Response => {
+    const bytes = responseBodyBytes(body);
+    const isBinary = Buffer.isBuffer(body) || body instanceof Uint8Array;
+    const contentType = headerValueToString(res.getHeader("Content-Type"))
+      ?? (isBinary ? "application/octet-stream" : "application/json; charset=utf-8");
+    return emitEncryptedResponse(bytes, contentType, isBinary ? "base64" : "utf8");
+  }) as Response["send"];
+
+  res.write = ((chunk: unknown, encoding?: BufferEncoding): boolean => {
+    const contentType = headerValueToString(res.getHeader("Content-Type")) ?? "";
+    if (!contentType.toLowerCase().startsWith("text/event-stream")) {
+      return originalWrite(chunk as never, encoding as never);
+    }
+    context.isStream = true;
+    setWireResponseHeaders("text/event-stream; charset=utf-8");
+    return writeEncryptedStreamChunk(chunk, encoding);
+  }) as Response["write"];
+
+  res.end = ((chunk?: unknown, encoding?: BufferEncoding): Response => {
+    if (context.isStream || headerValueToString(res.getHeader("Content-Type"))?.toLowerCase().startsWith("text/event-stream")) {
+      context.isStream = true;
+      setWireResponseHeaders("text/event-stream; charset=utf-8");
+      if (chunk !== undefined && responseBodyBytes(chunk, encoding).length > 0) {
+        writeEncryptedStreamChunk(chunk, encoding);
+      }
+      if (!responseFinalized) {
+        responseFinalized = true;
+        originalEnd();
+      }
+      return res;
+    }
+
+    const body = responseBodyBytes(chunk, encoding);
+    const contentType = headerValueToString(res.getHeader("Content-Type"))
+      ?? "application/octet-stream";
+    return emitEncryptedResponse(body, contentType, Buffer.isBuffer(chunk) ? "base64" : "utf8");
+  }) as Response["end"];
 }
 
 export function isTransportPlaintextEndpoint(req: Request): boolean {
@@ -148,8 +276,15 @@ export function createTransportMiddleware(
         aad,
         isStream: false,
       };
+      installResponseEncryption(res, req.transportContext);
 
-      if (req.body === undefined) {
+      const contentLength = req.header("content-length");
+      const hasRequestBody = req.body !== undefined && (
+        contentLength === undefined
+          ? req.headers["transfer-encoding"] !== undefined
+          : Number(contentLength) > 0
+      );
+      if (!hasRequestBody) {
         next();
         return;
       }
