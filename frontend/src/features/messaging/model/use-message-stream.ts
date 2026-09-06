@@ -54,6 +54,7 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
   const cancelScheduleRef = useRef(
     options.cancelSchedule ?? ((handle: ScheduledHandle) => window.clearTimeout(handle as number)),
   );
+  const openStreamPromiseRef = useRef<Promise<void> | null>(null);
   const reconnectRef = useRef<() => void>(() => {});
   const nowMsRef = useRef(options.nowMs ?? (() => Date.now()));
 
@@ -80,6 +81,7 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
     let gapPromise: Promise<void> | null = null;
     let recoverSnapshotOnReady = false;
     let lastVisibilityRefreshAt = Number.NEGATIVE_INFINITY;
+    let waitingForOpenStream = false;
 
     const updateStatus = (nextStatus: MessageStreamStatus) => {
       localStatus = nextStatus;
@@ -111,12 +113,29 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
 
     const start = () => {
       if (disposed || !canStreamNow() || controller || retryHandle !== null) return;
+      const previousOpenStream = openStreamPromiseRef.current;
+      if (previousOpenStream) {
+        if (waitingForOpenStream) return;
+        waitingForOpenStream = true;
+        void previousOpenStream.then(
+          () => {
+            waitingForOpenStream = false;
+            if (!disposed) start();
+          },
+          () => {
+            waitingForOpenStream = false;
+            if (!disposed) start();
+          },
+        );
+        return;
+      }
+
       const streamGeneration = ++generation;
       const streamController = new AbortController();
       controller = streamController;
       updateStatus("connecting");
 
-      void openStreamRef.current({
+      const openStreamPromise = openStreamRef.current({
         signal: streamController.signal,
         onMessage: (message) => {
           if (!disposed && generation === streamGeneration) onMessageRef.current(message);
@@ -139,7 +158,16 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
             streamController.abort();
           }
         },
-      }).then(
+      });
+      let trackedOpenStreamPromise: Promise<void>;
+      trackedOpenStreamPromise = openStreamPromise.finally(() => {
+        if (openStreamPromiseRef.current === trackedOpenStreamPromise) {
+          openStreamPromiseRef.current = null;
+        }
+      });
+      openStreamPromiseRef.current = trackedOpenStreamPromise;
+
+      void trackedOpenStreamPromise.then(
         () => {
           if (!streamController.signal.aborted) {
             throw new Error("Live message stream ended unexpectedly.");
