@@ -1,5 +1,9 @@
 import { applyApiRequestInit, refreshApiSessionForCsrf } from "./request";
-import { createEncryptedRequest, decryptTransportResponse } from "./transport-crypto";
+import {
+  createEncryptedRequest,
+  decryptTransportResponse,
+  TransportResponseDecryptionError,
+} from "./transport-crypto";
 import {
   recordApiTransportFailure,
   recordApiTransportResponseFailure,
@@ -17,6 +21,7 @@ async function fetchOnceWithTimeout(
   input: RequestInfo | URL,
   init: RequestInit = {},
   timeoutMs = DEFAULT_API_REQUEST_TIMEOUT_MS,
+  forcePublicKeyRefresh = false,
 ): Promise<Response> {
   const controller = new AbortController();
   const sourceSignal = init.signal;
@@ -38,7 +43,7 @@ async function fetchOnceWithTimeout(
 
   try {
     const nextInit = applyApiRequestInit(init);
-    const preparedRequest = await createEncryptedRequest(input, nextInit);
+    const preparedRequest = await createEncryptedRequest(input, nextInit, forcePublicKeyRefresh);
     const networkResponse = await fetch(input, {
       ...preparedRequest.init,
       signal: controller.signal,
@@ -95,7 +100,13 @@ export async function fetchWithTimeout(
   init: RequestInit = {},
   timeoutMs = DEFAULT_API_REQUEST_TIMEOUT_MS,
 ): Promise<Response> {
-  const response = await fetchOnceWithTimeout(input, init, timeoutMs);
+  let response: Response;
+  try {
+    response = await fetchOnceWithTimeout(input, init, timeoutMs);
+  } catch (error) {
+    if (!(error instanceof TransportResponseDecryptionError)) throw error;
+    return fetchOnceWithTimeout(input, init, timeoutMs, true);
+  }
 
   if (!(await isInvalidCsrfResponse(response))) {
     return response;

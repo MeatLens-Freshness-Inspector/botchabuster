@@ -22,6 +22,13 @@ export interface PreparedTransportRequest {
 
 export const MAX_TRANSPORT_REQUEST_BYTES = 12 * 1024 * 1024;
 
+export class TransportResponseDecryptionError extends Error {
+  constructor() {
+    super("Invalid encrypted response");
+    this.name = "TransportResponseDecryptionError";
+  }
+}
+
 const BASE64_URL_PATTERN = /^(?:[A-Za-z0-9_-]{2,})?$/;
 let cachedTransportPublicKey: TransportPublicKey | null = null;
 let publicKeyRequest: Promise<TransportPublicKey> | null = null;
@@ -198,7 +205,7 @@ export async function decryptTransportResponse(
       headers,
     });
   } catch {
-    throw new Error("Invalid encrypted response");
+    throw new TransportResponseDecryptionError();
   }
 }
 
@@ -316,6 +323,7 @@ async function requestBody(input: RequestInfo | URL, init: RequestInit): Promise
 export async function createEncryptedRequest(
   input: RequestInfo | URL,
   init: RequestInit = {},
+  forcePublicKeyRefresh = false,
 ): Promise<PreparedTransportRequest> {
   const url = requestUrl(input);
   const method = requestMethod(input, init);
@@ -326,7 +334,7 @@ export async function createEncryptedRequest(
     return { init: nextInit, transport: null };
   }
 
-  const publicKeyMetadata = await getTransportPublicKey();
+  const publicKeyMetadata = await getTransportPublicKey(forcePublicKeyRefresh);
   const transportKey = await generateTransportRequestKey();
   const rsaPublicKey = await importTransportPublicKey(publicKeyMetadata.publicKey);
   const wrappedKey = await subtleCrypto().encrypt(
