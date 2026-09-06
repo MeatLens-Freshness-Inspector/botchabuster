@@ -66,6 +66,7 @@ function installResponseEncryption(res: Response, context: NonNullable<Request["
   let responseFinalized = false;
 
   const setWireResponseHeaders = (contentType: string): void => {
+    if (res.headersSent) return;
     res.removeHeader("Content-Length");
     res.removeHeader("Content-Encoding");
     res.removeHeader("Transfer-Encoding");
