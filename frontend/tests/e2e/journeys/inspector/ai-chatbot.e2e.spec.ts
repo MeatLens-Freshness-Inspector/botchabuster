@@ -1,9 +1,10 @@
 import { test, expect } from "@playwright/test";
+import { fulfillEncryptedRoute } from "../../../support/fixtures/transport";
 import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
 test.beforeEach(async ({ page }) => {
   await page.route("**/api/analysis/health", async (route) => {
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ status: "ok" }),

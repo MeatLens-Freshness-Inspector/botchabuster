@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { decryptEncryptedRouteRequest, fulfillEncryptedRoute } from "../../../support/fixtures/transport";
 import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 import { uploadSamplePhoto } from "../../../support/factories/image";
 import { futureDateOnly } from "../../../support/factories/dates";
@@ -50,7 +51,7 @@ test("prevents saving the same analyzed record more than once", async ({ page })
   await page.route("**/api/upload/inspection-image", async (route) => {
     uploadCalls += 1;
     await new Promise((resolve) => setTimeout(resolve, 400));
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ imageUrl: "https://example.com/sample.jpg" }),
@@ -60,8 +61,8 @@ test("prevents saving the same analyzed record more than once", async ({ page })
   await page.route("**/api/inspections", async (route) => {
     if (route.request().method() === "POST") {
       createCalls += 1;
-      createPayload = route.request().postData() ?? "";
-      await route.fulfill({
+      createPayload = decryptEncryptedRouteRequest(route.request()).postData;
+      await fulfillEncryptedRoute(route, {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({ id: "inspection-1" }),
@@ -147,7 +148,7 @@ test("waits for the in-flight GPS capture before auto-saving the inspection payl
   let createCalls = 0;
   let createPayload = "";
   await page.route("**/api/upload/inspection-image", async (route) => {
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ imageUrl: "https://example.com/sample.jpg" }),
@@ -157,8 +158,8 @@ test("waits for the in-flight GPS capture before auto-saving the inspection payl
   await page.route("**/api/inspections", async (route) => {
     if (route.request().method() === "POST") {
       createCalls += 1;
-      createPayload = route.request().postData() ?? "";
-      await route.fulfill({
+      createPayload = decryptEncryptedRouteRequest(route.request()).postData;
+      await fulfillEncryptedRoute(route, {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({ id: "inspection-1" }),
@@ -208,7 +209,7 @@ test("protocol failure auto-classifies the capture as spoiled and skips analyze"
   let createCalls = 0;
   let createPayload = "";
   await page.route("**/api/upload/inspection-image", async (route) => {
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ imageUrl: "https://example.com/sample.jpg" }),
@@ -218,8 +219,8 @@ test("protocol failure auto-classifies the capture as spoiled and skips analyze"
   await page.route("**/api/inspections", async (route) => {
     if (route.request().method() === "POST") {
       createCalls += 1;
-      createPayload = route.request().postData() ?? "";
-      await route.fulfill({
+      createPayload = decryptEncryptedRouteRequest(route.request()).postData;
+      await fulfillEncryptedRoute(route, {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify({ id: "inspection-1" }),

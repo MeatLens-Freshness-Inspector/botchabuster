@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { decryptEncryptedRouteRequest, fulfillEncryptedRoute } from "../../../support/fixtures/transport";
 import type { ApiSpy } from "../../../support/fixtures/app";
 import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
@@ -59,10 +60,10 @@ test("keeps the signed-in session intact when server-side sign-out fails", async
       method: request.method(),
       url: request.url(),
       headers: request.headers(),
-      postData: request.postData() ?? "",
+      postData: decryptEncryptedRouteRequest(request).postData,
     });
 
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 500,
       contentType: "application/json",
       body: JSON.stringify({ error: "Sign-out failed" }),

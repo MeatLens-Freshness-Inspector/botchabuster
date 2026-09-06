@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { fulfillEncryptedRoute } from "../../../support/fixtures/transport";
 import { mockCommonApi, seedSignedInSession, type ApiSpy } from "../../../support/fixtures/app";
 
 const adminInspections = [
@@ -54,7 +55,7 @@ test("renders the expanded business analytics section with fallback labels", asy
 
   await page.route("**/api/inspections?**", async (route) => {
     inspectionUrl = route.request().url();
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify(adminInspections),
@@ -171,7 +172,7 @@ test.describe("mobile viewport", () => {
     await mockCommonApi(page, { userId: "admin-1", isAdmin: true });
 
     await page.route("**/api/inspections?**", async (route) => {
-      await route.fulfill({
+      await fulfillEncryptedRoute(route, {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify(adminInspections),

@@ -1,4 +1,9 @@
 import type { Page, Route } from "@playwright/test";
+import {
+  decryptEncryptedRouteRequest,
+  fulfillEncryptedRoute,
+  transportPublicKeyResponse,
+} from "./transport";
 
 const API_BASE = process.env.PLAYWRIGHT_API_BASE_URL ?? "http://localhost:3001/api";
 
@@ -321,6 +326,7 @@ export async function mockCommonApi(
     const method = request.method();
     const url = new URL(request.url());
     const path = url.pathname;
+    const decryptedRequest = decryptEncryptedRouteRequest(request);
 
     if (!path.startsWith("/api/")) {
       await route.fallback();
@@ -333,12 +339,17 @@ export async function mockCommonApi(
         method,
         url: request.url(),
         headers,
-        postData: request.postData() ?? "",
+        postData: decryptedRequest.postData,
       });
     }
 
+    if (path === "/api/transport/public-key" && method === "GET") {
+      await route.fulfill(transportPublicKeyResponse());
+      return;
+    }
+
     if (path === "/api/analysis/health") {
-      await route.fulfill(jsonResponse({ status: "ok" }));
+      await fulfillEncryptedRoute(route, jsonResponse({ status: "ok" }));
       return;
     }
 
@@ -348,42 +359,42 @@ export async function mockCommonApi(
         return;
       }
 
-      await route.fulfill(jsonResponse(buildBootstrapSessionResponse(userId, email, isAdmin, options)));
+      await fulfillEncryptedRoute(route, jsonResponse(buildBootstrapSessionResponse(userId, email, isAdmin, options)));
       return;
     }
 
     if (path === "/api/developer-options/verify" && method === "POST") {
-      await route.fulfill(jsonResponse({ valid: developerOptionsValid }));
+      await fulfillEncryptedRoute(route, jsonResponse({ valid: developerOptionsValid }));
       return;
     }
 
     if (path === `/api/profiles/${userId}` && method === "GET") {
       if (options.failProfileLoad) {
-        await route.fulfill(jsonResponse({ error: "Failed to fetch profile" }, 500));
+        await fulfillEncryptedRoute(route, jsonResponse({ error: "Failed to fetch profile" }, 500));
         return;
       }
 
       const profileState = profilesState.find((profile) => profile.id === userId) ?? null;
-      await route.fulfill(jsonResponse(profileState));
+      await fulfillEncryptedRoute(route, jsonResponse(profileState));
       return;
     }
 
     if (path === `/api/profiles/${userId}` && method === "PUT") {
-      const payload = JSON.parse(request.postData() ?? "{}") as Record<string, unknown>;
+      const payload = JSON.parse(decryptedRequest.postData || "{}") as Record<string, unknown>;
       const profileState = profilesState.find((profile) => profile.id === userId);
 
       if (!profileState) {
-        await route.fulfill(jsonResponse({ error: "Profile not found" }, 404));
+        await fulfillEncryptedRoute(route, jsonResponse({ error: "Profile not found" }, 404));
         return;
       }
 
       if (options.failProfileUpdate && !("onboarding_completed_at" in payload)) {
-        await route.fulfill(jsonResponse({ error: "Failed to save profile" }, 500));
+        await fulfillEncryptedRoute(route, jsonResponse({ error: "Failed to save profile" }, 500));
         return;
       }
 
       if (options.failOnboardingCompletion && "onboarding_completed_at" in payload) {
-        await route.fulfill(jsonResponse({ error: "Failed to finish onboarding" }, 500));
+        await fulfillEncryptedRoute(route, jsonResponse({ error: "Failed to finish onboarding" }, 500));
         return;
       }
 
@@ -391,26 +402,26 @@ export async function mockCommonApi(
         updated_at: "2026-05-31T00:00:00.000Z",
       });
 
-      await route.fulfill(jsonResponse(profileState));
+      await fulfillEncryptedRoute(route, jsonResponse(profileState));
       return;
     }
 
     if (path === `/api/auth/users/${userId}/email` && method === "PATCH") {
       const profileState = profilesState.find((profile) => profile.id === userId);
       if (!profileState) {
-        await route.fulfill(jsonResponse({ error: "Profile not found" }, 404));
+        await fulfillEncryptedRoute(route, jsonResponse({ error: "Profile not found" }, 404));
         return;
       }
 
       if (options.failEmailUpdate) {
-        await route.fulfill(jsonResponse({ error: "Failed to update email" }, 500));
+        await fulfillEncryptedRoute(route, jsonResponse({ error: "Failed to update email" }, 500));
         return;
       }
 
-      const payload = JSON.parse(request.postData() ?? "{}") as { email?: string };
+      const payload = JSON.parse(decryptedRequest.postData || "{}") as { email?: string };
       profileState.email = payload.email?.trim() ?? profileState.email;
 
-      await route.fulfill(
+      await fulfillEncryptedRoute(route,
         jsonResponse({
           id: userId,
           email: profileState.email,
@@ -420,12 +431,12 @@ export async function mockCommonApi(
     }
 
     if (path === `/api/auth/users/${userId}/password` && method === "PATCH") {
-      await route.fulfill({ status: 204, body: "" });
+      await fulfillEncryptedRoute(route, { status: 204, body: "" });
       return;
     }
 
     if (path === "/api/profiles/admin/users" && method === "POST") {
-      const payload = JSON.parse(request.postData() ?? "{}") as {
+      const payload = JSON.parse(decryptedRequest.postData || "{}") as {
         email?: string;
         full_name?: string | null;
         inspector_code?: string | null;
@@ -451,37 +462,37 @@ export async function mockCommonApi(
       };
 
       profilesState.unshift(createdUser);
-      await route.fulfill(jsonResponse(createdUser, 201));
+      await fulfillEncryptedRoute(route, jsonResponse(createdUser, 201));
       return;
     }
 
     if (/^\/api\/profiles\/admin\/users\/[^/]+\/role$/.test(path) && method === "PUT") {
       const userIdToUpdate = path.split("/").slice(-2, -1)[0];
-      const payload = JSON.parse(request.postData() ?? "{}") as {
+      const payload = JSON.parse(decryptedRequest.postData || "{}") as {
         role?: string;
         password?: string;
       };
       const profileState = profilesState.find((profile) => profile.id === userIdToUpdate);
 
       if (!profileState) {
-        await route.fulfill(jsonResponse({ error: "Profile not found" }, 404));
+        await fulfillEncryptedRoute(route, jsonResponse({ error: "Profile not found" }, 404));
         return;
       }
 
       if (!payload.password?.trim()) {
-        await route.fulfill(jsonResponse({ error: "Developer password is required" }, 400));
+        await fulfillEncryptedRoute(route, jsonResponse({ error: "Developer password is required" }, 400));
         return;
       }
 
       if (!payload.role || !["user", "admin", "developer"].includes(payload.role)) {
-        await route.fulfill(jsonResponse({ error: "Role must be one of: user, admin, developer" }, 400));
+        await fulfillEncryptedRoute(route, jsonResponse({ error: "Role must be one of: user, admin, developer" }, 400));
         return;
       }
 
       const previousRole = profileState.role ?? "user";
       profileState.role = payload.role;
       profileState.updated_at = "2026-04-04T00:00:00.000Z";
-      await route.fulfill(jsonResponse({
+      await fulfillEncryptedRoute(route, jsonResponse({
         user_id: userIdToUpdate,
         previous_role: previousRole,
         role: profileState.role,
@@ -491,11 +502,11 @@ export async function mockCommonApi(
 
     if (/^\/api\/profiles\/admin\/users\/[^/]+$/.test(path) && method === "PUT") {
       const userIdToUpdate = path.split("/").pop();
-      const payload = JSON.parse(request.postData() ?? "{}") as Record<string, unknown>;
+      const payload = JSON.parse(decryptedRequest.postData || "{}") as Record<string, unknown>;
       const profileState = profilesState.find((profile) => profile.id === userIdToUpdate);
 
       if (!profileState) {
-        await route.fulfill(jsonResponse({ error: "Profile not found" }, 404));
+        await fulfillEncryptedRoute(route, jsonResponse({ error: "Profile not found" }, 404));
         return;
       }
 
@@ -503,17 +514,17 @@ export async function mockCommonApi(
         updated_at: "2026-04-04T00:00:00.000Z",
       });
 
-      await route.fulfill(jsonResponse(profileState));
+      await fulfillEncryptedRoute(route, jsonResponse(profileState));
       return;
     }
 
     if (/^\/api\/profiles\/[^/]+\/has-role\/[^/]+$/.test(path)) {
-      await route.fulfill(jsonResponse({ hasRole: isAdmin }));
+      await fulfillEncryptedRoute(route, jsonResponse({ hasRole: isAdmin }));
       return;
     }
 
     if (path === "/api/profiles/stats") {
-      await route.fulfill(
+      await fulfillEncryptedRoute(route,
         jsonResponse({
           total_users: 2,
           total_inspections: 3,
@@ -524,17 +535,17 @@ export async function mockCommonApi(
     }
 
     if (path === "/api/profiles") {
-      await route.fulfill(jsonResponse(profilesState));
+      await fulfillEncryptedRoute(route, jsonResponse(profilesState));
       return;
     }
 
     if (path === "/api/inspections/stats") {
-      await route.fulfill(jsonResponse({ total: 3, byClassification: { fresh: 1, spoiled: 1, warning: 1 } }));
+      await fulfillEncryptedRoute(route, jsonResponse({ total: 3, byClassification: { fresh: 1, spoiled: 1, warning: 1 } }));
       return;
     }
 
     if (path === "/api/inspections" && method === "GET") {
-      await route.fulfill(
+      await fulfillEncryptedRoute(route,
         jsonResponse([
           {
             id: "inspection-1",
@@ -567,8 +578,8 @@ export async function mockCommonApi(
     }
 
     if (path === "/api/inspections" && method === "POST") {
-      const payload = JSON.parse(request.postData() ?? "{}") as Record<string, unknown>;
-      await route.fulfill(
+      const payload = JSON.parse(decryptedRequest.postData || "{}") as Record<string, unknown>;
+      await fulfillEncryptedRoute(route,
         jsonResponse({
           ...payload,
           id: "inspection-created",
@@ -593,12 +604,12 @@ export async function mockCommonApi(
     }
 
     if (path === "/api/access-codes") {
-      await route.fulfill(jsonResponse([]));
+      await fulfillEncryptedRoute(route, jsonResponse([]));
       return;
     }
 
     if (path === "/api/market-locations" && method === "GET") {
-      await route.fulfill(
+      await fulfillEncryptedRoute(route,
         jsonResponse([
           { id: "market-1", name: "Old Market", created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
           { id: "market-2", name: "New Market", created_at: "2026-05-03T00:00:00.000Z", updated_at: "2026-05-03T00:00:00.000Z" },
@@ -612,9 +623,9 @@ export async function mockCommonApi(
     }
 
     if (path === "/api/market-locations" && method === "POST") {
-      const payload = JSON.parse(request.postData() ?? "{}") as { name?: string };
+      const payload = JSON.parse(decryptedRequest.postData || "{}") as { name?: string };
       const normalizedName = payload.name?.trim() || "Unnamed Market";
-      await route.fulfill(
+      await fulfillEncryptedRoute(route,
         jsonResponse({
           id: `market-${normalizedName.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "new"}`,
           name: normalizedName,
@@ -626,17 +637,17 @@ export async function mockCommonApi(
     }
 
     if (/^\/api\/market-locations\/[^/]+$/.test(path) && method === "DELETE") {
-      await route.fulfill({ status: 204, body: "" });
+      await fulfillEncryptedRoute(route, { status: 204, body: "" });
       return;
     }
 
     if (path === "/api/upload/inspection-image" && method === "POST") {
-      await route.fulfill(jsonResponse({ imageUrl: "https://example.com/sample.jpg" }));
+      await fulfillEncryptedRoute(route, jsonResponse({ imageUrl: "https://example.com/sample.jpg" }));
       return;
     }
 
     if (path === "/api/analysis/analyze" && method === "POST") {
-      await route.fulfill(
+      await fulfillEncryptedRoute(route,
         jsonResponse({
           classification: "fresh",
           confidence_score: 95,
@@ -647,7 +658,7 @@ export async function mockCommonApi(
       return;
     }
 
-    await route.fulfill(jsonResponse({ message: "Unhandled mock API route", path }, 404));
+    await fulfillEncryptedRoute(route, jsonResponse({ message: "Unhandled mock API route", path }, 404));
   });
 }
 

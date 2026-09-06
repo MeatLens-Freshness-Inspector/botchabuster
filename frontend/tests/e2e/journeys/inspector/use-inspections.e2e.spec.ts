@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { fulfillEncryptedRoute } from "../../../support/fixtures/transport";
 import {
   mockCommonApi,
   seedInspectionHistoryCache,
@@ -26,7 +27,7 @@ test("history query does not run when no user is signed in", async ({ page }) =>
   let inspectionCalls = 0;
 
   await page.route("**/api/analysis/health", async (route) => {
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ status: "ok" }),
@@ -35,7 +36,7 @@ test("history query does not run when no user is signed in", async ({ page }) =>
 
   await page.route("**/api/inspections?**", async (route) => {
     inspectionCalls += 1;
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify([]),

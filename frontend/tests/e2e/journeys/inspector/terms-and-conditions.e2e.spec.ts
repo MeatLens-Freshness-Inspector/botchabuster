@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { decryptEncryptedRouteRequest, fulfillEncryptedRoute } from "../../../support/fixtures/transport";
 import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
 test("signup requires accepting terms and conditions before account creation", async ({ page }) => {
@@ -6,7 +7,7 @@ test("signup requires accepting terms and conditions before account creation", a
   let signUpPayload = "";
 
   await page.route("**/api/analysis/health", async (route) => {
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ status: "ok" }),
@@ -15,8 +16,8 @@ test("signup requires accepting terms and conditions before account creation", a
 
   await page.route("**/api/auth/sign-up", async (route) => {
     signUpCalls += 1;
-    signUpPayload = route.request().postData() ?? "";
-    await route.fulfill({
+    signUpPayload = decryptEncryptedRouteRequest(route.request()).postData;
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ user: null, session: null }),
@@ -51,7 +52,7 @@ test("signup requires selecting a report header organization before account crea
   let signUpCalls = 0;
 
   await page.route("**/api/analysis/health", async (route) => {
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ status: "ok" }),
@@ -60,7 +61,7 @@ test("signup requires selecting a report header organization before account crea
 
   await page.route("**/api/auth/sign-up", async (route) => {
     signUpCalls += 1;
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ user: null, session: null }),

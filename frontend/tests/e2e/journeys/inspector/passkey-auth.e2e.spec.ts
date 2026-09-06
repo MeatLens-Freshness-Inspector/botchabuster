@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { decryptEncryptedRouteRequest, fulfillEncryptedRoute } from "../../../support/fixtures/transport";
 import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 import { ROUTE_PATHS } from "../../../../src/app/router/paths";
 
@@ -88,7 +89,7 @@ test("signs in with a passkey from the login page", async ({ page }) => {
 
   await page.route("**/api/auth/passkeys/authenticate/options", async (route) => {
     optionsRequested += 1;
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
@@ -104,11 +105,11 @@ test("signs in with a passkey from the login page", async ({ page }) => {
   });
 
   await page.route("**/api/auth/passkeys/authenticate/verify", async (route) => {
-    verificationPayload = route.request().postData() ?? "";
+    verificationPayload = decryptEncryptedRouteRequest(route.request()).postData;
     const authenticatedAt = new Date().toISOString();
     const offlineExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
@@ -178,7 +179,7 @@ test("shows passkey management on the profile page and removes a registered devi
 
   await page.route("**/api/auth/passkeys", async (route) => {
     if (route.request().method() === "GET") {
-      await route.fulfill({
+      await fulfillEncryptedRoute(route, {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify([
@@ -195,7 +196,7 @@ test("shows passkey management on the profile page and removes a registered devi
       return;
     }
 
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 405,
       contentType: "application/json",
       body: JSON.stringify({ error: "Unexpected passkey method" }),
@@ -204,7 +205,7 @@ test("shows passkey management on the profile page and removes a registered devi
 
   await page.route("**/api/auth/passkeys/credential-profile-1", async (route) => {
     deleteRequestUrl = route.request().url();
-    await route.fulfill({
+    await fulfillEncryptedRoute(route, {
       status: 204,
       body: "",
     });

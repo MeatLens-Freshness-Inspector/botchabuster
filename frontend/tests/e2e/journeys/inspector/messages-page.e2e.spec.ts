@@ -1,4 +1,8 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
+import {
+  decryptEncryptedRouteRequest,
+  fulfillEncryptedRoute,
+} from "../../../support/fixtures/transport";
 
 import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
@@ -62,24 +66,93 @@ async function installMessageStreamMock(page: Page) {
     };
     const testWindow = window as StreamTestWindow;
     const originalFetch = window.fetch.bind(window);
+    const originalCrypto = window.crypto;
+    const originalSubtle = originalCrypto.subtle;
+    const originalEncrypt = originalSubtle.encrypt.bind(originalSubtle);
     const encoder = new TextEncoder();
     let streamController: ReadableStreamDefaultController<Uint8Array> | null = null;
+    let latestAesKey: CryptoKey | null = null;
+    let activeStreamKey: CryptoKey | null = null;
+
+    const trackedSubtle = new Proxy(originalSubtle, {
+      get(target, property) {
+        if (property === "generateKey") {
+          return async (
+            algorithm: AlgorithmIdentifier,
+            extractable: boolean,
+            keyUsages: KeyUsage[],
+          ) => {
+            const generated = await originalSubtle.generateKey(algorithm, extractable, keyUsages);
+            if (
+              typeof algorithm === "object"
+              && algorithm !== null
+              && "name" in algorithm
+              && algorithm.name === "AES-GCM"
+              && generated instanceof CryptoKey
+            ) {
+              latestAesKey = generated;
+            }
+            return generated;
+          };
+        }
+        const value = Reflect.get(target, property, target);
+        return typeof value === "function" ? value.bind(target) : value;
+      },
+    });
+
+    Object.defineProperty(globalThis, "crypto", {
+      configurable: true,
+      value: new Proxy(originalCrypto, {
+        get(target, property) {
+          if (property === "subtle") return trackedSubtle;
+          const value = Reflect.get(target, property, target);
+          return typeof value === "function" ? value.bind(target) : value;
+        },
+      }),
+    });
+
+    const encodeBase64Url = (value: Uint8Array) =>
+      btoa(String.fromCharCode(...value))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/g, "");
+
+    const encryptFrame = async (event: string, data: unknown, key: CryptoKey) => {
+      const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
+      const plaintext = encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      const ciphertext = new Uint8Array(await originalEncrypt(
+        { name: "AES-GCM", iv, additionalData: encoder.encode("GET /api/user-chat/events"), tagLength: 128 },
+        key,
+        plaintext,
+      ));
+      const envelope = {
+        version: 1,
+        algorithm: "A256GCM",
+        keyId: "e2e-v1",
+        iv: encodeBase64Url(iv),
+        ciphertext: encodeBase64Url(ciphertext),
+      };
+      streamController?.enqueue(encoder.encode(`data: ${JSON.stringify(envelope)}\n\n`));
+    };
 
     testWindow.__userChatStreamOpenCount = 0;
     testWindow.__emitUserChatEvent = (event, data) => {
-      streamController?.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+      if (activeStreamKey) void encryptFrame(event, data, activeStreamKey);
     };
     window.fetch = async (input, init) => {
       const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, location.href);
       if (url.pathname !== "/api/user-chat/events") return originalFetch(input, init);
 
       testWindow.__userChatStreamOpenCount = (testWindow.__userChatStreamOpenCount ?? 0) + 1;
+      if (!latestAesKey) throw new Error("Missing E2E transport AES key for chat stream");
+      activeStreamKey = latestAesKey;
       const body = new ReadableStream<Uint8Array>({
         start(controller) {
           streamController = controller;
-          controller.enqueue(encoder.encode('event: status\ndata: {"state":"connected"}\n\n'));
+          void encryptFrame("status", { state: "connected" }, activeStreamKey as CryptoKey);
           init?.signal?.addEventListener("abort", () => {
             if (streamController === controller) streamController = null;
+            activeStreamKey = null;
             try {
               controller.close();
             } catch {
@@ -110,7 +183,7 @@ async function mockMessagesApi(page: Page) {
 
     if (path === "/api/user-chat/contacts" && request.method() === "GET") {
       api.contactsRequests += 1;
-      await route.fulfill(jsonResponse(contacts));
+      await fulfillEncryptedRoute(route, jsonResponse(contacts));
       return;
     }
 
@@ -118,7 +191,7 @@ async function mockMessagesApi(page: Page) {
     if (messageMatch && request.method() === "GET") {
       const counterpartyId = decodeURIComponent(messageMatch[1]);
       api.messageRequests.push(counterpartyId);
-      await route.fulfill(
+      await fulfillEncryptedRoute(route,
         jsonResponse(messagesByContact[counterpartyId as keyof typeof messagesByContact] ?? []),
       );
       return;
@@ -126,8 +199,11 @@ async function mockMessagesApi(page: Page) {
 
     if (path === "/api/user-chat/messages" && request.method() === "POST") {
       api.sendRequests += 1;
-      const body = request.postDataJSON() as { recipientId: string; content: string };
-      await route.fulfill(jsonResponse({
+      const body = JSON.parse(decryptEncryptedRouteRequest(request).postData || "{}") as {
+        recipientId: string;
+        content: string;
+      };
+      await fulfillEncryptedRoute(route, jsonResponse({
         id: "message-sent",
         sender_id: "user-1",
         recipient_id: body.recipientId,
@@ -137,7 +213,7 @@ async function mockMessagesApi(page: Page) {
       return;
     }
 
-    await route.fulfill(jsonResponse({ error: "Unhandled user-chat route", path }, 404));
+    await fulfillEncryptedRoute(route, jsonResponse({ error: "Unhandled user-chat route", path }, 404));
   });
 
   return api;
