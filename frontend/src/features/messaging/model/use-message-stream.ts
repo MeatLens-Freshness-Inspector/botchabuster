@@ -159,12 +159,15 @@ export function useMessageStream(options: UseMessageStreamOptions): MessageStrea
           }
         },
       });
-      let trackedOpenStreamPromise: Promise<void>;
-      trackedOpenStreamPromise = openStreamPromise.finally(() => {
-        if (openStreamPromiseRef.current === trackedOpenStreamPromise) {
+      const trackedOpenStreamPromise = openStreamPromise.then(
+        () => {
           openStreamPromiseRef.current = null;
-        }
-      });
+        },
+        (error: unknown) => {
+          openStreamPromiseRef.current = null;
+          throw error;
+        },
+      );
       openStreamPromiseRef.current = trackedOpenStreamPromise;
 
       void trackedOpenStreamPromise.then(
