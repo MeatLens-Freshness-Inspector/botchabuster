@@ -62,7 +62,7 @@ export function isOriginAllowed(origin: string | undefined, allowedOrigins: read
 
 export function createCorsOptions(allowedOrigins: readonly string[]): CorsOptions {
   return {
-    allowedHeaders: ["Authorization", "Content-Type", "X-CSRF-Token"],
+    allowedHeaders: ["Authorization", "Content-Type", "X-CSRF-Token", "X-Transport-Key"],
     credentials: true,
     origin(origin, callback) {
       if (!origin) {
