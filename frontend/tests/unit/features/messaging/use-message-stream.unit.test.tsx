@@ -161,6 +161,46 @@ test("waits for an aborted handshake to settle before opening a replacement stre
   }
 });
 
+test("serializes the handshake replay performed by React StrictMode", async () => {
+  const dom = installDom();
+  const root = createRoot(dom.container);
+  const calls: Array<{ signal: AbortSignal }> = [];
+  let releaseFirstHandshake!: () => void;
+  let attempts = 0;
+  const options: UseMessageStreamOptions = {
+    enabled: true,
+    openStream: async ({ signal }) => {
+      attempts += 1;
+      calls.push({ signal });
+      if (attempts === 1) {
+        await new Promise<void>((resolve) => {
+          releaseFirstHandshake = resolve;
+        });
+      }
+    },
+    onMessage: () => {},
+    onGap: async () => {},
+  };
+
+  try {
+    await act(async () => root.render(
+      <React.StrictMode>
+        <Harness options={options} onValue={() => {}} />
+      </React.StrictMode>,
+    ));
+    await flush();
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].signal.aborted, true);
+
+    releaseFirstHandshake();
+    await flush();
+    assert.equal(calls.length, 2);
+  } finally {
+    await act(async () => root.unmount());
+    dom.cleanup();
+  }
+});
+
 test("uses five bounded reconnect delays and then stops", async () => {
   const dom = installDom();
   const root = createRoot(dom.container);
