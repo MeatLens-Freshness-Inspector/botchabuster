@@ -187,6 +187,15 @@ export async function decryptTransportResponse(
 ): Promise<Response> {
   if (response.status === 204 || response.status === 304 || !response.body) return response;
 
+  if (response.headers.get("content-type")?.toLowerCase().startsWith("text/event-stream")) {
+    const headers = new Headers(response.headers);
+    headers.set("Content-Type", "text/event-stream; charset=utf-8");
+    return new Response(
+      decryptTransportSseStream(response.body, transport.key, transport.aad),
+      { status: response.status, statusText: response.statusText, headers },
+    );
+  }
+
   const rawBody = await response.text();
   if (rawBody.length === 0) return response;
 
@@ -207,6 +216,78 @@ export async function decryptTransportResponse(
   } catch {
     throw new TransportResponseDecryptionError();
   }
+}
+
+function parseEncryptedSseFrame(frame: string): TransportCiphertext {
+  const lines = frame.split("\n").map((line) => line.endsWith("\r") ? line.slice(0, -1) : line);
+  if (lines.length !== 1 || !lines[0].startsWith("data: ")) {
+    throw new Error("Invalid encrypted SSE stream");
+  }
+  const value: unknown = JSON.parse(lines[0].slice("data: ".length));
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Invalid encrypted SSE stream");
+  }
+  const envelope = value as Record<string, unknown>;
+  if (
+    envelope.version !== 1
+    || envelope.algorithm !== "A256GCM"
+    || typeof envelope.keyId !== "string"
+    || typeof envelope.iv !== "string"
+    || typeof envelope.ciphertext !== "string"
+  ) {
+    throw new Error("Invalid encrypted SSE stream");
+  }
+  return { iv: envelope.iv, ciphertext: envelope.ciphertext };
+}
+
+export function decryptTransportSseStream(
+  body: ReadableStream<Uint8Array>,
+  key: CryptoKey,
+  aad: Uint8Array,
+): ReadableStream<Uint8Array> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffered = "";
+  let finished = false;
+  const maxFrameChars = 16 * 1024 * 1024;
+
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        while (!finished) {
+          const separator = buffered.indexOf("\n\n");
+          if (separator !== -1) {
+            const frame = buffered.slice(0, separator);
+            buffered = buffered.slice(separator + 2);
+            if (frame.length > maxFrameChars) throw new Error("Invalid encrypted SSE stream");
+            const plaintext = await decryptTransportBytes(parseEncryptedSseFrame(frame), key, aad);
+            controller.enqueue(plaintext);
+            return;
+          }
+
+          const result = await reader.read();
+          if (result.done) {
+            buffered += decoder.decode();
+            finished = true;
+            if (buffered.length > 0) throw new Error("Invalid encrypted SSE stream");
+            reader.releaseLock();
+            controller.close();
+            return;
+          }
+          buffered += decoder.decode(result.value, { stream: true });
+          if (buffered.length > maxFrameChars) throw new Error("Invalid encrypted SSE stream");
+        }
+      } catch {
+        await reader.cancel().catch(() => undefined);
+        reader.releaseLock();
+        controller.error(new Error("Invalid encrypted SSE stream"));
+      }
+    },
+    async cancel(reason) {
+      await reader.cancel(reason);
+      reader.releaseLock();
+    },
+  });
 }
 
 function contentTypeForBody(contentType: string | undefined): string {
