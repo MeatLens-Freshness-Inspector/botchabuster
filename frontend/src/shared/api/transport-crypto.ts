@@ -1,10 +1,26 @@
 import { API_BASE_URL } from "./base-url";
-import type { TransportCiphertext, TransportPublicKey } from "./transport-types";
+import type {
+  EncryptedTransportEnvelope,
+  TransportCiphertext,
+  TransportPublicKey,
+  TransportRequestPayload,
+} from "./transport-types";
 
 export interface GeneratedTransportKey {
   aesKey: CryptoKey;
   rawKey: Uint8Array;
 }
+
+export interface PreparedTransportRequest {
+  init: RequestInit;
+  transport: {
+    key: CryptoKey;
+    aad: Uint8Array;
+    keyId: string;
+  } | null;
+}
+
+export const MAX_TRANSPORT_REQUEST_BYTES = 12 * 1024 * 1024;
 
 const BASE64_URL_PATTERN = /^(?:[A-Za-z0-9_-]{2,})?$/;
 let cachedTransportPublicKey: TransportPublicKey | null = null;
@@ -18,7 +34,7 @@ function subtleCrypto(): SubtleCrypto {
   return cryptoApi.subtle;
 }
 
-function encodeBase64Url(value: Uint8Array): string {
+export function encodeBase64Url(value: Uint8Array): string {
   let binary = "";
   for (const byte of value) binary += String.fromCharCode(byte);
   return btoa(binary)
@@ -27,7 +43,7 @@ function encodeBase64Url(value: Uint8Array): string {
     .replace(/=+$/g, "");
 }
 
-function decodeBase64Url(value: string): Uint8Array {
+export function decodeBase64Url(value: string): Uint8Array {
   if (
     value.length === 0
     || value.length % 4 === 1
@@ -46,6 +62,16 @@ function decodeBase64Url(value: string): Uint8Array {
     throw new Error("Invalid base64url value");
   }
   return decoded;
+}
+
+export async function importTransportPublicKey(spki: string): Promise<CryptoKey> {
+  return subtleCrypto().importKey(
+    "spki",
+    decodeBase64Url(spki),
+    { name: "RSA-OAEP", hash: "SHA-256" },
+    false,
+    ["encrypt"],
+  );
 }
 
 export async function generateTransportRequestKey(): Promise<GeneratedTransportKey> {
@@ -97,6 +123,69 @@ export async function decryptTransportBytes(
   }
 }
 
+function contentTypeForBody(contentType: string | undefined): string {
+  return contentType?.trim() || "application/octet-stream";
+}
+
+function bytesToTransportPayload(bytes: Uint8Array, contentType: string): TransportRequestPayload | null {
+  if (bytes.length === 0) return null;
+  if (bytes.length > MAX_TRANSPORT_REQUEST_BYTES) {
+    throw new Error("Transport request body is too large");
+  }
+  return {
+    kind: "bytes",
+    contentType: contentTypeForBody(contentType),
+    value: encodeBase64Url(bytes),
+  };
+}
+
+export async function serializeTransportRequestBody(
+  body: BodyInit | null | undefined,
+  contentType = "",
+): Promise<TransportRequestPayload | null> {
+  if (body === undefined || body === null) return null;
+
+  if (typeof body === "string") {
+    const bytes = new TextEncoder().encode(body);
+    if (bytes.length > MAX_TRANSPORT_REQUEST_BYTES) {
+      throw new Error("Transport request body is too large");
+    }
+    if (contentType.toLowerCase().includes("application/json")) {
+      return bytes.length === 0
+        ? null
+        : { kind: "json", contentType, value: body };
+    }
+    return bytesToTransportPayload(bytes, contentTypeForBody(contentType || "text/plain;charset=UTF-8"));
+  }
+
+  if (typeof URLSearchParams !== "undefined" && body instanceof URLSearchParams) {
+    return bytesToTransportPayload(
+      new TextEncoder().encode(body.toString()),
+      contentTypeForBody(contentType || "application/x-www-form-urlencoded;charset=UTF-8"),
+    );
+  }
+
+  if (typeof Blob !== "undefined" && body instanceof Blob) {
+    return bytesToTransportPayload(
+      new Uint8Array(await body.arrayBuffer()),
+      contentTypeForBody(contentType || body.type),
+    );
+  }
+
+  if (body instanceof ArrayBuffer) {
+    return bytesToTransportPayload(new Uint8Array(body), contentTypeForBody(contentType));
+  }
+
+  if (ArrayBuffer.isView(body)) {
+    return bytesToTransportPayload(
+      new Uint8Array(body.buffer as ArrayBuffer, body.byteOffset, body.byteLength),
+      contentTypeForBody(contentType),
+    );
+  }
+
+  throw new Error("Unsupported transport request body");
+}
+
 function isTransportPublicKey(value: unknown): value is TransportPublicKey {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const key = value as Record<string, unknown>;
@@ -108,6 +197,96 @@ function isTransportPublicKey(value: unknown): value is TransportPublicKey {
     && typeof key.publicKey === "string"
     && BASE64_URL_PATTERN.test(key.publicKey)
   );
+}
+
+function requestUrl(input: RequestInfo | URL): URL {
+  if (typeof Request !== "undefined" && input instanceof Request) {
+    return new URL(input.url);
+  }
+  return new URL(String(input), globalThis.location?.href ?? "http://localhost/");
+}
+
+function requestMethod(input: RequestInfo | URL, init: RequestInit): string {
+  if (init.method) return init.method.toUpperCase();
+  if (typeof Request !== "undefined" && input instanceof Request) return input.method.toUpperCase();
+  return "GET";
+}
+
+function isPlaintextTransportEndpoint(url: URL, method: string): boolean {
+  if (method !== "GET") return false;
+  return url.pathname === new URL(`${API_BASE_URL}/analysis/health`, url).pathname
+    || url.pathname === new URL(`${API_BASE_URL}/transport/public-key`, url).pathname;
+}
+
+function mergeRequestHeaders(input: RequestInfo | URL, init: RequestInit): Headers {
+  const headers = new Headers(
+    typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined,
+  );
+  new Headers(init.headers).forEach((value, name) => headers.set(name, value));
+  return headers;
+}
+
+async function requestBody(input: RequestInfo | URL, init: RequestInit): Promise<BodyInit | null | undefined> {
+  if (init.body !== undefined) return init.body;
+  if (typeof Request !== "undefined" && input instanceof Request && input.body) {
+    return await input.clone().arrayBuffer();
+  }
+  return undefined;
+}
+
+export async function createEncryptedRequest(
+  input: RequestInfo | URL,
+  init: RequestInit = {},
+): Promise<PreparedTransportRequest> {
+  const url = requestUrl(input);
+  const method = requestMethod(input, init);
+  const headers = mergeRequestHeaders(input, init);
+  const nextInit: RequestInit = { ...init, method, headers };
+
+  if (isPlaintextTransportEndpoint(url, method)) {
+    return { init: nextInit, transport: null };
+  }
+
+  const publicKeyMetadata = await getTransportPublicKey();
+  const transportKey = await generateTransportRequestKey();
+  const rsaPublicKey = await importTransportPublicKey(publicKeyMetadata.publicKey);
+  const wrappedKey = await subtleCrypto().encrypt(
+    { name: "RSA-OAEP" },
+    rsaPublicKey,
+    transportKey.rawKey,
+  );
+  headers.set("X-Transport-Key", `${publicKeyMetadata.keyId}.${encodeBase64Url(new Uint8Array(wrappedKey))}`);
+
+  const aad = new TextEncoder().encode(`${method} ${url.pathname}`);
+  const body = await requestBody(input, init);
+  const contentType = headers.get("Content-Type") ?? "";
+  const logicalPayload = await serializeTransportRequestBody(body, contentType);
+  if (logicalPayload) {
+    const encrypted = await encryptTransportBytes(
+      new TextEncoder().encode(JSON.stringify(logicalPayload)),
+      transportKey.aesKey,
+      aad,
+    );
+    const envelope: EncryptedTransportEnvelope = {
+      version: 1,
+      algorithm: "A256GCM",
+      keyId: publicKeyMetadata.keyId,
+      ...encrypted,
+    };
+    nextInit.body = JSON.stringify(envelope);
+    headers.set("Content-Type", "application/json");
+  } else {
+    delete nextInit.body;
+  }
+
+  return {
+    init: nextInit,
+    transport: {
+      key: transportKey.aesKey,
+      aad,
+      keyId: publicKeyMetadata.keyId,
+    },
+  };
 }
 
 export function clearTransportPublicKeyCache(): void {

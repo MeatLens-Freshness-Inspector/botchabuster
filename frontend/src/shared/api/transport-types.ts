@@ -13,6 +13,12 @@ export interface TransportCiphertext {
   ciphertext: string;
 }
 
+export interface EncryptedTransportEnvelope extends TransportCiphertext {
+  version: typeof TRANSPORT_VERSION;
+  algorithm: typeof TRANSPORT_ALGORITHM;
+  keyId: string;
+}
+
 export interface TransportRequestPayload {
   kind: "json" | "bytes" | "form-data";
   contentType: string;
