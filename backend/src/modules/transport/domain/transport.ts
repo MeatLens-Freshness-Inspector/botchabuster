@@ -27,6 +27,10 @@ export interface TransportFile {
   bytes: string;
 }
 
+export interface DecodedTransportFile extends Omit<TransportFile, "bytes"> {
+  bytes: Buffer;
+}
+
 export interface TransportRequestPayload {
   kind: "json" | "bytes" | "form-data";
   contentType: string;
