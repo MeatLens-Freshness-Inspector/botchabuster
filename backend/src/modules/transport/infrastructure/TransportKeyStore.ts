@@ -1,6 +1,7 @@
 import {
   createPrivateKey,
   createPublicKey,
+  generateKeyPairSync,
   type KeyObject,
 } from "node:crypto";
 import {
@@ -59,6 +60,15 @@ export function createTransportKeyStore(options: TransportKeyStoreOptions): Tran
       };
     },
   };
+}
+
+export function createTestTransportKeyStore(): TransportKeyStore {
+  const { privateKey } = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  return createTransportKeyStore({
+    privateKey,
+    keyId: "test-v1",
+    nodeEnv: "test",
+  });
 }
 
 export type { TransportPublicKey };
