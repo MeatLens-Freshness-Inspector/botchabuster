@@ -1,4 +1,12 @@
-import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  privateDecrypt,
+  publicEncrypt,
+  randomBytes,
+  constants,
+  type KeyObject,
+} from "node:crypto";
 
 const BASE64_URL_PATTERN = /^(?:[A-Za-z0-9_-]{2,})?$/;
 
@@ -75,5 +83,37 @@ export function decryptAesGcm(
     return Buffer.concat([decipher.update(encrypted.ciphertext), decipher.final()]);
   } catch {
     throw new Error("Transport decryption failed");
+  }
+}
+
+export function wrapAesKey(key: Uint8Array, publicKey: KeyObject): string {
+  if (key.length !== 32) {
+    throw new Error("Transport AES key must be 32 bytes");
+  }
+
+  try {
+    return encodeBase64Url(new Uint8Array(publicEncrypt({
+      key: publicKey,
+      padding: constants.RSA_PKCS1_OAEP_PADDING,
+      oaepHash: "sha256",
+    }, Buffer.from(key))));
+  } catch {
+    throw new Error("Transport key wrap failed");
+  }
+}
+
+export function unwrapAesKey(wrappedKey: string, privateKey: KeyObject): Buffer {
+  try {
+    const key = privateDecrypt({
+      key: privateKey,
+      padding: constants.RSA_PKCS1_OAEP_PADDING,
+      oaepHash: "sha256",
+    }, Buffer.from(decodeBase64Url(wrappedKey)));
+    if (key.length !== 32) {
+      throw new Error("wrong key length");
+    }
+    return key;
+  } catch {
+    throw new Error("Transport key unwrap failed");
   }
 }
