@@ -14,6 +14,7 @@ import {
   createTransportKeyStore,
   type TransportKeyStore,
 } from "./modules/transport/infrastructure/TransportKeyStore";
+import { createTransportMiddleware } from "./middleware/transport";
 
 export function isSafeMethod(method: string): boolean {
   return method === "GET" || method === "HEAD" || method === "OPTIONS";
@@ -63,7 +64,10 @@ export function createApp(
   app.use(applySecurityHeaders);
   app.use(createOriginRejectionMiddleware(config));
   app.use(cors(createCorsOptions(config.allowedOrigins)));
-  app.use(express.json());
+  app.use(express.json({ limit: config.transportMaxEnvelopeBytes }));
+  app.use(createTransportMiddleware(resolvedTransportKeyStore, {
+    maxPayloadBytes: config.transportMaxPayloadBytes,
+  }));
 
   for (const route of createBackendRoutes(modules, resolvedTransportKeyStore)) {
     app.use(route.prefix, route.router);

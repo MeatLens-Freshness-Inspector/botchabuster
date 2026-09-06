@@ -26,6 +26,11 @@ function rejectRequest(res: Response): void {
   res.status(400).json({ error: "Invalid encrypted request" });
 }
 
+export function isTransportPlaintextEndpoint(req: Request): boolean {
+  return req.method.toUpperCase() === "GET"
+    && (req.path === "/api/analysis/health" || req.path === "/api/transport/public-key");
+}
+
 function readTransportKeyHeader(value: string, keyStore: TransportKeyStore): Buffer {
   const separator = value.indexOf(".");
   if (separator <= 0 || separator === value.length - 1) {
@@ -123,6 +128,11 @@ export function createTransportMiddleware(
   options: TransportMiddlewareOptions,
 ): RequestHandler {
   return (req: Request, res: Response, next: NextFunction): void => {
+    if (isTransportPlaintextEndpoint(req)) {
+      next();
+      return;
+    }
+
     const header = req.header(TRANSPORT_KEY_HEADER);
     if (!header) {
       rejectRequest(res);
