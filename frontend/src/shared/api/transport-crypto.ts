@@ -1,4 +1,5 @@
-import type { TransportCiphertext } from "./transport-types";
+import { API_BASE_URL } from "./base-url";
+import type { TransportCiphertext, TransportPublicKey } from "./transport-types";
 
 export interface GeneratedTransportKey {
   aesKey: CryptoKey;
@@ -6,6 +7,8 @@ export interface GeneratedTransportKey {
 }
 
 const BASE64_URL_PATTERN = /^(?:[A-Za-z0-9_-]{2,})?$/;
+let cachedTransportPublicKey: TransportPublicKey | null = null;
+let publicKeyRequest: Promise<TransportPublicKey> | null = null;
 
 function subtleCrypto(): SubtleCrypto {
   const cryptoApi = globalThis.crypto;
@@ -92,4 +95,45 @@ export async function decryptTransportBytes(
   } catch {
     throw new Error("Transport decryption failed");
   }
+}
+
+function isTransportPublicKey(value: unknown): value is TransportPublicKey {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const key = value as Record<string, unknown>;
+  return (
+    key.version === 1
+    && key.algorithm === "RSA-OAEP-256"
+    && typeof key.keyId === "string"
+    && key.keyId.trim().length > 0
+    && typeof key.publicKey === "string"
+    && BASE64_URL_PATTERN.test(key.publicKey)
+  );
+}
+
+export function clearTransportPublicKeyCache(): void {
+  cachedTransportPublicKey = null;
+  publicKeyRequest = null;
+}
+
+export async function getTransportPublicKey(forceRefresh = false): Promise<TransportPublicKey> {
+  if (forceRefresh) cachedTransportPublicKey = null;
+  if (cachedTransportPublicKey) return cachedTransportPublicKey;
+  if (!publicKeyRequest) {
+    publicKeyRequest = globalThis.fetch(API_BASE_URL + "/transport/public-key", {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      credentials: "omit",
+    }).then(async (response) => {
+      if (!response.ok) throw new Error("Failed to fetch transport public key");
+      const value: unknown = await response.json();
+      if (!isTransportPublicKey(value)) {
+        throw new Error("Invalid transport public key");
+      }
+      cachedTransportPublicKey = value;
+      return value;
+    }).finally(() => {
+      publicKeyRequest = null;
+    });
+  }
+  return publicKeyRequest;
 }
