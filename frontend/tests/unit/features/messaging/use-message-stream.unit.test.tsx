@@ -120,6 +120,47 @@ test("opens only while visible and online, aborts on pause, and coalesces lifecy
   }
 });
 
+test("waits for an aborted handshake to settle before opening a replacement stream", async () => {
+  const dom = installDom();
+  const root = createRoot(dom.container);
+  const calls: Array<{ signal: AbortSignal }> = [];
+  let releaseFirstHandshake!: () => void;
+  let attempts = 0;
+  const options: UseMessageStreamOptions = {
+    enabled: true,
+    openStream: async ({ signal }) => {
+      attempts += 1;
+      calls.push({ signal });
+      if (attempts === 1) {
+        await new Promise<void>((resolve) => {
+          releaseFirstHandshake = resolve;
+        });
+      }
+    },
+    onMessage: () => {},
+    onGap: async () => {},
+  };
+
+  try {
+    await act(async () => root.render(<Harness options={options} onValue={() => {}} />));
+    await flush();
+    assert.equal(calls.length, 1);
+
+    await act(async () => dom.setVisible(false));
+    await act(async () => dom.setVisible(true));
+    await flush();
+    assert.equal(calls[0].signal.aborted, true);
+    assert.equal(calls.length, 1);
+
+    releaseFirstHandshake();
+    await flush();
+    assert.equal(calls.length, 2);
+  } finally {
+    await act(async () => root.unmount());
+    dom.cleanup();
+  }
+});
+
 test("uses five bounded reconnect delays and then stops", async () => {
   const dom = installDom();
   const root = createRoot(dom.container);
