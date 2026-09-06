@@ -1,5 +1,6 @@
 import { rm } from "node:fs/promises";
 import type { Request, Response } from "express";
+import { materializeTransportFile, type MaterializedTransportFile } from "../../../../middleware/upload";
 import { developerDashboardService } from "../../infrastructure/DeveloperDashboardService";
 import type { DeveloperDatasetClassification, DeveloperDatasetFilters } from "../../../../types/developerDashboard";
 import type { Inspection } from "../../../../types/inspection";
@@ -187,14 +188,19 @@ export class DeveloperDashboardController {
   }
 
   async importTrainingRun(req: Request, res: Response): Promise<void> {
-    const uploadedFile = req.file;
+    let uploadedFile: MaterializedTransportFile | undefined;
 
     try {
-      if (!uploadedFile) {
+      const transportFile = req.transportFiles?.package;
+      if (!transportFile) {
         res.status(400).json({ error: "Training package ZIP is required" });
         return;
       }
 
+      uploadedFile = await materializeTransportFile(transportFile, {
+        maxBytes: 10 * 1024 * 1024,
+        allowedMimeTypes: ["application/zip", "application/x-zip-compressed", "application/octet-stream"],
+      });
       const importedRun = await importRun.execute(uploadedFile.path);
       res.status(201).json(importedRun);
     } catch (error) {

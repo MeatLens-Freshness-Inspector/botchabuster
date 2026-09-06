@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { DeveloperDashboardController } from "./controllers/DeveloperDashboardController";
-import { developerPackageUpload } from "../../../middleware/developerPackageUpload";
 import { requireDeveloper } from "../../../middleware/auth";
 import { requireAdmin } from "../../../middleware/auth";
 import { InspectionResultDisputeController } from "../../inspections/presentation/controllers/InspectionResultDisputeController";
@@ -29,7 +28,6 @@ router.get("/training-runs", requireDeveloper, (req, res) => controller.listTrai
 router.post(
   "/training-runs/import",
   requireDeveloper,
-  developerPackageUpload.single("package"),
   (req, res) => controller.importTrainingRun(req, res),
 );
 
