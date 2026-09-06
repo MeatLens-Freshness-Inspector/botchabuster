@@ -16,7 +16,10 @@ async function encryptedResponse(
   const generated = await generateTransportRequestKey();
   const plaintext = JSON.stringify({
     contentType: bodyEncoding === "base64" ? "application/zip" : "application/json; charset=utf-8",
-    headers: { "x-logical-header": "restored" },
+    headers: {
+      "x-logical-header": "restored",
+      "content-disposition": "attachment; filename=dataset.zip",
+    },
     body: bodyEncoding === "base64" ? Buffer.from(body).toString("base64url") : body,
     bodyEncoding,
   });
@@ -54,5 +57,6 @@ test("decrypts binary responses as the original bytes", async () => {
     keyId: "test-v1",
   });
 
+  assert.equal(restored.headers.get("content-disposition"), "attachment; filename=dataset.zip");
   assert.deepEqual(new Uint8Array(await restored.arrayBuffer()), new Uint8Array([80, 75, 3, 4]));
 });
