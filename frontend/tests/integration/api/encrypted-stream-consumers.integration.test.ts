@@ -68,3 +68,78 @@ test("live-message consumer receives events after transport stream decryption", 
     Object.defineProperty(globalThis, "crypto", { configurable: true, value: originalCrypto });
   }
 });
+
+test("live-message consumer aborts an encrypted stream after response headers arrive", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalCrypto = globalThis.crypto;
+  const pair = generateKeyPairSync("rsa", { modulusLength: 2048 });
+  const publicKey = pair.publicKey.export({ type: "spki", format: "der" }).toString("base64url");
+  let streamController: ReadableStreamDefaultController<Uint8Array> | null = null;
+  let streamAborted = false;
+  const connectedFrame = "event: status\ndata: {\"state\":\"connected\"}\n\n";
+
+  Object.defineProperty(globalThis, "crypto", { configurable: true, value: webcrypto });
+  clearTransportPublicKeyCache();
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    if (String(input).endsWith("/transport/public-key")) {
+      return new Response(JSON.stringify({ version: 1, algorithm: "RSA-OAEP-256", keyId: "test-v1", publicKey }), { status: 200 });
+    }
+
+    const header = new Headers(init?.headers).get("X-Transport-Key") ?? "";
+    const wrappedKey = Buffer.from(header.slice(header.indexOf(".") + 1), "base64url");
+    const rawKey = privateDecrypt({
+      key: pair.privateKey,
+      padding: constants.RSA_PKCS1_OAEP_PADDING,
+      oaepHash: "sha256",
+    }, wrappedKey);
+    const aesKey = await webcrypto.subtle.importKey("raw", rawKey, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+    const aad = new TextEncoder().encode("GET /api/user-chat/events");
+    const encrypted = await encryptTransportBytes(new TextEncoder().encode(connectedFrame), aesKey, aad);
+    const outerFrame = new TextEncoder().encode(
+      `data: ${JSON.stringify({ version: 1, algorithm: "A256GCM", keyId: "test-v1", ...encrypted })}\n\n`,
+    );
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        streamController = controller;
+        controller.enqueue(outerFrame);
+        init?.signal?.addEventListener("abort", () => {
+          streamAborted = true;
+          try {
+            controller.close();
+          } catch {
+            // The consumer may have already cancelled the stream.
+          }
+        }, { once: true });
+      },
+    });
+    return new Response(body, {
+      status: 200,
+      headers: { "Content-Type": "text/event-stream; charset=utf-8" },
+    });
+  }) as typeof globalThis.fetch;
+
+  const abortController = new AbortController();
+  const statuses: string[] = [];
+  try {
+    const streamPromise = openMessageEventStream({
+      signal: abortController.signal,
+      onMessage: () => {},
+      onStatus: (status) => {
+        statuses.push(status);
+        if (status === "connected") abortController.abort();
+      },
+    });
+    await streamPromise;
+    assert.deepEqual(statuses, ["connected"]);
+    assert.equal(streamAborted, true);
+  } finally {
+    try {
+      streamController?.close();
+    } catch {
+      // The stream may already be closed by the abort signal.
+    }
+    clearTransportPublicKeyCache();
+    globalThis.fetch = originalFetch;
+    Object.defineProperty(globalThis, "crypto", { configurable: true, value: originalCrypto });
+  }
+});

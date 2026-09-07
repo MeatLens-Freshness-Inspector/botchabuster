@@ -61,7 +61,7 @@ function jsonResponse(body: unknown, status = 200) {
 async function installMessageStreamMock(page: Page) {
   await page.addInitScript(() => {
     type StreamTestWindow = typeof window & {
-      __emitUserChatEvent?: (event: string, data: unknown) => void;
+      __emitUserChatEvent?: (event: string, data: unknown) => Promise<void>;
       __userChatStreamOpenCount?: number;
     };
     const testWindow = window as StreamTestWindow;
@@ -70,9 +70,11 @@ async function installMessageStreamMock(page: Page) {
     const originalSubtle = originalCrypto.subtle;
     const originalEncrypt = originalSubtle.encrypt.bind(originalSubtle);
     const encoder = new TextEncoder();
-    let streamController: ReadableStreamDefaultController<Uint8Array> | null = null;
+    let activeStream: {
+      controller: ReadableStreamDefaultController<Uint8Array> | null;
+      key: CryptoKey;
+    } | null = null;
     let latestAesKey: CryptoKey | null = null;
-    let activeStreamKey: CryptoKey | null = null;
 
     const trackedSubtle = new Proxy(originalSubtle, {
       get(target, property) {
@@ -117,12 +119,16 @@ async function installMessageStreamMock(page: Page) {
         .replace(/\//g, "_")
         .replace(/=+$/g, "");
 
-    const encryptFrame = async (event: string, data: unknown, key: CryptoKey) => {
+    const encryptFrame = async (
+      event: string,
+      data: unknown,
+      stream: NonNullable<typeof activeStream>,
+    ) => {
       const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
       const plaintext = encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
       const ciphertext = new Uint8Array(await originalEncrypt(
         { name: "AES-GCM", iv, additionalData: encoder.encode("GET /api/user-chat/events"), tagLength: 128 },
-        key,
+        stream.key,
         plaintext,
       ));
       const envelope = {
@@ -132,12 +138,21 @@ async function installMessageStreamMock(page: Page) {
         iv: encodeBase64Url(iv),
         ciphertext: encodeBase64Url(ciphertext),
       };
-      streamController?.enqueue(encoder.encode(`data: ${JSON.stringify(envelope)}\n\n`));
+      if (activeStream !== stream || !stream.controller) return;
+      try {
+        stream.controller.enqueue(encoder.encode(`data: ${JSON.stringify(envelope)}\n\n`));
+      } catch {
+        // The stream may have been closed while Web Crypto was encrypting.
+      }
     };
 
     testWindow.__userChatStreamOpenCount = 0;
     testWindow.__emitUserChatEvent = (event, data) => {
-      if (activeStreamKey) void encryptFrame(event, data, activeStreamKey);
+      const stream = activeStream;
+      if (!stream) return Promise.resolve();
+      return encryptFrame(event, data, stream).catch((error: unknown) => {
+        console.error("stream frame encryption failed", error);
+      });
     };
     window.fetch = async (input, init) => {
       const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, location.href);
@@ -145,14 +160,16 @@ async function installMessageStreamMock(page: Page) {
 
       testWindow.__userChatStreamOpenCount = (testWindow.__userChatStreamOpenCount ?? 0) + 1;
       if (!latestAesKey) throw new Error("Missing E2E transport AES key for chat stream");
-      activeStreamKey = latestAesKey;
+      const stream: NonNullable<typeof activeStream> = { controller: null, key: latestAesKey };
+      activeStream = stream;
       const body = new ReadableStream<Uint8Array>({
         start(controller) {
-          streamController = controller;
-          void encryptFrame("status", { state: "connected" }, activeStreamKey as CryptoKey);
+          stream.controller = controller;
+          void encryptFrame("status", { state: "connected" }, stream).catch((error: unknown) => {
+            console.error("stream frame encryption failed", error);
+          });
           init?.signal?.addEventListener("abort", () => {
-            if (streamController === controller) streamController = null;
-            activeStreamKey = null;
+            if (activeStream === stream) activeStream = null;
             try {
               controller.close();
             } catch {
@@ -293,8 +310,8 @@ test("desktop receives realtime messages without polling and deduplicates sent e
     content: "Realtime arrival",
     created_at: "2026-07-02T03:30:00.000Z",
   };
-  await page.evaluate((message) => {
-    (window as typeof window & { __emitUserChatEvent?: (event: string, data: unknown) => void })
+  await page.evaluate(async (message) => {
+    await (window as typeof window & { __emitUserChatEvent?: (event: string, data: unknown) => Promise<void> })
       .__emitUserChatEvent?.("message", message);
   }, realtimeMessage);
   await expect(
@@ -313,8 +330,8 @@ test("desktop receives realtime messages without polling and deduplicates sent e
   expect(api.contactsRequests).toBe(1);
   expect(api.messageRequests).toEqual(["admin-1"]);
 
-  await page.evaluate(() => {
-    (window as typeof window & { __emitUserChatEvent?: (event: string, data: unknown) => void })
+  await page.evaluate(async () => {
+    await (window as typeof window & { __emitUserChatEvent?: (event: string, data: unknown) => Promise<void> })
       .__emitUserChatEvent?.("message", {
         id: "message-sent",
         sender_id: "user-1",
@@ -325,12 +342,18 @@ test("desktop receives realtime messages without polling and deduplicates sent e
   });
   await expect(sentMessageBubble).toHaveCount(1);
 
+  const initialStreamOpens = await page.evaluate(() => (
+    (window as typeof window & { __userChatStreamOpenCount?: number }).__userChatStreamOpenCount ?? 0
+  ));
   await page.getByRole("button", { name: /refresh messages/i }).click();
   await expect.poll(() => api.contactsRequests).toBe(2);
   await expect.poll(() => api.messageRequests.length).toBe(2);
+  await expect.poll(() => page.evaluate(() => (
+    (window as typeof window & { __userChatStreamOpenCount?: number }).__userChatStreamOpenCount ?? 0
+  ))).toBeGreaterThan(initialStreamOpens);
 
-  await page.evaluate(() => {
-    (window as typeof window & { __emitUserChatEvent?: (event: string, data: unknown) => void })
+  await page.evaluate(async () => {
+    await (window as typeof window & { __emitUserChatEvent?: (event: string, data: unknown) => Promise<void> })
       .__emitUserChatEvent?.("status", { state: "realtime_unavailable" });
   });
   await expect(page.getByRole("status")).toHaveText("Live updates disconnected");

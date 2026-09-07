@@ -27,6 +27,7 @@ async function fetchOnceWithTimeout(
   const controller = new AbortController();
   const sourceSignal = init.signal;
   let didTimeout = false;
+  let keepSourceAbortListener = false;
 
   const handleSourceAbort = () => controller.abort();
   if (sourceSignal) {
@@ -49,6 +50,10 @@ async function fetchOnceWithTimeout(
       ...preparedRequest.init,
       signal: controller.signal,
     });
+    keepSourceAbortListener = networkResponse.headers
+      .get("content-type")
+      ?.toLowerCase()
+      .startsWith("text/event-stream") ?? false;
     const response = preparedRequest.transport
       ? await decryptTransportResponse(networkResponse, preparedRequest.transport)
       : networkResponse;
@@ -77,7 +82,7 @@ async function fetchOnceWithTimeout(
     throw requestError;
   } finally {
     globalThis.clearTimeout(timeoutId);
-    if (sourceSignal) {
+    if (sourceSignal && !keepSourceAbortListener) {
       sourceSignal.removeEventListener("abort", handleSourceAbort);
     }
   }
