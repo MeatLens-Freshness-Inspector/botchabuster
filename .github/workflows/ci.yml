@@ -449,7 +449,27 @@ jobs:
       - name: Install Playwright OS dependencies on this runner
         run: npx playwright install-deps chromium
       - name: Run critical Playwright tests
+        id: playwright
         run: timeout 110s npm run test:e2e:critical
+      - name: Summarize critical Playwright run
+        if: always()
+        env:
+          RESULT: ${{ steps.playwright.outcome }}
+        shell: bash
+        run: |
+          {
+            echo "## Critical Playwright"
+            echo
+            echo "- Result: $RESULT"
+            echo '- Command: `timeout 110s npm run test:e2e:critical`'
+            if [[ -d frontend/test-results ]]; then
+              echo
+              echo "### Result directories"
+              find frontend/test-results -mindepth 1 -maxdepth 2 -type d -print | sort | sed 's/^/- `/; s/$/`/'
+            else
+              echo "- No Playwright result directory was created."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload critical Playwright diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -534,7 +554,28 @@ jobs:
       - name: Install Playwright OS dependencies on this runner
         run: npx playwright install-deps chromium
       - name: Run full Playwright tests
+        id: playwright
         run: timeout 110s npm run test:e2e:full -- --shard=${{ matrix.shard }}/4
+      - name: Summarize full Playwright run
+        if: always()
+        env:
+          RESULT: ${{ steps.playwright.outcome }}
+          SHARD: ${{ matrix.shard }}/4
+        shell: bash
+        run: |
+          {
+            echo "## Full Playwright (shard $SHARD)"
+            echo
+            echo "- Result: $RESULT"
+            echo "- Command: \`timeout 110s npm run test:e2e:full -- --shard=$SHARD\`"
+            if [[ -d frontend/test-results ]]; then
+              echo
+              echo "### Result directories"
+              find frontend/test-results -mindepth 1 -maxdepth 2 -type d -print | sort | sed 's/^/- `/; s/$/`/'
+            else
+              echo "- No Playwright result directory was created."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload full Playwright diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
