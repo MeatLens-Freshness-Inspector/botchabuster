@@ -641,8 +641,7 @@ test("developer overview derives in-app calculations from dataset manual classif
     await act(async () => {
       root.render(<DeveloperTabContent />);
     });
-    await flushEffects();
-    await flushEffects();
+    await waitForText(/In-App Model Accuracy/);
 
     const pageText = document.body.textContent ?? "";
     assert.match(pageText, /In-App Model Accuracy/);
