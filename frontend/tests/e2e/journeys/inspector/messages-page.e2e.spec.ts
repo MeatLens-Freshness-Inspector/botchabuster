@@ -63,6 +63,7 @@ async function installMessageStreamMock(page: Page) {
     type StreamTestWindow = typeof window & {
       __emitUserChatEvent?: (event: string, data: unknown) => Promise<void>;
       __userChatStreamOpenCount?: number;
+      __userChatStreamReadyCount?: number;
     };
     const testWindow = window as StreamTestWindow;
     const originalFetch = window.fetch.bind(window);
@@ -141,12 +142,22 @@ async function installMessageStreamMock(page: Page) {
       if (activeStream !== stream || !stream.controller) return;
       try {
         stream.controller.enqueue(encoder.encode(`data: ${JSON.stringify(envelope)}\n\n`));
+        if (
+          event === "status"
+          && data
+          && typeof data === "object"
+          && !Array.isArray(data)
+          && (data as { state?: unknown }).state === "connected"
+        ) {
+          testWindow.__userChatStreamReadyCount = (testWindow.__userChatStreamReadyCount ?? 0) + 1;
+        }
       } catch {
         // The stream may have been closed while Web Crypto was encrypting.
       }
     };
 
     testWindow.__userChatStreamOpenCount = 0;
+    testWindow.__userChatStreamReadyCount = 0;
     testWindow.__emitUserChatEvent = (event, data) => {
       const stream = activeStream;
       if (!stream) return Promise.resolve();
@@ -345,12 +356,18 @@ test("desktop receives realtime messages without polling and deduplicates sent e
   const initialStreamOpens = await page.evaluate(() => (
     (window as typeof window & { __userChatStreamOpenCount?: number }).__userChatStreamOpenCount ?? 0
   ));
+  const initialStreamReadyCount = await page.evaluate(() => (
+    (window as typeof window & { __userChatStreamReadyCount?: number }).__userChatStreamReadyCount ?? 0
+  ));
   await page.getByRole("button", { name: /refresh messages/i }).click();
   await expect.poll(() => api.contactsRequests).toBe(2);
   await expect.poll(() => api.messageRequests.length).toBe(2);
   await expect.poll(() => page.evaluate(() => (
     (window as typeof window & { __userChatStreamOpenCount?: number }).__userChatStreamOpenCount ?? 0
   ))).toBeGreaterThan(initialStreamOpens);
+  await expect.poll(() => page.evaluate(() => (
+    (window as typeof window & { __userChatStreamReadyCount?: number }).__userChatStreamReadyCount ?? 0
+  ))).toBeGreaterThan(initialStreamReadyCount);
 
   await page.evaluate(async () => {
     await (window as typeof window & { __emitUserChatEvent?: (event: string, data: unknown) => Promise<void> })

@@ -120,8 +120,10 @@ test("live-message consumer aborts an encrypted stream after response headers ar
 
   const abortController = new AbortController();
   const statuses: string[] = [];
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let streamPromise: Promise<void> | undefined;
   try {
-    const streamPromise = openMessageEventStream({
+    streamPromise = openMessageEventStream({
       signal: abortController.signal,
       onMessage: () => {},
       onStatus: (status) => {
@@ -129,15 +131,20 @@ test("live-message consumer aborts an encrypted stream after response headers ar
         if (status === "connected") abortController.abort();
       },
     });
-    await streamPromise;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error("Encrypted stream abort timed out")), 1_000);
+    });
+    await Promise.race([streamPromise, timeoutPromise]);
     assert.deepEqual(statuses, ["connected"]);
     assert.equal(streamAborted, true);
   } finally {
+    if (timeoutId) clearTimeout(timeoutId);
     try {
       streamController?.close();
     } catch {
       // The stream may already be closed by the abort signal.
     }
+    await streamPromise?.catch(() => undefined);
     clearTransportPublicKeyCache();
     globalThis.fetch = originalFetch;
     Object.defineProperty(globalThis, "crypto", { configurable: true, value: originalCrypto });
