@@ -166,6 +166,15 @@ Each Playwright lane is capped at 110 seconds in CI. A failing lane keeps its
 `frontend/playwright-report` and `frontend/test-results` diagnostics as a GitHub
 Actions artifact; the job summary also names the exact suite, shard, and command.
 
+On Windows PowerShell, use `npm.cmd` and set CI mode first; Playwright applies
+the same 110-second `globalTimeout`:
+
+```powershell
+$env:CI = "true"
+npm.cmd run test:e2e:critical
+npm.cmd run test:e2e:full -- --shard=3/4
+```
+
 ## Technology Stack
 
 ### Frontend

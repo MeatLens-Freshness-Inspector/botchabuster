@@ -1,6 +1,11 @@
 # CI Playwright Recovery Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**Status (2026-09-07): Complete.** The failing lanes were reproduced, fixed,
+and re-run locally with the CI timeout and shard configuration. All planned
+changes are committed in six or more focused commits; remote Actions has not
+been re-run from this checkout.
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox syntax for tracking.
 
 **Goal:** Restore the failing push CI lanes by fixing the two reproducible Playwright regressions while preserving full coverage and making future failures diagnosable.
 
@@ -31,8 +36,8 @@
 **Files:**
 - Create: `docs/superpowers/plans/2026-09-07-ci-playwright-recovery.md`
 
-- [ ] **Step 1:** Capture the failed run IDs and local reproductions in the plan notes.
-- [ ] **Step 2:** Commit the plan as an independently reviewable investigation record.
+- [x] **Step 1:** Capture the failed run IDs and local reproductions in the plan notes.
+- [x] **Step 2:** Commit the plan as an independently reviewable investigation record.
 
 ### Task 2: Centralize encrypted transport bootstrap for standalone E2E tests
 
@@ -44,11 +49,11 @@
 - Produce `mockTransportPublicKey(page: Page): Promise<void>` that registers `**/api/transport/public-key` and fulfills it with `transportPublicKeyResponse()`.
 - Consume the helper from both signup tests before any encrypted API request.
 
-- [ ] **Step 1:** Add the failing standalone-signup coverage that requires the transport public-key route and verify it fails because `/api/auth/sign-up` is never reached.
-- [ ] **Step 2:** Implement the minimal shared route helper.
-- [ ] **Step 3:** Register the helper in both signup tests.
-- [ ] **Step 4:** Run the focused terms-and-conditions test and confirm all three tests pass.
-- [ ] **Step 5:** Commit the helper and signup setup fix.
+- [x] **Step 1:** Add the failing standalone-signup coverage that requires the transport public-key route and verify it fails because `/api/auth/sign-up` is never reached.
+- [x] **Step 2:** Implement the minimal shared route helper.
+- [x] **Step 3:** Register the helper in both signup tests.
+- [x] **Step 4:** Run the focused terms-and-conditions test and confirm all three tests pass.
+- [x] **Step 5:** Commit the helper and signup setup fix.
 
 ### Task 3: Make realtime handoff readiness observable in the E2E fixture
 
@@ -58,41 +63,41 @@
 **Interfaces:**
 - Expose the existing `__userChatStreamOpenCount` through a small page-evaluation assertion; do not add production-only APIs.
 
-- [ ] **Step 1:** Add an assertion that a replacement stream has opened after the refresh/reconnect action, then run the focused test to prove the current test emits its status event during the handoff window.
-- [ ] **Step 2:** Keep the assertion event-based (`expect.poll` on the stream-open counter), not a fixed sleep.
-- [ ] **Step 3:** Run the focused messages test and confirm the realtime-unavailable assertion passes.
-- [ ] **Step 4:** Commit the deterministic handoff test.
+- [x] **Step 1:** Add assertions that a replacement stream has opened and completed its connected handshake after the refresh/reconnect action, then run the focused test to prove the terminal status is delivered to the active generation.
+- [x] **Step 2:** Keep the assertions event-based (`expect.poll` on stream-open and handshake counters), not fixed sleeps.
+- [x] **Step 3:** Run the focused messages test and confirm the realtime-unavailable assertion passes.
+- [x] **Step 4:** Commit the deterministic handoff test.
 
-### Task 4: Add regression coverage for message-stream status termination
+### Task 4: Verify regression coverage for message-stream status termination
 
 **Files:**
-- Modify: `frontend/tests/unit/features/messaging/use-message-stream.unit.test.tsx`
+- Verify: `frontend/tests/unit/features/messaging/use-message-stream.unit.test.tsx`
 
-- [ ] **Step 1:** Add a unit test proving `realtime_unavailable` transitions the hook to `disconnected` and does not schedule an automatic retry.
-- [ ] **Step 2:** Run the new test against the current implementation and verify it fails if the status callback is not honored.
-- [ ] **Step 3:** Keep the production implementation unchanged if the test is already green; otherwise make the smallest root-cause fix in `frontend/src/features/messaging/model/use-message-stream.ts`.
-- [ ] **Step 4:** Run the complete message-stream unit file and commit the regression coverage/fix.
+- [x] **Step 1:** Verify the existing unit test proving `realtime_unavailable` transitions the hook to `disconnected` and does not schedule an automatic retry.
+- [x] **Step 2:** Run the complete message-stream unit file as the regression check.
+- [x] **Step 3:** Keep the production hook implementation unchanged because the existing unit coverage was already green; fix the proven abort-lifetime root cause in `frontend/src/shared/api/fetch-with-timeout.ts`.
+- [x] **Step 4:** Add encrypted SSE integration coverage for the abort lifetime and commit the regression fix.
 
 ### Task 5: Improve CI Playwright diagnostics without changing gates
 
 **Files:**
 - Modify: `.github/workflows/ci.yml`
 
-- [ ] **Step 1:** Add explicit Playwright test-result and report paths to the failure summary while retaining artifact upload and the existing failure exit behavior.
-- [ ] **Step 2:** Validate the YAML and inspect the rendered command forwarding for each shard.
-- [ ] **Step 3:** Run the repository’s workflow/script checks and commit the additive diagnostics.
+- [x] **Step 1:** Add explicit Playwright test-result and report paths to the failure summary while retaining artifact upload and the existing failure exit behavior.
+- [x] **Step 2:** Validate the YAML and inspect the rendered command forwarding for each shard.
+- [x] **Step 3:** Run the repository’s workflow/script checks and commit the additive diagnostics.
 
 ### Task 6: Document and verify the local CI-equivalent lanes
 
 **Files:**
 - Modify: `README.md`
 
-- [ ] **Step 1:** Document the exact critical and four-shard Playwright commands, including the Node 22 requirement and bounded timeout.
-- [ ] **Step 2:** Run lint, typecheck, affected unit suites, critical Playwright, and all four Playwright shards.
-- [ ] **Step 3:** Commit the operational documentation.
+- [x] **Step 1:** Document the exact critical and four-shard Playwright commands, including the Node 22 requirement and bounded timeout.
+- [x] **Step 2:** Run lint, typecheck, affected unit suites, critical Playwright, and all four Playwright shards.
+- [x] **Step 3:** Commit the operational documentation.
 
 ### Task 7: Final quality gate and handoff
 
-- [ ] **Step 1:** Review the diff for unrelated changes and confirm the existing dirty files remain untouched.
-- [ ] **Step 2:** Run the smallest complete local equivalent of every affected CI job.
-- [ ] **Step 3:** Confirm at least six commits exist and report remote CI as unverified unless a new Actions run is available.
+- [x] **Step 1:** Review the diff for unrelated changes and confirm the existing dirty files remain untouched.
+- [x] **Step 2:** Run the smallest complete local equivalent of every affected CI job.
+- [x] **Step 3:** Confirm at least six commits exist and report remote CI as unverified unless a new Actions run is available.
