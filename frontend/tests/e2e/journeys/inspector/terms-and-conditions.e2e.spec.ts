@@ -1,10 +1,16 @@
 import { test, expect } from "@playwright/test";
-import { decryptEncryptedRouteRequest, fulfillEncryptedRoute } from "../../../support/fixtures/transport";
+import {
+  decryptEncryptedRouteRequest,
+  fulfillEncryptedRoute,
+  mockTransportPublicKey,
+} from "../../../support/fixtures/transport";
 import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
 test("signup requires accepting terms and conditions before account creation", async ({ page }) => {
   let signUpCalls = 0;
   let signUpPayload = "";
+
+  await mockTransportPublicKey(page);
 
   await page.route("**/api/analysis/health", async (route) => {
     await fulfillEncryptedRoute(route, {
@@ -50,6 +56,8 @@ test("signup requires accepting terms and conditions before account creation", a
 
 test("signup requires selecting a report header organization before account creation", async ({ page }) => {
   let signUpCalls = 0;
+
+  await mockTransportPublicKey(page);
 
   await page.route("**/api/analysis/health", async (route) => {
     await fulfillEncryptedRoute(route, {

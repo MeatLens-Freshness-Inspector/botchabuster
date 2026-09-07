@@ -6,7 +6,7 @@ import {
   privateDecrypt,
   randomBytes,
 } from "node:crypto";
-import type { Request, Route } from "@playwright/test";
+import type { Page, Request, Route } from "@playwright/test";
 
 const TRANSPORT_VERSION = 1;
 const TRANSPORT_ALGORITHM = "A256GCM";
@@ -138,6 +138,12 @@ export function transportPublicKeyResponse(): RouteFulfillOptions {
       publicKey: transportPublicKey,
     }),
   };
+}
+
+export async function mockTransportPublicKey(page: Page): Promise<void> {
+  await page.route("**/api/transport/public-key", async (route) => {
+    await route.fulfill(transportPublicKeyResponse());
+  });
 }
 
 function responseBodyBytes(options: RouteFulfillOptions): Buffer {
