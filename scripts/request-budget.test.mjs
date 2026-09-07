@@ -56,3 +56,16 @@ test("the Messages realtime journey is part of the pull-request critical suite",
     /messages-page\.e2e\.spec\.ts/,
   );
 });
+
+test("Playwright CI keeps bounded commands and forwards every shard", async () => {
+  const workflow = await read(".github/workflows/ci.yml");
+
+  assert.match(workflow, /timeout 110s npm run test:e2e:critical/);
+  assert.match(
+    workflow,
+    /timeout 110s npm run test:e2e:full -- --shard=\$\{\{\s*matrix\.shard\s*\}\}\/4/,
+  );
+  assert.match(workflow, /shard:\s*\n\s*- 1\n\s*- 2\n\s*- 3\n\s*- 4/);
+  assert.match(workflow, /name: Summarize critical Playwright run/);
+  assert.match(workflow, /name: Summarize full Playwright run/);
+});
