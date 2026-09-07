@@ -146,6 +146,26 @@ GitHub Actions uses [`.github/workflows/ci.yml`](.github/workflows/ci.yml) as th
 - [`.github/workflows/preview.yml`](.github/workflows/preview.yml) reports preview relevance for pull requests and can optionally trigger Netlify or Render preview hooks when repository secrets are configured.
 - [`.github/workflows/deploy-refresh.yml`](.github/workflows/deploy-refresh.yml) provides a manual preview refresh without needing a no-op commit.
 
+### Playwright troubleshooting
+
+Run the same bounded commands locally from a Node 22 checkout when diagnosing a
+CI Playwright failure:
+
+```bash
+# Critical journeys (the pull-request gate)
+CI=true timeout 110s npm run test:e2e:critical
+
+# Full push/scheduled coverage, one deterministic shard at a time
+CI=true timeout 110s npm run test:e2e:full -- --shard=1/4
+CI=true timeout 110s npm run test:e2e:full -- --shard=2/4
+CI=true timeout 110s npm run test:e2e:full -- --shard=3/4
+CI=true timeout 110s npm run test:e2e:full -- --shard=4/4
+```
+
+Each Playwright lane is capped at 110 seconds in CI. A failing lane keeps its
+`frontend/playwright-report` and `frontend/test-results` diagnostics as a GitHub
+Actions artifact; the job summary also names the exact suite, shard, and command.
+
 ## Technology Stack
 
 ### Frontend
