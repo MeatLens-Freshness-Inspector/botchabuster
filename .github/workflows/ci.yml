@@ -462,12 +462,17 @@ jobs:
             echo
             echo "- Result: $RESULT"
             echo '- Command: `timeout 110s npm run test:e2e:critical`'
+            for artifact_path in frontend/playwright-report frontend/test-results; do
+              if [[ -e "$artifact_path" ]]; then
+                echo "- Artifact path present: \`$artifact_path\`"
+              else
+                echo "- Artifact path missing: \`$artifact_path\`"
+              fi
+            done
             if [[ -d frontend/test-results ]]; then
               echo
               echo "### Result directories"
               find frontend/test-results -mindepth 1 -maxdepth 2 -type d -print | sort | sed 's/^/- `/; s/$/`/'
-            else
-              echo "- No Playwright result directory was created."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload critical Playwright diagnostics
@@ -568,12 +573,17 @@ jobs:
             echo
             echo "- Result: $RESULT"
             echo "- Command: \`timeout 110s npm run test:e2e:full -- --shard=$SHARD\`"
+            for artifact_path in frontend/playwright-report frontend/test-results; do
+              if [[ -e "$artifact_path" ]]; then
+                echo "- Artifact path present: \`$artifact_path\`"
+              else
+                echo "- Artifact path missing: \`$artifact_path\`"
+              fi
+            done
             if [[ -d frontend/test-results ]]; then
               echo
               echo "### Result directories"
               find frontend/test-results -mindepth 1 -maxdepth 2 -type d -print | sort | sed 's/^/- `/; s/$/`/'
-            else
-              echo "- No Playwright result directory was created."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload full Playwright diagnostics
