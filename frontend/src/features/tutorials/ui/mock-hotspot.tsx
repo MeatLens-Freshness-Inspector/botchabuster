@@ -25,7 +25,7 @@ export function MockHotspot({
   return (
     <div className={cn("relative", className)}>
       {/* Pulsing outer ring */}
-      <div className="pointer-events-none absolute -inset-1 rounded-xl animate-ping bg-primary/15" />
+      <div className="pointer-events-none absolute -inset-1 rounded-xl motion-safe:animate-ping bg-primary/15" />
       <div className="pointer-events-none absolute -inset-0.5 rounded-xl ring-2 ring-primary/60 shadow-[0_0_0_6px_hsl(var(--primary)/0.12)]" />
 
       {/* Tap label */}

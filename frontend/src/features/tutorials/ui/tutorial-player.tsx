@@ -163,7 +163,7 @@ export function TutorialPlayer({
             <Card className="rounded-[28px] border border-border/70 bg-card/95 shadow-[0_32px_100px_-48px_rgba(0,0,0,0.72)]">
               <CardHeader className="space-y-4">
                 {/* Step progress dots */}
-                <div className="flex items-center gap-1">{stepDots}</div>
+                <div data-tutorial-progress aria-label={`Step ${stepIndex + 1} of ${steps.length}`} className="flex items-center gap-1">{stepDots}</div>
 
                 <div className="space-y-1">
                   <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
@@ -185,7 +185,7 @@ export function TutorialPlayer({
                   {/* Pulsing dot indicator */}
                   <div className="mt-0.5 flex-shrink-0">
                     <span className="relative flex h-3 w-3">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+                      <span className="absolute inline-flex h-full w-full motion-safe:animate-ping rounded-full bg-primary opacity-60" />
                       <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
                     </span>
                   </div>
