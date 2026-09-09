@@ -8,7 +8,7 @@ import { MockPhoneFrame } from "../../../src/features/tutorials";
 test("phone frame separates the app scroll region from its bottom shell chrome", () => {
   const markup = renderToStaticMarkup(
     <MockPhoneFrame>
-      <div data-testid="phone-content">Long tutorial scene</div>
+      <div data-tutorial-app-content data-testid="phone-content">Long tutorial scene</div>
     </MockPhoneFrame>,
   );
 
@@ -17,4 +17,5 @@ test("phone frame separates the app scroll region from its bottom shell chrome",
   assert.match(markup, /data-tutorial-phone-screen[^>]*class="[^"]*min-h-0/);
   assert.match(markup, /data-testid="phone-content"/);
   assert.match(markup, /data-tutorial-phone-home-indicator/);
+  assert.match(markup, /data-tutorial-app-content/);
 });
