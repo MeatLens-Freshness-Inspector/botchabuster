@@ -23,5 +23,6 @@ test("inspect market step exposes the live selector affordance", () => {
   assert.match(markup, /data-tutorial-market-selector/);
   assert.match(markup, /aria-label="Select market location"/);
   assert.match(markup, /Choose market/);
+  assert.match(markup, /Market Selector|Select market location/);
   assert.match(markup, /Saved to report:/);
 });

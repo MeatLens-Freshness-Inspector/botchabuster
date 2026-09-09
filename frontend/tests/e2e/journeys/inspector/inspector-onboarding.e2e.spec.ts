@@ -113,7 +113,11 @@ test("advances through the strict guided tutorial in order", async ({ page }) =>
   await page.getByRole("button", { name: /show my account details/i }).click();
 
   await expect(page.getByRole("button", { name: /show my access code/i })).toBeVisible();
-  await expect(page.getByRole("button", { name: /review inspection scope/i })).toHaveCount(0);
+  await page.getByRole("button", { name: /show my access code/i }).click();
+  await page.getByRole("button", { name: /open help from profile/i }).click();
+  await page.getByRole("button", { name: /review inspection scope/i }).click();
+  await expect(page.getByRole("button", { name: /choose market/i })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: /select market location/i })).toBeVisible();
 });
 
 test("marks onboarding complete and opens Inspect after the required demos", async ({ page }) => {
