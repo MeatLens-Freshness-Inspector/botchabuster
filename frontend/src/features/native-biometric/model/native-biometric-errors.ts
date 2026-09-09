@@ -45,10 +45,11 @@ export function normalizeNativeBiometricError(error: unknown): NativeBiometricEr
     return createNativeBiometricError("vault-missing", "No native biometric record is enrolled.", true);
   }
 
-  const message = typeof error === "object" && error !== null && typeof (error as NativePluginError).message === "string"
-    ? (error as NativePluginError).message as string
-    : "Native biometric authentication failed.";
-  return createNativeBiometricError("storage-failed", message, true);
+  return createNativeBiometricError(
+    "storage-failed",
+    "Native biometric authentication failed.",
+    true,
+  );
 }
 
 export function getNativeBiometricMessage(

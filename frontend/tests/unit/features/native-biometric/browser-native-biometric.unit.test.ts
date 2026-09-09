@@ -21,4 +21,5 @@ test("browser adapter rejects native operations with a safe unavailable error", 
     return error instanceof Error && "code" in error && error.code === "unavailable";
   });
   await assert.rejects(() => adapter.readRecord(), /native biometric/i);
+  await adapter.clearRecord();
 });

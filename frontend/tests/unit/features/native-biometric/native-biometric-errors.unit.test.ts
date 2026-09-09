@@ -24,3 +24,13 @@ test("normalizes storage corruption as recoverable vault state", () => {
   assert.equal(error.retryable, true);
   assert.match(getNativeBiometricMessage(error, "unlock"), /fresh online/i);
 });
+
+test("does not expose native plugin storage details", () => {
+  const error = normalizeNativeBiometricError({
+    code: "unexpected",
+    message: "keystore token=secret-value",
+  });
+
+  assert.equal(error.code, "storage-failed");
+  assert.doesNotMatch(error.message, /secret-value/);
+});
