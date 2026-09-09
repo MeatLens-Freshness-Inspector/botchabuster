@@ -6,6 +6,7 @@ import {
   firstRunTutorialOrder,
   helpCards,
   isTutorialId,
+  tutorialDefinitions,
 } from "../../../../src/features/tutorials";
 
 test("tutorial feature publishes onboarding and profile definitions", () => {

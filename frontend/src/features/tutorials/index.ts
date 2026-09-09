@@ -30,6 +30,7 @@ export { TutorialPlayer } from "./ui/tutorial-player";
 export { TutorialScene } from "./ui/tutorial-scene";
 export { SafetyMockScene } from "./ui/scenes/safety-mock-scene";
 export { ProfileMockScene } from "./ui/scenes/profile-mock-scene";
+export { InspectMockScene } from "./ui/scenes/inspect-mock-scene";
 export { MockPhoneFrame } from "./ui/mock-phone-frame";
 export {
   TutorialAppShell,
