@@ -9,11 +9,13 @@ test("keeps the tutorial page and in-phone app content independently scrollable 
 
   await page.goto("/onboarding", { waitUntil: "domcontentloaded" });
 
-  const pageScroll = await page.evaluate(() => ({
-    scrollHeight: document.documentElement.scrollHeight,
-    clientHeight: document.documentElement.clientHeight,
+  const pageScroll = await page.locator("[data-tutorial-player]").evaluate((element) => ({
+    scrollHeight: element.scrollHeight,
+    clientHeight: element.clientHeight,
+    overflowY: getComputedStyle(element).overflowY,
   }));
   expect(pageScroll.scrollHeight).toBeGreaterThan(pageScroll.clientHeight);
+  expect(pageScroll.overflowY).toBe("auto");
 
   const phoneScreen = page.locator("[data-tutorial-phone-screen]");
   const appContent = page.locator("[data-tutorial-app-content]");
