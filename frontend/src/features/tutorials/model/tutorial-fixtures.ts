@@ -31,6 +31,7 @@ export interface TutorialHistoryFixture {
 export interface TutorialMessagesFixture {
   isSimulated: true;
   connectionStatus: "connected";
+  offlineStatusLabel: "Messaging pauses while offline";
   contactLabel: "Inspection support contact";
   contactRoleLabel: "Admin Contact";
   messageCountLabel: "0 messages";
@@ -70,6 +71,7 @@ export const tutorialFixtures: Record<TutorialFixtureKey, {
   messages: {
     isSimulated: true,
     connectionStatus: "connected",
+    offlineStatusLabel: "Messaging pauses while offline",
     contactLabel: "Inspection support contact",
     contactRoleLabel: "Admin Contact",
     messageCountLabel: "0 messages",

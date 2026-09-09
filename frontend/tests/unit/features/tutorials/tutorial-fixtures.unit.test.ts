@@ -22,4 +22,5 @@ test("tutorial fixtures identify simulated inspector values without using accoun
   assert.equal(tutorialFixtures.inspect.gpsStatus, "Coordinates captured when available");
   assert.equal(tutorialFixtures.history.classification, "Fresh");
   assert.equal(tutorialFixtures.messages.connectionStatus, "connected");
+  assert.equal(tutorialFixtures.messages.offlineStatusLabel, "Messaging pauses while offline");
 });
