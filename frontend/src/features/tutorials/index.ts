@@ -32,6 +32,7 @@ export { SafetyMockScene } from "./ui/scenes/safety-mock-scene";
 export { ProfileMockScene } from "./ui/scenes/profile-mock-scene";
 export { InspectMockScene } from "./ui/scenes/inspect-mock-scene";
 export { HistoryMockScene } from "./ui/scenes/history-mock-scene";
+export { MessagesMockScene } from "./ui/scenes/messages-mock-scene";
 export { MockPhoneFrame } from "./ui/mock-phone-frame";
 export {
   TutorialAppShell,
