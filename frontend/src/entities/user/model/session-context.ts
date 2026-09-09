@@ -14,10 +14,16 @@ export interface AuthContextType {
   isOnlineAuthenticated: boolean;
   offlineUnlockRequired: boolean;
   canUnlockWithLocalPasskey: boolean;
+  nativeBiometricAvailable: boolean;
+  nativeBiometricEnrolled: boolean;
+  canUseNativeBiometricLogin: boolean;
   retryProfileLoad: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
   signInWithPasskey: () => Promise<{ isAdmin: boolean }>;
   unlockWithLocalPasskey: () => Promise<{ isAdmin: boolean }>;
+  signInWithNativeBiometric: () => Promise<{ isAdmin: boolean }>;
+  enableNativeBiometricLogin: () => Promise<void>;
+  disableNativeBiometricLogin: () => Promise<void>;
   signUp: (
     email: string,
     password: string,

@@ -38,11 +38,7 @@ export function createBrowserNativeBiometricAdapter(): NativeBiometricAdapter {
       );
     },
     async clearRecord() {
-      throw createNativeBiometricError(
-        "unavailable",
-        "Native biometric authentication is unavailable in the browser",
-        true,
-      );
+      return undefined;
     },
   };
 }
