@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   firstRunOnboardingSteps,
+  firstRunTutorialOrder,
   helpCards,
   isTutorialId,
 } from "../../../../src/features/tutorials";
@@ -11,5 +12,8 @@ test("tutorial feature publishes onboarding and profile definitions", () => {
   assert.ok(firstRunOnboardingSteps.length > 0);
   assert.ok(helpCards.length > 0);
   assert.equal(isTutorialId("inspect"), true);
+  assert.equal(isTutorialId("messages"), true);
   assert.equal(isTutorialId("unknown"), false);
+  assert.deepEqual(firstRunTutorialOrder, ["safety", "profile", "inspect", "history", "messages"]);
+  assert.ok(firstRunOnboardingSteps.some((step) => step.tutorialId === "messages"));
 });

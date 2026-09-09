@@ -1,4 +1,4 @@
-export type TutorialId = "safety" | "profile" | "inspect" | "history";
+export type TutorialId = "safety" | "profile" | "inspect" | "history" | "messages";
 
 export interface TutorialBlockDefinition {
   id: string;
@@ -376,6 +376,68 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
       ],
     },
   ],
+  messages: [
+    {
+      id: "messages-directory",
+      tutorialId: "messages",
+      sectionTitle: "Messages walkthrough",
+      stepTitle: "Open Messages for inspection support",
+      instruction:
+        "Tap the highlighted Messages entry to reach the contact directory used for inspection support.",
+      sceneTitle: "Messages",
+      sceneSubtitle: "Reach admins for inspection support",
+      hotspotLabel: "Open Messages",
+      blocks: [
+        {
+          id: "messages-directory",
+          title: "Contact directory",
+          description: "Find available admin and inspector contacts here.",
+          tone: "accent",
+          hotspotLabel: "Open Messages",
+        },
+        {
+          id: "messages-thread",
+          title: "Conversation thread",
+          description: "Select a contact to view or send messages.",
+        },
+        {
+          id: "messages-status",
+          title: "Connection status",
+          description: "Live updates require an online authenticated session.",
+        },
+      ],
+    },
+    {
+      id: "messages-thread",
+      tutorialId: "messages",
+      sectionTitle: "Messages walkthrough",
+      stepTitle: "Review the conversation thread",
+      instruction:
+        "Tap the highlighted conversation thread to see where messages, connection status, and reconnect actions appear.",
+      sceneTitle: "Conversation Thread",
+      sceneSubtitle: "Online inspection support",
+      hotspotLabel: "Open conversation thread",
+      blocks: [
+        {
+          id: "messages-directory",
+          title: "Contact directory",
+          description: "Return to the contact list when you need another support contact.",
+        },
+        {
+          id: "messages-thread",
+          title: "Conversation thread",
+          description: "View messages and send a reply from this panel.",
+          tone: "accent",
+          hotspotLabel: "Open conversation thread",
+        },
+        {
+          id: "messages-status",
+          title: "Connection status",
+          description: "Messaging pauses while the app is offline.",
+        },
+      ],
+    },
+  ],
 };
 
 export const firstRunTutorialOrder: TutorialId[] = [
@@ -383,6 +445,7 @@ export const firstRunTutorialOrder: TutorialId[] = [
   "profile",
   "inspect",
   "history",
+  "messages",
 ];
 
 export const firstRunOnboardingSteps: TutorialStepDefinition[] =

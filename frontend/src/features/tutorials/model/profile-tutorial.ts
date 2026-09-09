@@ -68,5 +68,5 @@ export const helpCards: HelpCardDefinition[] = [
 ];
 
 export function isTutorialId(value: string | null): value is TutorialId {
-  return value === "safety" || value === "profile" || value === "inspect" || value === "history";
+  return value === "safety" || value === "profile" || value === "inspect" || value === "history" || value === "messages";
 }

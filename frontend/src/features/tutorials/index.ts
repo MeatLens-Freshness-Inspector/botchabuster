@@ -3,6 +3,14 @@ export {
   firstRunTutorialOrder,
   tutorialDefinitions,
 } from "./model/inspection-tutorial";
+export {
+  tutorialFixtures,
+  type TutorialFixtureKey,
+  type TutorialHistoryFixture,
+  type TutorialInspectFixture,
+  type TutorialMessagesFixture,
+  type TutorialProfileFixture,
+} from "./model/tutorial-fixtures";
 export type {
   TutorialBlockDefinition,
   TutorialId,
