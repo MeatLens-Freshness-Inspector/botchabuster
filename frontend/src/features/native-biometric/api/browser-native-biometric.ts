@@ -1,15 +1,7 @@
 import type {
   NativeBiometricAdapter,
-  NativeBiometricError,
 } from "../model/native-biometric-types";
-
-function unavailableError(): NativeBiometricError {
-  const error = new Error("Native biometric authentication is unavailable in the browser") as NativeBiometricError;
-  error.name = "NativeBiometricUnavailableError";
-  error.code = "unavailable";
-  error.retryable = true;
-  return error;
-}
+import { createNativeBiometricError } from "../model/native-biometric-errors";
 
 export function createBrowserNativeBiometricAdapter(): NativeBiometricAdapter {
   return {
@@ -25,16 +17,32 @@ export function createBrowserNativeBiometricAdapter(): NativeBiometricAdapter {
       return false;
     },
     async authenticate() {
-      throw unavailableError();
+      throw createNativeBiometricError(
+        "unavailable",
+        "Native biometric authentication is unavailable in the browser",
+        true,
+      );
     },
     async readRecord() {
-      throw unavailableError();
+      throw createNativeBiometricError(
+        "unavailable",
+        "Native biometric authentication is unavailable in the browser",
+        true,
+      );
     },
     async writeRecord() {
-      throw unavailableError();
+      throw createNativeBiometricError(
+        "unavailable",
+        "Native biometric authentication is unavailable in the browser",
+        true,
+      );
     },
     async clearRecord() {
-      throw unavailableError();
+      throw createNativeBiometricError(
+        "unavailable",
+        "Native biometric authentication is unavailable in the browser",
+        true,
+      );
     },
   };
 }

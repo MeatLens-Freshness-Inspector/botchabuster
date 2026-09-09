@@ -6,3 +6,8 @@ export {
   type NativeBiometricErrorCode,
   type NativeBiometricRecordInput,
 } from "./model/native-biometric-types";
+export {
+  createNativeBiometricError,
+  getNativeBiometricMessage,
+  normalizeNativeBiometricError,
+} from "./model/native-biometric-errors";

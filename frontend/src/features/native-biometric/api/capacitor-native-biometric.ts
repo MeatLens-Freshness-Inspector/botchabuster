@@ -4,6 +4,7 @@ import type {
   NativeBiometricAdapter,
   NativeBiometricAvailability,
 } from "../model/native-biometric-types";
+import { normalizeNativeBiometricError, createNativeBiometricError } from "../model/native-biometric-errors";
 
 const RECORD_KEY = "auth-record";
 
@@ -68,19 +69,28 @@ export function createCapacitorNativeBiometricAdapter(
       return Boolean(await dependencies.get(RECORD_KEY));
     },
     async authenticate(reason) {
-      await dependencies.authenticate({
-        reason: reason === "enroll"
-          ? "Enable biometric login for MeatLens"
-          : "Authenticate to access MeatLens",
-        allowDeviceCredential: true,
-        androidTitle: "MeatLens biometric login",
-      });
+      try {
+        await dependencies.authenticate({
+          reason: reason === "enroll"
+            ? "Enable biometric login for MeatLens"
+            : "Authenticate to access MeatLens",
+          allowDeviceCredential: true,
+          androidTitle: "MeatLens biometric login",
+        });
+      } catch (error) {
+        throw normalizeNativeBiometricError(error);
+      }
     },
     async readRecord() {
       await this.authenticate("login");
-      const value = await dependencies.get(RECORD_KEY);
+      let value: unknown;
+      try {
+        value = await dependencies.get(RECORD_KEY);
+      } catch (error) {
+        throw normalizeNativeBiometricError(error);
+      }
       if (typeof value !== "string" || value.length === 0) {
-        throw new Error("Native biometric record is missing");
+        throw createNativeBiometricError("vault-missing", "Native biometric record is missing.", true);
       }
       return value;
     },
