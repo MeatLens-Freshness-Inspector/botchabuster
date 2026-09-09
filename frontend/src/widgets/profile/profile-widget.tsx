@@ -32,6 +32,9 @@ export function ProfilePageView() {
     isLoadingPasskeys,
     isRegisteringPasskey,
     removingCredentialId,
+    nativeBiometricAvailable,
+    nativeBiometricEnrolled,
+    isUpdatingNativeBiometric,
     initials,
     inspectorCode,
     isShowingDetailedResults,
@@ -53,6 +56,7 @@ export function ProfilePageView() {
     handleSignOut,
     handleRegisterPasskey,
     handleRemovePasskey,
+    handleNativeBiometricToggle,
     openHelpTutorials,
     openProfileTutorial,
   } = useProfileEditor();
@@ -92,10 +96,13 @@ export function ProfilePageView() {
             location={location}
             reportOrganization={reportOrganization}
             isLoadingPasskeys={isLoadingPasskeys}
+            isUpdatingNativeBiometric={isUpdatingNativeBiometric}
             isRegisteringPasskey={isRegisteringPasskey}
             isSavingProfile={isSavingProfile}
             isUploadingAvatar={isUploadingAvatar}
             passkeyAvailable={passkeyAvailable}
+            nativeBiometricAvailable={nativeBiometricAvailable}
+            nativeBiometricEnrolled={nativeBiometricEnrolled}
             passkeys={passkeys}
             removingCredentialId={removingCredentialId}
             onEmailChange={setEmail}
@@ -106,6 +113,7 @@ export function ProfilePageView() {
             onOpenHelpTutorials={openHelpTutorials}
             onOpenProfileTutorial={openProfileTutorial}
             onRegisterPasskey={handleRegisterPasskey}
+            onNativeBiometricToggle={handleNativeBiometricToggle}
             onRemovePasskey={handleRemovePasskey}
             onSaveProfile={handleSaveProfile}
           />

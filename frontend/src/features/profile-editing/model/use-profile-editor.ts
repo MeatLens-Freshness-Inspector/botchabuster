@@ -40,6 +40,10 @@ export function useProfileEditor() {
     profileStatus,
     isAdmin,
     isOnlineAuthenticated,
+    nativeBiometricAvailable,
+    nativeBiometricEnrolled,
+    enableNativeBiometricLogin,
+    disableNativeBiometricLogin,
     updateEmail,
     updatePassword,
     signOut,
@@ -63,6 +67,7 @@ export function useProfileEditor() {
   const [isLoadingPasskeys, setIsLoadingPasskeys] = useState(false);
   const [isRegisteringPasskey, setIsRegisteringPasskey] = useState(false);
   const [removingCredentialId, setRemovingCredentialId] = useState<string | null>(null);
+  const [isUpdatingNativeBiometric, setIsUpdatingNativeBiometric] = useState(false);
 
   const initials = useMemo(
     () => getProfileInitials(fullName, user?.email),
@@ -387,6 +392,24 @@ export function useProfileEditor() {
     }
   }, [isOnlineAuthenticated]);
 
+  const handleNativeBiometricToggle = useCallback(async () => {
+    setIsUpdatingNativeBiometric(true);
+    try {
+      if (nativeBiometricEnrolled) {
+        await disableNativeBiometricLogin();
+        toast.success("Biometric login disabled on this device");
+      } else {
+        await enableNativeBiometricLogin();
+        toast.success("Biometric login enabled on this device");
+      }
+    } catch (error) {
+      console.error("Native biometric setting failed:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update biometric login");
+    } finally {
+      setIsUpdatingNativeBiometric(false);
+    }
+  }, [disableNativeBiometricLogin, enableNativeBiometricLogin, nativeBiometricEnrolled]);
+
   return {
     user,
     profile,
@@ -408,6 +431,9 @@ export function useProfileEditor() {
     isLoadingPasskeys,
     isRegisteringPasskey,
     removingCredentialId,
+    nativeBiometricAvailable,
+    nativeBiometricEnrolled,
+    isUpdatingNativeBiometric,
     initials,
     inspectorCode,
     isShowingDetailedResults,
@@ -429,6 +455,7 @@ export function useProfileEditor() {
     handleSignOut,
     handleRegisterPasskey,
     handleRemovePasskey,
+    handleNativeBiometricToggle,
     openHelpTutorials: () => navigate("/profile/help"),
     openProfileTutorial: () => navigate("/profile/tutorial"),
   };

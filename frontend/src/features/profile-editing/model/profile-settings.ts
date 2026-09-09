@@ -20,6 +20,25 @@ export type ProfileSettingsUpdate = Pick<
   "full_name" | "location" | "report_organization" | "is_dark_mode" | "show_detailed_results"
 >;
 
+export type NativeBiometricProfileState = {
+  buttonLabel: "Enable Biometric Login" | "Disable Biometric Login";
+  status: "Not enabled on this device" | "Biometric login enabled";
+};
+
+export function getNativeBiometricProfileState({
+  available,
+  enrolled,
+}: {
+  available: boolean;
+  enrolled: boolean;
+}): NativeBiometricProfileState | null {
+  if (!available) return null;
+
+  return enrolled
+    ? { buttonLabel: "Disable Biometric Login", status: "Biometric login enabled" }
+    : { buttonLabel: "Enable Biometric Login", status: "Not enabled on this device" };
+}
+
 export function buildProfileSettingsUpdate(
   form: ProfileSettingsForm,
   _currentProfile: Profile,

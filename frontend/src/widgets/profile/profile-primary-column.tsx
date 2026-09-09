@@ -1,4 +1,4 @@
-import { Loader2, KeyRound, LifeBuoy, Sparkles, Trash2 } from "lucide-react";
+import { Fingerprint, Loader2, KeyRound, LifeBuoy, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/shared/ui";
 import type { RegisteredPasskey } from "@/features/passkeys/api/passkey-client";
 import { ProfileEditableDetailsCard } from "@/features/profile-editing/ui/editable-details-card";
@@ -10,10 +10,13 @@ type ProfilePrimaryColumnProps = {
   location: string;
   reportOrganization: ReportOrganization | null;
   isLoadingPasskeys: boolean;
+  isUpdatingNativeBiometric: boolean;
   isRegisteringPasskey: boolean;
   isSavingProfile: boolean;
   isUploadingAvatar: boolean;
   passkeyAvailable: boolean;
+  nativeBiometricAvailable: boolean;
+  nativeBiometricEnrolled: boolean;
   passkeys: RegisteredPasskey[];
   removingCredentialId: string | null;
   onEmailChange: (value: string) => void;
@@ -24,6 +27,7 @@ type ProfilePrimaryColumnProps = {
   onOpenProfileTutorial: () => void;
   onOpenPasswordDialog: () => void;
   onRegisterPasskey: () => void | Promise<void>;
+  onNativeBiometricToggle: () => void | Promise<void>;
   onRemovePasskey: (credentialId: string) => void | Promise<void>;
   onSaveProfile: () => void | Promise<void>;
 };
@@ -34,10 +38,13 @@ export function ProfilePrimaryColumn({
   location,
   reportOrganization,
   isLoadingPasskeys,
+  isUpdatingNativeBiometric,
   isRegisteringPasskey,
   isSavingProfile,
   isUploadingAvatar,
   passkeyAvailable,
+  nativeBiometricAvailable,
+  nativeBiometricEnrolled,
   passkeys,
   removingCredentialId,
   onEmailChange,
@@ -47,6 +54,7 @@ export function ProfilePrimaryColumn({
   onOpenHelpTutorials,
   onOpenProfileTutorial,
   onRegisterPasskey,
+  onNativeBiometricToggle,
   onRemovePasskey,
   onSaveProfile,
   onOpenPasswordDialog,
@@ -67,6 +75,42 @@ export function ProfilePrimaryColumn({
         onOpenPasswordDialog={onOpenPasswordDialog}
         onSaveProfile={onSaveProfile}
       />
+
+      {nativeBiometricAvailable ? (
+        <section
+          data-testid="profile-native-biometric-card"
+          className="order-2 rounded-3xl border border-primary/20 bg-card/92 p-4 lg:h-full"
+        >
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h3 className="font-display text-lg font-semibold">Device Biometrics</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Use this device&apos;s fingerprint, face, or device credential to sign in,
+                including when MeatLens is offline.
+              </p>
+              <p className="mt-2 text-sm text-foreground">
+                {nativeBiometricEnrolled
+                  ? "Biometric login enabled"
+                  : "Not enabled on this device"}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant={nativeBiometricEnrolled ? "outline" : "default"}
+              className="rounded-xl text-xs uppercase tracking-wider"
+              onClick={onNativeBiometricToggle}
+              disabled={isUpdatingNativeBiometric}
+            >
+              {isUpdatingNativeBiometric ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Fingerprint className="h-4 w-4" />
+              )}
+              {nativeBiometricEnrolled ? "Disable Biometric Login" : "Enable Biometric Login"}
+            </Button>
+          </div>
+        </section>
+      ) : null}
 
       <section
         data-testid="profile-passkeys-card"
