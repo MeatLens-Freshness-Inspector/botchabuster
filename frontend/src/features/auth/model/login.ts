@@ -4,6 +4,10 @@ export function getLoginDescription(showOfflinePasskeyUnlock: boolean): string {
     : "Access your MeatLens account";
 }
 
+export function getNativeBiometricLoginLabel(isOffline: boolean): string {
+  return isOffline ? "Unlock with Device Biometrics" : "Sign In with Device Biometrics";
+}
+
 export function getAuthDestination(isAdmin: boolean): string {
   return isAdmin ? "/admin" : "/inspect";
 }

@@ -5,6 +5,7 @@ import { canUsePasskeys } from "@/features/passkeys";
 import {
   getAuthDestination,
   getErrorMessage,
+  getNativeBiometricLoginLabel,
 } from "./login";
 
 export interface LoginAuthActions {
@@ -13,6 +14,8 @@ export interface LoginAuthActions {
   signIn: (email: string, password: string) => Promise<{ isAdmin: boolean }>;
   signInWithPasskey: () => Promise<{ isAdmin: boolean }>;
   unlockWithLocalPasskey: () => Promise<{ isAdmin: boolean }>;
+  canUseNativeBiometricLogin: boolean;
+  signInWithNativeBiometric: () => Promise<{ isAdmin: boolean }>;
 }
 
 export function useLoginPage(auth: LoginAuthActions) {
@@ -27,6 +30,8 @@ export function useLoginPage(auth: LoginAuthActions) {
     signIn,
     signInWithPasskey,
     unlockWithLocalPasskey,
+    canUseNativeBiometricLogin,
+    signInWithNativeBiometric,
   } = auth;
   const navigate = useNavigate();
 
@@ -87,6 +92,19 @@ export function useLoginPage(auth: LoginAuthActions) {
     }
   };
 
+  const handleNativeBiometricSignIn = async () => {
+    setPasskeyLoading(true);
+
+    try {
+      const { isAdmin } = await signInWithNativeBiometric();
+      navigate(getAuthDestination(isAdmin));
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Device biometric login failed"));
+    } finally {
+      setPasskeyLoading(false);
+    }
+  };
+
   return {
     email,
     password,
@@ -98,6 +116,9 @@ export function useLoginPage(auth: LoginAuthActions) {
     handleSubmit,
     handlePasskeySignIn,
     handleLocalPasskeyUnlock,
+    handleNativeBiometricSignIn,
+    canUseNativeBiometricLogin,
+    nativeBiometricLoginLabel: getNativeBiometricLoginLabel(offlineUnlockRequired),
     showOfflinePasskeyUnlock:
       offlineUnlockRequired && passkeyAvailable && canUnlockWithLocalPasskey,
   };
