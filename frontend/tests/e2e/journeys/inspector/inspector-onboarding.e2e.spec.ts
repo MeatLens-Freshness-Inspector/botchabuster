@@ -7,13 +7,17 @@ async function completeRequiredTutorial(page: Page): Promise<void> {
   await page.getByRole("button", { name: /show my account details/i }).click();
   await page.getByRole("button", { name: /show my access code/i }).click();
   await page.getByRole("button", { name: /open help from profile/i }).click();
+  await page.getByRole("button", { name: /review inspection scope/i }).click();
   await page.getByRole("button", { name: /choose market/i }).click();
+  await page.getByRole("button", { name: /review pre-scan protocol/i }).click();
   await page.getByRole("button", { name: /open capture/i }).click();
   await page.getByRole("button", { name: /run analysis/i }).click();
   await page.getByRole("button", { name: /save result/i }).click();
   await page.getByRole("button", { name: /open a saved inspection/i }).click();
   await page.getByRole("button", { name: /review the freshness details/i }).click();
   await page.getByRole("button", { name: /return to the history list/i }).click();
+  await page.getByRole("button", { name: /open messages/i }).click();
+  await page.getByRole("button", { name: /open conversation thread/i }).click();
 }
 
 test("lets inspectors skip onboarding for the current session", async ({ page }) => {
@@ -109,6 +113,7 @@ test("advances through the strict guided tutorial in order", async ({ page }) =>
   await page.getByRole("button", { name: /show my account details/i }).click();
 
   await expect(page.getByRole("button", { name: /show my access code/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /review inspection scope/i })).toHaveCount(0);
 });
 
 test("marks onboarding complete and opens Inspect after the required demos", async ({ page }) => {
