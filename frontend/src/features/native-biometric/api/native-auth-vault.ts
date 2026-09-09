@@ -6,6 +6,7 @@ import {
   serializeNativeAuthRecord,
   type NativeAuthRecord,
 } from "../model/native-auth-record";
+import { createNativeBiometricError, normalizeNativeBiometricError } from "../model/native-biometric-errors";
 
 export interface NativeAuthVaultDependencies {
   authenticate: (reason: "enroll" | "login" | "unlock") => Promise<void>;
@@ -16,6 +17,7 @@ export interface NativeAuthVaultDependencies {
 
 export interface NativeAuthVault {
   enroll(input: NativeBiometricRecordInput): Promise<void>;
+  unlock(reason: "login" | "unlock"): Promise<NativeAuthRecord>;
 }
 
 function createRecord(input: NativeBiometricRecordInput): NativeAuthRecord {
@@ -43,6 +45,26 @@ export function createNativeAuthVault(
       const record = createRecord(input);
       await dependencies.authenticate("enroll");
       await dependencies.writeRecord(serializeNativeAuthRecord(record));
+    },
+    async unlock(reason) {
+      await dependencies.authenticate(reason);
+      let serialized: string;
+      try {
+        serialized = await dependencies.readRecord();
+      } catch (error) {
+        throw normalizeNativeBiometricError(error);
+      }
+
+      try {
+        const parsed = JSON.parse(serialized) as unknown;
+        assertNativeAuthRecord(parsed);
+        return parsed;
+      } catch (error) {
+        if (error instanceof Error && "code" in error) {
+          throw error;
+        }
+        throw createNativeBiometricError("vault-corrupt", "Native biometric record is invalid.", true);
+      }
     },
   };
 }
