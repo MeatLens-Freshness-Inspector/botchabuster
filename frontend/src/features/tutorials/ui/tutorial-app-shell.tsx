@@ -59,10 +59,12 @@ export function TutorialAppShell({
           const isActive = id === activeTab;
 
           return (
-            <span
+            <button
+              type="button"
               key={id}
               data-tutorial-tab={id}
               data-active={isActive ? "true" : "false"}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-lg px-1 py-1.5",
                 isActive ? "text-primary" : "text-muted-foreground",
@@ -72,7 +74,7 @@ export function TutorialAppShell({
               <span className="truncate font-display text-[9px] uppercase tracking-wider">
                 {label}
               </span>
-            </span>
+            </button>
           );
         })}
       </nav>
