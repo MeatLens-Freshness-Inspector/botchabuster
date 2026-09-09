@@ -3,7 +3,9 @@ import type { ApiSpy } from "../../../support/fixtures/app";
 import { mockCommonApi, seedSignedInSession } from "../../../support/fixtures/app";
 
 async function completeHelpReplay(page: Page): Promise<void> {
+  await page.getByRole("button", { name: /review inspection scope/i }).click();
   await page.getByRole("button", { name: /choose market/i }).click();
+  await page.getByRole("button", { name: /review pre-scan protocol/i }).click();
   await page.getByRole("button", { name: /open capture/i }).click();
   await page.getByRole("button", { name: /run analysis/i }).click();
   await page.getByRole("button", { name: /save result/i }).click();
@@ -18,6 +20,8 @@ async function completeFullTutorialReplay(page: Page): Promise<void> {
   await page.getByRole("button", { name: /open a saved inspection/i }).click();
   await page.getByRole("button", { name: /review the freshness details/i }).click();
   await page.getByRole("button", { name: /return to the history list/i }).click();
+  await page.getByRole("button", { name: /open messages/i }).click();
+  await page.getByRole("button", { name: /open conversation thread/i }).click();
 }
 
 test("shows a Help entry in inspector profile and opens the help hub", async ({ page }) => {
