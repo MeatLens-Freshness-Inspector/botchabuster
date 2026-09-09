@@ -144,6 +144,36 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
   ],
   inspect: [
     {
+      id: "inspect-scope",
+      tutorialId: "inspect",
+      sectionTitle: "Inspect demo",
+      stepTitle: "Confirm the inspection scope",
+      instruction:
+        "Read the scope reminder before capture. The app supports field decisions, while official inspection protocol remains authoritative.",
+      sceneTitle: "Inspect",
+      sceneSubtitle: "Decision support for field work",
+      hotspotLabel: "Review inspection scope",
+      blocks: [
+        {
+          id: "inspect-scope",
+          title: "Decision support only",
+          description: "Keep official LGU or institutional procedure as the final authority.",
+          tone: "warning",
+          hotspotLabel: "Review inspection scope",
+        },
+        {
+          id: "inspect-market",
+          title: "Market selector",
+          description: "Set the active inspection location before capture.",
+        },
+        {
+          id: "inspect-prescan",
+          title: "Pre-scan safety protocol",
+          description: "Complete the required checklist before opening the camera.",
+        },
+      ],
+    },
+    {
       id: "inspect-market",
       tutorialId: "inspect",
       sectionTitle: "Inspect demo",

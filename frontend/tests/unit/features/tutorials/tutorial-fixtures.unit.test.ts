@@ -17,6 +17,9 @@ test("tutorial fixtures identify simulated inspector values without using accoun
   assert.deepEqual(Object.keys(tutorialFixtures), expectedKeys);
   assert.equal(tutorialFixtures.profile.isSimulated, true);
   assert.equal(tutorialFixtures.inspect.locationLabel, "Dagupan City Slaughterhouse");
+  assert.equal(tutorialFixtures.inspect.scopeTitle, "Decision support only");
+  assert.equal(tutorialFixtures.inspect.preScanStatus, "Required");
+  assert.equal(tutorialFixtures.inspect.gpsStatus, "Coordinates captured when available");
   assert.equal(tutorialFixtures.history.classification, "Fresh");
   assert.equal(tutorialFixtures.messages.connectionStatus, "connected");
 });

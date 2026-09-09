@@ -10,6 +10,10 @@ export interface TutorialProfileFixture {
 export interface TutorialInspectFixture {
   isSimulated: true;
   locationLabel: "Dagupan City Slaughterhouse";
+  scopeTitle: "Decision support only";
+  scopeCtaLabel: "Read the inspection scope";
+  preScanStatus: "Required";
+  gpsStatus: "Coordinates captured when available";
   captureStatus: "Ready";
   analysisStatus: "Awaiting";
   confidenceLabel: "--";
@@ -47,6 +51,10 @@ export const tutorialFixtures: Record<TutorialFixtureKey, {
   inspect: {
     isSimulated: true,
     locationLabel: "Dagupan City Slaughterhouse",
+    scopeTitle: "Decision support only",
+    scopeCtaLabel: "Read the inspection scope",
+    preScanStatus: "Required",
+    gpsStatus: "Coordinates captured when available",
     captureStatus: "Ready",
     analysisStatus: "Awaiting",
     confidenceLabel: "--",

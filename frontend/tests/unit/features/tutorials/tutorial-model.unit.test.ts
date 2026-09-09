@@ -16,4 +16,5 @@ test("tutorial feature publishes onboarding and profile definitions", () => {
   assert.equal(isTutorialId("unknown"), false);
   assert.deepEqual(firstRunTutorialOrder, ["safety", "profile", "inspect", "history", "messages"]);
   assert.ok(firstRunOnboardingSteps.some((step) => step.tutorialId === "messages"));
+  assert.equal(tutorialDefinitions.inspect[0].id, "inspect-scope");
 });
