@@ -13,6 +13,7 @@ test("phone frame separates the app scroll region from its bottom shell chrome",
   );
 
   assert.match(markup, /data-tutorial-phone-frame/);
+  assert.match(markup, /w-\[min\(300px,calc\(100vw-2rem\)\)\]/);
   assert.match(markup, /data-tutorial-phone-screen[^>]*class="[^"]*overflow-hidden/);
   assert.match(markup, /data-tutorial-phone-screen[^>]*class="[^"]*min-h-0/);
   assert.match(markup, /data-testid="phone-content"/);

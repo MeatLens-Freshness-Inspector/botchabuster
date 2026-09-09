@@ -12,7 +12,7 @@ export function MockPhoneFrame({ children, className }: MockPhoneFrameProps) {
     <div
       data-tutorial-phone-frame
       className={cn(
-        "relative mx-auto flex w-[300px] flex-col rounded-[40px] border-[3px] border-border/80 bg-[hsl(var(--background))] shadow-[0_0_0_1px_hsl(var(--border)/0.3),0_48px_120px_-32px_rgba(0,0,0,0.85),inset_0_1px_0_hsl(var(--border)/0.5)]",
+        "relative mx-auto flex w-[min(300px,calc(100vw-2rem))] max-w-full flex-col rounded-[40px] border-[3px] border-border/80 bg-[hsl(var(--background))] shadow-[0_0_0_1px_hsl(var(--border)/0.3),0_48px_120px_-32px_rgba(0,0,0,0.85),inset_0_1px_0_hsl(var(--border)/0.5)]",
         className
       )}
       style={{ height: "580px" }}
