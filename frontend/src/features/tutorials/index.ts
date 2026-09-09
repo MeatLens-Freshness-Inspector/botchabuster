@@ -28,6 +28,10 @@ export type {
 } from "./model/profile-tutorial";
 export { TutorialPlayer } from "./ui/tutorial-player";
 export { TutorialScene } from "./ui/tutorial-scene";
+export {
+  TutorialAppShell,
+  type TutorialAppTab,
+} from "./ui/tutorial-app-shell";
 export { ProfileHelpPageView } from "./ui/profile-help-page-view";
 export { ProfileTutorialPageView } from "./ui/profile-tutorial-page-view";
 export { useProfileHelpPage } from "./model/use-profile-help-page";
