@@ -62,7 +62,8 @@ export function TutorialAppShell({
 
       <nav
         aria-label="Tutorial app navigation"
-        className="flex flex-shrink-0 items-stretch justify-between gap-1 border-t border-border bg-card px-1.5 py-2"
+        data-tutorial-bottom-nav
+        className="flex flex-shrink-0 items-stretch justify-between gap-1 border-t border-border bg-card px-1.5 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]"
       >
         {tutorialTabs.map(({ id, label, icon: Icon }) => {
           const isActive = id === activeTab;

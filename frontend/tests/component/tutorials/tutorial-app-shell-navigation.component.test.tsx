@@ -19,4 +19,6 @@ test("tutorial phone navigation mirrors the inspector app tab order", () => {
   assert.match(markup, /data-tutorial-tab="messages"[^>]*data-active="true"/);
   assert.match(markup, /data-tutorial-tab="messages"[^>]*aria-current="page"/);
   assert.match(markup, /aria-label="Tutorial app navigation"/);
+  assert.match(markup, /data-tutorial-bottom-nav/);
+  assert.match(markup, /pb-\[calc\(0\.5rem\+env\(safe-area-inset-bottom,0px\)\)\]/);
 });
