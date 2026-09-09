@@ -14,3 +14,14 @@ test("inspect tutorial mirrors scope, pre-scan, GPS, model, and analysis surface
   assert.match(markup, new RegExp(tutorialFixtures.inspect.gpsStatus));
   assert.match(markup, /Certificate Proof/);
 });
+
+test("inspect market step exposes the live selector affordance", () => {
+  const marketStep = tutorialDefinitions.inspect.find((step) => step.id === "inspect-market");
+  assert.ok(marketStep);
+  const markup = renderToStaticMarkup(<InspectMockScene step={marketStep} onAdvance={() => {}} />);
+
+  assert.match(markup, /data-tutorial-market-selector/);
+  assert.match(markup, /aria-label="Select market location"/);
+  assert.match(markup, /Choose market/);
+  assert.match(markup, /Saved to report:/);
+});
