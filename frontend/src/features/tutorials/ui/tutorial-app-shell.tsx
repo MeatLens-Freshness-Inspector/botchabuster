@@ -19,12 +19,21 @@ const tutorialTabs = [
   { id: "profile", label: "Profile", icon: UserRound },
 ] as const;
 
+const tutorialTabIcons = {
+  inspect: Camera,
+  history: ClipboardList,
+  messages: MessageSquare,
+  profile: UserRound,
+} as const;
+
 export function TutorialAppShell({
   activeTab,
   title,
   subtitle,
   children,
 }: TutorialAppShellProps) {
+  const HeaderIcon = tutorialTabIcons[activeTab];
+
   return (
     <div
       data-tutorial-app-shell
@@ -38,7 +47,7 @@ export function TutorialAppShell({
       <header className="border-b border-border/60 bg-card/90 px-3 py-2.5">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/60 bg-[hsl(var(--primary)/0.16)]">
-            <Camera className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+            <HeaderIcon className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
           </div>
           <div>
             <p className="font-display text-xs font-semibold">{title}</p>
