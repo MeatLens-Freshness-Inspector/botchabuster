@@ -40,6 +40,13 @@ export const helpTutorialCards: HelpTutorialCardDefinition[] = [
   },
   {
     kind: "tutorial",
+    id: "messages",
+    title: "Messages Walkthrough",
+    description:
+      "Practice opening the contact directory and reviewing the connected support thread.",
+  },
+  {
+    kind: "tutorial",
     id: "safety",
     title: "Safety Reminder",
     description:
