@@ -15,3 +15,7 @@ test("profile exposes enabled copy after native biometric enrollment", () => {
     status: "Biometric login enabled",
   });
 });
+
+test("profile hides biometric controls when the device is unavailable", () => {
+  assert.equal(getNativeBiometricProfileState({ available: false, enrolled: false }), null);
+});

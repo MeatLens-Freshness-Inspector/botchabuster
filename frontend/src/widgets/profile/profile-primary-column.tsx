@@ -3,6 +3,7 @@ import { Button } from "@/shared/ui";
 import type { RegisteredPasskey } from "@/features/passkeys/api/passkey-client";
 import { ProfileEditableDetailsCard } from "@/features/profile-editing/ui/editable-details-card";
 import type { ReportOrganization } from "@/entities/user/api/profile-client";
+import { getNativeBiometricProfileState } from "@/features/profile-editing/model/profile-settings";
 
 type ProfilePrimaryColumnProps = {
   email: string;
@@ -59,6 +60,11 @@ export function ProfilePrimaryColumn({
   onSaveProfile,
   onOpenPasswordDialog,
 }: ProfilePrimaryColumnProps) {
+  const nativeBiometricProfileState = getNativeBiometricProfileState({
+    available: nativeBiometricAvailable,
+    enrolled: nativeBiometricEnrolled,
+  });
+
   return (
     <div data-testid="profile-primary-column" className="space-y-4 lg:space-y-0 lg:contents">
       <ProfileEditableDetailsCard
@@ -76,7 +82,7 @@ export function ProfilePrimaryColumn({
         onSaveProfile={onSaveProfile}
       />
 
-      {nativeBiometricAvailable ? (
+      {nativeBiometricProfileState ? (
         <section
           data-testid="profile-native-biometric-card"
           className="order-2 rounded-3xl border border-primary/20 bg-card/92 p-4 lg:h-full"
@@ -89,9 +95,7 @@ export function ProfilePrimaryColumn({
                 including when MeatLens is offline.
               </p>
               <p className="mt-2 text-sm text-foreground">
-                {nativeBiometricEnrolled
-                  ? "Biometric login enabled"
-                  : "Not enabled on this device"}
+                {nativeBiometricProfileState.status}
               </p>
             </div>
             <Button
@@ -106,7 +110,7 @@ export function ProfilePrimaryColumn({
               ) : (
                 <Fingerprint className="h-4 w-4" />
               )}
-              {nativeBiometricEnrolled ? "Disable Biometric Login" : "Enable Biometric Login"}
+              {nativeBiometricProfileState.buttonLabel}
             </Button>
           </div>
         </section>
