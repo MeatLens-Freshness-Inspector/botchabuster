@@ -93,7 +93,6 @@ export function createCapacitorNativeBiometricAdapter(
       }
     },
     async readRecord() {
-      await this.authenticate("login");
       let value: unknown;
       try {
         value = await dependencies.get(RECORD_KEY);

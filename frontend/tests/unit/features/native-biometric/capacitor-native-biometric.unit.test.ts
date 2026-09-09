@@ -25,7 +25,7 @@ test("capacitor adapter maps enrolled fingerprint availability", async () => {
   });
 });
 
-test("capacitor adapter authenticates before reading a record", async () => {
+test("capacitor adapter reads a record after the vault has authenticated", async () => {
   const calls: string[] = [];
   const adapter = createCapacitorNativeBiometricAdapter({
     checkBiometry: async () => ({
@@ -33,9 +33,7 @@ test("capacitor adapter authenticates before reading a record", async () => {
       deviceIsSecure: true,
       biometryType: "faceId",
     }),
-    authenticate: async () => {
-      calls.push("authenticate");
-    },
+    authenticate: async () => calls.push("authenticate"),
     get: async () => {
       calls.push("get");
       return "record";
@@ -45,7 +43,7 @@ test("capacitor adapter authenticates before reading a record", async () => {
   });
 
   assert.equal(await adapter.readRecord(), "record");
-  assert.deepEqual(calls, ["authenticate", "get"]);
+  assert.deepEqual(calls, ["get"]);
 });
 
 test("capacitor adapter reports whether a secure record exists", async () => {
