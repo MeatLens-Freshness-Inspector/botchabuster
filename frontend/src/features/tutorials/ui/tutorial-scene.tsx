@@ -12,17 +12,23 @@ interface TutorialSceneProps {
 }
 
 export function TutorialScene({ step, onAdvance }: TutorialSceneProps) {
+  const renderScene = (scene: React.ReactNode) => (
+    <div data-tutorial-scene={step.id} className="contents">
+      {scene}
+    </div>
+  );
+
   switch (step.tutorialId) {
     case "safety":
-      return <SafetyMockScene step={step} onAdvance={onAdvance} />;
+      return renderScene(<SafetyMockScene step={step} onAdvance={onAdvance} />);
     case "profile":
-      return <ProfileMockScene step={step} onAdvance={onAdvance} />;
+      return renderScene(<ProfileMockScene step={step} onAdvance={onAdvance} />);
     case "inspect":
-      return <InspectMockScene step={step} onAdvance={onAdvance} />;
+      return renderScene(<InspectMockScene step={step} onAdvance={onAdvance} />);
     case "history":
-      return <HistoryMockScene step={step} onAdvance={onAdvance} />;
+      return renderScene(<HistoryMockScene step={step} onAdvance={onAdvance} />);
     case "messages":
-      return <MessagesMockScene step={step} onAdvance={onAdvance} />;
+      return renderScene(<MessagesMockScene step={step} onAdvance={onAdvance} />);
     default:
       return null;
   }
