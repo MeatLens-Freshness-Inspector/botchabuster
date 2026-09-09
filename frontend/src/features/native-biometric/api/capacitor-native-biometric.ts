@@ -1,10 +1,10 @@
 import { BiometricAuth } from "@aparajita/capacitor-biometric-auth";
-import { KeychainAccess, SecureStorage } from "@aparajita/capacitor-secure-storage";
 import type {
   NativeBiometricAdapter,
   NativeBiometricAvailability,
 } from "../model/native-biometric-types";
 import { normalizeNativeBiometricError, createNativeBiometricError } from "../model/native-biometric-errors";
+import { createNativeSecureStorage } from "./native-secure-storage";
 
 const RECORD_KEY = "auth-record";
 
@@ -37,18 +37,29 @@ function getBiometryLabel(type: string | undefined): NativeBiometricAvailability
 }
 
 function createDefaultDependencies(): CapacitorNativeBiometricDependencies {
+  const storage = createNativeSecureStorage();
+  let configuration: Promise<void> | null = null;
+  const ensureConfigured = async () => {
+    configuration ??= storage.configure();
+    await configuration;
+  };
+
   return {
     checkBiometry: () => BiometricAuth.checkBiometry(),
     authenticate: (options) => BiometricAuth.authenticate(options),
-    get: async (key) => SecureStorage.get(key, false, false),
-    set: (key, value) => SecureStorage.set(
-      key,
-      value,
-      false,
-      false,
-      KeychainAccess.whenPasscodeSetThisDeviceOnly,
-    ),
-    remove: (key) => SecureStorage.remove(key, false),
+    get: async (key) => {
+      await ensureConfigured();
+      return storage.get(key);
+    },
+    set: async (key, value) => {
+      await ensureConfigured();
+      await storage.set(key, value);
+    },
+    remove: async (key) => {
+      await ensureConfigured();
+      await storage.remove(key);
+      return true;
+    },
   };
 }
 
