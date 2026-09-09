@@ -26,6 +26,9 @@ const LoginPageView = () => {
     handleSubmit,
     handlePasskeySignIn,
     handleLocalPasskeyUnlock,
+    handleNativeBiometricSignIn,
+    canUseNativeBiometricLogin,
+    nativeBiometricLoginLabel,
     showOfflinePasskeyUnlock,
   } = useLoginPage(auth);
 
@@ -102,6 +105,23 @@ const LoginPageView = () => {
                   <Fingerprint className="h-4 w-4" />
                 )}
                 Sign In with Passkey
+              </Button>
+            ) : null}
+            {canUseNativeBiometricLogin ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full font-display uppercase tracking-wider"
+                disabled={loading || passkeyLoading}
+                onClick={handleNativeBiometricSignIn}
+                aria-label={nativeBiometricLoginLabel}
+              >
+                {passkeyLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Fingerprint className="h-4 w-4" />
+                )}
+                {nativeBiometricLoginLabel}
               </Button>
             ) : null}
           </form>

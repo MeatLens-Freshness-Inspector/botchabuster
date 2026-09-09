@@ -8,6 +8,16 @@ export function getNativeBiometricLoginLabel(isOffline: boolean): string {
   return isOffline ? "Unlock with Device Biometrics" : "Sign In with Device Biometrics";
 }
 
+export function getNativeBiometricLoginState(input: {
+  available: boolean;
+  offline: boolean;
+}): { visible: boolean; label: string } {
+  return {
+    visible: input.available,
+    label: getNativeBiometricLoginLabel(input.offline),
+  };
+}
+
 export function getAuthDestination(isAdmin: boolean): string {
   return isAdmin ? "/admin" : "/inspect";
 }
