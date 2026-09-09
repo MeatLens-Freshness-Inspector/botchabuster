@@ -19,6 +19,8 @@ export interface NativeAuthVault {
   enroll(input: NativeBiometricRecordInput): Promise<void>;
   unlock(reason: "login" | "unlock"): Promise<NativeAuthRecord>;
   update(input: NativeBiometricRecordInput): Promise<void>;
+  clear(): Promise<void>;
+  clearAfterCorruption(): Promise<void>;
 }
 
 function createRecord(input: NativeBiometricRecordInput): NativeAuthRecord {
@@ -72,6 +74,12 @@ export function createNativeAuthVault(
         throw new Error("Native biometric update user does not match offline envelope");
       }
       await dependencies.writeRecord(serializeNativeAuthRecord(createRecord(input)));
+    },
+    async clear() {
+      await dependencies.clearRecord();
+    },
+    async clearAfterCorruption() {
+      await dependencies.clearRecord();
     },
   };
 }
