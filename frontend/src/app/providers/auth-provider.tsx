@@ -64,6 +64,7 @@ import {
 } from "@/entities/user";
 import { AuthContext } from "@/entities/user/model/session-context";
 import { nativeBiometricAdapter } from "@/features/native-biometric/api/native-biometric-factory";
+import { clearNativeBiometricOnAccountSwitch } from "@/features/native-biometric/model/native-account-cleanup";
 import { createNativeAuthVault } from "@/features/native-biometric/api/native-auth-vault";
 import {
   enrollNativeBiometricSession,
@@ -456,6 +457,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const payload = await authClient.signIn(email, password);
     const verifier = await createPasswordVerifier(email, password);
+    if (await clearNativeBiometricOnAccountSwitch(user?.id ?? null, payload.user.id, () => nativeAuthVault.clear())) {
+      setNativeBiometricEnrolled(false);
+    }
     await applyOnlineBootstrap(payload, verifier);
     return { isAdmin: payload.isAdmin };
   };
@@ -472,6 +476,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       credential,
     });
 
+    if (await clearNativeBiometricOnAccountSwitch(user?.id ?? null, payload.user.id, () => nativeAuthVault.clear())) {
+      setNativeBiometricEnrolled(false);
+    }
     await applyOnlineBootstrap(payload);
     return { isAdmin: payload.isAdmin };
   };
