@@ -215,6 +215,7 @@ test("shows passkey management on the profile page and removes a registered devi
   await page.goto(ROUTE_PATHS.profile);
 
   await expect(page.getByRole("heading", { name: /passkeys and device unlock/i })).toBeVisible();
+  await expect(page.getByTestId("profile-native-biometric-card")).toHaveCount(0);
   await expect(page.getByText(/office laptop/i)).toBeVisible();
 
   await page.getByRole("button", { name: /remove office laptop/i }).click();
