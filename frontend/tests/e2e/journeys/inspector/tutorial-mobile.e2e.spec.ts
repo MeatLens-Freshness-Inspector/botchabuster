@@ -7,7 +7,7 @@ test("keeps the tutorial page and in-phone app content independently scrollable 
   await seedSignedInSession(page, { userId: "tutorial-mobile" });
   await mockCommonApi(page, { userId: "tutorial-mobile", onboardingCompletedAt: null });
 
-  await page.goto("/onboarding");
+  await page.goto("/onboarding", { waitUntil: "domcontentloaded" });
 
   const pageScroll = await page.evaluate(() => ({
     scrollHeight: document.documentElement.scrollHeight,
@@ -17,6 +17,7 @@ test("keeps the tutorial page and in-phone app content independently scrollable 
 
   const phoneScreen = page.locator("[data-tutorial-phone-screen]");
   const appContent = page.locator("[data-tutorial-app-content]");
+  await expect(page.locator("[data-tutorial-player]")).toBeVisible();
   await expect(phoneScreen).toBeVisible();
   await expect(page.locator('[data-tutorial-tab="inspect"]')).toHaveAttribute("data-active", "true");
 

@@ -31,4 +31,5 @@ test("tutorial player keeps the outer page scrollable on mobile-sized layouts", 
   assert.match(markup, /pb-\[calc\(6rem\+env\(safe-area-inset-bottom,0px\)\)\]/);
   assert.match(markup, /data-tutorial-progress/);
   assert.match(markup, /motion-safe:animate-ping/);
+  assert.match(markup, /data-tutorial-phone-frame/);
 });
