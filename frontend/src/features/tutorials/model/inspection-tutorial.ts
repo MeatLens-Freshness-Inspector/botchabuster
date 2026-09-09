@@ -144,36 +144,6 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
   ],
   inspect: [
     {
-      id: "inspect-prescan",
-      tutorialId: "inspect",
-      sectionTitle: "Inspect demo",
-      stepTitle: "Complete the pre-scan safety protocol",
-      instruction:
-        "Review the required pre-scan fields before opening the camera. A failed safety answer records a protocol result instead of running AI.",
-      sceneTitle: "Inspect",
-      sceneSubtitle: "Pre-scan safety protocol",
-      hotspotLabel: "Review pre-scan protocol",
-      blocks: [
-        {
-          id: "inspect-prescan",
-          title: "Pre-scan safety protocol",
-          description: "Complete the required checklist before opening the camera.",
-          tone: "accent",
-          hotspotLabel: "Review pre-scan protocol",
-        },
-        {
-          id: "inspect-capture",
-          title: "Capture sample",
-          description: "Open the guided camera flow after the checklist is complete.",
-        },
-        {
-          id: "inspect-analysis",
-          title: "Run analysis",
-          description: "Review the classification and confidence after capture.",
-        },
-      ],
-    },
-    {
       id: "inspect-scope",
       tutorialId: "inspect",
       sectionTitle: "Inspect demo",
@@ -235,6 +205,36 @@ export const tutorialDefinitions: Record<TutorialId, TutorialStepDefinition[]> =
           id: "inspect-save",
           title: "Save result",
           description: "Store the finished inspection record after review.",
+        },
+      ],
+    },
+    {
+      id: "inspect-prescan",
+      tutorialId: "inspect",
+      sectionTitle: "Inspect demo",
+      stepTitle: "Complete the pre-scan safety protocol",
+      instruction:
+        "Review the required pre-scan fields before opening the camera. A failed safety answer records a protocol result instead of running AI.",
+      sceneTitle: "Inspect",
+      sceneSubtitle: "Pre-scan safety protocol",
+      hotspotLabel: "Review pre-scan protocol",
+      blocks: [
+        {
+          id: "inspect-prescan",
+          title: "Pre-scan safety protocol",
+          description: "Complete the required checklist before opening the camera.",
+          tone: "accent",
+          hotspotLabel: "Review pre-scan protocol",
+        },
+        {
+          id: "inspect-capture",
+          title: "Capture sample",
+          description: "Open the guided camera flow after the checklist is complete.",
+        },
+        {
+          id: "inspect-analysis",
+          title: "Run analysis",
+          description: "Review the classification and confidence after capture.",
         },
       ],
     },
