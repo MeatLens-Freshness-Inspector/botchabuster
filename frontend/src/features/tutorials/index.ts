@@ -28,6 +28,7 @@ export type {
 } from "./model/profile-tutorial";
 export { TutorialPlayer } from "./ui/tutorial-player";
 export { TutorialScene } from "./ui/tutorial-scene";
+export { SafetyMockScene } from "./ui/scenes/safety-mock-scene";
 export { MockPhoneFrame } from "./ui/mock-phone-frame";
 export {
   TutorialAppShell,
