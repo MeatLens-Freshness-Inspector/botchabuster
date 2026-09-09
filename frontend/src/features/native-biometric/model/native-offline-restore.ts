@@ -1,7 +1,7 @@
 import {
   isNativeRecordExpired,
   restoreOfflineEnvelopeFromNativeRecord,
-} from "@/entities/user/model/native-biometric-envelope";
+} from "./native-envelope";
 import type { OfflineAuthEnvelope } from "@/entities/user/model/offline-auth-envelope";
 import type { NativeAuthRecord } from "./native-auth-record";
 

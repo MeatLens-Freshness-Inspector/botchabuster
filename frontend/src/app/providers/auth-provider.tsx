@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { Capacitor } from "@capacitor/core";
 import {
   authClient,
   type AuthBootstrapPayload,
@@ -63,15 +62,12 @@ import {
   type SessionStoreState,
 } from "@/entities/user";
 import { AuthContext } from "@/entities/user/model/session-context";
-import { nativeBiometricAdapter } from "@/features/native-biometric/api/native-biometric-factory";
 import { clearNativeBiometricOnAccountSwitch } from "@/features/native-biometric/model/native-account-cleanup";
-import { createNativeAuthVault } from "@/features/native-biometric/api/native-auth-vault";
 import {
-  enrollNativeBiometricSession,
-  signInWithNativeBiometricSession,
-} from "@/features/native-biometric/model/native-provider-actions";
-import { restoreNativeOnlineSession } from "@/features/native-biometric/model/native-online-restore";
-import type { NativeAuthRecord } from "@/features/native-biometric/model/native-auth-record";
+  createNativeAuthActions,
+  nativeAuthVault,
+} from "@/features/native-biometric/model/native-auth-actions";
+import { useNativeBiometricState } from "@/features/native-biometric/model/use-native-biometric-state";
 
 const createAuditId = () => {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -88,13 +84,6 @@ function shouldRetainEnvelopeForUser(
   return Boolean(envelope && envelope.user.id === user.id);
 }
 
-const nativeAuthVault = createNativeAuthVault({
-  authenticate: (reason) => nativeBiometricAdapter.authenticate(reason),
-  readRecord: () => nativeBiometricAdapter.readRecord(),
-  writeRecord: (record) => nativeBiometricAdapter.writeRecord(record),
-  clearRecord: () => nativeBiometricAdapter.clearRecord(),
-});
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const initialSessionCache = createSessionCacheState();
   const [user, setUser] = useState<AuthUser | null>(initialSessionCache.user);
@@ -106,9 +95,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profileStatus, setProfileStatus] = useState<ProfileStatus>("idle");
   const [authMode, setAuthMode] = useState<AuthMode>("bootstrapping");
   const [offlineUnlockRequired, setOfflineUnlockRequiredState] = useState(false);
-  const [nativeBiometricAvailable, setNativeBiometricAvailable] = useState(false);
-  const [nativeBiometricEnrolled, setNativeBiometricEnrolled] = useState(false);
   const mountedRef = useRef(true);
+  const {
+    nativeBiometricAvailable,
+    nativeBiometricEnrolled,
+    setNativeBiometricEnrolled,
+  } = useNativeBiometricState();
 
   const applySessionState = useCallback((nextState: SessionStoreState) => {
     setUser(nextState.user);
@@ -131,25 +123,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearCachedProfile();
     clearCachedAdmin();
   }, []);
-
-  const refreshNativeBiometricState = useCallback(async () => {
-    try {
-      const availability = await nativeBiometricAdapter.checkAvailability();
-      const enrolled = availability.isNative && await nativeBiometricAdapter.hasRecord();
-      if (!mountedRef.current) return;
-      setNativeBiometricAvailable(availability.isAvailable);
-      setNativeBiometricEnrolled(enrolled);
-    } catch {
-      if (!mountedRef.current) return;
-      setNativeBiometricAvailable(false);
-      setNativeBiometricEnrolled(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
-    void refreshNativeBiometricState();
-  }, [refreshNativeBiometricState]);
 
   const clearInMemoryAuthState = useCallback((nextMode: AuthMode) => {
     clearApiCsrfToken();
@@ -525,48 +498,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { isAdmin: unlockedEnvelope.isAdmin };
   };
 
-  const createNativeProviderDependencies = useCallback(() => ({
+  const nativeAuthActions = createNativeAuthActions({
     vault: nativeAuthVault,
+    user,
+    session,
+    authMode,
     isOnline: () => navigator.onLine,
     loadEnvelope: () => loadOfflineAuthEnvelope(),
-    restoreOnline: (record: NativeAuthRecord) => restoreNativeOnlineSession(record, {
-      setSession: (nextSession) => setCachedAuth(record.offlineEnvelope.user, nextSession),
-      getSession: () => authClient.getSession(),
-      clearSession: clearCachedAuth,
-    }),
-    unlockOffline: (envelope: OfflineAuthEnvelope) => unlockFromOfflineEnvelope(envelope),
-    applyOnline: (payload: AuthBootstrapPayload) => applyOnlineBootstrap(payload),
-  }), [applyOnlineBootstrap, unlockFromOfflineEnvelope]);
-
-  const enableNativeBiometricLogin = async (): Promise<void> => {
-    if (!user || !session || authMode !== "online-authenticated") {
-      throw new Error("Native biometric enrollment requires an online session");
-    }
-
-    await enrollNativeBiometricSession(
-      { userId: user.id, session },
-      createNativeProviderDependencies(),
-    );
-    setNativeBiometricEnrolled(true);
-  };
-
-  const disableNativeBiometricLogin = async (): Promise<void> => {
-    await nativeAuthVault.clear();
-    setNativeBiometricEnrolled(false);
-  };
-
-  const signInWithNativeBiometric = async (): Promise<{ isAdmin: boolean }> => {
-    try {
-      const result = await signInWithNativeBiometricSession(createNativeProviderDependencies());
-      return { isAdmin: result.isAdmin };
-    } catch (error) {
-      if (error instanceof Error && "code" in error && (error as { code?: string }).code === "vault-corrupt") {
-        await nativeAuthVault.clearAfterCorruption();
-        setNativeBiometricEnrolled(false);
-      }
-      throw error;
-    }
-  };
+    setSession: (nextUser, nextSession) => setCachedAuth(nextUser, nextSession),
+    getSession: () => authClient.getSession(),
+    clearSession: clearCachedAuth,
+    unlockOffline: (envelope) => unlockFromOfflineEnvelope(envelope),
+    applyOnline: (payload) => applyOnlineBootstrap(payload),
+    setEnrolled: setNativeBiometricEnrolled,
+  });
 
   const signUp = async (
     email: string,
@@ -724,9 +669,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signInWithPasskey,
         unlockWithLocalPasskey,
-        signInWithNativeBiometric,
-        enableNativeBiometricLogin,
-        disableNativeBiometricLogin,
+        signInWithNativeBiometric: nativeAuthActions.signInWithNativeBiometric,
+        enableNativeBiometricLogin: nativeAuthActions.enableNativeBiometricLogin,
+        disableNativeBiometricLogin: nativeAuthActions.disableNativeBiometricLogin,
         signUp,
         signOut,
         lock,

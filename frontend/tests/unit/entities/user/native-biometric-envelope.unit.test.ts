@@ -4,8 +4,8 @@ import {
   createNativeAuthRecordFromBootstrap,
   isNativeRecordExpired,
   restoreOfflineEnvelopeFromNativeRecord,
-} from "../../../../src/entities/user/model/native-biometric-envelope";
-import type { AuthBootstrapPayload } from "../../../../src/features/auth/api/auth-client";
+} from "../../../../src/features/native-biometric/model/native-envelope";
+import type { AuthBootstrapPayload } from "../../../../src/features/auth";
 import type { OfflineAuthEnvelope } from "../../../../src/entities/user/model/offline-auth-envelope";
 import type { NativeAuthRecord } from "../../../../src/features/native-biometric/model/native-auth-record";
 

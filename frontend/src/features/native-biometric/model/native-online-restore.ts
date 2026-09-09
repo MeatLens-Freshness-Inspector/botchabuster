@@ -1,4 +1,4 @@
-import type { AuthBootstrapPayload } from "@/features/auth/api/auth-client";
+import type { AuthBootstrapPayload } from "@/features/auth";
 import type { AuthSession } from "@/entities/user/model/session-types";
 import type { NativeAuthRecord } from "./native-auth-record";
 

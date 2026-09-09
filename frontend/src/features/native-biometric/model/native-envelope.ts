@@ -1,9 +1,9 @@
-import type { AuthBootstrapPayload } from "@/features/auth/api/auth-client";
+import type { AuthBootstrapPayload } from "@/features/auth";
+import type { OfflineAuthEnvelope } from "@/entities/user/model/offline-auth-envelope";
 import {
   assertNativeAuthRecord,
   type NativeAuthRecord,
-} from "@/features/native-biometric/model/native-auth-record";
-import type { OfflineAuthEnvelope } from "./offline-auth-envelope";
+} from "./native-auth-record";
 
 export function createNativeAuthRecordFromBootstrap(
   payload: AuthBootstrapPayload,
