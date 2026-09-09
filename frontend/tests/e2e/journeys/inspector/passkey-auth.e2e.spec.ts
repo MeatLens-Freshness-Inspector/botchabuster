@@ -153,6 +153,7 @@ test("signs in with a passkey from the login page", async ({ page }) => {
   await page.goto(ROUTE_PATHS.login);
 
   await expect(page.getByRole("button", { name: /sign in with passkey/i })).toBeVisible();
+  await expect(page.getByRole("button", { name: /sign in with device biometrics/i })).toHaveCount(0);
   await page.getByRole("button", { name: /sign in with passkey/i }).click();
 
   await expect(page).toHaveURL(new RegExp(`${ROUTE_PATHS.inspect}$`));
