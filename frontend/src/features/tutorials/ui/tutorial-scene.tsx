@@ -1,4 +1,5 @@
 import type { TutorialStepDefinition } from "../model/inspection-tutorial";
+import React from "react";
 import { SafetyMockScene } from "./scenes/safety-mock-scene";
 import { ProfileMockScene } from "./scenes/profile-mock-scene";
 import { InspectMockScene } from "./scenes/inspect-mock-scene";

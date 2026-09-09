@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import React from "react";
 import { cn } from "@/shared/lib/utils";
 
 interface MockPhoneFrameProps {
@@ -9,6 +10,7 @@ interface MockPhoneFrameProps {
 export function MockPhoneFrame({ children, className }: MockPhoneFrameProps) {
   return (
     <div
+      data-tutorial-phone-frame
       className={cn(
         "relative mx-auto flex w-[300px] flex-col rounded-[40px] border-[3px] border-border/80 bg-[hsl(var(--background))] shadow-[0_0_0_1px_hsl(var(--border)/0.3),0_48px_120px_-32px_rgba(0,0,0,0.85),inset_0_1px_0_hsl(var(--border)/0.5)]",
         className
@@ -28,12 +30,18 @@ export function MockPhoneFrame({ children, className }: MockPhoneFrameProps) {
       </div>
 
       {/* Screen content */}
-      <div className="relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden rounded-b-[36px]">
+      <div
+        data-tutorial-phone-screen
+        className="relative min-h-0 flex-1 overflow-hidden rounded-b-[36px]"
+      >
         {children}
       </div>
 
       {/* Home indicator bar */}
-      <div className="flex flex-shrink-0 items-center justify-center rounded-b-[36px] bg-[hsl(var(--background))] py-2">
+      <div
+        data-tutorial-phone-home-indicator
+        className="flex flex-shrink-0 items-center justify-center rounded-b-[36px] bg-[hsl(var(--background))] py-2"
+      >
         <div className="h-1 w-24 rounded-full bg-foreground/25" />
       </div>
     </div>

@@ -1,3 +1,4 @@
+import React from "react";
 import { Microscope, Camera, ScanLine, Save, MapPin, ChevronDown } from "lucide-react";
 import { MockHotspot } from "../mock-hotspot";
 import type { TutorialStepDefinition } from "../../model/inspection-tutorial";

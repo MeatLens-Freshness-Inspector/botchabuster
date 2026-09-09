@@ -1,3 +1,4 @@
+import React from "react";
 import { UserRound, KeyRound, LifeBuoy, ChevronRight, Mail } from "lucide-react";
 import { MockHotspot } from "../mock-hotspot";
 import type { TutorialStepDefinition } from "../../model/inspection-tutorial";

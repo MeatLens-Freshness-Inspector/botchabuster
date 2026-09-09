@@ -1,3 +1,4 @@
+import React from "react";
 import { ShieldAlert } from "lucide-react";
 import { MockHotspot } from "../mock-hotspot";
 import type { TutorialStepDefinition } from "../../model/inspection-tutorial";

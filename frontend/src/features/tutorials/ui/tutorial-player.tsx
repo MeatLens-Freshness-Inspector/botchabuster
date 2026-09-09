@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import React from "react";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/shared/ui";
 import {
@@ -53,7 +54,10 @@ export function TutorialPlayer({
   /* ── Completion screen ─────────────────────────────────────── */
   if (!activeStep) {
     return (
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_36%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] px-4 py-6">
+      <div
+        data-tutorial-player
+        className="min-h-[100dvh] overflow-x-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_36%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] px-4 py-6 pb-[calc(6rem+env(safe-area-inset-bottom,0px))]"
+      >
         <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl items-center justify-center">
           <Card className="w-full max-w-xl rounded-[32px] border border-border/70 bg-card/95 shadow-[0_32px_100px_-48px_rgba(0,0,0,0.72)]">
             <CardHeader className="space-y-4 text-center">
@@ -123,7 +127,10 @@ export function TutorialPlayer({
 
   /* ── Main step layout ──────────────────────────────────────── */
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_36%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] px-4 py-6">
+    <div
+      data-tutorial-player
+      className="min-h-[100dvh] overflow-x-hidden bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.18),transparent_36%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--background)))] px-4 py-6 pb-[calc(6rem+env(safe-area-inset-bottom,0px))]"
+    >
       <div className="mx-auto max-w-6xl">
         {/* Top bar: section label + skip */}
         <div className="mb-5 flex items-center justify-between gap-3">

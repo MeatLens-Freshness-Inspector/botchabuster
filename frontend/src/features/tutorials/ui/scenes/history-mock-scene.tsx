@@ -1,3 +1,4 @@
+import React from "react";
 import { ClipboardList, MapPin, Hash, ArrowLeft } from "lucide-react";
 import { MockHotspot } from "../mock-hotspot";
 import type { TutorialStepDefinition } from "../../model/inspection-tutorial";
