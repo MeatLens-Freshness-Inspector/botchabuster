@@ -28,6 +28,8 @@
     "test:watch": "npm run test:e2e:ui"
   },
   "dependencies": {
+    "@aparajita/capacitor-biometric-auth": "^9.1.2",
+    "@aparajita/capacitor-secure-storage": "^8.0.0",
     "@capacitor-community/sqlite": "^8.1.0",
     "@capacitor/core": "^8.4.1",
     "@capacitor/device": "^8.0.2",
