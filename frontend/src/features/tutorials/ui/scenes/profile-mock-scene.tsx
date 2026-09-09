@@ -1,7 +1,9 @@
 import React from "react";
-import { UserRound, KeyRound, LifeBuoy, ChevronRight, Mail } from "lucide-react";
-import { MockHotspot } from "../mock-hotspot";
+import { ChevronRight, KeyRound, LifeBuoy, Mail, UserRound } from "lucide-react";
+import { tutorialFixtures } from "../../model/tutorial-fixtures";
 import type { TutorialStepDefinition } from "../../model/inspection-tutorial";
+import { MockHotspot } from "../mock-hotspot";
+import { TutorialAppShell } from "../tutorial-app-shell";
 
 interface ProfileMockSceneProps {
   step: TutorialStepDefinition;
@@ -9,120 +11,45 @@ interface ProfileMockSceneProps {
 }
 
 export function ProfileMockScene({ step, onAdvance }: ProfileMockSceneProps) {
-  const isAccountDetails = step.id === "profile-account-details";
-  const isAccessCode = step.id === "profile-access-code";
-  const isHelp = step.id === "profile-help";
+  const fixture = tutorialFixtures.profile;
+  const rows = [
+    { id: "account", title: "Account Details", icon: UserRound, detail: fixture.emailLabel, active: step.id === "profile-account-details" },
+    { id: "code", title: "Inspector Code", icon: KeyRound, detail: fixture.accessCodeLabel, active: step.id === "profile-access-code" },
+    { id: "help", title: "Help Tutorials", icon: LifeBuoy, detail: "Replay guided demos anytime", active: step.id === "profile-help" },
+  ];
 
   return (
-    <div className="flex min-h-full flex-col bg-[hsl(var(--background))]">
-      {/* Status bar */}
-      <div className="flex items-center justify-between px-4 py-1 text-[9px] text-muted-foreground">
-        <span>9:41</span>
-        <div className="flex items-center gap-1">
-          <span>●●●</span>
-          <span>WiFi</span>
-          <span>🔋</span>
-        </div>
-      </div>
-
-      {/* Page header */}
-      <div className="border-b border-border/60 bg-card/90 px-4 py-3">
-        <p className="font-display text-sm font-semibold">My Profile</p>
-        <p className="text-[9px] text-muted-foreground">Inspector account center</p>
-      </div>
-
-      {/* Avatar + name hero */}
+    <TutorialAppShell activeTab="profile" title="My Profile" subtitle="Inspector account center">
       <div className="flex flex-col items-center gap-2 py-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-primary/40 bg-[hsl(var(--primary)/0.16)]">
-          <span className="font-display text-lg font-bold text-primary">JD</span>
+          <span className="font-display text-lg font-bold text-primary">TE</span>
         </div>
         <div className="text-center">
-          <p className="font-display text-sm font-semibold">Juan Dela Cruz</p>
-          <span className="rounded-full border border-border/60 bg-background/70 px-2 py-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">
-            Inspector
-          </span>
+          <p className="font-display text-sm font-semibold">{fixture.displayName}</p>
+          <span className="rounded-full border border-border/60 bg-background/70 px-2 py-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">Inspector</span>
         </div>
       </div>
-
       <div className="flex flex-col gap-2 px-3 pb-4">
-        {/* Account details row */}
-        <MockHotspot
-          active={isAccountDetails}
-          onAdvance={onAdvance}
-          label="Tap here"
-          ariaLabel={step.hotspotLabel}
-        >
-          <div className="rounded-xl border border-border/60 bg-card/90 p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/60 bg-[hsl(var(--primary)/0.1)]">
-                  <UserRound className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-display text-[10px] font-semibold uppercase tracking-wider">
-                    Account Details
-                  </p>
-                  <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
-                    <Mail className="h-2.5 w-2.5" />
-                    <span>juan@botchabuster.ph</span>
+        {rows.map(({ id, title, icon: Icon, detail, active }) => (
+          <MockHotspot key={id} active={active} onAdvance={onAdvance} label="Tap here" ariaLabel={step.hotspotLabel}>
+            <div className="rounded-xl border border-border/60 bg-card/90 p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/60 bg-[hsl(var(--primary)/0.1)]"><Icon className="h-3.5 w-3.5 text-primary" /></div>
+                  <div>
+                    <p className="font-display text-[10px] font-semibold uppercase tracking-wider">{title}</p>
+                    <div className="flex items-center gap-1 text-[9px] text-muted-foreground">
+                      {id === "account" && <Mail className="h-2.5 w-2.5" />}
+                      <span>{detail}</span>
+                    </div>
                   </div>
                 </div>
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
-          </div>
-        </MockHotspot>
-
-        {/* Inspector code row */}
-        <MockHotspot
-          active={isAccessCode}
-          onAdvance={onAdvance}
-          label="Tap here"
-          ariaLabel={step.hotspotLabel}
-        >
-          <div className="rounded-xl border border-border/60 bg-card/90 p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/60 bg-[hsl(var(--primary)/0.1)]">
-                  <KeyRound className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-display text-[10px] font-semibold uppercase tracking-wider">
-                    Inspector Code
-                  </p>
-                  <p className="font-mono text-[9px] text-muted-foreground">INS-2024-0042</p>
-                </div>
-              </div>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-            </div>
-          </div>
-        </MockHotspot>
-
-        {/* Help tutorials row */}
-        <MockHotspot
-          active={isHelp}
-          onAdvance={onAdvance}
-          label="Tap here"
-          ariaLabel={step.hotspotLabel}
-        >
-          <div className="rounded-xl border border-border/60 bg-card/90 p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/60 bg-[hsl(var(--primary)/0.1)]">
-                  <LifeBuoy className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-display text-[10px] font-semibold uppercase tracking-wider">
-                    Help Tutorials
-                  </p>
-                  <p className="text-[9px] text-muted-foreground">Replay guided demos anytime</p>
-                </div>
-              </div>
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-            </div>
-          </div>
-        </MockHotspot>
+          </MockHotspot>
+        ))}
       </div>
-    </div>
+    </TutorialAppShell>
   );
 }
