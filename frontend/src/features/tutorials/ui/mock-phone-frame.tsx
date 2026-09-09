@@ -32,7 +32,7 @@ export function MockPhoneFrame({ children, className }: MockPhoneFrameProps) {
       {/* Screen content */}
       <div
         data-tutorial-phone-screen
-        className="relative min-h-0 flex-1 overflow-hidden rounded-b-[36px]"
+        className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-[36px]"
       >
         {children}
       </div>
