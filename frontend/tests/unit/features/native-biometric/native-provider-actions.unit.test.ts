@@ -14,14 +14,14 @@ const record = {
     primaryRole: "inspector",
     isAdmin: true,
     isDeveloper: false,
-    authenticatedAt: "2026-09-09T00:00:00.000Z",
-    offlineExpiresAt: "2026-09-10T00:00:00.000Z",
+    authenticatedAt: "2098-12-31T00:00:00.000Z",
+    offlineExpiresAt: "2099-01-01T00:00:00.000Z",
     offlineUnlockRequired: false,
     passwordVerifier: null,
     localPasskey: null,
   },
-  authenticatedAt: "2026-09-09T00:00:00.000Z",
-  expiresAt: "2026-09-10T00:00:00.000Z",
+  authenticatedAt: "2098-12-31T00:00:00.000Z",
+  expiresAt: "2099-01-01T00:00:00.000Z",
 } as never;
 
 function createDependencies(overrides: Partial<NativeProviderActionDependencies> = {}) {

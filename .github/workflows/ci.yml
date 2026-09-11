@@ -31,11 +31,11 @@ jobs:
       workflow: ${{ steps.classify.outputs.workflow }}
       any_relevant_changes: ${{ steps.classify.outputs.anyRelevantChanges }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -102,14 +102,14 @@ jobs:
     needs: changes
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Cache installed dependencies
         id: node-modules-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             node_modules
@@ -128,14 +128,14 @@ jobs:
       - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Cache installed dependencies
         id: node-modules-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             node_modules
@@ -144,7 +144,7 @@ jobs:
           key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
       - name: Cache Playwright browsers
         id: playwright-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'frontend/package-lock.json') }}
@@ -177,8 +177,8 @@ jobs:
     needs: changes
     if: needs.changes.outputs.docs_only == 'true' || needs.changes.outputs.any_relevant_changes == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -192,14 +192,14 @@ jobs:
       - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Restore installed dependencies
         id: node-modules-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             node_modules
@@ -219,14 +219,14 @@ jobs:
       - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Restore installed dependencies
         id: node-modules-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             node_modules
@@ -245,14 +245,14 @@ jobs:
       - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Restore installed dependencies
         id: node-modules-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             node_modules
@@ -271,14 +271,14 @@ jobs:
       - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Restore installed dependencies
         id: node-modules-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             node_modules
@@ -313,14 +313,14 @@ jobs:
           - suite: integration
             command: timeout 110s npm run test:integration -w frontend
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Restore installed dependencies
         id: node-modules-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             node_modules
@@ -340,14 +340,14 @@ jobs:
       - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Restore installed dependencies
         id: node-modules-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             node_modules
@@ -366,14 +366,14 @@ jobs:
       - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Restore installed dependencies
         id: node-modules-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             node_modules
@@ -392,14 +392,14 @@ jobs:
       - dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.any_relevant_changes == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Restore installed dependencies
         id: node-modules-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             node_modules
@@ -420,14 +420,14 @@ jobs:
       - playwright-dependencies
     if: needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.frontend == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Restore installed dependencies
         id: node-modules-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             node_modules
@@ -436,7 +436,7 @@ jobs:
           key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
       - name: Cache Playwright browsers
         id: playwright-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'frontend/package-lock.json') }}
@@ -477,7 +477,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload critical Playwright diagnostics
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-critical-${{ github.run_id }}
           path: |
@@ -494,14 +494,14 @@ jobs:
       - dependencies
     if: github.event_name != 'pull_request' && needs.changes.outputs.docs_only != 'true' && needs.changes.outputs.backend == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Restore installed dependencies
         id: node-modules-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             node_modules
@@ -530,14 +530,14 @@ jobs:
           - 3
           - 4
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
       - name: Restore installed dependencies
         id: node-modules-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             node_modules
@@ -546,7 +546,7 @@ jobs:
           key: ${{ runner.os }}-node-modules-node22-${{ hashFiles('package-lock.json', 'frontend/package-lock.json', 'backend/package-lock.json') }}
       - name: Cache Playwright browsers
         id: playwright-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', 'frontend/package-lock.json') }}
@@ -588,7 +588,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload full Playwright diagnostics
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-full-shard-${{ matrix.shard }}-${{ github.run_id }}
           path: |

@@ -7,7 +7,9 @@ import path from "node:path";
 const root = fileURLToPath(new URL("..", import.meta.url));
 
 function read(relativePath) {
-  return readFile(path.join(root, relativePath), "utf8");
+  return readFile(path.join(root, relativePath), "utf8").then((source) =>
+    source.replaceAll("\r\n", "\n"),
+  );
 }
 
 test("scheduled workflows do not ping the production Render service", async () => {
