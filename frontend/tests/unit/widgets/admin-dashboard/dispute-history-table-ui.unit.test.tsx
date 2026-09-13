@@ -3,6 +3,7 @@ import test from "node:test";
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { JSDOM } from "jsdom";
+import type { Inspection, InspectionResultDispute } from "../../../../src/entities/inspection";
 import { DisputeHistoryTable } from "../../../../src/widgets/admin-dashboard/ui/dispute-history-table";
 
 type GlobalWithDom = typeof globalThis & { window: Window & typeof globalThis; document: Document };
@@ -27,7 +28,24 @@ function installDom(): { container: HTMLDivElement; cleanup: () => void } {
   };
 }
 
-const baseDispute = {
+const baseInspection: Inspection = {
+  id: "inspection-1",
+  user_id: "inspector-1",
+  meat_type: "pork",
+  classification: "fresh",
+  confidence_score: 0.92,
+  flagged_deviations: [],
+  explanation: null,
+  image_url: null,
+  location: null,
+  location_latitude: null,
+  location_longitude: null,
+  inspector_notes: null,
+  created_at: "2026-09-01T12:00:00.000Z",
+  updated_at: "2026-09-03T12:00:00.000Z",
+};
+
+const baseDispute: Omit<InspectionResultDispute, "id" | "inspection"> = {
   inspection_id: "inspection-1",
   submitted_by: "inspector-1",
   expected_classification: "spoiled",
@@ -40,7 +58,7 @@ const baseDispute = {
   reviewer_note: "Confirmed by review.",
   created_at: "2026-09-01T12:00:00.000Z",
   updated_at: "2026-09-03T12:00:00.000Z",
-} as const;
+};
 
 test("renders every dispute record and neutral optional values", async () => {
   const { container, cleanup } = installDom();
@@ -54,9 +72,9 @@ test("renders every dispute record and neutral optional values", async () => {
             {
               ...baseDispute,
               id: "dispute-1",
-              inspection: { id: "inspection-1", meat_type: "pork", classification: "fresh" },
-            } as any,
-            { ...baseDispute, id: "dispute-2", inspection: null, reviewed_at: null, reviewed_by: null, reviewer_note: null } as any,
+              inspection: baseInspection,
+            },
+            { ...baseDispute, id: "dispute-2", inspection: null, reviewed_at: null, reviewed_by: null, reviewer_note: null },
           ]}
         />,
       );
