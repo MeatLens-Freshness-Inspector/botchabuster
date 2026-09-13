@@ -523,6 +523,11 @@ export async function mockCommonApi(
       return;
     }
 
+    if (path === "/api/developer-dashboard/disputes/history" && method === "GET") {
+      await fulfillEncryptedRoute(route, jsonResponse([]));
+      return;
+    }
+
     if (path === "/api/profiles/stats") {
       await fulfillEncryptedRoute(route,
         jsonResponse({

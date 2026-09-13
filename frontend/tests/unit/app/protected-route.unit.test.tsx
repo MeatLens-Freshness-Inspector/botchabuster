@@ -47,7 +47,10 @@ function LocationProbe() {
   return <span data-testid="location">{useLocation().pathname}</span>;
 }
 
-function renderGuard(props: ProtectedRouteProps) {
+function renderGuard(
+  props: ProtectedRouteProps & { unauthenticatedFallback?: React.ReactNode },
+  initialPath = "/inspect",
+) {
   const { container, cleanup } = installDom();
   const root = createRoot(container);
 
@@ -60,7 +63,7 @@ function renderGuard(props: ProtectedRouteProps) {
     render: async () => {
       await act(async () => {
         root.render(
-          <MemoryRouter initialEntries={["/inspect"]}>
+          <MemoryRouter initialEntries={[initialPath]}>
             <ProtectedRoute {...props}>
               <div data-testid="protected">protected</div>
             </ProtectedRoute>
@@ -103,6 +106,21 @@ test("protected route renders its children for a ready authenticated user", asyn
   try {
     await view.render();
     assert.equal(view.container.querySelector('[data-testid="protected"]')?.textContent, "protected");
+  } finally {
+    await view.cleanup();
+  }
+});
+
+test("protected route can keep its URL while rendering an anonymous fallback", async () => {
+  const view = renderGuard({
+    ...readyState,
+    unauthenticatedFallback: <div data-testid="anonymous-fallback">sign in</div>,
+  }, "/history");
+
+  try {
+    await view.render();
+    assert.equal(view.container.querySelector('[data-testid="location"]')?.textContent, "/history");
+    assert.equal(view.container.querySelector('[data-testid="anonymous-fallback"]')?.textContent, "sign in");
   } finally {
     await view.cleanup();
   }

@@ -9,6 +9,7 @@ type ProtectedRouteProfile = {
 
 export type ProtectedRouteProps = {
   children: ReactNode;
+  unauthenticatedFallback?: ReactNode;
   user: { id: string } | null;
   isAdmin: boolean;
   isLoading: boolean;
@@ -20,6 +21,7 @@ export type ProtectedRouteProps = {
 
 export function ProtectedRoute({
   children,
+  unauthenticatedFallback,
   user,
   isAdmin,
   isLoading,
@@ -32,7 +34,7 @@ export function ProtectedRoute({
     return <NetworkLoadingScreen status="auth_loading" />;
   }
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return unauthenticatedFallback ?? <Navigate to="/login" replace />;
   if (profileStatus === "error") {
     return <NetworkLoadingScreen status="profile_error" onRetry={() => void retryProfileLoad()} />;
   }

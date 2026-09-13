@@ -1,4 +1,4 @@
-import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, useLocation } from "react-router-dom";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { AuthProvider } from "@/app/providers";
 import { useAuth } from "@/entities/user";
@@ -124,12 +124,16 @@ function AuthInactivityGuard() {
   return <InactivityGuard user={user ? { id: user.id } : null} lock={lock} loginPath={ROUTE_PATHS.login} />;
 }
 
-function AuthProtectedRoute({ children }: Pick<ProtectedRouteProps, "children">) {
+function AuthProtectedRoute({
+  children,
+  unauthenticatedFallback,
+}: Pick<ProtectedRouteProps, "children" | "unauthenticatedFallback">) {
   const { user, isAdmin, isLoading, profile, profileStatus, retryProfileLoad } = useAuth();
 
   return (
     <ProtectedRouteGuard
       user={user}
+      unauthenticatedFallback={unauthenticatedFallback}
       isAdmin={isAdmin}
       isLoading={isLoading}
       profile={profile}
@@ -139,6 +143,26 @@ function AuthProtectedRoute({ children }: Pick<ProtectedRouteProps, "children">)
     >
       {children}
     </ProtectedRouteGuard>
+  );
+}
+
+function HistoryRoute({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const preserveAnonymousHistoryPath =
+    location.state !== null
+    && typeof location.state === "object"
+    && (location.state as { preserveAnonymousHistoryPath?: unknown }).preserveAnonymousHistoryPath === true;
+
+  return (
+    <AuthProtectedRoute
+      unauthenticatedFallback={
+        preserveAnonymousHistoryPath
+          ? <PublicLayout><LoginPage /></PublicLayout>
+          : undefined
+      }
+    >
+      {children}
+    </AuthProtectedRoute>
   );
 }
 
@@ -185,7 +209,13 @@ const App = () => {
                   resetPassword: <PublicLayout><ResetPasswordPage /></PublicLayout>,
                   onboarding: <AuthOnboardingRoute><OnboardingPage /></AuthOnboardingRoute>,
                   inspect: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><InspectPage /></AppLayout></AuthProtectedRoute>,
-                  history: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><HistoryPage /></AppLayout></AuthProtectedRoute>,
+                  history: (
+                    <HistoryRoute>
+                      <AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}>
+                        <HistoryPage />
+                      </AppLayout>
+                    </HistoryRoute>
+                  ),
                   messages: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><MessagesPage /></AppLayout></AuthProtectedRoute>,
                   profile: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfilePage /></AppLayout></AuthProtectedRoute>,
                   profileTutorial: <AuthProtectedRoute><AppLayout bottomNavigation={<AuthBottomNav />} assistant={<AuthAssistant />}><ProfileTutorialPage /></AppLayout></AuthProtectedRoute>,

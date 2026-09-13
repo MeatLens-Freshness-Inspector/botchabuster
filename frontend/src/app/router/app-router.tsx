@@ -36,7 +36,16 @@ export function AppRouter({ elements }: AppRouterProps) {
       <Route path={ROUTE_PATHS.inspect} element={elements.inspect} />
       <Route path={ROUTE_PATHS.history} element={elements.history} />
       <Route path={ROUTE_PATHS.messages} element={elements.messages} />
-      <Route path={ROUTE_PATHS.dashboard} element={<Navigate to={ROUTE_PATHS.history} replace />} />
+      <Route
+        path={ROUTE_PATHS.dashboard}
+        element={(
+          <Navigate
+            to={ROUTE_PATHS.history}
+            replace
+            state={{ preserveAnonymousHistoryPath: true }}
+          />
+        )}
+      />
       <Route path={ROUTE_PATHS.profile} element={elements.profile} />
       <Route path={ROUTE_PATHS.profileTutorial} element={elements.profileTutorial} />
       <Route path={ROUTE_PATHS.profileHelp} element={elements.profileHelp} />
