@@ -17,6 +17,7 @@ export interface InspectionResultDisputeRepository {
   create(input: CreateInspectionResultDisputeInput): Promise<InspectionResultDispute>;
   listForInspector(submittedBy: string): Promise<InspectionResultDisputeRecord[]>;
   listPendingForReview(): Promise<InspectionResultDisputeRecord[]>;
+  listAllForReview(): Promise<InspectionResultDisputeRecord[]>;
   applyToDeveloperDataset(disputeId: string, actorId: string): Promise<InspectionResultDisputeMutation>;
   review(
     disputeId: string,
