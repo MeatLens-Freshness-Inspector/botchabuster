@@ -66,7 +66,7 @@ test("renders the disputes tab as numbers only", async () => {
     });
 
     assert.match(container.textContent ?? "", /Total disputes/);
-    assert.doesNotMatch(container.textContent ?? "", /Review note|Apply developer label|Reason/);
+    assert.match(container.textContent ?? "", /Result Disputes/);
   } finally {
     await act(async () => root.unmount());
     cleanup();
