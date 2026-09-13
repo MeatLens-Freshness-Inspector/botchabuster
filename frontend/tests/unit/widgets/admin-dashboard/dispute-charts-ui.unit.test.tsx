@@ -11,6 +11,15 @@ function installDom(): { container: HTMLDivElement; cleanup: () => void } {
   const dom = new JSDOM("<!doctype html><html><body></body></html>");
   const globals = globalThis as GlobalWithDom;
   const previous = { window: globalThis.window, document: globalThis.document };
+  Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", { configurable: true, value: true });
+  Object.defineProperty(globalThis, "ResizeObserver", {
+    configurable: true,
+    value: class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  });
   Object.defineProperty(globals, "window", { configurable: true, value: dom.window as unknown as Window & typeof globalThis });
   Object.defineProperty(globals, "document", { configurable: true, value: dom.window.document });
   const container = dom.window.document.createElement("div");
@@ -18,6 +27,8 @@ function installDom(): { container: HTMLDivElement; cleanup: () => void } {
   return {
     container,
     cleanup: () => {
+      Object.defineProperty(globalThis, "IS_REACT_ACT_ENVIRONMENT", { configurable: true, value: undefined });
+      Object.defineProperty(globalThis, "ResizeObserver", { configurable: true, value: undefined });
       Object.defineProperty(globals, "window", { configurable: true, value: previous.window });
       Object.defineProperty(globals, "document", { configurable: true, value: previous.document });
       dom.window.close();
