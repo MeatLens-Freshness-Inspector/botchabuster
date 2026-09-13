@@ -4,6 +4,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { JSDOM } from "jsdom";
 import { DisputeStatistics } from "../../../../src/widgets/admin-dashboard/ui/dispute-statistics";
+import DisputesTab from "../../../../src/widgets/admin-dashboard/ui/disputes-tab";
 
 type GlobalWithDom = typeof globalThis & { window: Window & typeof globalThis; document: Document };
 
@@ -40,6 +41,31 @@ test("renders all dispute KPIs without review controls", async () => {
     assert.match(container.textContent ?? "", /Rejected/);
     assert.match(container.textContent ?? "", /Dispute rate/);
     assert.match(container.textContent ?? "", /40%/);
+    assert.doesNotMatch(container.textContent ?? "", /Review note|Apply developer label|Reason/);
+  } finally {
+    await act(async () => root.unmount());
+    cleanup();
+  }
+});
+
+test("renders the disputes tab as numbers only", async () => {
+  const { container, cleanup } = installDom();
+  const root: Root = createRoot(container);
+
+  try {
+    await act(async () => {
+      root.render(
+        <DisputesTab
+          dashboard={{
+            disputeAnalytics: {
+              summary: { total: 8, pending: 2, approved: 4, rejected: 2, disputeRate: 40 },
+            },
+          }}
+        />,
+      );
+    });
+
+    assert.match(container.textContent ?? "", /Total disputes/);
     assert.doesNotMatch(container.textContent ?? "", /Review note|Apply developer label|Reason/);
   } finally {
     await act(async () => root.unmount());
