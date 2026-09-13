@@ -11,6 +11,8 @@ type ReportsDisputesSectionProps = {
 export function ReportsDisputesSection({ dashboard }: ReportsDisputesSectionProps) {
   const { reportDateRangeInvalid, reportDisputeAnalytics } = dashboard;
 
+  if (!reportDisputeAnalytics) return null;
+
   if (reportDateRangeInvalid) {
     return (
       <section className="mt-6 space-y-4" aria-labelledby="report-dispute-statistics">
