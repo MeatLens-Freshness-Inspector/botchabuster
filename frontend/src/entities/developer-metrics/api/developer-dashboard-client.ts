@@ -283,6 +283,16 @@ export class DeveloperDashboardClient {
     return response.json();
   }
 
+  async listInspectionResultDisputeHistory(): Promise<InspectionResultDispute[]> {
+    const response = await fetchWithTimeout(`${API_BASE_URL}/developer-dashboard/disputes/history`, {
+      headers: this.createHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error(await readApiErrorMessage(response, "Failed to fetch inspection dispute history"));
+    }
+    return response.json();
+  }
+
   async applyInspectionDisputeToDeveloperDataset(disputeId: string): Promise<DeveloperDisputeMutationResponse> {
     const response = await fetchWithTimeout(
       `${API_BASE_URL}/developer-dashboard/disputes/${encodeURIComponent(disputeId)}/apply-developer-label`,
