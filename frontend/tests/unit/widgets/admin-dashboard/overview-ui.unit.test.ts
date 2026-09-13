@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { InspectionChart, SummaryCards } from "@/widgets/admin-dashboard";
-import { DisputeOverview } from "../../../../src/widgets/admin-dashboard/ui/overview/dispute-overview";
+import { DisputeOverview, InspectionChart, SummaryCards } from "@/widgets/admin-dashboard";
 
 test("admin dashboard publishes overview UI ownership", () => {
   assert.equal(typeof InspectionChart, "function");
