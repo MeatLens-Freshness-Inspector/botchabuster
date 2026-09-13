@@ -119,6 +119,40 @@ test("dispute mutations call the transaction RPCs with actor identity", async ()
   }
 });
 
+test("all-history dispute reads include every status without a status filter", async () => {
+  const { inspectionResultDisputeService } = await import("../../../src/modules/inspections/infrastructure/InspectionResultDisputeService");
+  const { supabase } = await import("../../../src/integrations/supabase");
+  const client = supabase as any;
+  const originalFrom = client.from;
+  const calls: Array<{ method: string; args: unknown[] }> = [];
+  const records = [
+    { ...dispute, status: "rejected" },
+    { ...dispute, id: "dispute-2", status: "approved" },
+    { ...dispute, id: "dispute-3", status: "pending" },
+  ];
+  client.from = ((table: string) => {
+    assert.equal(table, "inspection_result_disputes");
+    const chain = {
+      select: (...args: unknown[]) => { calls.push({ method: "select", args }); return chain; },
+      order: (...args: unknown[]) => { calls.push({ method: "order", args }); return chain; },
+      limit: (...args: unknown[]) => { calls.push({ method: "limit", args }); return chain; },
+      then: (resolve: (value: unknown) => unknown) => Promise.resolve({ data: records, error: null }).then(resolve),
+    };
+    return chain;
+  }) as typeof supabase.from;
+
+  try {
+    assert.deepEqual(await inspectionResultDisputeService.listAllForReview(), records);
+    assert.equal(calls.some(({ method, args }) => method === "eq" && args[0] === "status"), false);
+    assert.deepEqual(calls.filter(({ method }) => method === "order"), [
+      { method: "order", args: ["created_at", { ascending: false }] },
+      { method: "order", args: ["id", { ascending: false }] },
+    ]);
+  } finally {
+    client.from = originalFrom;
+  }
+});
+
 test("inspection statistics count the official result when one has been approved", async () => {
   const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
   const { supabase } = await import("../../../src/integrations/supabase");
