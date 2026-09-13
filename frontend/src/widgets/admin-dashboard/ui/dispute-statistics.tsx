@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/sha
 const metricStyles = [
   "border-primary/30 bg-[hsl(var(--primary)/0.14)]",
   "border-warning/30 bg-[hsl(var(--warning)/0.12)]",
-  "border-success/30 bg-[hsl(var(--success)/0.12)]",
+  "border-fresh/30 bg-[hsl(var(--fresh)/0.12)]",
   "border-destructive/30 bg-[hsl(var(--destructive)/0.10)]",
   "border-border/70 bg-background/60",
 ];
