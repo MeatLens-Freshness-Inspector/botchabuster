@@ -74,7 +74,7 @@ test("builds dispute KPIs from unique disputed inspections", () => {
 test("filters dispute creation dates inclusively and handles empty data", () => {
   const disputes = [
     makeDispute("d-1", "i-1", "pending", "2026-09-01T00:00:00.000Z"),
-    makeDispute("d-2", "i-2", "approved", "2026-09-03T23:59:59.999Z"),
+    makeDispute("d-2", "i-2", "approved", "2026-09-03T15:59:59.999Z"),
   ];
 
   assert.equal(filterDisputesByDateRange(disputes, "2026-09-01", "2026-09-03").length, 2);
