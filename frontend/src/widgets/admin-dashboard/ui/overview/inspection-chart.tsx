@@ -26,6 +26,7 @@ import {
   truncateChartLabel,
 } from "../../lib/dashboard";
 import { SummaryCards } from "./summary-cards";
+import { DisputeOverview } from "./dispute-overview";
 
 type OverviewTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
@@ -477,6 +478,8 @@ const InspectionChart = ({ dashboard }: OverviewTabContentProps) => {
           </CardContent>
         </Card>
       </section>
+
+      <DisputeOverview dashboard={dashboard} />
     </>
   );
 };
