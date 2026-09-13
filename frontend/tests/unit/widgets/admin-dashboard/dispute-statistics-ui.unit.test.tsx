@@ -60,7 +60,7 @@ test("renders the disputes tab as numbers only", async () => {
             disputeAnalytics: {
               summary: { total: 8, pending: 2, approved: 4, rejected: 2, disputeRate: 40 },
             },
-          }}
+          } as never}
         />,
       );
     });
