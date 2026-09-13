@@ -17,6 +17,6 @@ public class SupportContractTest {
         AndroidSourceAssertions.assertContains(source, "MainActivity package", "package com.school.botchabuster;");
         AndroidSourceAssertions.assertContains(source, "Capacitor bridge inheritance", "extends BridgeActivity");
         assertFalse(source.contains("com.getcapacitor.myapp"));
-        assertTrue(source.endsWith(System.lineSeparator()) || source.endsWith("}"));
+        assertTrue(source.endsWith("\n") || source.endsWith("}"));
     }
 }
