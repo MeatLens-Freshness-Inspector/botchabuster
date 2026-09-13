@@ -654,6 +654,7 @@ jobs:
     needs:
       - changes
       - dependencies
+      - android-tests
       - playwright-dependencies
       - docs-only
       - docs-validation
@@ -673,6 +674,7 @@ jobs:
         env:
           CHANGES: ${{ needs['changes'].result }}
           DEPENDENCIES: ${{ needs['dependencies'].result }}
+          ANDROID_TESTS: ${{ needs['android-tests'].result }}
           PLAYWRIGHT_DEPENDENCIES: ${{ needs['playwright-dependencies'].result }}
           DOCS_ONLY: ${{ needs['docs-only'].result }}
           DOCS_VALIDATION: ${{ needs['docs-validation'].result }}
@@ -695,6 +697,7 @@ jobs:
             printf '| Job | Result |\n| --- | --- |\n'
             printf '| Change detection | %s |\n' "$CHANGES"
             printf '| Shared dependencies | %s |\n' "$DEPENDENCIES"
+            printf '| Android JVM quality | %s |\n' "$ANDROID_TESTS"
             printf '| Shared Playwright dependencies | %s |\n' "$PLAYWRIGHT_DEPENDENCIES"
             printf '| Docs-only summary | %s |\n' "$DOCS_ONLY"
             printf '| Documentation validation | %s |\n' "$DOCS_VALIDATION"
@@ -711,7 +714,7 @@ jobs:
             printf '| Full Playwright | %s |\n' "$FULL_PLAYWRIGHT"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          for result in "$CHANGES" "$DEPENDENCIES" "$PLAYWRIGHT_DEPENDENCIES" "$DOCS_ONLY" "$DOCS_VALIDATION" "$LINT_TYPES" "$SCRIPT_TESTS" "$BACKEND_UNIT" "$BACKEND_ARCHITECTURE" "$FRONTEND_TESTS" "$BACKEND_INTEGRATION" "$CONTRACT_TESTS" "$BUILD" "$E2E_CRITICAL" "$INFRASTRUCTURE" "$FULL_PLAYWRIGHT"; do
+          for result in "$CHANGES" "$DEPENDENCIES" "$ANDROID_TESTS" "$PLAYWRIGHT_DEPENDENCIES" "$DOCS_ONLY" "$DOCS_VALIDATION" "$LINT_TYPES" "$SCRIPT_TESTS" "$BACKEND_UNIT" "$BACKEND_ARCHITECTURE" "$FRONTEND_TESTS" "$BACKEND_INTEGRATION" "$CONTRACT_TESTS" "$BUILD" "$E2E_CRITICAL" "$INFRASTRUCTURE" "$FULL_PLAYWRIGHT"; do
             if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
               exit 1
             fi

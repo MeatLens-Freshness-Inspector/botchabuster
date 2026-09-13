@@ -24,3 +24,12 @@ test("Android CI runs the bounded JVM and instrumentation compile gate", () => {
   assert.match(workflow, /android\/app\/build\/reports/);
   assert.match(workflow, /if-no-files-found: ignore/);
 });
+
+test("Android CI results are included in the blocking quality gate", () => {
+  const qualityGate = workflow.slice(workflow.indexOf("  quality-gate:"));
+
+  assert.match(qualityGate, /- android-tests/);
+  assert.match(qualityGate, /ANDROID_TESTS: \$\{\{ needs\['android-tests'\]\.result \}\}/);
+  assert.match(qualityGate, /Android JVM quality/);
+  assert.match(qualityGate, /\"\$ANDROID_TESTS\"/);
+});
