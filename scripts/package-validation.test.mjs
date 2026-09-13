@@ -28,3 +28,13 @@ test("root package exposes the Android test command surface", () => {
 test("Android test commands use the repository Gradle launcher", () => {
   assert.equal(fs.existsSync(path.join(repoRoot, "scripts", "run-android-gradle.mjs")), true);
 });
+
+test("the default Android gate compiles instrumentation without requiring a device", () => {
+  const compileCommand = packageJson.scripts["test:android:compile"];
+  const instrumentationCommand = packageJson.scripts["test:android:instrumentation"];
+
+  assert.match(compileCommand, /:app:testDebugUnitTest/);
+  assert.match(compileCommand, /:app:assembleDebugAndroidTest/);
+  assert.doesNotMatch(compileCommand, /connectedDebugAndroidTest/);
+  assert.match(instrumentationCommand, /connectedDebugAndroidTest/);
+});
