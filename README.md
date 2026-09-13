@@ -132,16 +132,54 @@ npm run test:scripts    # Test repository automation scripts
 npm run test:unit       # Run frontend and backend unit tests
 npm run test:integration # Run backend integration tests
 npm run test:e2e        # Run frontend Playwright tests
+npm run test:android:unit # Run Android JVM tests without a device
+npm run test:android     # Run Android JVM tests and compile instrumentation
+npm run test:android:instrumentation # Run AndroidX tests on a connected device
 npm run test:ci         # Local equivalent of the main CI test pipeline
 npm run test:watch      # Watch tests
 ```
+
+### Android testing
+
+The Android shell uses the conventional Gradle source sets. JVM architecture
+contracts live under `android/app/src/test`, while ActivityScenario and WebView
+checks live under `android/app/src/androidTest`. Use Java 17 for the CI-equivalent
+Gradle toolchain, and install the Android SDK for all Android builds.
+
+The default Android gate does not require an emulator:
+
+```bash
+npm run test:android:unit
+npm run test:android:compile
+```
+
+Connected instrumentation is optional locally and requires an emulator or USB
+device with `adb` available. The root launcher works on Windows and Unix-like
+systems; direct wrapper commands are:
+
+```powershell
+# Windows PowerShell
+npm.cmd run test:android:instrumentation
+.\android\gradlew.bat :app:connectedDebugAndroidTest --console=plain
+```
+
+```bash
+# macOS/Linux/CI
+npm run test:android:instrumentation
+./android/gradlew :app:connectedDebugAndroidTest --console=plain
+```
+
+Android JVM tests and instrumentation compilation block CI when Android paths
+change. Connected emulator execution is intentionally not part of the required
+CI lane yet; it remains a local validation option.
 
 ## CI
 
 GitHub Actions uses [`.github/workflows/ci.yml`](.github/workflows/ci.yml) as the canonical automated testing pipeline.
 
 - Pull requests and pushes to `master` run automated testing in GitHub Actions.
-- The pipeline is path-aware, so frontend-only and backend-only changes run only the relevant test lanes.
+- The pipeline is path-aware, so frontend-only, backend-only, and Android-only changes run only the relevant test lanes.
+- Android changes run the required Java 17 JVM and instrumentation compilation gate, and the final quality gate blocks on its result.
 - Docs-only changes record a lightweight skip instead of consuming the full test matrix.
 - [`.github/workflows/preview.yml`](.github/workflows/preview.yml) reports preview relevance for pull requests and can optionally trigger Netlify or Render preview hooks when repository secrets are configured.
 - [`.github/workflows/deploy-refresh.yml`](.github/workflows/deploy-refresh.yml) provides a manual preview refresh without needing a no-op commit.
