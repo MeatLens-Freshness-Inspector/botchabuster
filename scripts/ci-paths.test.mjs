@@ -11,6 +11,7 @@ test("classifies frontend-only changes without backend impact", () => {
     frontend: true,
     backend: false,
     shared: false,
+    android: false,
     docsOnly: false,
     workflow: false,
     anyRelevantChanges: true,
@@ -24,6 +25,7 @@ test("treats documentation-only changes as docs-only and not test-relevant", () 
     frontend: false,
     backend: false,
     shared: false,
+    android: false,
     docsOnly: true,
     workflow: false,
     anyRelevantChanges: false,
@@ -37,6 +39,7 @@ test("treats shared root files as impacting both application surfaces", () => {
     frontend: true,
     backend: true,
     shared: true,
+    android: false,
     docsOnly: false,
     workflow: false,
     anyRelevantChanges: true,
@@ -50,6 +53,7 @@ test("treats workflow changes as shared non-doc changes", () => {
     frontend: true,
     backend: true,
     shared: true,
+    android: false,
     docsOnly: false,
     workflow: true,
     anyRelevantChanges: true,
@@ -65,4 +69,18 @@ test("prints workflow-ready CLI output", () => {
   assert.equal(result.status, 0);
   assert.match(result.stdout, /frontend=true/);
   assert.match(result.stdout, /backend=false/);
+});
+
+test("classifies Android-only changes without frontend or backend impact", () => {
+  const result = classifyChangedPaths(["android/app/src/test/java/ExampleTest.java"]);
+
+  assert.deepEqual(result, {
+    frontend: false,
+    backend: false,
+    shared: false,
+    android: true,
+    docsOnly: false,
+    workflow: false,
+    anyRelevantChanges: true,
+  });
 });
