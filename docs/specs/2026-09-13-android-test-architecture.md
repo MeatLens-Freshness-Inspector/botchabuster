@@ -5,7 +5,7 @@
 
 ## Summary
 
-Add Android-native test coverage that mirrors the frontend's layered test architecture while keeping browser user journeys in Playwright. The first phase covers the Capacitor shell only; it does not duplicate frontend WebView journeys as Android tests.
+Add Android-native test coverage that mirrors the frontend's layered test architecture while keeping browser user journeys in Playwright. The first phase covers the Capacitor shell only; it does not duplicate frontend WebView journeys as Android tests. The implementation must be delivered in at least 20 coherent, testable commits.
 
 This supersedes the earlier test-architecture decision that explicitly excluded Android's conventional test layout.
 
@@ -95,6 +95,33 @@ Update CI path classification with an explicit Android category so Android chang
 - Is required for Android-relevant changes.
 
 The CI summary and final quality gate must include the Android JVM job result. Emulator tests are not required in this phase.
+
+## Commit strategy
+
+Deliver the implementation as at least the following 20 logically complete commits. Each commit must contain the tests or validation needed for its slice, must not weaken an existing assertion, and should leave the relevant local checks passing. These are intentionally separated by architectural responsibility, not by arbitrary file count.
+
+1. `test: define Android path classification contracts` — add failing repository CI-path tests for Android-only changes and the new Android result field.
+2. `ci: classify Android changes explicitly` — implement the Android path classifier while preserving frontend/backend/shared classifications.
+3. `test: expose Android Gradle command surface` — add the root Android test scripts and their package-validation coverage.
+4. `test: replace generated Android test placeholders` — move the JVM and instrumentation examples to the real application namespace and establish the native test roots.
+5. `test: add Android JVM test support` — add reusable host-side fixtures/assertions for Android project contracts without introducing a new framework.
+6. `test: verify Android application identity` — cover namespace, application ID, and package identity through the JVM architecture layer.
+7. `test: verify MainActivity Capacitor inheritance` — cover the `BridgeActivity` boundary and reject generated activity wiring.
+8. `test: verify Android launcher manifest contract` — cover the exported launcher activity and main/launcher intent filters.
+9. `test: verify Android permission contract` — cover the required internet and biometric permission declarations.
+10. `test: add Android instrumentation support` — add reusable device-side activity and view-tree helpers under `androidTest`.
+11. `test: verify MainActivity launches` — add the first instrumented activity launch test using `ActivityScenario`.
+12. `test: verify MainActivity lifecycle readiness` — assert the shell reaches the resumed state and cleans up deterministically.
+13. `test: verify Capacitor WebView presence` — assert the Capacitor WebView exists and is displayed after launch.
+14. `test: verify Android package resolution` — assert the installed package manager resolves the expected launcher activity.
+15. `test: compile the Android instrumentation suite` — add the no-device instrumentation APK compilation gate and keep it runnable locally.
+16. `ci: configure Java 17 and Gradle caching` — add reproducible Android CI setup with bounded Gradle execution.
+17. `ci: add the Android JVM quality job` — run JVM tests and instrumentation compilation for Android-relevant changes.
+18. `ci: include Android results in the final quality gate` — publish the Android result in summaries and make failures blocking.
+19. `docs: document Android testing architecture` — update `docs/testing-architecture.md` with layers, ownership, and commands.
+20. `docs: document Android developer workflows` — update the README with local JVM, instrumentation, emulator, and CI instructions.
+
+After these 20 commits, use one or more additional verification commits only if required by real failures or review findings. Do not create empty, formatting-only, or intentionally broken intermediate commits.
 
 ## Documentation
 
