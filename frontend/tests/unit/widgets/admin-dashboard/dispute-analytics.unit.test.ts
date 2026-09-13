@@ -101,3 +101,15 @@ test("uses the selected report range for both dispute rows and inspection denomi
   assert.equal(result.filteredDisputes.length, 1);
   assert.deepEqual(result.summary, { total: 1, pending: 0, approved: 1, rejected: 0, disputeRate: 100 });
 });
+
+test("keeps invalid timestamps safe and ignores blank disputed inspection IDs", () => {
+  const invalidTimestamp = makeDispute("d-invalid", "", "pending", "not-a-date");
+  const result = buildDisputeAnalytics({
+    disputes: [invalidTimestamp],
+    inspections: [makeInspection("i-1")],
+  });
+
+  assert.equal(result.summary.total, 1);
+  assert.equal(result.summary.disputeRate, 0);
+  assert.deepEqual(result.dailyTrend, []);
+});
