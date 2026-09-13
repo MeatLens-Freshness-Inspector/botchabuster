@@ -11,7 +11,7 @@ import { DEFAULT_MARKET_LOCATIONS } from "@/entities/market-location";
 import { useAccessCodeForm, useAccessCodes } from "@/features/admin-management";
 import { useMarketForm, useMarketLocations } from "@/features/admin-management";
 import { composeReportPdf } from "@/features/reports";
-import type { Inspection } from "@/entities/inspection";
+import type { Inspection, InspectionResultDispute } from "@/entities/inspection";
 import {
   ADMIN_DASHBOARD_CHART_CONFIG,
   ADMIN_DASHBOARD_MOBILE_CATEGORY_AXIS_PROPS,
@@ -31,6 +31,7 @@ import { useUserActions } from "./use-user-actions";
 import { useUsersTab } from "./use-users-tab";
 import { useDashboardAnalytics } from "./use-dashboard-analytics";
 import { useDashboardReport } from "./use-dashboard-report";
+import { buildDisputeAnalytics } from "./dispute-analytics";
 import { useExportTask } from "@/shared/lib/use-export-task";
 
 export function useAdminDashboard() {
@@ -51,6 +52,7 @@ export function useAdminDashboard() {
   } = useOverviewTab();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [inspections, setInspections] = useState<Inspection[]>([]);
+  const [disputes, setDisputes] = useState<InspectionResultDispute[]>([]);
   const [accessCodes, setAccessCodes] = useState<AccessCode[]>([]);
   const [marketLocations, setMarketLocations] = useState<MarketLocation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,6 +81,19 @@ export function useAdminDashboard() {
     isDeveloper,
     profileById: analytics.profileById,
   });
+  const disputeAnalytics = useMemo(
+    () => buildDisputeAnalytics({ disputes, inspections }),
+    [disputes, inspections],
+  );
+  const reportDisputeAnalytics = useMemo(
+    () => buildDisputeAnalytics({
+      disputes,
+      inspections: reportState.reportFilteredInspections,
+      startDate: reportState.reportStartDate,
+      endDate: reportState.reportEndDate,
+    }),
+    [disputes, reportState.reportEndDate, reportState.reportFilteredInspections, reportState.reportStartDate],
+  );
 
   useEffect(() => {
     void loadData();
@@ -87,12 +102,13 @@ export function useAdminDashboard() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [profileData, inspectionData, statsData, codesData, marketsData, developerOverview] = await Promise.all([
+      const [profileData, inspectionData, statsData, codesData, marketsData, disputeHistoryData, developerOverview] = await Promise.all([
         profileClient.getAllProfiles(),
         inspectionClient.getAll(200, 0, "all"),
         profileClient.getUserStats(),
         accessCodeClient.getAll(),
         marketLocationClient.getAll(),
+        developerDashboardClient.listInspectionResultDisputeHistory(),
         isDeveloper
           ? developerDashboardClient.getOverview().catch((error) => {
               console.error("Failed to load developer report model runs:", error);
@@ -102,6 +118,7 @@ export function useAdminDashboard() {
       ]);
       setProfiles(profileData);
       setInspections(inspectionData);
+      setDisputes(disputeHistoryData);
       setStats(statsData);
       setAccessCodes(codesData);
       setMarketLocations([...marketsData].sort((left, right) => left.name.localeCompare(right.name)));
@@ -490,6 +507,7 @@ export function useAdminDashboard() {
     mobileTimeAxisProps,
     profiles,
     inspections,
+    disputes,
     accessCodes,
     marketLocations,
     stats,
@@ -519,6 +537,8 @@ export function useAdminDashboard() {
     locationAnalytics,
     confidenceTrendData,
     freshnessMixData,
+    disputeAnalytics,
+    reportDisputeAnalytics,
     filteredInspections,
     paginatedInspections,
     inspectionPage,
