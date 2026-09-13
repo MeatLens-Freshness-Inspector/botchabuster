@@ -1,18 +1,23 @@
-import { InspectionDisputeReviewSection } from "@/features/developer-tools";
-import { useInspectionDisputeReviewQueue } from "@/features/inspection-disputes/model/use-inspection-dispute-review-queue";
-import { useAuth } from "@/entities/user";
+import React from "react";
+import type { AdminDashboardPageViewModel } from "../model/use-admin-dashboard";
+import { DisputeStatistics } from "./dispute-statistics";
 
-export default function DisputesTab() {
-  const reviewQueue = useInspectionDisputeReviewQueue();
-  const { isDeveloper } = useAuth();
+type DisputesTabProps = {
+  dashboard: Pick<AdminDashboardPageViewModel, "disputeAnalytics">;
+};
 
+export default function DisputesTab({ dashboard }: DisputesTabProps) {
   return (
-    <InspectionDisputeReviewSection
-      disputes={reviewQueue.disputes}
-      isLoading={reviewQueue.isLoading}
-      canApplyDeveloperLabel={isDeveloper}
-      onApplyDeveloperLabel={reviewQueue.applyDeveloperLabel}
-      onReview={reviewQueue.reviewDispute}
-    />
+    <section className="mt-6 space-y-4" aria-labelledby="disputes-statistics">
+      <div>
+        <h2 id="disputes-statistics" className="font-display text-lg font-semibold uppercase tracking-wider">
+          Dispute statistics
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Current dispute totals across all submitted inspection results.
+        </p>
+      </div>
+      <DisputeStatistics summary={dashboard.disputeAnalytics.summary} />
+    </section>
   );
 }

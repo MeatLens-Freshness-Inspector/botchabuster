@@ -16,6 +16,7 @@ export { ListInspectionResultDisputes } from "./application/ListInspectionResult
 export { ListPendingInspectionResultDisputes } from "./application/ListPendingInspectionResultDisputes";
 export { ReviewInspectionResultDispute } from "./application/ReviewInspectionResultDispute";
 export { SubmitInspectionResultDispute } from "./application/SubmitInspectionResultDispute";
+export { ListAllInspectionResultDisputes } from "./application/ListAllInspectionResultDisputes";
 export { InspectionResultDisputeService, inspectionResultDisputeService } from "./infrastructure/InspectionResultDisputeService";
 export type {
   GetInspectionByIdRequest,

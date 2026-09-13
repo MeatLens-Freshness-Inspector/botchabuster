@@ -34,7 +34,7 @@ function renderMobileTab(
     case "inspections":
       return <InspectionsTab dashboard={dashboard} />;
     case "disputes":
-      return <DisputesTab />;
+      return <DisputesTab dashboard={dashboard} />;
     case "codes":
       return <AccessCodesTab dashboard={dashboard} />;
     case "markets":

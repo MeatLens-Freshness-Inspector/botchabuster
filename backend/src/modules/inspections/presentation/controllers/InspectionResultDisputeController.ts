@@ -6,6 +6,7 @@ import {
   type InspectionResultDisputeReviewDecision,
 } from "../../../../types/inspectionResultDispute";
 import { ApplyDisputeToDeveloperDataset } from "../../application/ApplyDisputeToDeveloperDataset";
+import { ListAllInspectionResultDisputes } from "../../application/ListAllInspectionResultDisputes";
 import { ListInspectionResultDisputes } from "../../application/ListInspectionResultDisputes";
 import { ListPendingInspectionResultDisputes } from "../../application/ListPendingInspectionResultDisputes";
 import { ReviewInspectionResultDispute } from "../../application/ReviewInspectionResultDispute";
@@ -14,6 +15,7 @@ import { inspectionResultDisputeService } from "../../infrastructure/InspectionR
 
 const submitDispute = new SubmitInspectionResultDispute(inspectionResultDisputeService);
 const listDisputes = new ListInspectionResultDisputes(inspectionResultDisputeService);
+const listAllDisputes = new ListAllInspectionResultDisputes(inspectionResultDisputeService);
 const listPendingDisputes = new ListPendingInspectionResultDisputes(inspectionResultDisputeService);
 const applyDeveloperLabel = new ApplyDisputeToDeveloperDataset(inspectionResultDisputeService);
 const reviewDispute = new ReviewInspectionResultDispute(inspectionResultDisputeService);
@@ -85,6 +87,14 @@ export class InspectionResultDisputeController {
       res.json(await listPendingDisputes.execute());
     } catch (error) {
       this.handleError("List pending inspection disputes", res, error);
+    }
+  }
+
+  async listAllForReview(_req: Request, res: Response): Promise<void> {
+    try {
+      res.json(await listAllDisputes.execute());
+    } catch (error) {
+      this.handleError("List inspection dispute history", res, error);
     }
   }
 

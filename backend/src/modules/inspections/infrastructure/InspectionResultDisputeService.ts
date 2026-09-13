@@ -92,6 +92,17 @@ export class InspectionResultDisputeService implements InspectionResultDisputeRe
     return (data as InspectionResultDisputeRecord[]) ?? [];
   }
 
+  async listAllForReview(): Promise<InspectionResultDisputeRecord[]> {
+    const { data, error } = await (supabase
+      .from("inspection_result_disputes") as any)
+      .select(DISPUTE_COLUMNS)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
+
+    if (error) throw new Error(`Failed to fetch inspection dispute history: ${error.message}`);
+    return (data as InspectionResultDisputeRecord[]) ?? [];
+  }
+
   async applyToDeveloperDataset(disputeId: string, actorId: string): Promise<InspectionResultDisputeMutation> {
     const { data, error } = await supabase.rpc("apply_inspection_dispute_to_developer_dataset", {
       p_dispute_id: disputeId,

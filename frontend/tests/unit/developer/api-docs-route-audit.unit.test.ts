@@ -21,7 +21,7 @@ test("API docs category counts match the registered backend route audit", () => 
     "market-locations": 3,
     "audit-logs": 2,
     "developer-options": 2,
-    "developer-dashboard": 9,
+    "developer-dashboard": 10,
     "user-chat": 3,
   });
 });

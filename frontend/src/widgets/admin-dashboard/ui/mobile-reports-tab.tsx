@@ -4,6 +4,7 @@ import { Button, ExportLoadingOverlay } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
+import { ReportsDisputesSection } from "./reports-disputes-section";
 
 type MobileReportsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
@@ -33,7 +34,8 @@ const MobileReportsTab = ({
     : "";
 
   return (
-    <section className="relative mt-4 rounded-3xl border border-border/70 bg-card/90 p-4" aria-busy={isExporting}>
+    <>
+      <section className="relative mt-4 rounded-3xl border border-border/70 bg-card/90 p-4" aria-busy={isExporting}>
       <ExportLoadingOverlay
         visible={isExporting}
         message={exportMessage}
@@ -160,7 +162,9 @@ const MobileReportsTab = ({
           </div>
         </div>
       ) : null}
-    </section>
+      </section>
+      <ReportsDisputesSection dashboard={dashboard} />
+    </>
   );
 };
 
