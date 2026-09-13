@@ -27,6 +27,7 @@ jobs:
       frontend: ${{ steps.classify.outputs.frontend }}
       backend: ${{ steps.classify.outputs.backend }}
       shared: ${{ steps.classify.outputs.shared }}
+      android: ${{ steps.classify.outputs.android }}
       docs_only: ${{ steps.classify.outputs.docsOnly }}
       workflow: ${{ steps.classify.outputs.workflow }}
       any_relevant_changes: ${{ steps.classify.outputs.anyRelevantChanges }}
@@ -48,6 +49,7 @@ jobs:
               echo "frontend=true"
               echo "backend=true"
               echo "shared=true"
+              echo "android=true"
               echo "docsOnly=false"
               echo "workflow=false"
               echo "anyRelevantChanges=true"
@@ -73,6 +75,7 @@ jobs:
               echo "frontend=false"
               echo "backend=false"
               echo "shared=false"
+              echo "android=false"
               echo "docsOnly=false"
               echo "workflow=false"
               echo "anyRelevantChanges=false"
@@ -91,6 +94,7 @@ jobs:
             echo "- Frontend: ${{ steps.classify.outputs.frontend }}"
             echo "- Backend: ${{ steps.classify.outputs.backend }}"
             echo "- Shared: ${{ steps.classify.outputs.shared }}"
+            echo "- Android: ${{ steps.classify.outputs.android }}"
             echo "- Workflow: ${{ steps.classify.outputs.workflow }}"
             echo "- Docs only: ${{ steps.classify.outputs.docsOnly }}"
             echo "- Any relevant changes: ${{ steps.classify.outputs.anyRelevantChanges }}"

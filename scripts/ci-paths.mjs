@@ -19,6 +19,10 @@ function isBackendPath(filePath) {
   return filePath.startsWith("backend/") || filePath === "render.yaml";
 }
 
+function isAndroidPath(filePath) {
+  return filePath.startsWith("android/");
+}
+
 function isSharedPath(filePath) {
   return (
     filePath === "package.json" ||
@@ -37,6 +41,7 @@ export function classifyChangedPaths(paths) {
     frontend: false,
     backend: false,
     shared: false,
+    android: false,
     docsOnly: normalizedPaths.length > 0,
     workflow: false,
     anyRelevantChanges: false,
@@ -45,6 +50,13 @@ export function classifyChangedPaths(paths) {
   for (const filePath of normalizedPaths) {
     if (filePath.startsWith(".github/workflows/")) {
       result.workflow = true;
+    }
+
+    if (isAndroidPath(filePath)) {
+      result.android = true;
+      result.docsOnly = false;
+      result.anyRelevantChanges = true;
+      continue;
     }
 
     if (isFrontendPath(filePath)) {
