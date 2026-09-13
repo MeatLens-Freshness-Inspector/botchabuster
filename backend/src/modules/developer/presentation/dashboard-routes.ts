@@ -10,6 +10,7 @@ const disputeController = new InspectionResultDisputeController();
 
 router.get("/overview", requireDeveloper, (req, res) => controller.getOverview(req, res));
 router.get("/datasets", requireDeveloper, (req, res) => controller.getDatasets(req, res));
+router.get("/disputes/history", requireAdmin, (req, res) => void disputeController.listAllForReview(req, res));
 router.get("/disputes", requireAdmin, (req, res) => void disputeController.listPendingForReview(req, res));
 router.post("/disputes/:disputeId/apply-developer-label", requireDeveloper, (req, res) =>
   void disputeController.applyToDeveloperDataset(req, res),
