@@ -11,6 +11,7 @@ import {
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
+import { ReportsDisputesSection } from "./reports-disputes-section";
 
 type DesktopReportsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
@@ -40,7 +41,8 @@ const ReportsTab = ({
     : "";
 
   return (
-    <div className="mt-6 grid min-w-0 gap-4 xl:grid-cols-[1fr_1fr]">
+    <>
+      <div className="mt-6 grid min-w-0 gap-4 xl:grid-cols-[1fr_1fr]">
       <Card className="relative min-w-0 rounded-3xl border-border/70 bg-card/95" aria-busy={isExporting}>
         <ExportLoadingOverlay
           visible={isExporting}
@@ -184,7 +186,9 @@ const ReportsTab = ({
           )}
         </CardContent>
       </Card>
-    </div>
+      </div>
+      <ReportsDisputesSection dashboard={dashboard} />
+    </>
   );
 };
 
