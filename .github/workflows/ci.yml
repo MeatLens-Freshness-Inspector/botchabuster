@@ -602,7 +602,7 @@ jobs:
           retention-days: 7
 
   android-tests:
-    name: Android Gradle Setup
+    name: Android JVM Quality
     runs-on: ubuntu-latest
     needs:
       - changes
@@ -631,9 +631,21 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Verify Android Gradle setup
-        run: timeout 110s ./gradlew :app:tasks --all --no-daemon --console=plain
+      - name: Run Android JVM and instrumentation compile gate
+        id: android-tests
+        run: timeout 110s ./gradlew :app:testDebugUnitTest :app:assembleDebugAndroidTest --no-daemon --console=plain
         working-directory: android
+      - name: Upload Android diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-test-reports-${{ github.run_id }}
+          path: |
+            android/app/build/reports
+            android/app/build/test-results
+            android/build/reports
+          if-no-files-found: ignore
+          retention-days: 7
 
   quality-gate:
     name: CI Quality Gate

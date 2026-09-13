@@ -14,3 +14,13 @@ test("Android CI uses Java 17 and Gradle dependency caching", () => {
   assert.match(workflow, /uses: gradle\/actions\/setup-gradle@v4/);
   assert.match(workflow, /working-directory: android/);
 });
+
+test("Android CI runs the bounded JVM and instrumentation compile gate", () => {
+  assert.match(
+    workflow,
+    /timeout 110s \.\/gradlew :app:testDebugUnitTest :app:assembleDebugAndroidTest --no-daemon --console=plain/,
+  );
+  assert.match(workflow, /uses: actions\/upload-artifact@v7/);
+  assert.match(workflow, /android\/app\/build\/reports/);
+  assert.match(workflow, /if-no-files-found: ignore/);
+});
