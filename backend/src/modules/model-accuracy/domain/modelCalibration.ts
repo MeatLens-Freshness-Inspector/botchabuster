@@ -167,3 +167,108 @@ export function assertValidCalibrationQuery(query: CalibrationAnalyticsQuery): C
     className: query.className ? assertNonEmpty(query.className, "className") : null,
   };
 }
+
+function confidenceFor(prediction: CalibrationPrediction, className?: string | null): number {
+  if (!className) return prediction.confidence;
+  return prediction.probabilities[className] ?? 0;
+}
+
+function roundMetric(value: number): number {
+  return Number(value.toFixed(12));
+}
+
+function isCorrect(prediction: CalibrationPrediction, className?: string | null): boolean {
+  if (!className) return prediction.predictedClass === prediction.groundTruth;
+  return prediction.groundTruth === className;
+}
+
+export function getConfidenceBin(confidence: number): number {
+  assertUnitInterval(confidence, "confidence");
+  return confidence === 1 ? CALIBRATION_BIN_COUNT - 1 : Math.floor(confidence * CALIBRATION_BIN_COUNT);
+}
+
+function createEmptyReliabilityBins(): ReliabilityBin[] {
+  return Array.from({ length: CALIBRATION_BIN_COUNT }, (_, binIndex) => ({
+    binIndex,
+    lowerBound: binIndex / CALIBRATION_BIN_COUNT,
+    upperBound: (binIndex + 1) / CALIBRATION_BIN_COUNT,
+    sampleCount: 0,
+    meanConfidence: null,
+    observedAccuracy: null,
+  }));
+}
+
+export function buildReliabilityBins(
+  predictions: CalibrationPrediction[],
+  className?: string | null,
+): ReliabilityBin[] {
+  const bins = createEmptyReliabilityBins();
+  for (const prediction of predictions) {
+    const bin = bins[getConfidenceBin(confidenceFor(prediction, className))];
+    bin.sampleCount += 1;
+    const confidence = confidenceFor(prediction, className);
+    bin.meanConfidence = (bin.meanConfidence ?? 0) + confidence;
+    bin.observedAccuracy = (bin.observedAccuracy ?? 0) + (isCorrect(prediction, className) ? 1 : 0);
+  }
+
+  return bins.map((bin) => bin.sampleCount === 0
+    ? bin
+    : {
+        ...bin,
+        meanConfidence: (bin.meanConfidence ?? 0) / bin.sampleCount,
+        observedAccuracy: (bin.observedAccuracy ?? 0) / bin.sampleCount,
+      });
+}
+
+export function calculateEce(predictions: CalibrationPrediction[], className?: string | null): number | null {
+  if (predictions.length === 0) return null;
+  const bins = buildReliabilityBins(predictions, className);
+  return roundMetric(bins.reduce((total, bin) => {
+    if (bin.sampleCount === 0 || bin.meanConfidence === null || bin.observedAccuracy === null) return total;
+    return total + (bin.sampleCount / predictions.length) * Math.abs(bin.meanConfidence - bin.observedAccuracy);
+  }, 0));
+}
+
+export function calculateBrierScore(predictions: CalibrationPrediction[], className?: string | null): number | null {
+  if (predictions.length === 0) return null;
+  const classes = className
+    ? [className]
+    : Array.from(new Set(predictions.flatMap((prediction) => [prediction.groundTruth, ...Object.keys(prediction.probabilities)])));
+
+  const total = predictions.reduce((sum, prediction) => sum + classes.reduce((rowSum, currentClass) => {
+    const predicted = className
+      ? confidenceFor(prediction, className)
+      : prediction.probabilities[currentClass] ?? 0;
+    const expected = className
+      ? (prediction.groundTruth === className ? 1 : 0)
+      : (prediction.groundTruth === currentClass ? 1 : 0);
+    return rowSum + (predicted - expected) ** 2;
+  }, 0), 0);
+
+  return roundMetric(total / predictions.length);
+}
+
+export function buildConfidenceDistribution(
+  predictions: CalibrationPrediction[],
+  className?: string | null,
+): ConfidenceDistributionBin[] {
+  return createEmptyReliabilityBins().map(({ binIndex, lowerBound, upperBound }) => ({
+    binIndex,
+    lowerBound,
+    upperBound,
+    sampleCount: predictions.filter((prediction) => getConfidenceBin(confidenceFor(prediction, className)) === binIndex).length,
+  }));
+}
+
+export function buildClassCalibration(
+  predictions: CalibrationPrediction[],
+  className: string,
+): ClassCalibration {
+  return {
+    className,
+    sampleCount: predictions.length,
+    ece: calculateEce(predictions, className),
+    brierScore: calculateBrierScore(predictions, className),
+    reliabilityBins: buildReliabilityBins(predictions, className),
+  };
+}
