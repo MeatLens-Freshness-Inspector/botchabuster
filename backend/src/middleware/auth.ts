@@ -245,6 +245,12 @@ export function assertSelfOrAdmin(authContext: RequestAuthContext, targetUserId:
   }
 }
 
+export function hasDeveloperOrAdminAccess(
+  authContext: Pick<RequestAuthContext, "isAdmin" | "isDeveloper">,
+): boolean {
+  return authContext.isAdmin || authContext.isDeveloper;
+}
+
 export function requireAuthentication(
   req: Request,
   res: Response,
@@ -272,6 +278,18 @@ export const requireDeveloper: RequestHandler = (req, res, next) => {
     .then((authContext) => {
       if (!authContext.isDeveloper) {
         throw new RequestAuthError(403, "Developer access required");
+      }
+
+      next();
+    })
+    .catch((error) => writeAuthError(res, error));
+};
+
+export const requireDeveloperOrAdmin: RequestHandler = (req, res, next) => {
+  return resolveAndAttachAuthContext(req)
+    .then((authContext) => {
+      if (!hasDeveloperOrAdminAccess(authContext)) {
+        throw new RequestAuthError(403, "Developer or admin access required");
       }
 
       next();

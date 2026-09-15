@@ -33,10 +33,12 @@ import { useDashboardAnalytics } from "./use-dashboard-analytics";
 import { useDashboardReport } from "./use-dashboard-report";
 import { buildDisputeAnalytics } from "./dispute-analytics";
 import { useExportTask } from "@/shared/lib/use-export-task";
+import { useModelCalibrationAnalytics } from "@/entities/model-accuracy";
 
 export function useAdminDashboard() {
   const {
     activeTab,
+    isAdmin,
     isDeveloper,
     isMobile,
     profile,
@@ -58,6 +60,8 @@ export function useAdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [pendingDeleteInspectionId, setPendingDeleteInspectionId] = useState<string | null>(null);
+  const [calibrationModelVersionKey, setCalibrationModelVersionKey] = useState<string | null>(null);
+  const [calibrationClassName, setCalibrationClassName] = useState<string | null>(null);
   const reportExport = useExportTask<"pdf" | "csv" | "json">();
   const accessCodeForm = useAccessCodeForm({ setAccessCodes });
   const accessCodesState = useAccessCodes({ setAccessCodes });
@@ -67,6 +71,7 @@ export function useAdminDashboard() {
   const userActions = useUserActions({
     currentUserId: user?.id,
     isDeveloper,
+    isAdmin,
     setProfiles,
     setStats,
     setUserPage: usersTab.setUserPage,
@@ -85,6 +90,8 @@ export function useAdminDashboard() {
     () => buildDisputeAnalytics({ disputes, inspections }),
     [disputes, inspections],
   );
+  const calibrationAnalytics = useModelCalibrationAnalytics(calibrationModelVersionKey, calibrationClassName);
+  const canViewModelAnalytics = isDeveloper || isAdmin;
   const reportDisputeAnalytics = useMemo(
     () => buildDisputeAnalytics({
       disputes,
@@ -372,7 +379,33 @@ export function useAdminDashboard() {
           snapshot.correctCount,
         ]),
       ];
-      const csv = [headers, ...rows, ...modelAccuracyRows, ...developerRows]
+      const calibrationRows = canViewModelAnalytics && calibrationAnalytics.data
+        ? [
+            [],
+            ["Controlled Model Calibration"],
+            ["Model Version", "Class", "ECE", "Brier Score", "Labeled Samples"],
+            [
+              calibrationAnalytics.data.filters.modelVersionKey ?? "All",
+              calibrationAnalytics.data.filters.className ?? "All",
+              calibrationAnalytics.data.controlled.ece ?? "Unavailable",
+              calibrationAnalytics.data.controlled.brierScore ?? "Unavailable",
+              calibrationAnalytics.data.controlled.sampleCount,
+            ],
+            [],
+            ["Field Confidence Monitoring", "Confidence Range", "Inspections", "Disputes", "Approved", "Rejected", "Pending", "Dispute Rate"],
+            ...calibrationAnalytics.data.fieldMonitoring.buckets.map((bucket) => [
+              "Production observation",
+              `${Math.round(bucket.lowerBound * 100)}-${Math.round(bucket.upperBound * 100)}%`,
+              bucket.sampleCount,
+              bucket.disputeCount,
+              bucket.approvedCount,
+              bucket.rejectedCount,
+              bucket.pendingCount,
+              bucket.disputeRate ?? "Unavailable",
+            ]),
+          ]
+        : [];
+      const csv = [headers, ...rows, ...modelAccuracyRows, ...developerRows, ...calibrationRows]
         .map((record) => record.map((value) => toCsvValue(value)).join(","))
         .join("\n");
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -414,6 +447,7 @@ export function useAdminDashboard() {
       meatTypeBreakdown: reportByMeatType,
       dailyTrend: reportDailyTrend,
       modelAccuracyHistory,
+      modelCalibrationAnalytics: canViewModelAnalytics ? calibrationAnalytics.data ?? null : null,
       inspections: exportedReportInspections,
       ...(isDeveloper && reportDeveloperMetrics
         ? {
@@ -501,6 +535,7 @@ export function useAdminDashboard() {
     user,
     isMobile,
     isDeveloper,
+    isAdmin,
     tabs,
     chartConfig,
     mobileCategoryAxisProps,
@@ -527,6 +562,11 @@ export function useAdminDashboard() {
     activeTabConfig,
     previewImageUrl,
     pendingDeleteInspectionId,
+    calibrationAnalytics,
+    calibrationModelVersionKey,
+    calibrationClassName,
+    setCalibrationModelVersionKey,
+    setCalibrationClassName,
     inspectorFilter,
     classificationCounts,
     profileById,

@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { format, startOfDay, endOfDay } from "date-fns";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/entities/user";
 import { useModelAccuracyHistory } from "@/entities/model-accuracy";
@@ -17,6 +18,8 @@ import {
 const PAGE_SIZE = 6;
 
 export function useHistory() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { data: inspections, isLoading } = useInspections();
   const [activeFilter, setActiveFilter] = useState<FilterOption>("all");
@@ -26,6 +29,15 @@ export function useHistory() {
   const [selectedInspection, setSelectedInspection] = useState<Inspection | null>(null);
   const reportExport = useExportTask<"pdf">();
   const { data: modelAccuracyHistory } = useModelAccuracyHistory(selectedReportDay, selectedReportDay);
+
+  useEffect(() => {
+    const state = location.state as { inspectionId?: unknown } | null;
+    if (!inspections || typeof state?.inspectionId !== "string") return;
+    const inspection = inspections.find((item) => item.id === state.inspectionId);
+    if (!inspection) return;
+    setSelectedInspection(inspection);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [inspections, location.pathname, location.state, navigate]);
 
   const totalInspections = inspections?.length ?? 0;
   const reportDayDate = useMemo(() => {

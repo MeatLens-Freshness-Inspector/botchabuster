@@ -1,5 +1,8 @@
 export { CaptureModelAccuracySnapshots } from "./application/CaptureModelAccuracySnapshots";
 export type { CaptureModelAccuracySnapshotsInput } from "./application/CaptureModelAccuracySnapshots";
+export { ImportModelCalibration } from "./application/ImportModelCalibration";
+export type { ImportModelCalibrationInput } from "./application/ImportModelCalibration";
+export { GetModelCalibrationAnalytics } from "./application/GetModelCalibrationAnalytics";
 export { GetModelAccuracyHistory } from "./application/GetModelAccuracyHistory";
 export { RegisterModelVersion } from "./application/RegisterModelVersion";
 export { SupabaseModelAccuracyRepository } from "./infrastructure/SupabaseModelAccuracyRepository";
@@ -12,4 +15,29 @@ export type {
   ModelVersion,
   RegisterModelVersionInput,
 } from "./domain/modelAccuracy";
-export type { ModelAccuracyRepository } from "./domain/ports/ModelAccuracyRepository";
+export type {
+  CalibrationAnalyticsQuery,
+  CalibrationAnalyticsResponse,
+  CalibrationImportRecord,
+  CalibrationModelOption,
+  CalibrationPrediction,
+  ClassCalibration,
+  ConfidenceDistributionBin,
+  ControlledCalibrationSummary,
+  FieldConfidenceBucket,
+  FieldConfidenceMonitoring,
+  FieldConfidenceObservation,
+  HighConfidenceApprovedDispute,
+  ReliabilityBin,
+} from "./domain/modelCalibration";
+export {
+  CALIBRATION_BIN_COUNT,
+  HIGH_CONFIDENCE_THRESHOLD,
+  assertValidCalibrationPrediction,
+  assertValidCalibrationQuery,
+} from "./domain/modelCalibration";
+export type {
+  CalibrationRepositoryInputs,
+  ImportCalibrationPackageInput,
+  ModelAccuracyRepository,
+} from "./domain/ports/ModelAccuracyRepository";

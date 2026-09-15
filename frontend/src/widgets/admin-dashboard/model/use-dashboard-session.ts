@@ -8,7 +8,7 @@ import {
 } from "../lib/dashboard";
 
 export function useDashboardSession() {
-  const { user, profile, isDeveloper } = useAuth();
+  const { user, profile, isAdmin, isDeveloper } = useAuth();
   const isMobile = useIsMobile();
   const tabs = useMemo(() => getAdminDashboardTabs(isDeveloper), [isDeveloper]);
   const [activeTab, setActiveTab] = useState<AdminDashboardTabKey>("overview");
@@ -20,6 +20,7 @@ export function useDashboardSession() {
   return {
     activeTab,
     isDeveloper,
+    isAdmin,
     isMobile,
     profile,
     setActiveTab,
