@@ -33,4 +33,8 @@ export {
   assertValidCalibrationPrediction,
   assertValidCalibrationQuery,
 } from "./domain/modelCalibration";
-export type { ModelAccuracyRepository } from "./domain/ports/ModelAccuracyRepository";
+export type {
+  CalibrationRepositoryInputs,
+  ImportCalibrationPackageInput,
+  ModelAccuracyRepository,
+} from "./domain/ports/ModelAccuracyRepository";
