@@ -23,6 +23,7 @@ export const API_DOCS_CATEGORIES: ApiDocsCategory[] = [
   { id: "audit-logs", label: "Audit Logs", routePrefix: "/api/audit-logs" },
   { id: "developer-options", label: "Developer Options", routePrefix: "/api/developer-options" },
   { id: "developer-dashboard", label: "Developer Dashboard", routePrefix: "/api/developer-dashboard" },
+  { id: "model-accuracy", label: "Model Calibration", routePrefix: "/api/model-accuracy" },
   { id: "user-chat", label: "User Chat", routePrefix: "/api/user-chat" },
 ];
 
@@ -207,6 +208,37 @@ const developerDashboardOperations: ApiDocsOperation[] = [
   operation("developer-dashboard-training-import", "developer-dashboard", "POST", "/developer-dashboard/training-runs/import", "Import a training run package", "Developer", { body: formDataBody([fileField("package", "Training run ZIP package", ".zip,application/zip")]) }),
 ];
 
+const modelAccuracyOperations: ApiDocsOperation[] = [
+  operation(
+    "model-accuracy-calibration",
+    "model-accuracy",
+    "GET",
+    "/model-accuracy/calibration",
+    "Read model calibration analytics",
+    "Admin or developer",
+    {
+      description: "Read controlled validation calibration metrics and field confidence monitoring data.",
+      parameters: [
+        queryParameter("modelVersionKey", "Filter controlled calibration samples by model version"),
+        queryParameter("className", "Filter controlled calibration samples by freshness class"),
+      ],
+    },
+  ),
+  operation(
+    "model-accuracy-calibration-import",
+    "model-accuracy",
+    "POST",
+    "/model-accuracy/calibration/import",
+    "Import a model calibration package",
+    "Admin or developer",
+    {
+      description: "Import labeled validation predictions produced by the model evaluation pipeline.",
+      body: formDataBody([fileField("package", "Calibration package ZIP", ".zip,application/zip")]),
+      responseKind: "json",
+    },
+  ),
+];
+
 const userChatOperations: ApiDocsOperation[] = [
   operation("user-chat-contacts", "user-chat", "GET", "/user-chat/contacts", "List chat contacts", "Authenticated"),
   operation("user-chat-conversation", "user-chat", "GET", "/user-chat/messages/{counterpartyId}", "Read a conversation", "Authenticated", { parameters: [pathParameter("counterpartyId", "Other participant user id")] }),
@@ -226,6 +258,7 @@ export const API_DOCS_OPERATIONS: ApiDocsOperation[] = [
   ...auditLogOperations,
   ...developerOptionOperations,
   ...developerDashboardOperations,
+  ...modelAccuracyOperations,
   ...userChatOperations,
 ];
 
