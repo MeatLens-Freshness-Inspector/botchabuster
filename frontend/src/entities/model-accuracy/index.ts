@@ -1,5 +1,5 @@
 export { ModelAccuracyClient, modelAccuracyClient } from "./api/model-accuracy-client";
-export { modelAccuracyKeys, useModelAccuracyHistory } from "./model/queries";
+export { modelAccuracyKeys, useModelAccuracyHistory, useModelCalibrationAnalytics } from "./model/queries";
 export type {
   CalibrationClassSummary,
   CalibrationConfidenceDistributionBin,
