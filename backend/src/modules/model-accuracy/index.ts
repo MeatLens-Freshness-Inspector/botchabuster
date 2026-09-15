@@ -12,4 +12,25 @@ export type {
   ModelVersion,
   RegisterModelVersionInput,
 } from "./domain/modelAccuracy";
+export type {
+  CalibrationAnalyticsQuery,
+  CalibrationAnalyticsResponse,
+  CalibrationImportRecord,
+  CalibrationModelOption,
+  CalibrationPrediction,
+  ClassCalibration,
+  ConfidenceDistributionBin,
+  ControlledCalibrationSummary,
+  FieldConfidenceBucket,
+  FieldConfidenceMonitoring,
+  FieldConfidenceObservation,
+  HighConfidenceApprovedDispute,
+  ReliabilityBin,
+} from "./domain/modelCalibration";
+export {
+  CALIBRATION_BIN_COUNT,
+  HIGH_CONFIDENCE_THRESHOLD,
+  assertValidCalibrationPrediction,
+  assertValidCalibrationQuery,
+} from "./domain/modelCalibration";
 export type { ModelAccuracyRepository } from "./domain/ports/ModelAccuracyRepository";
