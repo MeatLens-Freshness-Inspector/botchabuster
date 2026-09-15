@@ -9,11 +9,18 @@ import type {
 import { CaptureModelAccuracySnapshots } from "../application/CaptureModelAccuracySnapshots";
 import { GetModelAccuracyHistory } from "../application/GetModelAccuracyHistory";
 import { RegisterModelVersion } from "../application/RegisterModelVersion";
+import type { CalibrationAnalyticsQuery, CalibrationAnalyticsResponse, CalibrationImportRecord } from "../domain/modelCalibration";
+import { GetModelCalibrationAnalytics } from "../application/GetModelCalibrationAnalytics";
+import { ImportModelCalibration } from "../application/ImportModelCalibration";
+import { materializeTransportFile } from "../../../middleware/upload";
+import { rm } from "node:fs/promises";
 
 export interface ModelAccuracyRouteHandlers {
   register(input: RegisterModelVersionInput): Promise<ModelVersion>;
   history(input: ModelAccuracyHistoryQuery): Promise<ModelAccuracySnapshot[]>;
   capture(input: { snapshotDate?: string }): Promise<ModelAccuracySnapshot[]>;
+  analytics(input: CalibrationAnalyticsQuery): Promise<CalibrationAnalyticsResponse>;
+  importCalibration(input: { packagePath: string; importedBy: string }): Promise<CalibrationImportRecord>;
 }
 
 function readQueryDate(value: unknown, name: string): string {
@@ -34,6 +41,21 @@ const requireDeveloperAccess: RequestHandler = (req, res, next) => {
   const { requireDeveloper } = require("../../../middleware/auth") as typeof import("../../../middleware/auth");
   return requireDeveloper(req, res, next);
 };
+
+const requireDeveloperOrAdminAccess: RequestHandler = (req, res, next) => {
+  const { requireDeveloperOrAdmin } = require("../../../middleware/auth") as typeof import("../../../middleware/auth");
+  return requireDeveloperOrAdmin(req, res, next);
+};
+
+function readOptionalQuery(value: unknown, name: string): string | null {
+  if (value === undefined || value === "") return null;
+  if (typeof value !== "string") {
+    const error = new Error(`${name} must be a string`) as Error & { statusCode: number };
+    error.statusCode = 400;
+    throw error;
+  }
+  return value.trim() || null;
+}
 
 function requestUserId(req: Request): string {
   const { getRequestAuthContext } = require("../../../middleware/auth") as typeof import("../../../middleware/auth");
@@ -67,6 +89,41 @@ export function createModelAccuracyRouter(handlers: ModelAccuracyRouteHandlers):
       .catch(next);
   });
 
+  router.get("/calibration", requireDeveloperOrAdminAccess, (req: Request, res: Response, next: NextFunction) => {
+    void handlers
+      .analytics({
+        modelVersionKey: readOptionalQuery(req.query.modelVersionKey, "modelVersionKey"),
+        className: readOptionalQuery(req.query.className, "className"),
+      })
+      .then((analytics) => res.json(analytics))
+      .catch(next);
+  });
+
+  router.post("/calibration/import", requireDeveloperOrAdminAccess, (req: Request, res: Response, next: NextFunction) => {
+    let uploadedFile: { path: string } | undefined;
+    void (async () => {
+      try {
+        const transportFile = req.transportFiles?.package;
+        if (!transportFile) {
+          res.status(400).json({ error: "Calibration package ZIP is required" });
+          return;
+        }
+        uploadedFile = await materializeTransportFile(transportFile, {
+          maxBytes: 50 * 1024 * 1024,
+          allowedMimeTypes: ["application/zip", "application/x-zip-compressed", "application/octet-stream"],
+        });
+        const result = await handlers.importCalibration({ packagePath: uploadedFile.path, importedBy: requestUserId(req) });
+        res.status(201).json(result);
+      } catch (error) {
+        const validationError = error instanceof Error ? error : new Error("Failed to import calibration package");
+        (validationError as Error & { statusCode?: number }).statusCode = 400;
+        next(validationError);
+      } finally {
+        if (uploadedFile?.path) await rm(uploadedFile.path, { force: true }).catch(() => undefined);
+      }
+    })();
+  });
+
   return router;
 }
 
@@ -76,10 +133,14 @@ export function createDefaultModelAccuracyRouter(): Router {
   const register = new RegisterModelVersion(repository);
   const history = new GetModelAccuracyHistory(repository);
   const capture = new CaptureModelAccuracySnapshots(repository);
+  const analytics = new GetModelCalibrationAnalytics(repository);
+  const importCalibration = new ImportModelCalibration(repository);
 
   return createModelAccuracyRouter({
     register: (input) => register.execute(input),
     history: (input) => history.execute(input),
     capture: (input) => capture.execute(input),
+    analytics: (input) => analytics.execute(input),
+    importCalibration: (input) => importCalibration.execute(input),
   });
 }

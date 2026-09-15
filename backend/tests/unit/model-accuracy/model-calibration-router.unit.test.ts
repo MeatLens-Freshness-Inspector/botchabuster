@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createModelAccuracyRouter } from "../../../src/modules/model-accuracy/presentation/routes";
 
-test("model accuracy router exposes authenticated history and developer writes", () => {
+test("model accuracy router retains legacy routes and exposes protected calibration routes", () => {
   const router = createModelAccuracyRouter({
     register: async () => { throw new Error("not used"); },
     history: async () => [],
