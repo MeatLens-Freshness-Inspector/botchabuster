@@ -98,12 +98,12 @@ function isHighConfidenceDispute(value: unknown): value is HighConfidenceApprove
 function isCalibrationAnalytics(value: unknown): value is ModelCalibrationAnalytics {
   if (!value || typeof value !== "object") return false;
   const analytics = value as Partial<ModelCalibrationAnalytics>;
+  const filters = analytics.filters;
   const controlled = analytics.controlled;
   const fieldMonitoring = analytics.fieldMonitoring;
-  return Boolean(analytics.filters &&
-    typeof analytics.filters.modelVersionKey === "string" || analytics.filters?.modelVersionKey === null) &&
-    Boolean(analytics.filters &&
-      typeof analytics.filters.className === "string" || analytics.filters?.className === null) &&
+  return Boolean(filters &&
+    (typeof filters.modelVersionKey === "string" || filters.modelVersionKey === null) &&
+    (typeof filters.className === "string" || filters.className === null)) &&
     Array.isArray(analytics.availableClasses) && analytics.availableClasses.every((item) => typeof item === "string") &&
     Array.isArray(analytics.availableModelVersions) && analytics.availableModelVersions.every(isModelOption) &&
     Boolean(controlled && Number.isInteger(controlled.sampleCount) && controlled.sampleCount >= 0 &&
