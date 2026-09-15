@@ -42,7 +42,7 @@ export const DEFAULT_DEVELOPER_OPTIONS_FLAGS: DeveloperOptionsFlags = {
   verboseOfflineSyncLogs: false,
   skipModelPrewarm: false,
   showModelInputPreview: true,
-  disableRoiSegmentation: true,
+  disableRoiSegmentation: false,
 };
 
 interface LegacyDeveloperOptionsPayload {

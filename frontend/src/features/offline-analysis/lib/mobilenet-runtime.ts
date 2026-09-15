@@ -25,7 +25,10 @@ import {
   type MobileNetOnnxSession,
   type ModelPreprocessContract,
 } from "./mobilenet-session";
-import { resolveMobileNetGuideBox } from "./mobilenet-input-mode";
+import {
+  prepareMobileNetInputImageData,
+  resolveMobileNetGuideBox,
+} from "./mobilenet-input-mode";
 import { DEFAULT_DISABLE_ROI_SEGMENTATION } from "./preprocessing-defaults";
 
 const ENV_MODEL_PATH = (
@@ -455,8 +458,16 @@ export async function classifyWithMobileNetV3(
       disableRoiSegmentation:
         options.disableRoiSegmentation ?? DEFAULT_DISABLE_ROI_SEGMENTATION,
     });
-    const imageData = buildCroppedImageData(image, targetWidth, targetHeight, guideBox);
-    const tensorData = buildImageTensorData(imageData, layout.channelsFirst, preprocessMode);
+    const croppedImageData = buildCroppedImageData(image, targetWidth, targetHeight, guideBox);
+    const preparedImageData = prepareMobileNetInputImageData(croppedImageData, {
+      preprocessContract: profile.preprocessContract,
+      disableRoiSegmentation: options.disableRoiSegmentation,
+    });
+    const tensorData = buildImageTensorData(
+      preparedImageData.imageData,
+      layout.channelsFirst,
+      preprocessMode,
+    );
 
     const inputTensor = new ort.Tensor(
       "float32",

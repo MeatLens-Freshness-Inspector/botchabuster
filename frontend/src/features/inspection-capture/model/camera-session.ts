@@ -42,7 +42,7 @@ export function useCameraCapture({
   allowFileUpload = false,
   allowInAppCamera = false,
   showModelInputPreview = true,
-  disableRoiSegmentation = true,
+  disableRoiSegmentation = false,
 }: CameraCaptureProps): CameraCaptureViewProps {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);

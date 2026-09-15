@@ -26,9 +26,9 @@ const localStorage = createMemoryStorage();
   localStorage,
 } as Window;
 
-test("new developer flag state selects the primary model and disables ROI segmentation", () => {
+test("new developer flag state selects the primary model and enables ROI segmentation", () => {
   assert.equal(DEFAULT_DEVELOPER_OPTIONS_FLAGS.selectedModel, "primary");
-  assert.equal(DEFAULT_DEVELOPER_OPTIONS_FLAGS.disableRoiSegmentation, true);
+  assert.equal(DEFAULT_DEVELOPER_OPTIONS_FLAGS.disableRoiSegmentation, false);
 });
 
 test("stored developer choices survive normalization", () => {
@@ -59,7 +59,7 @@ test("older default payloads migrate to the primary model", () => {
   );
 
   assert.equal(getDeveloperOptionsFlags("developer-2").selectedModel, "primary");
-  assert.equal(getDeveloperOptionsFlags("developer-2").disableRoiSegmentation, true);
+  assert.equal(getDeveloperOptionsFlags("developer-2").disableRoiSegmentation, false);
 });
 
 test("older explicit selections migrate to their matching model", () => {
