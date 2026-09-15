@@ -44,11 +44,14 @@ function rgbToLab(pixel: { r: number; g: number; b: number }): { l: number; a: n
 function isLikelyMeatForeground(pixel: { r: number; g: number; b: number }): boolean {
   const hsv = rgbToHsv(pixel);
   const lab = rgbToLab(pixel);
-  const hsvPass = hsv.v >= 0.1 && hsv.s >= 0.08 &&
-    (hsv.h <= 40 || hsv.h >= 300 || (hsv.h >= 15 && hsv.h <= 75));
-  const labPass = lab.l >= 12 && lab.l <= 95 && lab.a >= 2 && lab.a <= 55 && lab.b >= -8 && lab.b <= 70;
-  const strongLabPass = lab.a >= 10 && lab.b >= 0 && lab.l >= 10 && lab.l <= 95;
-  return (hsvPass && labPass) || strongLabPass;
+  const saturation = hsv.s * 255;
+  const value = hsv.v * 255;
+  return (
+    saturation >= 20 &&
+    value >= 35 &&
+    !(value >= 235 && saturation <= 30) &&
+    lab.a >= 6
+  );
 }
 
 export function applyRoiSegmentationWithFallback(
@@ -70,17 +73,24 @@ export function applyRoiSegmentationWithFallback(
       }) ? 1 : 0;
     }
 
-    const bestMask = selectBestCentralComponent(
+    const bestComponent = selectBestCentralComponent(
       cleanMaskWithMorphology(rawMask, width, height),
       width,
       height
     );
-    if (!bestMask) return { imageData, segmented: false };
+    if (!bestComponent) return { imageData, segmented: false };
+    if (
+      bestComponent.areaRatio < 0.2 ||
+      bestComponent.areaRatio > 0.95 ||
+      bestComponent.centerOverlapRatio < 0.08
+    ) {
+      return { imageData, segmented: false };
+    }
 
     const segmentedPixels = new Uint8ClampedArray(source.length);
     for (let index = 0; index < totalPixels; index++) {
       const offset = index * 4;
-      if (bestMask[index] === 1) {
+      if (bestComponent.mask[index] === 1) {
         segmentedPixels[offset] = source[offset];
         segmentedPixels[offset + 1] = source[offset + 1];
         segmentedPixels[offset + 2] = source[offset + 2];
