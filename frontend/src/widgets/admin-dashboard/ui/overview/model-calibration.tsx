@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Bar,
@@ -12,6 +13,8 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/shared/ui/chart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { toast } from "sonner";
+import { modelAccuracyClient } from "@/entities/model-accuracy";
 import type { AdminDashboardPageViewModel } from "../../model/use-admin-dashboard";
 import type { CalibrationReliabilityBin, FieldConfidenceBucket } from "@/entities/model-accuracy";
 
@@ -69,6 +72,7 @@ function MetricCard({ label, value, detail }: { label: string; value: string; de
 
 export function ModelCalibration({ dashboard }: { dashboard: AdminDashboardPageViewModel }) {
   const navigate = useNavigate();
+  const [isImporting, setIsImporting] = useState(false);
   const {
     calibrationAnalytics: query,
     calibrationClassName,
@@ -80,7 +84,22 @@ export function ModelCalibration({ dashboard }: { dashboard: AdminDashboardPageV
   const controlled = analytics?.controlled;
   const fieldMonitoring = analytics?.fieldMonitoring;
   const reliability = controlled ? reliabilityData(controlled.reliabilityBins) : [];
-  const fieldData = fieldMonitoring ? fieldChartData(fieldMonitoring.buckets) : [];
+
+  const handleCalibrationImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setIsImporting(true);
+    try {
+      await modelAccuracyClient.importCalibrationPackage(file);
+      await query.refetch();
+      toast.success("Calibration package imported");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to import calibration package");
+    } finally {
+      setIsImporting(false);
+    }
+  };
 
   return (
     <section aria-labelledby="model-calibration-heading" className="space-y-4">
@@ -92,6 +111,13 @@ export function ModelCalibration({ dashboard }: { dashboard: AdminDashboardPageV
         <p className="mt-3 max-w-3xl text-sm text-muted-foreground">
           Controlled labeled validation results measure calibration. Production disputes are shown separately as field signals and are not treated as model accuracy.
         </p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <label className="inline-flex cursor-pointer items-center rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60">
+            <span>{isImporting ? "Importing…" : "Import calibration package"}</span>
+            <input type="file" accept=".zip,application/zip" className="sr-only" disabled={isImporting} onChange={handleCalibrationImport} />
+          </label>
+          <span className="text-xs text-muted-foreground">ZIP with manifest.json and predictions.jsonl</span>
+        </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
