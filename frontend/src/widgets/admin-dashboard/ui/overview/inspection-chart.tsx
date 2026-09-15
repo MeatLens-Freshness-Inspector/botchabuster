@@ -27,6 +27,7 @@ import {
 } from "../../lib/dashboard";
 import { SummaryCards } from "./summary-cards";
 import { DisputeOverview } from "./dispute-overview";
+import { ModelCalibration } from "./model-calibration";
 
 type OverviewTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
@@ -480,6 +481,7 @@ const InspectionChart = ({ dashboard }: OverviewTabContentProps) => {
       </section>
 
       <DisputeOverview dashboard={dashboard} />
+      {(dashboard.isDeveloper || dashboard.isAdmin) && <ModelCalibration dashboard={dashboard} />}
     </>
   );
 };

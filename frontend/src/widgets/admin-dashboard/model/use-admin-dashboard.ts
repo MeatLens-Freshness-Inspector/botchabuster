@@ -38,6 +38,7 @@ import { useModelCalibrationAnalytics } from "@/entities/model-accuracy";
 export function useAdminDashboard() {
   const {
     activeTab,
+    isAdmin,
     isDeveloper,
     isMobile,
     profile,
@@ -70,6 +71,7 @@ export function useAdminDashboard() {
   const userActions = useUserActions({
     currentUserId: user?.id,
     isDeveloper,
+    isAdmin,
     setProfiles,
     setStats,
     setUserPage: usersTab.setUserPage,
