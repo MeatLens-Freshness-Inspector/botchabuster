@@ -197,7 +197,9 @@ function mapFieldObservation(row: FieldObservationRow): FieldConfidenceObservati
   return {
     inspectionId: row.id,
     originalPrediction: row.classification,
-    originalConfidence: requiredNumber(row.confidence_score, "confidence_score"),
+    // Inspection confidence is persisted/displayed as a percentage (0–100);
+    // calibration domain values use the probability interval (0–1).
+    originalConfidence: requiredNumber(row.confidence_score, "confidence_score") / 100,
     disputeStatus,
     disputeDate: dispute?.created_at ?? null,
     resolutionDate: dispute?.reviewed_at ?? null,

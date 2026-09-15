@@ -81,7 +81,7 @@ test("repository maps filtered samples, field disputes, and actual model metadat
       data: [{
         id: "inspection-1",
         classification: "fresh",
-        confidence_score: 0.9,
+        confidence_score: 90,
         model_versions: { version_key: "model-a" },
         inspection_result_disputes: [{ status: "approved", created_at: "2026-09-01T00:00:00.000Z", reviewed_at: "2026-09-02T00:00:00.000Z", expected_classification: "spoiled" }],
       }],
