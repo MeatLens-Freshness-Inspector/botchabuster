@@ -1,5 +1,8 @@
 export { CaptureModelAccuracySnapshots } from "./application/CaptureModelAccuracySnapshots";
 export type { CaptureModelAccuracySnapshotsInput } from "./application/CaptureModelAccuracySnapshots";
+export { ImportModelCalibration } from "./application/ImportModelCalibration";
+export type { ImportModelCalibrationInput } from "./application/ImportModelCalibration";
+export { GetModelCalibrationAnalytics } from "./application/GetModelCalibrationAnalytics";
 export { GetModelAccuracyHistory } from "./application/GetModelAccuracyHistory";
 export { RegisterModelVersion } from "./application/RegisterModelVersion";
 export { SupabaseModelAccuracyRepository } from "./infrastructure/SupabaseModelAccuracyRepository";
