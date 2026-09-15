@@ -10,6 +10,7 @@ import { CaptureModelAccuracySnapshots } from "../application/CaptureModelAccura
 import { GetModelAccuracyHistory } from "../application/GetModelAccuracyHistory";
 import { RegisterModelVersion } from "../application/RegisterModelVersion";
 import type { CalibrationAnalyticsQuery, CalibrationAnalyticsResponse, CalibrationImportRecord } from "../domain/modelCalibration";
+import type { RequestAuthContext } from "../../../middleware/auth";
 import { GetModelCalibrationAnalytics } from "../application/GetModelCalibrationAnalytics";
 import { ImportModelCalibration } from "../application/ImportModelCalibration";
 import { materializeTransportFile } from "../../../middleware/upload";
@@ -21,6 +22,24 @@ export interface ModelAccuracyRouteHandlers {
   capture(input: { snapshotDate?: string }): Promise<ModelAccuracySnapshot[]>;
   analytics(input: CalibrationAnalyticsQuery): Promise<CalibrationAnalyticsResponse>;
   importCalibration(input: { packagePath: string; importedBy: string }): Promise<CalibrationImportRecord>;
+  auditImport?(payload: Record<string, unknown>): Promise<void>;
+}
+
+export function buildCalibrationImportAuditPayload(
+  actor: Pick<RequestAuthContext, "userId" | "primaryRole">,
+  imported: CalibrationImportRecord,
+): Record<string, unknown> {
+  return {
+    event_type: "model.calibration.imported",
+    event_time: new Date().toISOString(),
+    actor: { id: actor.userId, role: actor.primaryRole },
+    data: {
+      import_id: imported.id,
+      source_hash: imported.sourceHash,
+      model_version_key: imported.modelVersionKey,
+      sample_count: imported.sampleCount,
+    },
+  };
 }
 
 function readQueryDate(value: unknown, name: string): string {
@@ -113,6 +132,10 @@ export function createModelAccuracyRouter(handlers: ModelAccuracyRouteHandlers):
           allowedMimeTypes: ["application/zip", "application/x-zip-compressed", "application/octet-stream"],
         });
         const result = await handlers.importCalibration({ packagePath: uploadedFile.path, importedBy: requestUserId(req) });
+        if (handlers.auditImport) {
+          const { getRequestAuthContext } = require("../../../middleware/auth") as typeof import("../../../middleware/auth");
+          await handlers.auditImport(buildCalibrationImportAuditPayload(getRequestAuthContext(req), result));
+        }
         res.status(201).json(result);
       } catch (error) {
         const validationError = error instanceof Error ? error : new Error("Failed to import calibration package");
@@ -135,6 +158,10 @@ export function createDefaultModelAccuracyRouter(): Router {
   const capture = new CaptureModelAccuracySnapshots(repository);
   const analytics = new GetModelCalibrationAnalytics(repository);
   const importCalibration = new ImportModelCalibration(repository);
+  const auditImport = async (payload: Record<string, unknown>): Promise<void> => {
+    const { auditLogService } = require("../../audit/infrastructure/AuditLogService") as typeof import("../../audit/infrastructure/AuditLogService");
+    await auditLogService.write({ payload });
+  };
 
   return createModelAccuracyRouter({
     register: (input) => register.execute(input),
@@ -142,5 +169,6 @@ export function createDefaultModelAccuracyRouter(): Router {
     capture: (input) => capture.execute(input),
     analytics: (input) => analytics.execute(input),
     importCalibration: (input) => importCalibration.execute(input),
+    auditImport,
   });
 }
