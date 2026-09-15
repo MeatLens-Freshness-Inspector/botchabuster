@@ -3,14 +3,14 @@ import test from "node:test";
 
 import { resolveModelInputPreviewOptions } from "../../../../src/features/inspection-capture/model/model-input-preview";
 
-test("segmented preview disables ROI segmentation when no override is supplied", () => {
+test("segmented preview applies ROI segmentation when no override is supplied", () => {
   assert.deepEqual(resolveModelInputPreviewOptions({
     preprocessContract: "segmented_center_roi",
     guideBox: { x: 0.1, y: 0.1, size: 0.8 },
   }), {
     guideBox: null,
     forceCenterCrop: true,
-    applySegmentation: false,
+    applySegmentation: true,
   });
 });
 
