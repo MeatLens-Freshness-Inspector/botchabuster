@@ -218,7 +218,12 @@ git commit -m "fix: align ROI segmentation thresholds with training"
 - Modify: `frontend/src/features/offline-analysis/lib/preprocessing-defaults.ts`
 - Modify: `frontend/src/features/offline-analysis/lib/mobilenet-input-mode.ts`
 - Modify: `frontend/src/features/offline-analysis/lib/mobilenet-runtime.ts`
+- Modify: `frontend/src/features/inspection-capture/model/camera-session.ts`
+- Modify: `frontend/src/features/developer-tools/model/developer-options-storage.ts`
+- Modify: `frontend/src/widgets/inspection-workspace/model/segmentation-selection.ts`
 - Test: `frontend/tests/unit/features/offline-analysis/analysis-input-mode.unit.test.ts`
+- Test: `frontend/tests/unit/features/inspection-workspace/segmentation-selection.unit.test.ts`
+- Test: `frontend/tests/unit/features/developer-tools/developer-options-storage.unit.test.ts`
 - Test: `frontend/tests/unit/features/offline-analysis/analysis-runtime.unit.test.ts`
 
 **Interfaces:**
@@ -268,7 +273,7 @@ Expected: FAIL because the default is currently `true` for disabling segmentatio
 
 - [ ] **Step 3: Implement the minimal integration**
 
-Set `DEFAULT_DISABLE_ROI_SEGMENTATION` to `false`. Add a shared helper with this behavior:
+Set `DEFAULT_DISABLE_ROI_SEGMENTATION` to `false`, change the camera and developer-option defaults to `false`, and make non-developer inspection sessions inherit the model default instead of hardcoding segmentation off. Add a shared helper with this behavior:
 
 ```ts
 export function prepareMobileNetInputImageData(
