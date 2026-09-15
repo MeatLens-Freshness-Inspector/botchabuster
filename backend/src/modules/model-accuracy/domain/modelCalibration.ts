@@ -272,3 +272,62 @@ export function buildClassCalibration(
     reliabilityBins: buildReliabilityBins(predictions, className),
   };
 }
+
+function createEmptyFieldBuckets(): FieldConfidenceBucket[] {
+  return Array.from({ length: CALIBRATION_BIN_COUNT }, (_, binIndex) => ({
+    binIndex,
+    lowerBound: binIndex / CALIBRATION_BIN_COUNT,
+    upperBound: (binIndex + 1) / CALIBRATION_BIN_COUNT,
+    sampleCount: 0,
+    disputeCount: 0,
+    approvedCount: 0,
+    rejectedCount: 0,
+    pendingCount: 0,
+    disputeRate: null,
+  }));
+}
+
+export function buildFieldConfidenceMonitoring(
+  observations: FieldConfidenceObservation[],
+): FieldConfidenceMonitoring {
+  const buckets = createEmptyFieldBuckets();
+  const denominatorCounts = Array.from({ length: CALIBRATION_BIN_COUNT }, () => 0);
+
+  for (const observation of observations) {
+    const bucket = buckets[getConfidenceBin(observation.originalConfidence)];
+    bucket.sampleCount += 1;
+    if (observation.denominatorAvailable !== false) denominatorCounts[bucket.binIndex] += 1;
+    if (observation.disputeStatus === "approved") bucket.approvedCount += 1;
+    if (observation.disputeStatus === "rejected") bucket.rejectedCount += 1;
+    if (observation.disputeStatus === "pending") bucket.pendingCount += 1;
+    bucket.disputeCount = bucket.approvedCount + bucket.rejectedCount + bucket.pendingCount;
+  }
+
+  return {
+    buckets: buckets.map((bucket) => ({
+      ...bucket,
+      disputeRate: denominatorCounts[bucket.binIndex] > 0
+        ? roundMetric(bucket.disputeCount / denominatorCounts[bucket.binIndex])
+        : null,
+    })),
+    highConfidenceApprovedDisputes: selectHighConfidenceApprovedDisputes(observations),
+  };
+}
+
+export function selectHighConfidenceApprovedDisputes(
+  observations: FieldConfidenceObservation[],
+): HighConfidenceApprovedDispute[] {
+  return observations
+    .filter((observation) =>
+      observation.disputeStatus === "approved" && observation.originalConfidence >= HIGH_CONFIDENCE_THRESHOLD,
+    )
+    .map((observation) => ({
+      inspectionId: observation.inspectionId,
+      originalPrediction: observation.originalPrediction,
+      originalConfidence: observation.originalConfidence,
+      disputeResult: observation.disputeResult,
+      disputeDate: observation.disputeDate,
+      resolutionDate: observation.resolutionDate,
+      modelVersionKey: observation.modelVersionKey,
+    }));
+}
