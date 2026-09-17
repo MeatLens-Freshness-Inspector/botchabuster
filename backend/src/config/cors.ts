@@ -21,6 +21,10 @@ const DEFAULT_DEV_ALLOWED_ORIGINS = [
   "http://localhost",
 ];
 
+const DEFAULT_PRODUCTION_ALLOWED_ORIGINS = [
+  "https://meatlensv2.netlify.app",
+];
+
 const NATIVE_APP_ALLOWED_ORIGINS = [
   "https://localhost",
   "capacitor://localhost",
@@ -38,10 +42,16 @@ export function getAllowedOrigins(env: NodeJS.ProcessEnv): string[] {
   const configuredOrigins = parseAllowedOrigins(env.ALLOWED_ORIGINS);
 
   if (configuredOrigins.length > 0) {
-    return Array.from(new Set([...configuredOrigins, ...NATIVE_APP_ALLOWED_ORIGINS]));
+    return Array.from(new Set([
+      ...configuredOrigins,
+      ...DEFAULT_PRODUCTION_ALLOWED_ORIGINS,
+      ...NATIVE_APP_ALLOWED_ORIGINS,
+    ]));
   }
 
-  return env.NODE_ENV === "production" ? [] : DEFAULT_DEV_ALLOWED_ORIGINS;
+  return env.NODE_ENV === "production"
+    ? [...DEFAULT_PRODUCTION_ALLOWED_ORIGINS, ...NATIVE_APP_ALLOWED_ORIGINS]
+    : DEFAULT_DEV_ALLOWED_ORIGINS;
 }
 
 function escapeRegex(value: string): string {
@@ -64,6 +74,7 @@ export function createCorsOptions(allowedOrigins: readonly string[]): CorsOption
   return {
     allowedHeaders: ["Authorization", "Content-Type", "X-CSRF-Token", "X-Transport-Key"],
     credentials: true,
+    exposedHeaders: ["Content-Disposition", "X-Export-Content-Length"],
     origin(origin, callback) {
       if (!origin) {
         callback(null, true);

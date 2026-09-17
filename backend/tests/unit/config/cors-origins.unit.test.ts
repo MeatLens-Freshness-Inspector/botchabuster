@@ -38,8 +38,11 @@ test("getAllowedOrigins falls back to localhost origins outside production", () 
   );
 });
 
-test("getAllowedOrigins requires explicit origins in production", () => {
-  assert.deepEqual(getAllowedOrigins({ NODE_ENV: "production" } as NodeJS.ProcessEnv), []);
+test("getAllowedOrigins includes the deployed Netlify app origin in production", () => {
+  const allowedOrigins = getAllowedOrigins({ NODE_ENV: "production" } as NodeJS.ProcessEnv);
+
+  assert.equal(isOriginAllowed("https://meatlensv2.netlify.app", allowedOrigins), true);
+  assert.equal(isOriginAllowed("https://other-app.netlify.app", allowedOrigins), false);
 });
 
 test("getAllowedOrigins always permits Capacitor native WebView origins", () => {
@@ -94,6 +97,8 @@ test("createCorsOptions enables credentials, exposes csrf headers, and echoes al
   assert.ok(options.allowedHeaders?.includes("Authorization"));
   assert.ok(options.allowedHeaders?.includes("Content-Type"));
   assert.ok(options.allowedHeaders?.includes("X-CSRF-Token"));
+  assert.ok(options.exposedHeaders?.includes("Content-Disposition"));
+  assert.ok(options.exposedHeaders?.includes("X-Export-Content-Length"));
 
   await new Promise<void>((resolve, reject) => {
     options.origin?.("https://meatlens.netlify.app", (error, allow) => {

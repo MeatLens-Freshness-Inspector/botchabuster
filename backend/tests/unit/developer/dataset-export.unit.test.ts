@@ -1,11 +1,27 @@
 import assert from "node:assert/strict";
-import test from "node:test";
+import { readFile, rm, stat } from "node:fs/promises";
+import test, { afterEach } from "node:test";
 import { unzipSync } from "fflate";
 import type { Inspection } from "../../../src/types/inspection";
 
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
 process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
 process.env.SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "publishable-key";
+
+const exportDirectories = new Set<string>();
+
+afterEach(async () => {
+  await Promise.all(Array.from(exportDirectories, (directory) =>
+    rm(directory, { recursive: true, force: true }),
+  ));
+  exportDirectories.clear();
+});
+
+async function trackExport<T extends { directory: string }>(exportPromise: Promise<T>): Promise<T> {
+  const exported = await exportPromise;
+  exportDirectories.add(exported.directory);
+  return exported;
+}
 
 function createInspection(overrides: Partial<Inspection>): Inspection {
   return {
@@ -39,6 +55,39 @@ function createInspection(overrides: Partial<Inspection>): Inspection {
   };
 }
 
+test("dataset export writes its ZIP to a temporary file instead of retaining the archive in memory", async () => {
+  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
+  const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
+  const originalGetDeveloperDatasetExportRows = (inspectionService as unknown as {
+    getDeveloperDatasetExportRows?: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows;
+  let exportDirectory: string | undefined;
+
+  (inspectionService as unknown as {
+    getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+  }).getDeveloperDatasetExportRows = async () => [];
+
+  try {
+    const exported = await trackExport(developerDashboardService.exportDatasetZip({ limit: 25, offset: 0 }));
+    exportDirectory = (exported as unknown as { directory?: string }).directory;
+
+    assert.equal(typeof exported.path, "string");
+    assert.equal("buffer" in exported, false);
+    assert.ok(exportDirectory);
+    assert.ok((await readFile(exported.path)).byteLength > 0);
+    assert.equal(exported.size, (await stat(exported.path)).size);
+  } finally {
+    if (exportDirectory) await rm(exportDirectory, { recursive: true, force: true });
+    if (originalGetDeveloperDatasetExportRows) {
+      (inspectionService as unknown as {
+        getDeveloperDatasetExportRows: typeof inspectionService.getDeveloperDatasetExportRows;
+      }).getDeveloperDatasetExportRows = originalGetDeveloperDatasetExportRows;
+    } else {
+      delete (inspectionService as unknown as { getDeveloperDatasetExportRows?: unknown }).getDeveloperDatasetExportRows;
+    }
+  }
+});
+
 test("dataset export ZIP contains manifest, inspections.csv, images, and missing-image warnings", async () => {
   const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
   const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
@@ -65,12 +114,12 @@ test("dataset export ZIP contains manifest, inspections.csv, images, and missing
   };
 
   try {
-    const exported = await developerDashboardService.exportDatasetZip({
+    const exported = await trackExport(developerDashboardService.exportDatasetZip({
       limit: 50,
       offset: 0,
       hasImage: true,
-    });
-    const zipEntries = unzipSync(new Uint8Array(exported.buffer));
+    }));
+    const zipEntries = unzipSync(await readFile(exported.path));
 
     assert.ok(zipEntries["manifest.json"]);
     assert.ok(zipEntries["inspections.csv"]);
@@ -144,11 +193,11 @@ test("dataset export downloads images concurrently", async () => {
   };
 
   try {
-    await developerDashboardService.exportDatasetZip({
+    await trackExport(developerDashboardService.exportDatasetZip({
       limit: 50,
       offset: 0,
       hasImage: true,
-    });
+    }));
 
     assert.ok(maxActiveFetches > 1, `expected concurrent image downloads, got ${maxActiveFetches}`);
   } finally {
@@ -193,8 +242,8 @@ test("dataset export retries transient image download failures", async () => {
   };
 
   try {
-    const exported = await developerDashboardService.exportDatasetZip({ limit: 100, offset: 0 });
-    const zipEntries = unzipSync(new Uint8Array(exported.buffer));
+    const exported = await trackExport(developerDashboardService.exportDatasetZip({ limit: 100, offset: 0 }));
+    const zipEntries = unzipSync(await readFile(exported.path));
 
     assert.equal(fetchCalls, 3);
     assert.deepEqual(Array.from(zipEntries["images/inspection-retry.jpg"] ?? []), [9, 8, 7]);
@@ -267,22 +316,25 @@ test("dataset export stores original bytes without recompressing ZIP entries", a
   });
 
   try {
-    const exported = await developerDashboardService.exportDatasetZip({ limit: 100, offset: 0 });
-    const bytes = new Uint8Array(exported.buffer);
+    const exported = await trackExport(developerDashboardService.exportDatasetZip({ limit: 100, offset: 0 }));
+    const bytes = await readFile(exported.path);
     const methods: number[] = [];
-    for (let offset = 0; offset + 30 <= bytes.length; ) {
-      if (bytes[offset] !== 0x50 || bytes[offset + 1] !== 0x4b || bytes[offset + 2] !== 0x03 || bytes[offset + 3] !== 0x04) {
-        break;
+    for (let offset = 0; offset + 46 <= bytes.length; ) {
+      if (bytes[offset] === 0x50 && bytes[offset + 1] === 0x4b && bytes[offset + 2] === 0x01 && bytes[offset + 3] === 0x02) {
+        methods.push(bytes[offset + 10] | (bytes[offset + 11] << 8));
+        const nameLength = bytes[offset + 28] | (bytes[offset + 29] << 8);
+        const extraLength = bytes[offset + 30] | (bytes[offset + 31] << 8);
+        const commentLength = bytes[offset + 32] | (bytes[offset + 33] << 8);
+        offset += 46 + nameLength + extraLength + commentLength;
+        continue;
       }
-      methods.push(bytes[offset + 8] | (bytes[offset + 9] << 8));
-      const nameLength = bytes[offset + 26] | (bytes[offset + 27] << 8);
-      const extraLength = bytes[offset + 28] | (bytes[offset + 29] << 8);
-      const compressedSize = bytes[offset + 18] | (bytes[offset + 19] << 8) | (bytes[offset + 20] << 16) | (bytes[offset + 21] << 24);
-      offset += 30 + nameLength + extraLength + compressedSize;
+      offset += 1;
     }
 
     assert.ok(methods.length >= 3);
     assert.deepEqual(methods, methods.map(() => 0));
+    const zipEntries = unzipSync(bytes);
+    assert.deepEqual(Array.from(zipEntries["images/inspection-original-bytes.jpg"] ?? []), [0, 1, 2, 3, 4]);
   } finally {
     globalThis.fetch = originalFetch;
     if (originalGetDeveloperDatasetExportRows) {
@@ -311,10 +363,10 @@ test("dataset export reports query, row, and ZIP assembly progress", async () =>
   ];
 
   try {
-    await developerDashboardService.exportDatasetZip(
+    await trackExport(developerDashboardService.exportDatasetZip(
       { limit: 100, offset: 0 },
       (update) => progress.push(`${update.stage}:${update.current}/${update.total}`),
-    );
+    ));
 
     assert.deepEqual(progress, [
       "querying:0/1",
@@ -365,14 +417,14 @@ test("dataset export uses stored manual classifications", async () => {
   };
 
   try {
-    const exported = await developerDashboardService.exportDatasetZip(
+    const exported = await trackExport(developerDashboardService.exportDatasetZip(
       {
         limit: 50,
         offset: 0,
         hasImage: true,
       },
-    );
-    const zipEntries = unzipSync(new Uint8Array(exported.buffer));
+    ));
+    const zipEntries = unzipSync(await readFile(exported.path));
     const csv = Buffer.from(zipEntries["inspections.csv"]).toString("utf-8");
     const overriddenRow = csv.split("\n").find((line) => line.includes("\"spoiled\""));
 

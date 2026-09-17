@@ -1,5 +1,5 @@
 import { ConfirmDialog } from "@/shared/ui/confirm-dialog";
-import { Dialog, DialogContent } from "@/shared/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/shared/ui/dialog";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
 
 type AdminDashboardDialogsProps = {
@@ -31,6 +31,8 @@ const AdminDashboardDialogs = ({ dashboard }: AdminDashboardDialogsProps) => {
         onOpenChange={(open) => !open && setPreviewImageUrl(null)}
       >
         <DialogContent className="w-[min(96vw,980px)] max-w-5xl border-none bg-transparent p-0 shadow-none">
+          <DialogTitle className="sr-only">Inspection image preview</DialogTitle>
+          <DialogDescription className="sr-only">Full-size image for this inspection.</DialogDescription>
           {previewImageUrl ? (
             <img
               src={previewImageUrl}

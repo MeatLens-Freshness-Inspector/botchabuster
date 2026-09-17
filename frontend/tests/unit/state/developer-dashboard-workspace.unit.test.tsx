@@ -323,8 +323,12 @@ function createDeveloperDashboardFetch(options?: {
     }
 
     if (url.includes("/developer-dashboard/datasets/export/workspace-export/download")) {
-      return new Response(new Blob(["zip-bytes"], { type: "application/zip" }), {
+      return new Response(new Blob(["zip-bytes"], { type: "application/octet-stream" }), {
         status: 200,
+        headers: {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "X-Export-Content-Length": "9",
+        },
       });
     }
 

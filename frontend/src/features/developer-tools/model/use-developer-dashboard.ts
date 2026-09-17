@@ -128,7 +128,7 @@ export function useDeveloperDashboard() {
         setExportProgress({ current: progress.current, total: progress.total });
         setExportStage(formatDatasetExportStage(progress));
       });
-      downloadDeveloperDatasetBlob(blob, `developer-dataset-${Date.now()}.zip`);
+      if (blob) downloadDeveloperDatasetBlob(blob, `developer-dataset-${Date.now()}.zip`);
       toast.success("Dataset export started");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to export developer datasets");

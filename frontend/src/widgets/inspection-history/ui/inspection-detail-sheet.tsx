@@ -10,6 +10,7 @@ import { useInspectionDisputes, useSubmitInspectionDispute } from "@/features/in
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
@@ -123,6 +124,9 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
               </div>
               <FreshnessBadge classification={effectiveClassification} size="lg" />
             </div>
+            <DialogDescription className="sr-only">
+              Inspection details, classification, and compliance information for {inspection.meat_type}.
+            </DialogDescription>
           </DialogHeader>
 
           {/* Image */}
@@ -146,6 +150,9 @@ export function InspectionDetailSheet({ inspection, open, onOpenChange }: Inspec
               <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
                 <DialogContent className="max-w-[95vw] border-none bg-transparent p-0 shadow-none sm:max-w-4xl [&>button]:text-white [&>button]:opacity-80">
                   <DialogTitle className="sr-only">Enlarged inspection image</DialogTitle>
+                  <DialogDescription className="sr-only">
+                    Full-size image for this {inspection.meat_type} inspection.
+                  </DialogDescription>
                   <img
                     src={inspection.image_url}
                     alt={`${inspection.meat_type} inspection – full size`}

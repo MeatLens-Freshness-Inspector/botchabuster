@@ -1,4 +1,6 @@
+import { createReadStream } from "node:fs";
 import { rm } from "node:fs/promises";
+import { pipeline } from "node:stream/promises";
 import type { Request, Response } from "express";
 import { materializeTransportFile, type MaterializedTransportFile } from "../../../../middleware/upload";
 import { developerDashboardService } from "../../infrastructure/DeveloperDashboardService";
@@ -80,6 +82,30 @@ export class DeveloperDashboardController {
     res.status(500).json({ error: error instanceof Error ? error.message : fallbackMessage });
   }
 
+  private sendDatasetExportFile(
+    action: string,
+    res: Response,
+    exported: { filename: string; path: string; directory: string; size: number },
+  ): void {
+    res.status(200);
+    res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${exported.filename}"`);
+    res.setHeader("X-Export-Content-Length", String(exported.size));
+    res.setHeader("Cache-Control", "no-store, no-transform");
+
+    void pipeline(createReadStream(exported.path), res).catch((error: unknown) => {
+      if (res.headersSent || res.destroyed) {
+        console.error(`${action} stream error:`, error);
+        return;
+      }
+      this.handleError(action, res, error, "Failed to download developer dataset export");
+    }).finally(() => {
+      void rm(exported.directory, { recursive: true, force: true }).catch((cleanupError: unknown) => {
+        console.error("Failed to remove downloaded dataset export:", cleanupError);
+      });
+    });
+  }
+
   async getOverview(_req: Request, res: Response): Promise<void> {
     try {
       res.json(await getOverview.execute());
@@ -100,9 +126,7 @@ export class DeveloperDashboardController {
     try {
       const body = (req.body ?? {}) as Record<string, unknown>;
       const exported = await exportDataset.execute(this.parseFilters(body));
-      res.setHeader("Content-Type", "application/zip");
-      res.setHeader("Content-Disposition", `attachment; filename="${exported.filename}"`);
-      res.status(200).send(exported.buffer);
+      this.sendDatasetExportFile("Export developer datasets", res, exported);
     } catch (error) {
       this.handleError("Export developer datasets", res, error, "Failed to export developer datasets");
     }
@@ -147,10 +171,8 @@ export class DeveloperDashboardController {
         return;
       }
 
-      const exported = dashboard.getDatasetExportBuffer(req.params.exportId ?? "", ownerId);
-      res.setHeader("Content-Type", "application/zip");
-      res.setHeader("Content-Disposition", `attachment; filename="${exported.filename}"`);
-      res.status(200).send(exported.buffer);
+      const exported = dashboard.getDatasetExportArchive(req.params.exportId ?? "", ownerId);
+      this.sendDatasetExportFile("Download developer dataset export", res, exported);
     } catch (error) {
       this.handleError("Download developer dataset export", res, error, "Failed to download developer dataset export");
     }

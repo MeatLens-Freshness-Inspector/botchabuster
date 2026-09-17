@@ -22,7 +22,10 @@ test("developer dataset export exposes start, progress, and download routes", ()
   assert.match(routes, /get\("\/datasets\/export\/:exportId\/download"/);
   assert.match(controller, /startDatasetExport/);
   assert.match(controller, /getDatasetExportProgress/);
-  assert.match(controller, /getDatasetExportBuffer/);
+  assert.match(controller, /getDatasetExportArchive/);
+  assert.match(controller, /text\/event-stream/);
+  assert.match(controller, /pipeline\(createReadStream\(exported\.path\), res\)/);
+  assert.match(controller, /X-Export-Content-Length/);
   assert.match(documentation, /POST \/api\/developer-dashboard\/datasets\/export\/start/);
   assert.match(documentation, /GET \/api\/developer-dashboard\/datasets\/export\/:exportId\/progress/);
   assert.match(documentation, /GET \/api\/developer-dashboard\/datasets\/export\/:exportId\/download/);

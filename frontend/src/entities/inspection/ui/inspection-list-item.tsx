@@ -6,7 +6,7 @@ import {
   getMeatTypeScopeLabel,
 } from "@/entities/inspection";
 import { Card, CardContent } from "@/shared/ui/card";
-import { Dialog, DialogContent } from "@/shared/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/shared/ui/dialog";
 import { getConfidenceTextClass } from "@/shared/lib/confidence-level";
 import { formatInspectionLocationLabel } from "@/entities/inspection";
 import { cn } from "@/shared/lib/utils";
@@ -112,6 +112,8 @@ export function InspectionListItem({ inspection, onClick, onSelect, className }:
       {inspection.image_url && (
         <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
           <DialogContent className="w-[min(96vw,980px)] max-w-5xl border-none bg-transparent p-0 shadow-none">
+            <DialogTitle className="sr-only">Inspection image preview</DialogTitle>
+            <DialogDescription className="sr-only">Full-size image for this inspection.</DialogDescription>
             <img
               src={inspection.image_url}
               alt="Inspection full view"

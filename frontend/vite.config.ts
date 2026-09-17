@@ -67,6 +67,7 @@ export default defineConfig(({ mode }) => ({
           {
             urlPattern: ({ url, request }: { url: URL; request: Request }) =>
               request.method === "GET" &&
+              !url.pathname.includes("/developer-dashboard/datasets/export/") &&
               !url.pathname.endsWith("/api/user-chat/events") &&
               (url.pathname.startsWith("/api/") ||
                 url.href.includes("/api/")),

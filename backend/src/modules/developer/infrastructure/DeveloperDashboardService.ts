@@ -1,7 +1,12 @@
 import { promises as fs } from "node:fs";
+import { createReadStream, createWriteStream } from "node:fs";
 import path from "node:path";
+import { tmpdir } from "node:os";
+import { open, mkdtemp, rm } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import { strToU8, unzipSync, zipSync } from "fflate";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import { strToU8, unzipSync, Zip, ZipPassThrough } from "fflate";
 import { inspectionService } from "../../inspections/infrastructure/InspectionService";
 import { developerDashboardStorageService } from "./DeveloperDashboardStorageService";
 import type { Inspection } from "../../../types/inspection";
@@ -22,6 +27,7 @@ const IMAGE_DOWNLOAD_RETRIES = 2;
 const MAX_DATASET_EXPORT_SESSIONS = 20;
 const DATASET_EXPORT_SESSION_TTL_MS = 10 * 60 * 1000;
 const FUTURE_MEAT_TYPE_SCOPE_LABEL = "Future validation / research use";
+const ZIP_INPUT_CHUNK_BYTES = 64 * 1024;
 
 export interface DatasetExportProgress {
   status: "running" | "completed" | "failed";
@@ -41,13 +47,20 @@ type DatasetExportSession = {
   ownerId: string;
   createdAt: number;
   progress: DatasetExportProgress;
-  result: { filename: string; buffer: Buffer } | null;
+  result: DatasetExportArchive | null;
 };
 
 interface DownloadedExportImage {
   id: string;
   extension: "jpg" | "png" | "webp";
-  bytes: Uint8Array;
+  path: string;
+}
+
+export interface DatasetExportArchive {
+  filename: string;
+  path: string;
+  directory: string;
+  size: number;
 }
 
 function normalizeFamily(value: string): string {
@@ -144,6 +157,8 @@ export class DeveloperDashboardService {
     while (this.datasetExportSessions.size >= MAX_DATASET_EXPORT_SESSIONS) {
       const oldestId = this.datasetExportSessions.keys().next().value as string | undefined;
       if (!oldestId) break;
+      const oldestSession = this.datasetExportSessions.get(oldestId);
+      if (oldestSession?.result) this.removeExportDirectory(oldestSession.result.directory);
       this.datasetExportSessions.delete(oldestId);
     }
 
@@ -168,6 +183,11 @@ export class DeveloperDashboardService {
         status: "running",
       };
     }).then((result) => {
+      if (this.datasetExportSessions.get(exportId) !== session) {
+        this.removeExportDirectory(result.directory);
+        return;
+      }
+      session.createdAt = Date.now();
       session.result = result;
       session.progress = {
         status: "completed",
@@ -176,6 +196,8 @@ export class DeveloperDashboardService {
         total: 1,
       };
     }).catch((error: unknown) => {
+      if (this.datasetExportSessions.get(exportId) !== session) return;
+      session.createdAt = Date.now();
       session.progress = {
         status: "failed",
         stage: "failed",
@@ -192,7 +214,7 @@ export class DeveloperDashboardService {
     return { ...this.getDatasetExportSession(exportId, ownerId).progress };
   }
 
-  getDatasetExportBuffer(exportId: string, ownerId: string): { filename: string; buffer: Buffer } {
+  getDatasetExportArchive(exportId: string, ownerId: string): DatasetExportArchive {
     const session = this.getDatasetExportSession(exportId, ownerId);
     if (session.progress.status === "running") {
       throw new Error("Dataset export is still running");
@@ -208,7 +230,8 @@ export class DeveloperDashboardService {
   private pruneDatasetExportSessions(): void {
     const cutoff = Date.now() - DATASET_EXPORT_SESSION_TTL_MS;
     for (const [exportId, session] of this.datasetExportSessions) {
-      if (session.createdAt < cutoff) {
+      if (session.progress.status !== "running" && session.createdAt < cutoff) {
+        if (session.result) this.removeExportDirectory(session.result.directory);
         this.datasetExportSessions.delete(exportId);
       }
     }
@@ -225,91 +248,124 @@ export class DeveloperDashboardService {
   async exportDatasetZip(
     filters: DeveloperDatasetFilters,
     onProgress?: (update: DatasetExportProgressUpdate) => void,
-  ): Promise<{ filename: string; buffer: Buffer }> {
+  ): Promise<DatasetExportArchive> {
     onProgress?.({ stage: "querying", current: 0, total: 1 });
     const datasetItems = await inspectionService.getDeveloperDatasetExportRows({
       ...filters,
       limit: MAX_EXPORT_ROWS,
       offset: 0,
     });
-    const imageTotal = Math.max(1, datasetItems.length);
-    onProgress?.({ stage: "downloading-images", current: 0, total: imageTotal });
-    const downloadedImages = await this.downloadInspectionImages(datasetItems, (current) => {
-      onProgress?.({ stage: "downloading-images", current, total: imageTotal });
-    });
-    const failedImageIds = datasetItems
-      .filter((inspection, index) => Boolean(inspection.image_url) && !downloadedImages[index])
-      .map((inspection) => inspection.id);
+    const directory = await mkdtemp(path.join(tmpdir(), "meatlens-dataset-export-"));
+    const filename = `developer-dataset-${Date.now()}.zip`;
+    const archivePath = path.join(directory, filename);
+    let outputFile: Awaited<ReturnType<typeof open>> | undefined;
+    let succeeded = false;
 
-    if (failedImageIds.length > 0) {
-      throw new Error(`Failed to download required inspection images: ${failedImageIds.join(", ")}`);
-    }
-
-    onProgress?.({ stage: "assembling-zip", current: 0, total: 1 });
-    const files: Record<string, Uint8Array> = {
-      "inspections.csv": strToU8(this.buildInspectionCsv(datasetItems, downloadedImages)),
-    };
-    const rowsMissingImages: string[] = [];
-    let imageCount = 0;
-
-    for (let index = 0; index < datasetItems.length; index += 1) {
-      const inspection = datasetItems[index];
-      const downloadedImage = downloadedImages[index];
-
-      if (!downloadedImage) {
-        rowsMissingImages.push(inspection.id);
-        continue;
-      }
-
-      files[`images/${downloadedImage.id}.${downloadedImage.extension}`] = downloadedImage.bytes;
-      imageCount += 1;
-    }
-
-    const manifest: DatasetExportManifest = {
-      exportedAt: new Date().toISOString(),
-      filters,
-      totalRecordCount: datasetItems.length,
-      exportedRecordCount: datasetItems.length,
-      imageCount,
-      rowsMissingImages,
-    };
-    files["manifest.json"] = strToU8(JSON.stringify(manifest, null, 2));
-
-    const result = {
-      filename: `developer-dataset-${Date.now()}.zip`,
-      buffer: Buffer.from(zipSync(files, { level: 0 })),
-    };
-    onProgress?.({ stage: "complete", current: 1, total: 1 });
-    return result;
-  }
-
-  private async downloadInspectionImages(
-    inspections: Inspection[],
-    onProgress?: (current: number) => void,
-  ): Promise<Array<DownloadedExportImage | null>> {
-    const results: Array<DownloadedExportImage | null> = Array.from({ length: inspections.length }, () => null);
-    const workerCount = Math.min(IMAGE_DOWNLOAD_CONCURRENCY, inspections.length);
-    let nextIndex = 0;
-
-    const workers = Array.from({ length: workerCount }, async () => {
-      while (true) {
-        const currentIndex = nextIndex;
-        nextIndex += 1;
-
-        if (currentIndex >= inspections.length) {
+    try {
+      outputFile = await open(archivePath, "wx");
+      let writeChain = Promise.resolve();
+      let archiveError: unknown;
+      let archiveEnded = false;
+      const zip = new Zip((error, chunk, final) => {
+        if (error) {
+          archiveError ??= error;
           return;
         }
+        if (chunk?.byteLength) {
+          writeChain = writeChain.then(async () => {
+            if (archiveError) return;
+            try {
+              await outputFile?.write(chunk);
+            } catch (writeError) {
+              archiveError ??= writeError;
+            }
+          });
+        }
+        if (final) archiveEnded = true;
+      });
+      const flushZipOutput = async (): Promise<void> => {
+        await writeChain;
+        if (archiveError) throw archiveError;
+      };
+      const downloadedImages: Array<DownloadedExportImage | null> = Array.from(
+        { length: datasetItems.length },
+        () => null,
+      );
+      const imageTotal = Math.max(1, datasetItems.length);
+      const workerCount = Math.min(IMAGE_DOWNLOAD_CONCURRENCY, datasetItems.length);
+      let nextIndex = 0;
+      onProgress?.({ stage: "downloading-images", current: 0, total: imageTotal });
 
-        results[currentIndex] = await this.downloadInspectionImage(inspections[currentIndex]);
-        onProgress?.(currentIndex + 1);
+      const workers = Array.from({ length: workerCount }, async () => {
+        while (true) {
+          const currentIndex = nextIndex;
+          nextIndex += 1;
+          if (currentIndex >= datasetItems.length) return;
+
+          const downloadedImage = await this.downloadInspectionImage(datasetItems[currentIndex], directory);
+          downloadedImages[currentIndex] = downloadedImage;
+          if (downloadedImage) {
+            try {
+              await this.addFileToZip(zip, `images/${downloadedImage.id}.${downloadedImage.extension}`, downloadedImage.path, flushZipOutput);
+            } finally {
+              await rm(downloadedImage.path, { force: true });
+            }
+          }
+          onProgress?.({ stage: "downloading-images", current: currentIndex + 1, total: imageTotal });
+        }
+      });
+
+      const workerResults = await Promise.allSettled(workers);
+      const failedWorker = workerResults.find((result) => result.status === "rejected");
+      if (failedWorker?.status === "rejected") throw failedWorker.reason;
+
+      const failedImageIds = datasetItems
+        .filter((inspection, index) => Boolean(inspection.image_url) && !downloadedImages[index])
+        .map((inspection) => inspection.id);
+      if (failedImageIds.length > 0) {
+        throw new Error(`Failed to download required inspection images: ${failedImageIds.join(", ")}`);
       }
-    });
 
-    await Promise.all(workers);
-    return results;
+      onProgress?.({ stage: "assembling-zip", current: 0, total: 1 });
+      const csv = strToU8(this.buildInspectionCsv(datasetItems, downloadedImages));
+      await this.addBytesToZip(zip, "inspections.csv", csv, flushZipOutput);
+      const rowsMissingImages: string[] = [];
+      let imageCount = 0;
+
+      for (let index = 0; index < datasetItems.length; index += 1) {
+        if (!downloadedImages[index]) {
+          rowsMissingImages.push(datasetItems[index].id);
+        } else {
+          imageCount += 1;
+        }
+      }
+
+      const manifest: DatasetExportManifest = {
+        exportedAt: new Date().toISOString(),
+        filters,
+        totalRecordCount: datasetItems.length,
+        exportedRecordCount: datasetItems.length,
+        imageCount,
+        rowsMissingImages,
+      };
+      await this.addBytesToZip(zip, "manifest.json", strToU8(JSON.stringify(manifest, null, 2)), flushZipOutput);
+      zip.end();
+      await flushZipOutput();
+      if (!archiveEnded) throw new Error("Dataset ZIP archive did not finish writing");
+      const { size } = await outputFile.stat();
+      succeeded = true;
+      onProgress?.({ stage: "complete", current: 1, total: 1 });
+      return { filename, path: archivePath, directory, size };
+    } finally {
+      await outputFile?.close();
+      if (!succeeded) await rm(directory, { recursive: true, force: true });
+    }
   }
 
-  private async downloadInspectionImage(inspection: Inspection): Promise<DownloadedExportImage | null> {
+  private async downloadInspectionImage(
+    inspection: Inspection,
+    directory: string,
+  ): Promise<DownloadedExportImage | null> {
     if (!inspection.image_url) {
       return null;
     }
@@ -317,19 +373,28 @@ export class DeveloperDashboardService {
     for (let attempt = 0; attempt <= IMAGE_DOWNLOAD_RETRIES; attempt += 1) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), IMAGE_DOWNLOAD_TIMEOUT_MS);
+      const imagePath = path.join(directory, `${randomUUID()}.image`);
 
       try {
         const imageResponse = await fetch(inspection.image_url, { signal: controller.signal });
         if (!imageResponse.ok) {
+          await imageResponse.body?.cancel().catch(() => undefined);
           continue;
         }
+        if (!imageResponse.body) throw new Error("Inspection image response had no body");
+
+        await pipeline(
+          Readable.fromWeb(imageResponse.body as unknown as import("node:stream/web").ReadableStream),
+          createWriteStream(imagePath, { flags: "wx" }),
+        );
 
         return {
           id: inspection.id,
           extension: this.resolveImageExtension(inspection.image_url, imageResponse.headers.get("content-type")),
-          bytes: new Uint8Array(await imageResponse.arrayBuffer()),
+          path: imagePath,
         };
       } catch {
+        await rm(imagePath, { force: true });
         if (attempt === IMAGE_DOWNLOAD_RETRIES) {
           return null;
         }
@@ -339,6 +404,44 @@ export class DeveloperDashboardService {
     }
 
     return null;
+  }
+
+  private async addFileToZip(
+    zip: Zip,
+    entryName: string,
+    filePath: string,
+    flushZipOutput: () => Promise<void>,
+  ): Promise<void> {
+    const entry = new ZipPassThrough(entryName);
+    zip.add(entry);
+    for await (const chunk of createReadStream(filePath)) {
+      entry.push(chunk, false);
+      await flushZipOutput();
+    }
+    entry.push(new Uint8Array(0), true);
+    await flushZipOutput();
+  }
+
+  private async addBytesToZip(
+    zip: Zip,
+    entryName: string,
+    bytes: Uint8Array,
+    flushZipOutput: () => Promise<void>,
+  ): Promise<void> {
+    const entry = new ZipPassThrough(entryName);
+    zip.add(entry);
+    for (let offset = 0; offset < bytes.length; offset += ZIP_INPUT_CHUNK_BYTES) {
+      entry.push(bytes.subarray(offset, offset + ZIP_INPUT_CHUNK_BYTES), false);
+      await flushZipOutput();
+    }
+    entry.push(new Uint8Array(0), true);
+    await flushZipOutput();
+  }
+
+  private removeExportDirectory(directory: string): void {
+    void rm(directory, { recursive: true, force: true }).catch((error: unknown) => {
+      console.error("Failed to remove expired dataset export:", error);
+    });
   }
 
   async listTrainingRuns(): Promise<TrainingRunRecord[]> {
