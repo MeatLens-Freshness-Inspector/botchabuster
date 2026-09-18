@@ -148,12 +148,10 @@ const MODEL_ASSET_PROFILES: Record<MobileNetModelVariant, ModelAssetProfile> = {
     displayName: "Primary MobileNetV3Small",
     preprocessContract: "segmented_center_roi",
     modelCandidatePaths: [
-      "/model/model3/meatlens_roboflow_mobilenetv3small_8fold_final.onnx",
-      "/models/model3/meatlens_roboflow_mobilenetv3small_8fold_final.onnx",
+      "/model/model4/meatlens_final_8samples_cnn_only_mobilenetv3small.onnx",
     ],
     metadataCandidatePaths: [
-      "/model/model3/meatlens_roboflow_mobilenetv3small_8fold_final_metadata.json",
-      "/models/model3/meatlens_roboflow_mobilenetv3small_8fold_final_metadata.json",
+      "/model/model4/meatlens_final_8samples_cnn_only_mobilenetv3small_metadata.json",
     ],
     defaultMetadata: {
       ...DEFAULT_MODEL_METADATA,

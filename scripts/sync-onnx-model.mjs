@@ -214,3 +214,23 @@ for (const fileName of model3Files) {
   }
 }
 
+const model4Files = [
+  "meatlens_final_8samples_cnn_only_mobilenetv3small.onnx",
+  "meatlens_final_8samples_cnn_only_mobilenetv3small_metadata.json",
+  "README.txt",
+];
+
+for (const fileName of model4Files) {
+  const source = path.join(repoRoot, "model4", fileName);
+  if (!existsSync(source)) {
+    continue;
+  }
+
+  const target = path.join(repoRoot, "frontend", "public", "model", "model4", fileName);
+  mkdirSync(path.dirname(target), { recursive: true });
+  if (!existsSync(target) || statSync(target).size !== statSync(source).size) {
+    copyFileSync(source, target);
+    console.info(`[sync-onnx-model] Copied model4 ${fileName} -> ${path.relative(repoRoot, target)}`);
+  }
+}
+

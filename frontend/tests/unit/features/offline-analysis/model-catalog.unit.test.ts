@@ -16,12 +16,13 @@ test("catalog lists all selectable models with neutral labels and added dates", 
     "ensemble",
   ]);
   assert.equal(ANALYSIS_MODEL_CATALOG[0].label, "Primary MobileNetV3");
-  assert.equal(ANALYSIS_MODEL_CATALOG[0].addedOn, "2026-08-13");
+  assert.equal(ANALYSIS_MODEL_CATALOG[0].addedOn, "2026-09-18");
+  assert.equal(ANALYSIS_MODEL_CATALOG[0].versionKey, "mobilenet-primary-final-2026-09-18");
   assert.ok(ANALYSIS_MODEL_CATALOG.every((entry) => entry.label.length > 0));
 });
 
 test("date formatter renders project-added dates without timezone drift", () => {
-  assert.equal(formatModelAddedDate("2026-08-13"), "Aug 13, 2026");
+  assert.equal(formatModelAddedDate("2026-09-18"), "Sep 18, 2026");
   assert.equal(formatModelAddedDate(null), "Date unavailable");
 });
 

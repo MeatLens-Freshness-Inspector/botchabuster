@@ -27,9 +27,9 @@ export const ANALYSIS_MODEL_CATALOG: readonly AnalysisModelCatalogEntry[] = [
     value: "primary",
     label: "Primary MobileNetV3",
     runtime: "mobilenetv3",
-    addedOn: "2026-08-13",
-    addedOnLabel: "Added Aug 13, 2026",
-    versionKey: "mobilenet-primary-2026-08-13",
+    addedOn: "2026-09-18",
+    addedOnLabel: "Added Sep 18, 2026",
+    versionKey: "mobilenet-primary-final-2026-09-18",
     isPrimary: true,
   },
   {

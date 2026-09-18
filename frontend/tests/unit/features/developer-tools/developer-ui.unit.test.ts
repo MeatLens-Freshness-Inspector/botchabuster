@@ -16,7 +16,7 @@ test("developer model options use neutral labels and project-added dates", () =>
   const labels = ANALYSIS_MODEL_CATALOG.map(formatDeveloperModelOption);
 
   assert.deepEqual(labels, [
-    "Primary MobileNetV3 · Added Aug 13, 2026",
+    "Primary MobileNetV3 · Added Sep 18, 2026",
     "Seed123 MobileNetV3 · Added May 19, 2026",
     "Legacy MobileNetV3 · Added May 5, 2026",
     "ResNet50 · Added May 1, 2026",

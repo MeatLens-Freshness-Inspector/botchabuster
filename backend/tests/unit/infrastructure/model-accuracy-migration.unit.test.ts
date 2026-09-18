@@ -15,6 +15,12 @@ const modelRegistrationMigrationPath = join(
   "migrations",
   "20260904090000_register_analysis_model_versions.sql",
 );
+const finalDeploymentModelMigrationPath = join(
+  process.cwd(),
+  "supabase",
+  "migrations",
+  "20260918100000_register_final_deployment_model_version.sql",
+);
 
 test("model accuracy migration creates versioned immutable daily snapshots", () => {
   const sql = readFileSync(migrationPath, "utf8").toLowerCase();
@@ -46,5 +52,14 @@ test("analysis model registration migration registers every selectable model ver
   }
 
   assert.match(sql, /insert into public\.model_versions/);
+  assert.match(sql, /on conflict \(version_key\) do nothing/);
+});
+
+test("final deployment model migration registers the new primary model version", () => {
+  const sql = readFileSync(finalDeploymentModelMigrationPath, "utf8").toLowerCase();
+
+  assert.match(sql, /mobilenet-primary-final-2026-09-18/);
+  assert.match(sql, /primary mobilenetv3/);
+  assert.match(sql, /0\.9077/);
   assert.match(sql, /on conflict \(version_key\) do nothing/);
 });
