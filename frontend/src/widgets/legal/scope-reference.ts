@@ -12,6 +12,8 @@ export const inspectScopeReminder = {
   bullets: [
     "Pork samples only",
     "Screening support, not diagnosis",
+    "Recommended device: Android 12 or iOS 22, 8 GB of RAM, and a camera of at least 50 MP",
+    "Freshness classification only: Fresh, Not Fresh, or Spoiled—not sickness or other health conditions",
     "Final decision remains with the inspector",
   ],
   ctaLabel: "View full scope & limitations",
@@ -28,6 +30,15 @@ export const scopeReferencePage = {
       body: [
         "MeatLens currently provides pork inspection support only.",
         "The current product scope is limited to inspector-facing pork freshness screening inside the MeatLens workflow.",
+        "The system classifies meat as Fresh, Not Fresh, or Spoiled only. It does not assess sickness, illness, pathogens, contamination, or other health conditions.",
+      ],
+    },
+    {
+      id: "recommended-device-specifications",
+      title: "Recommended device specifications",
+      body: [
+        "For the best capture and processing experience, use Android 12 or iOS 22, at least 8 GB of RAM, and a camera with at least 50 MP.",
+        "These are recommendations, not requirements. MeatLens may still work on lower-spec devices, but image quality, processing speed, and accuracy may vary.",
       ],
     },
     {

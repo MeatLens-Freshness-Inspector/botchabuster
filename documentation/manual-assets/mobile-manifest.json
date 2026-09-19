@@ -1,0 +1,505 @@
+[
+  {
+    "raw": "mobile-login.png",
+    "output": "mobile-login-annotated.png",
+    "route": "/login",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Email",
+        "x": 154,
+        "y": 52
+      },
+      {
+        "number": 2,
+        "label": "Password",
+        "x": 154,
+        "y": 140
+      },
+      {
+        "number": 3,
+        "label": "Sign In",
+        "x": 154,
+        "y": 196
+      },
+      {
+        "number": 4,
+        "label": "Forgot password?",
+        "x": 154,
+        "y": 242
+      }
+    ]
+  },
+  {
+    "raw": "mobile-signup.png",
+    "output": "mobile-signup-annotated.png",
+    "route": "/signup",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Full Name",
+        "x": 154,
+        "y": 52
+      },
+      {
+        "number": 2,
+        "label": "Email",
+        "x": 154,
+        "y": 140
+      },
+      {
+        "number": 3,
+        "label": "Password",
+        "x": 154,
+        "y": 228
+      },
+      {
+        "number": 4,
+        "label": "Access Code",
+        "x": 154,
+        "y": 316
+      },
+      {
+        "number": 5,
+        "label": "Create Account",
+        "x": 154,
+        "y": 640
+      }
+    ]
+  },
+  {
+    "raw": "mobile-inspect-prescan.png",
+    "output": "mobile-inspect-prescan-annotated.png",
+    "route": "/inspect",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Stall Number",
+        "x": 179,
+        "y": 206
+      },
+      {
+        "number": 2,
+        "label": "Certificate proof",
+        "x": 179,
+        "y": 294
+      },
+      {
+        "number": 3,
+        "label": "Expiry date",
+        "x": 179,
+        "y": 382
+      },
+      {
+        "number": 4,
+        "label": "Storage Correct",
+        "x": 179,
+        "y": 470
+      },
+      {
+        "number": 5,
+        "label": "Light Color Correct",
+        "x": 179,
+        "y": 558
+      }
+    ]
+  },
+  {
+    "raw": "mobile-inspect-prescan-lower.png",
+    "output": "mobile-inspect-prescan-lower-annotated.png",
+    "route": "/inspect",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Area Clean",
+        "x": 162,
+        "y": 52
+      }
+    ]
+  },
+  {
+    "raw": "mobile-inspect-location-camera.png",
+    "output": "mobile-inspect-location-camera-annotated.png",
+    "route": "/inspect",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Market selector",
+        "x": 179,
+        "y": 97
+      },
+      {
+        "number": 2,
+        "label": "Open Camera",
+        "x": 179,
+        "y": 474
+      }
+    ]
+  },
+  {
+    "raw": "mobile-inspect-capture-confirm.png",
+    "output": "mobile-inspect-capture-confirm-annotated.png",
+    "route": "/inspect",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Retake",
+        "x": 96,
+        "y": 472
+      },
+      {
+        "number": 2,
+        "label": "Use Photo",
+        "x": 264,
+        "y": 472
+      }
+    ]
+  },
+  {
+    "raw": "mobile-inspect-analysis.png",
+    "output": "mobile-inspect-analysis-annotated.png",
+    "route": "/inspect",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Analysis Output",
+        "x": 89,
+        "y": 30
+      }
+    ]
+  },
+  {
+    "raw": "mobile-inspect-save.png",
+    "output": "mobile-inspect-save-annotated.png",
+    "route": "/inspect",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "New Scan",
+        "x": 179,
+        "y": 36
+      },
+      {
+        "number": 2,
+        "label": "Save Record",
+        "x": 179,
+        "y": 85
+      }
+    ]
+  },
+  {
+    "raw": "mobile-inspect-record-saved.png",
+    "output": "mobile-inspect-record-saved-annotated.png",
+    "route": "/inspect",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Record Saved",
+        "x": 179,
+        "y": 85
+      },
+      {
+        "number": 2,
+        "label": "New Scan",
+        "x": 179,
+        "y": 36
+      }
+    ]
+  },
+  {
+    "raw": "mobile-history.png",
+    "output": "mobile-history-annotated.png",
+    "route": "/history",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Search",
+        "x": 190,
+        "y": 84
+      },
+      {
+        "number": 2,
+        "label": "Inspection Day",
+        "x": 179,
+        "y": 166
+      },
+      {
+        "number": 3,
+        "label": "Export PDF",
+        "x": 179,
+        "y": 210
+      }
+    ]
+  },
+  {
+    "raw": "mobile-history-detail.png",
+    "output": "mobile-history-detail-annotated.png",
+    "route": "/history",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Close details",
+        "x": 349,
+        "y": 25
+      }
+    ]
+  },
+  {
+    "raw": "mobile-messages-contacts.png",
+    "output": "mobile-messages-contacts-annotated.png",
+    "route": "/messages",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Contact search",
+        "x": 206,
+        "y": 607
+      },
+      {
+        "number": 2,
+        "label": "Refresh messages",
+        "x": 341,
+        "y": 551
+      },
+      {
+        "number": 3,
+        "label": "Chief Admin",
+        "x": 193,
+        "y": 701
+      }
+    ]
+  },
+  {
+    "raw": "mobile-messages-thread.png",
+    "output": "mobile-messages-thread-annotated.png",
+    "route": "/messages",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Back to contacts",
+        "x": 49,
+        "y": 49
+      },
+      {
+        "number": 2,
+        "label": "Message composer",
+        "x": 146,
+        "y": 519
+      },
+      {
+        "number": 3,
+        "label": "Send",
+        "x": 299,
+        "y": 519
+      }
+    ]
+  },
+  {
+    "raw": "mobile-profile-password.png",
+    "output": "mobile-profile-password-annotated.png",
+    "route": "/profile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Current password",
+        "x": 195,
+        "y": 155
+      },
+      {
+        "number": 2,
+        "label": "New password",
+        "x": 195,
+        "y": 237
+      },
+      {
+        "number": 3,
+        "label": "Confirm new password",
+        "x": 195,
+        "y": 319
+      },
+      {
+        "number": 4,
+        "label": "Change Password",
+        "x": 195,
+        "y": 375
+      }
+    ]
+  },
+  {
+    "raw": "mobile-admin-overview.png",
+    "output": "mobile-admin-overview-annotated.png",
+    "route": "/admin",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Admin tab selector",
+        "x": 195,
+        "y": 658
+      }
+    ]
+  },
+  {
+    "raw": "mobile-admin-selector.png",
+    "output": "mobile-admin-selector-annotated.png",
+    "route": "/admin",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Reports menu item",
+        "x": 195,
+        "y": 578
+      },
+      {
+        "number": 2,
+        "label": "Users menu item",
+        "x": 195,
+        "y": 418
+      }
+    ]
+  },
+  {
+    "raw": "mobile-admin-reports.png",
+    "output": "mobile-admin-reports-annotated.png",
+    "route": "/admin",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "PDF Summary",
+        "x": 195,
+        "y": 293
+      },
+      {
+        "number": 2,
+        "label": "CSV Detail",
+        "x": 195,
+        "y": 341
+      },
+      {
+        "number": 3,
+        "label": "JSON Snapshot",
+        "x": 195,
+        "y": 389
+      }
+    ]
+  },
+  {
+    "raw": "mobile-developer-tabs.png",
+    "output": "mobile-developer-tabs-annotated.png",
+    "route": "/admin",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "Developer Settings",
+        "x": 267,
+        "y": 24
+      },
+      {
+        "number": 2,
+        "label": "API Docs",
+        "x": 92,
+        "y": 64
+      },
+      {
+        "number": 3,
+        "label": "Datasets",
+        "x": 267,
+        "y": 64
+      },
+      {
+        "number": 4,
+        "label": "Training",
+        "x": 92,
+        "y": 104
+      }
+    ]
+  },
+  {
+    "raw": "mobile-developer-api-docs.png",
+    "output": "mobile-developer-api-docs-annotated.png",
+    "route": "/admin",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "markers": [
+      {
+        "number": 1,
+        "label": "API Docs",
+        "x": 92,
+        "y": 64
+      }
+    ]
+  }
+]

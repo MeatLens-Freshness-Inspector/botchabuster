@@ -59,3 +59,5 @@ tests/fixtures/images/*
 !tests/fixtures/images/.gitkeep
 tests/fixtures/payloads/*
 !tests/fixtures/payloads/.gitkeep
+
+revision-checklist.md

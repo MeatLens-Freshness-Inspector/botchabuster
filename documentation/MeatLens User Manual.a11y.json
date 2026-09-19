@@ -1,0 +1,30 @@
+{
+  "input": "C:\\Users\\Adriaan M. Dimate\\Desktop\\development\\school\\botchabuster\\documentation\\MeatLens User Manual.docx",
+  "paragraphCount": 592,
+  "heading1Count": 4,
+  "heading2Count": 41,
+  "heading3Count": 19,
+  "tableCount": 10,
+  "tableHeaderRowCount": 74,
+  "imageCount": 22,
+  "imageDescriptionCount": 22,
+  "internalHyperlinkCount": 6,
+  "bookmarkCount": 64,
+  "hasPlaceholderMarkers": false,
+  "hasInternalToolTokens": false,
+  "containsSecretsByPattern": false,
+  "styleNamesPresent": [
+    "ManualBody",
+    "ManualHeading1",
+    "ManualHeading2",
+    "ManualHeading3",
+    "ManualList",
+    "ManualCallout",
+    "FigureCaption",
+    "ManualTableText",
+    "CodeBlock"
+  ],
+  "textSample": "MEATLENS / FRESHNESS INSPECTION SYSTEM Official User Manual Operate, administer, and maintain MeatLens with confidence. ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Version 1.1 | Approved for production | Effective 31 August 2026 Applies to MeatLens web and Capacitor client workflows Official controlled document • MeatLens project team Contents Shared orientation Inspector/User guide Administrator guide Developer",
+  "highSeverityIssues": [],
+  "status": "pass"
+}

@@ -57,3 +57,41 @@ test("shared fetch encrypts application bodies and bodyless requests", async () 
     Object.defineProperty(globalThis, "crypto", { configurable: true, value: originalCrypto });
   }
 });
+
+test("does not spend the request timeout while preparing encrypted transport", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalCrypto = globalThis.crypto;
+  const keyPair = await webcrypto.subtle.generateKey(
+    { name: "RSA-OAEP", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+    true,
+    ["encrypt", "decrypt"],
+  ) as CryptoKeyPair;
+  const publicKey = encodeBase64Url(await webcrypto.subtle.exportKey("spki", keyPair.publicKey));
+
+  Object.defineProperty(globalThis, "crypto", { configurable: true, value: webcrypto });
+  clearTransportPublicKeyCache();
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    if (String(input).endsWith("/transport/public-key")) {
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      return new Response(JSON.stringify({
+        version: 1,
+        algorithm: "RSA-OAEP-256",
+        keyId: "test-v1",
+        publicKey,
+      }), { status: 200 });
+    }
+    if (init?.signal?.aborted) {
+      throw new DOMException("The operation was aborted.", "AbortError");
+    }
+    return new Response(null, { status: 204 });
+  }) as typeof globalThis.fetch;
+
+  try {
+    const response = await fetchWithTimeout("https://example.test/api/profile", { method: "GET" }, 10);
+    assert.equal(response.status, 204);
+  } finally {
+    clearTransportPublicKeyCache();
+    globalThis.fetch = originalFetch;
+    Object.defineProperty(globalThis, "crypto", { configurable: true, value: originalCrypto });
+  }
+});

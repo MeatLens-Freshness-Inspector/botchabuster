@@ -18,11 +18,12 @@ MeatLens is a decision-support tool, not a diagnostic or certification authority
 
 **Functional Scope**
 * MeatLens performs image-based classification only. It does not perform microbiological, chemical, or laboratory-grade testing, and cannot detect contamination, pathogens, or chemical adulteration that is not visually apparent.
-* The system produces advisory risk indicators (e.g., Fresh, Suspect, Spoiled). It does not issue certifications, official findings, or regulatory rulings.
+* The system assesses meat freshness only and produces advisory classifications of Fresh, Not Fresh, or Spoiled. It does not assess sickness, illness, pathogens, contamination, or other health conditions, and does not issue certifications, official findings, or regulatory rulings.
 
 **Technical Limitations**
 * Classification accuracy depends on training data coverage and may not generalize to all pork cuts, breeds, handling conditions, or spoilage presentations, particularly those underrepresented in the training dataset.
 * Model performance is affected by image quality, lighting conditions, camera hardware, angle, and occlusion. Degraded input conditions may reduce accuracy.
+* Recommended device baseline: Android 12 or iOS 22, at least 8 GB of RAM, and a camera of at least 50 MP. These are recommendations, not requirements; MeatLens may still work on lower-spec devices, but image quality, processing speed, and accuracy may vary.
 * As with any AI classification model, MeatLens is subject to a non-zero rate of false positives and false negatives and should not be treated as infallible.
 * The system's underlying model and thresholds are calibrated against publicly available and peer-reviewed food science references. Where region-specific or agency-issued freshness standards exist, users should defer to those official standards where applicable.
 
@@ -53,7 +54,8 @@ Improper usage may result in inaccurate outputs.
 
 Users acknowledge that:
 
-* Results are advisory in nature (for example Fresh, Suspect, Spoiled).
+* Results are advisory in nature and limited to Fresh, Not Fresh, or Spoiled classifications.
+* The system does not assess sickness, illness, pathogens, contamination, or other health conditions.
 * The system may produce false positives or false negatives.
 * Environmental conditions affect accuracy, including lighting, camera quality, and storage conditions.
 

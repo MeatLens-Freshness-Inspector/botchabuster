@@ -38,14 +38,15 @@ async function fetchOnceWithTimeout(
     }
   }
 
-  const timeoutId = globalThis.setTimeout(() => {
-    didTimeout = true;
-    controller.abort();
-  }, timeoutMs);
+  let timeoutId: ReturnType<typeof globalThis.setTimeout> | undefined;
 
   try {
     const nextInit = applyApiRequestInit(init);
     const preparedRequest = await createEncryptedRequest(input, nextInit, forcePublicKeyRefresh);
+    timeoutId = globalThis.setTimeout(() => {
+      didTimeout = true;
+      controller.abort();
+    }, timeoutMs);
     const networkResponse = await fetch(input, {
       ...preparedRequest.init,
       signal: controller.signal,
@@ -81,7 +82,7 @@ async function fetchOnceWithTimeout(
 
     throw requestError;
   } finally {
-    globalThis.clearTimeout(timeoutId);
+    if (timeoutId !== undefined) globalThis.clearTimeout(timeoutId);
     if (sourceSignal && !keepSourceAbortListener) {
       sourceSignal.removeEventListener("abort", handleSourceAbort);
     }

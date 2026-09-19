@@ -22,7 +22,6 @@ test("shared date formatter preserves empty and invalid report values", () => {
 
 test("shared storage helpers round-trip valid JSON and reject malformed values", () => {
   const storage = createStorage();
-
   writeJson(storage, "key", { value: 42 });
   assert.deepEqual(readJson<{ value: number }>(storage, "key"), { value: 42 });
   storage.setItem("key", "not-json");

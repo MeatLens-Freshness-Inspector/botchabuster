@@ -50,8 +50,9 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
             visually apparent.
           </li>
           <li>
-            The system produces advisory risk indicators (e.g., Fresh, Warning, Spoiled). It does not issue
-            certifications, official findings, or regulatory rulings.
+            The system assesses meat freshness only and classifies samples as <strong>Fresh, Not Fresh, or Spoiled</strong>.
+            It does not assess sickness, illness, pathogens, contamination, or other health conditions, and it does not
+            issue certifications, official findings, or regulatory rulings.
           </li>
         </ul>
 
@@ -77,6 +78,14 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
             food science references. Where region-specific or agency-issued freshness standards exist, users should
             defer to those official standards where applicable.
           </li>
+        </ul>
+
+        <p>
+          <strong>Recommended Device Specifications</strong>
+        </p>
+        <ul className="list-disc space-y-1 pl-5">
+          <li>Recommended baseline: Android 12 or iOS 22, at least 8 GB of RAM, and a camera of at least 50 MP.</li>
+          <li>These specifications are recommendations, not requirements. MeatLens may still work on lower-spec devices, but image quality, processing speed, and accuracy may vary.</li>
         </ul>
 
         <p>
@@ -117,7 +126,8 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
         <h3 className="font-display text-base font-semibold">5. AI Output Limitations</h3>
         <p>Users acknowledge that:</p>
         <ul className="list-disc space-y-1 pl-5">
-          <li>Results are advisory in nature (for example Fresh, Warning, Spoiled).</li>
+          <li>Results are advisory in nature and limited to Fresh, Not Fresh, or Spoiled classifications.</li>
+          <li>The system does not assess sickness, illness, pathogens, contamination, or other health conditions.</li>
           <li>The system may produce false positives or false negatives.</li>
           <li>Environmental conditions affect accuracy, including lighting, camera quality, and storage conditions.</li>
         </ul>
