@@ -1,4 +1,4 @@
-export type MobileNetModelVariant = "primary" | "seed123_model2" | "default";
+export type MobileNetModelVariant = "primary" | "sep18_model" | "seed123_model2" | "default";
 
 export type AnalysisModelSelection = MobileNetModelVariant | "resnet50" | "ensemble";
 
@@ -6,6 +6,7 @@ export type AnalysisModelRuntime = "mobilenetv3" | "resnet50" | "ensemble";
 
 export const MOBILE_NET_MODEL_VARIANTS: readonly MobileNetModelVariant[] = [
   "primary",
+  "sep18_model",
   "seed123_model2",
   "default",
 ] as const;
@@ -27,10 +28,18 @@ export const ANALYSIS_MODEL_CATALOG: readonly AnalysisModelCatalogEntry[] = [
     value: "primary",
     label: "Primary MobileNetV3",
     runtime: "mobilenetv3",
+    addedOn: "2026-09-19",
+    addedOnLabel: "Added Sep 19, 2026",
+    versionKey: "mobilenet-primary-final-2026-09-19",
+    isPrimary: true,
+  },
+  {
+    value: "sep18_model",
+    label: "Sep 18 MobileNetV3",
+    runtime: "mobilenetv3",
     addedOn: "2026-09-18",
     addedOnLabel: "Added Sep 18, 2026",
-    versionKey: "mobilenet-primary-final-2026-09-18",
-    isPrimary: true,
+    versionKey: "mobilenet-sep18-model4-2026-09-18",
   },
   {
     value: "seed123_model2",

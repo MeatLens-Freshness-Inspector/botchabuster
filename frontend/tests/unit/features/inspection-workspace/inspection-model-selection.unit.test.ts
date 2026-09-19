@@ -11,7 +11,7 @@ test("inspection workspace uses primary for regular and locked users", () => {
 test("inspection workspace uses the selected model only for unlocked developers", () => {
   assert.equal(resolveInspectionModelSelection({ id: "developer-1" }, true, true, false, "ensemble"), "primary");
 
-  for (const selectedModel of ["primary", "seed123_model2", "default", "resnet50", "ensemble"] as const) {
+  for (const selectedModel of ["primary", "sep18_model", "seed123_model2", "default", "resnet50", "ensemble"] as const) {
     assert.equal(
       resolveInspectionModelSelection({ id: "developer-1" }, true, true, true, selectedModel),
       selectedModel,

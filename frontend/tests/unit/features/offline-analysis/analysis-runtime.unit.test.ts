@@ -15,7 +15,7 @@ test("analysis runtime starts with the primary MobileNetV3 selection", () => {
 });
 
 test("analysis runtime maps MobileNetV3 variants to MobileNet mode", () => {
-  for (const selection of ["seed123_model2", "default"] as const) {
+  for (const selection of ["sep18_model", "seed123_model2", "default"] as const) {
     setActiveAnalysisModel(selection);
     assert.equal(getActiveAnalysisModel(), selection);
     assert.equal(getActiveAnalysisMode(), "mobilenetv3");

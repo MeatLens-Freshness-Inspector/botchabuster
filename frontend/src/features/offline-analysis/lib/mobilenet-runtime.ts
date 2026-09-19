@@ -85,6 +85,22 @@ const DEFAULT_MODEL_METADATA: MeatLensModelMetadata = {
 };
 
 const MODEL_ASSET_PROFILES: Record<MobileNetModelVariant, ModelAssetProfile> = {
+  primary: {
+    variant: "primary",
+    displayName: "Primary MobileNetV3Small (Sep 19, 2026)",
+    preprocessContract: "segmented_center_roi",
+    modelCandidatePaths: [
+      "/model/model5/meatlens_best_fulldata_final_cnn_only_mobilenetv3small.onnx",
+    ],
+    metadataCandidatePaths: [
+      "/model/model5/meatlens_best_fulldata_final_cnn_only_mobilenetv3small_metadata.json",
+    ],
+    defaultMetadata: {
+      ...DEFAULT_MODEL_METADATA,
+      image_crop_mode: "preprocessed_hsv_lab_threshold_roi_224",
+      label_order: ["fresh", "not fresh", "spoiled"],
+    },
+  },
   default: {
     variant: "default",
     displayName: "MobileNetV3Small seed42",
@@ -143,9 +159,9 @@ const MODEL_ASSET_PROFILES: Record<MobileNetModelVariant, ModelAssetProfile> = {
       label_order: ["fresh", "not fresh", "spoiled"],
     },
   },
-  primary: {
-    variant: "primary",
-    displayName: "Primary MobileNetV3Small",
+  sep18_model: {
+    variant: "sep18_model",
+    displayName: "MobileNetV3Small (Sep 18, 2026)",
     preprocessContract: "segmented_center_roi",
     modelCandidatePaths: [
       "/model/model4/meatlens_final_8samples_cnn_only_mobilenetv3small.onnx",

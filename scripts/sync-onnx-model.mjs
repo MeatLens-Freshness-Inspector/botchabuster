@@ -234,3 +234,22 @@ for (const fileName of model4Files) {
   }
 }
 
+const model5Files = [
+  "meatlens_best_fulldata_final_cnn_only_mobilenetv3small.onnx",
+  "meatlens_best_fulldata_final_cnn_only_mobilenetv3small_metadata.json",
+];
+
+for (const fileName of model5Files) {
+  const source = path.join(repoRoot, "model5", fileName);
+  if (!existsSync(source)) {
+    continue;
+  }
+
+  const target = path.join(repoRoot, "frontend", "public", "model", "model5", fileName);
+  mkdirSync(path.dirname(target), { recursive: true });
+  if (!existsSync(target) || statSync(target).size !== statSync(source).size) {
+    copyFileSync(source, target);
+    console.info(`[sync-onnx-model] Copied model5 ${fileName} -> ${path.relative(repoRoot, target)}`);
+  }
+}
+

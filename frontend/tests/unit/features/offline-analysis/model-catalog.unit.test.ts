@@ -10,24 +10,27 @@ import {
 test("catalog lists all selectable models with neutral labels and added dates", () => {
   assert.deepEqual(ANALYSIS_MODEL_CATALOG.map((entry) => entry.value), [
     "primary",
+    "sep18_model",
     "seed123_model2",
     "default",
     "resnet50",
     "ensemble",
   ]);
   assert.equal(ANALYSIS_MODEL_CATALOG[0].label, "Primary MobileNetV3");
-  assert.equal(ANALYSIS_MODEL_CATALOG[0].addedOn, "2026-09-18");
-  assert.equal(ANALYSIS_MODEL_CATALOG[0].versionKey, "mobilenet-primary-final-2026-09-18");
+  assert.equal(ANALYSIS_MODEL_CATALOG[0].addedOn, "2026-09-19");
+  assert.equal(ANALYSIS_MODEL_CATALOG[0].versionKey, "mobilenet-primary-final-2026-09-19");
+  assert.equal(ANALYSIS_MODEL_CATALOG[1].versionKey, "mobilenet-sep18-model4-2026-09-18");
   assert.ok(ANALYSIS_MODEL_CATALOG.every((entry) => entry.label.length > 0));
 });
 
 test("date formatter renders project-added dates without timezone drift", () => {
-  assert.equal(formatModelAddedDate("2026-09-18"), "Sep 18, 2026");
+  assert.equal(formatModelAddedDate("2026-09-19"), "Sep 19, 2026");
   assert.equal(formatModelAddedDate(null), "Date unavailable");
 });
 
 test("selection guard accepts only catalog values", () => {
   assert.equal(isAnalysisModelSelection("primary"), true);
+  assert.equal(isAnalysisModelSelection("sep18_model"), true);
   assert.equal(isAnalysisModelSelection("resnet50"), true);
   assert.equal(isAnalysisModelSelection("unknown"), false);
   assert.equal(isAnalysisModelSelection(null), false);

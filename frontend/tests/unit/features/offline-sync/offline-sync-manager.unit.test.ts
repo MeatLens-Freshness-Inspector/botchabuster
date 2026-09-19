@@ -8,7 +8,7 @@ test("offline sync selects the primary model for anonymous and locked sessions",
 });
 
 test("offline sync selects each configured developer model only for unlocked developers", () => {
-  for (const selectedModel of ["primary", "seed123_model2", "default", "resnet50", "ensemble"] as const) {
+  for (const selectedModel of ["primary", "sep18_model", "seed123_model2", "default", "resnet50", "ensemble"] as const) {
     assert.equal(
       resolveActiveModelSelection({ id: "developer-1" }, true, true, { selectedModel }, true),
       selectedModel,
