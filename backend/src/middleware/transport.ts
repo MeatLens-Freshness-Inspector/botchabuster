@@ -73,7 +73,11 @@ function installResponseEncryption(res: Response, context: NonNullable<Request["
     res.setHeader("Content-Type", contentType);
   };
 
-  const writeEncryptedStreamChunk = (chunk: unknown, encoding?: BufferEncoding): boolean => {
+  const writeEncryptedStreamChunk = (
+    chunk: unknown,
+    encoding?: BufferEncoding,
+    callback?: (error?: Error | null) => void,
+  ): boolean => {
     const plaintext = responseBodyBytes(chunk, encoding);
     if (plaintext.length === 0) return true;
     const envelope = createEncryptedTransportEnvelope(
@@ -82,7 +86,7 @@ function installResponseEncryption(res: Response, context: NonNullable<Request["
       context.aesKey,
       context.aad,
     );
-    return originalWrite(`data: ${JSON.stringify(envelope)}\n\n`);
+    return originalWrite(`data: ${JSON.stringify(envelope)}\n\n`, callback);
   };
 
   const emitEncryptedResponse = (
@@ -124,34 +128,48 @@ function installResponseEncryption(res: Response, context: NonNullable<Request["
     return emitEncryptedResponse(bytes, contentType, isBinary ? "base64" : "utf8");
   }) as Response["send"];
 
-  res.write = ((chunk: unknown, encoding?: BufferEncoding): boolean => {
+  res.write = ((
+    chunk: unknown,
+    encoding?: BufferEncoding | ((error?: Error | null) => void),
+    callback?: (error?: Error | null) => void,
+  ): boolean => {
+    const writeCallback = typeof encoding === "function" ? encoding : callback;
+    const writeEncoding = typeof encoding === "function" ? undefined : encoding;
     const contentType = headerValueToString(res.getHeader("Content-Type")) ?? "";
     if (!contentType.toLowerCase().startsWith("text/event-stream")) {
-      return originalWrite(chunk as never, encoding as never);
+      return originalWrite(chunk as never, writeEncoding as never, writeCallback as never);
     }
     context.isStream = true;
     setWireResponseHeaders("text/event-stream; charset=utf-8");
-    return writeEncryptedStreamChunk(chunk, encoding);
+    return writeEncryptedStreamChunk(chunk, writeEncoding, writeCallback);
   }) as Response["write"];
 
-  res.end = ((chunk?: unknown, encoding?: BufferEncoding): Response => {
+  res.end = ((
+    chunk?: unknown,
+    encoding?: BufferEncoding | (() => void),
+    callback?: () => void,
+  ): Response => {
+    const endCallback = typeof encoding === "function" ? encoding : callback;
+    const endEncoding = typeof encoding === "function" ? undefined : encoding;
     if (context.isStream || headerValueToString(res.getHeader("Content-Type"))?.toLowerCase().startsWith("text/event-stream")) {
       context.isStream = true;
       setWireResponseHeaders("text/event-stream; charset=utf-8");
-      if (chunk !== undefined && responseBodyBytes(chunk, encoding).length > 0) {
-        writeEncryptedStreamChunk(chunk, encoding);
+      if (chunk !== undefined && responseBodyBytes(chunk, endEncoding).length > 0) {
+        writeEncryptedStreamChunk(chunk, endEncoding, endCallback);
       }
       if (!responseFinalized) {
         responseFinalized = true;
-        originalEnd();
+        originalEnd(endCallback as never);
       }
       return res;
     }
 
-    const body = responseBodyBytes(chunk, encoding);
+    const body = responseBodyBytes(chunk, endEncoding);
     const contentType = headerValueToString(res.getHeader("Content-Type"))
       ?? "application/octet-stream";
-    return emitEncryptedResponse(body, contentType, Buffer.isBuffer(chunk) ? "base64" : "utf8");
+    const response = emitEncryptedResponse(body, contentType, Buffer.isBuffer(chunk) ? "base64" : "utf8");
+    endCallback?.();
+    return response;
   }) as Response["end"];
 }
 

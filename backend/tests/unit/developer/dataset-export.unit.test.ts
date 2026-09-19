@@ -193,13 +193,19 @@ test("dataset export downloads images concurrently", async () => {
   };
 
   try {
-    await trackExport(developerDashboardService.exportDatasetZip({
+    const exported = await trackExport(developerDashboardService.exportDatasetZip({
       limit: 50,
       offset: 0,
       hasImage: true,
     }));
 
     assert.ok(maxActiveFetches > 1, `expected concurrent image downloads, got ${maxActiveFetches}`);
+    const zipEntries = unzipSync(await readFile(exported.path));
+    assert.ok(zipEntries["inspections.csv"]);
+    assert.ok(zipEntries["manifest.json"]);
+    assert.ok(zipEntries["images/inspection-a.jpg"]);
+    assert.ok(zipEntries["images/inspection-b.jpg"]);
+    assert.ok(zipEntries["images/inspection-c.jpg"]);
   } finally {
     globalThis.fetch = originalFetch;
     if (originalGetDeveloperDatasetPage) {
