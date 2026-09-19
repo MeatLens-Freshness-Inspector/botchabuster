@@ -21,6 +21,12 @@ const finalDeploymentModelMigrationPath = join(
   "migrations",
   "20260918100000_register_final_deployment_model_version.sql",
 );
+const modelVersionReconciliationMigrationPath = join(
+  process.cwd(),
+  "supabase",
+  "migrations",
+  "20260919110000_reconcile_all_model_versions.sql",
+);
 
 test("model accuracy migration creates versioned immutable daily snapshots", () => {
   const sql = readFileSync(migrationPath, "utf8").toLowerCase();
@@ -61,5 +67,25 @@ test("final deployment model migration registers the new primary model version",
   assert.match(sql, /mobilenet-primary-final-2026-09-18/);
   assert.match(sql, /primary mobilenetv3/);
   assert.match(sql, /0\.9077/);
+  assert.match(sql, /on conflict \(version_key\) do nothing/);
+});
+
+test("model version reconciliation migration registers every current and historical model", () => {
+  const sql = readFileSync(modelVersionReconciliationMigrationPath, "utf8").toLowerCase();
+
+  for (const versionKey of [
+    "mobilenet-primary-final-2026-09-19",
+    "mobilenet-sep18-model4-2026-09-18",
+    "mobilenet-primary-final-2026-09-18",
+    "mobilenet-primary-2026-08-13",
+    "mobilenet-seed123-model2-2026-05-19",
+    "mobilenet-legacy-2026-05-05",
+    "resnet50-2026-05-01",
+    "ensemble-2026-08-26",
+  ]) {
+    assert.match(sql, new RegExp(`'${versionKey}'`));
+  }
+
+  assert.match(sql, /insert into public\.model_versions/);
   assert.match(sql, /on conflict \(version_key\) do nothing/);
 });
