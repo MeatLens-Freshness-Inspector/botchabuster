@@ -9,7 +9,7 @@ export function TermsAndConditionsContent({ className }: TermsAndConditionsConte
     <article className={cn("space-y-6 text-sm leading-relaxed text-secondary-foreground", className)}>
       <header className="space-y-2">
         <h2 className="font-display text-xl font-semibold tracking-tight">MeatLens - Terms and Conditions (Field Use Version)</h2>
-        <p className="text-xs uppercase tracking-widest text-muted-foreground">Effective Date: May 1, 2026</p>
+        <p className="text-xs uppercase tracking-widest text-muted-foreground">Effective Date: August 20, 2026</p>
       </header>
 
       <section className="space-y-2">

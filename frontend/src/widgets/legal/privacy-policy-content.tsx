@@ -25,7 +25,7 @@ export function PrivacyPolicyContent({ className }: PrivacyPolicyContentProps) {
         <h3 className="font-display text-base font-semibold">2. Information Collected</h3>
         <p><strong>Uploaded Images:</strong> Users may upload meat product images, inspection-related photographs, and sample datasets for evaluation and testing. These images are processed by AI models for spoilage detection and analysis.</p>
         <p><strong>User Information:</strong> If authentication and account management features are enabled, the system may collect full name, email address, institutional role, and login credentials (secured using encryption or hashing methods).</p>
-        <p><strong>Device and Usage Information:</strong> The system may automatically collect browser information, device type, IP address, access timestamps, error logs, and system activity records.</p>
+        <p><strong>Device, Location, and Usage Information:</strong> The system may automatically collect browser information, device type and location, IP address, access timestamps, error logs, and system activity records that are necessary for regulatory compliance.</p>
         <p><strong>Research and Dataset Information:</strong> Images, metadata, annotations, and analytical results used for model training, validation, performance testing, research documentation, and academic evaluation may be securely stored for thesis and research purposes.</p>
       </section>
 
