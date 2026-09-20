@@ -25,6 +25,35 @@ export interface ReportTable {
   rows: string[][];
 }
 
+export interface AdminReportDisputeRow {
+  id: string;
+  createdAt: string;
+  inspectionId: string;
+  submittedBy: string | null;
+  meatType: string | null;
+  classification: string | null;
+  expectedClassification: string | null;
+  status: string;
+  reason: string | null;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+  reviewerNote: string | null;
+  developerLabel: string;
+}
+
+export interface AdminReportDisputeAnalytics {
+  summary: {
+    total: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+    disputeRate: number;
+  };
+  statusDistribution: Array<{ status: string; count: number }>;
+  dailyTrend: Array<{ date: string; count: number }>;
+  filteredDisputes: AdminReportDisputeRow[];
+}
+
 export interface ReportChartPoint {
   label: string;
   value: number;

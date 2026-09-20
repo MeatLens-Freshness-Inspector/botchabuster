@@ -7,6 +7,7 @@ import {
   buildSharedMeatSummarySection,
 } from "@/features/reports/lib/meat-sections";
 import type {
+  AdminReportDisputeAnalytics,
   ReportChart,
   ReportDocumentModel,
   ReportInspectionEvidenceItem,
@@ -77,6 +78,7 @@ export interface BuildAdminRangeReportInput {
   isDeveloper?: boolean;
   developerLatestRuns?: DeveloperReportRun[];
   modelAccuracyHistory?: ModelAccuracySnapshot[];
+  disputeAnalytics?: AdminReportDisputeAnalytics;
 }
 
 const formatMetricPercent = (value: number): string => `${Math.round(value * 1000) / 10}%`;
@@ -270,6 +272,92 @@ function buildLocationTrendChart(
   };
 }
 
+const DISPUTE_STATUS_COLORS: Record<string, string> = {
+  pending: "#f59e0b",
+  approved: "#22c55e",
+  rejected: "#ef4444",
+};
+
+function formatReportCell(value: string | null): string {
+  return value?.trim() || "-";
+}
+
+function formatDisputeStatus(status: string): string {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function buildDisputeAnalyticsSection(
+  analytics: AdminReportDisputeAnalytics,
+): ReportSection {
+  return {
+    id: "dispute-analytics",
+    title: "Dispute Analytics",
+    metrics: [
+      { label: "Total Disputes", value: String(analytics.summary.total) },
+      { label: "Pending", value: String(analytics.summary.pending) },
+      { label: "Approved", value: String(analytics.summary.approved) },
+      { label: "Rejected", value: String(analytics.summary.rejected) },
+      { label: "Dispute Rate", value: `${analytics.summary.disputeRate}%` },
+    ],
+    charts: [
+      {
+        id: "dispute-status-distribution",
+        title: "Dispute Status Distribution",
+        kind: "bar",
+        emptyState: "No dispute status data for selected range",
+        points: analytics.statusDistribution.map((entry) => ({
+          label: formatDisputeStatus(entry.status),
+          value: entry.count,
+          color: DISPUTE_STATUS_COLORS[entry.status],
+        })),
+      },
+      {
+        id: "daily-dispute-trend",
+        title: "Daily Dispute Trend",
+        kind: "line",
+        emptyState: "No dispute activity for selected range",
+        points: analytics.dailyTrend.map((entry) => ({
+          label: entry.date,
+          value: entry.count,
+        })),
+      },
+    ],
+    tables: [
+      {
+        title: "Dispute History",
+        columns: [
+          "Created",
+          "Inspection",
+          "Submitted By",
+          "Meat",
+          "AI Result",
+          "Expected",
+          "Status",
+          "Reason",
+          "Reviewed At",
+          "Reviewed By",
+          "Review Note",
+          "Developer Label",
+        ],
+        rows: analytics.filteredDisputes.map((dispute) => [
+          dispute.createdAt,
+          dispute.inspectionId,
+          formatReportCell(dispute.submittedBy),
+          formatReportCell(dispute.meatType),
+          formatReportCell(dispute.classification),
+          formatReportCell(dispute.expectedClassification),
+          formatDisputeStatus(dispute.status),
+          formatReportCell(dispute.reason),
+          formatReportCell(dispute.reviewedAt),
+          formatReportCell(dispute.reviewedBy),
+          formatReportCell(dispute.reviewerNote),
+          dispute.developerLabel,
+        ]),
+      },
+    ],
+  };
+}
+
 function buildPorkInspectionEvidence(
   reportRows: AdminReportRow[],
 ): ReportInspectionEvidenceItem[] {
@@ -339,6 +427,9 @@ export function buildAdminRangeReportModel(
   const developerSections = input.isDeveloper
     ? buildDeveloperSections(input.reportRows, input.developerLatestRuns ?? [])
     : [];
+  const disputeSections = input.disputeAnalytics
+    ? [buildDisputeAnalyticsSection(input.disputeAnalytics)]
+    : [];
 
   return {
     organization: input.reportOrganization,
@@ -357,6 +448,7 @@ export function buildAdminRangeReportModel(
         spoiledRateLabel: `${input.summary.spoiledRate}%`,
       }),
       graphSection,
+      ...disputeSections,
       buildModelAccuracySection(input.modelAccuracyHistory ?? []),
       ...(porkInspectionEvidence.length > 0
         ? [

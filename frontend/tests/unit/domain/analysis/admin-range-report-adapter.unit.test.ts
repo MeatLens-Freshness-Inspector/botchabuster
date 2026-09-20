@@ -237,3 +237,50 @@ test("buildAdminRangeReportModel includes developer analytics only for developer
   });
   assert.equal(nonDeveloperModel.sections.some((section) => section.id.startsWith("developer-")), false);
 });
+
+test("buildAdminRangeReportModel includes dispute analytics in the PDF model", () => {
+  const model = buildAdminRangeReportModel({
+    ...sampleAdminInput,
+    disputeAnalytics: {
+      summary: { total: 3, pending: 1, approved: 1, rejected: 1, disputeRate: 12 },
+      statusDistribution: [
+        { status: "pending", count: 1 },
+        { status: "approved", count: 1 },
+        { status: "rejected", count: 1 },
+      ],
+      dailyTrend: [{ date: "2026-08-02", count: 3 }],
+      filteredDisputes: [{
+        id: "dispute-1",
+        createdAt: "2026-08-02T08:00:00.000Z",
+        inspectionId: "inspection-1",
+        submittedBy: "user-1",
+        meatType: "pork",
+        classification: "fresh",
+        expectedClassification: "spoiled",
+        status: "approved",
+        reason: "Result did not match visible quality",
+        reviewedAt: "2026-08-03T08:00:00.000Z",
+        reviewedBy: "admin-1",
+        reviewerNote: "Approved after review",
+        developerLabel: "Applied",
+      }],
+    },
+  });
+
+  const disputeSection = model.sections.find((section) => section.id === "dispute-analytics");
+
+  assert.ok(disputeSection);
+  assert.deepEqual(disputeSection.metrics?.map((metric) => metric.label), [
+    "Total Disputes",
+    "Pending",
+    "Approved",
+    "Rejected",
+    "Dispute Rate",
+  ]);
+  assert.deepEqual(disputeSection.charts?.map((chart) => chart.title), [
+    "Dispute Status Distribution",
+    "Daily Dispute Trend",
+  ]);
+  assert.equal(disputeSection.tables?.[0].rows[0][0], "2026-08-02T08:00:00.000Z");
+  assert.equal(disputeSection.tables?.[0].rows[0][1], "inspection-1");
+});
