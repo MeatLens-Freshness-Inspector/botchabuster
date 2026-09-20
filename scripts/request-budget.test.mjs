@@ -70,4 +70,7 @@ test("Playwright CI keeps bounded commands and forwards every shard", async () =
   assert.match(workflow, /shard:\s*\n\s*- 1\n\s*- 2\n\s*- 3\n\s*- 4/);
   assert.match(workflow, /name: Summarize critical Playwright run/);
   assert.match(workflow, /name: Summarize full Playwright run/);
+  assert.match(workflow, /PLAYWRIGHT_WORKERS:\s*8/);
+  const playwrightConfig = await read("frontend/playwright.config.ts");
+  assert.match(playwrightConfig, /process\.env\.PLAYWRIGHT_WORKERS/);
 });
