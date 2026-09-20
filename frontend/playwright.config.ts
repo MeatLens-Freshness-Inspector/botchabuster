@@ -1,6 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const isCI = !!process.env.CI;
+const configuredCiWorkers = Number.parseInt(process.env.PLAYWRIGHT_WORKERS ?? "", 10);
+const ciWorkers = Number.isInteger(configuredCiWorkers) && configuredCiWorkers > 0
+  ? configuredCiWorkers
+  : 4;
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -8,7 +12,7 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
-  workers: isCI ? 4 : 1,
+  workers: isCI ? ciWorkers : 1,
   globalTimeout: isCI ? 110_000 : undefined,
   reporter: isCI ? [["list"], ["html", { open: "never" }]] : "html",
   use: {

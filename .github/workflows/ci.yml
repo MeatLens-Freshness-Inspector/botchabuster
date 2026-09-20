@@ -418,6 +418,8 @@ jobs:
     name: Critical Playwright
     runs-on: ubuntu-latest
     timeout-minutes: 8
+    env:
+      PLAYWRIGHT_WORKERS: 8
     needs:
       - changes
       - dependencies
