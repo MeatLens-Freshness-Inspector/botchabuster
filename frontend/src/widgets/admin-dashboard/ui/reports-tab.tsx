@@ -11,7 +11,6 @@ import {
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
-import { ReportsDisputesSection } from "./reports-disputes-section";
 
 type DesktopReportsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
@@ -187,7 +186,6 @@ const ReportsTab = ({
         </CardContent>
       </Card>
       </div>
-      <ReportsDisputesSection dashboard={dashboard} />
     </>
   );
 };

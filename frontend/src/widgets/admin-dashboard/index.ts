@@ -22,7 +22,6 @@ export { DisputeOverview } from "./ui/overview/dispute-overview";
 export { DisputeStatistics } from "./ui/dispute-statistics";
 export { DisputeCharts } from "./ui/dispute-charts";
 export { DisputeHistoryTable } from "./ui/dispute-history-table";
-export { ReportsDisputesSection } from "./ui/reports-disputes-section";
 export { default as DisputesTab } from "./ui/disputes-tab";
 export { default as UserTable } from "./ui/users/user-table";
 export { UserActions } from "./ui/users/user-actions";

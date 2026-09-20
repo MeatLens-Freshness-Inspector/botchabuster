@@ -4,7 +4,6 @@ import { Button, ExportLoadingOverlay } from "@/shared/ui";
 import { Input } from "@/shared/ui";
 import { Label } from "@/shared/ui";
 import type { AdminDashboardPageViewModel } from "@/widgets/admin-dashboard";
-import { ReportsDisputesSection } from "./reports-disputes-section";
 
 type MobileReportsTabContentProps = {
   dashboard: AdminDashboardPageViewModel;
@@ -163,7 +162,6 @@ const MobileReportsTab = ({
         </div>
       ) : null}
       </section>
-      <ReportsDisputesSection dashboard={dashboard} />
     </>
   );
 };
