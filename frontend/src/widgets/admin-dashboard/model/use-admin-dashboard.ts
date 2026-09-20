@@ -496,6 +496,7 @@ export function useAdminDashboard() {
         generatedBy,
         reportSummary,
         reportRows,
+        disputeAnalytics: reportDisputeAnalytics,
         modelAccuracyHistory,
         isDeveloper,
         developerLatestRuns,

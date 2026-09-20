@@ -18,6 +18,29 @@ test("buildAdminDashboardReportPdfModel preserves the organization overview and 
       uniqueLocations: 3,
       flaggedRecords: 2,
     },
+    disputeAnalytics: {
+      summary: { total: 2, pending: 1, approved: 1, rejected: 0, disputeRate: 11 },
+      statusDistribution: [
+        { status: "pending", count: 1 },
+        { status: "approved", count: 1 },
+        { status: "rejected", count: 0 },
+      ],
+      dailyTrend: [{ date: "2026-07-20", count: 2 }],
+      filteredDisputes: [{
+        id: "dispute-1",
+        created_at: "2026-07-20T09:00:00.000Z",
+        inspection_id: "inspection-1",
+        submitted_by: "user-1",
+        expected_classification: "spoiled",
+        status: "approved",
+        reason: "Review requested",
+        reviewed_at: "2026-07-21T09:00:00.000Z",
+        reviewed_by: "admin-1",
+        reviewer_note: "Approved",
+        developer_label_applied_at: null,
+        inspection: { meat_type: "pork", classification: "fresh" },
+      }],
+    },
     reportRows: [
       {
         id: "inspection-1",
@@ -57,6 +80,9 @@ test("buildAdminDashboardReportPdfModel preserves the organization overview and 
   assert.ok(model.sections.some((section) => section.id === "org-overview"));
   assert.ok(model.sections.some((section) => section.id === "meat-summary"));
   assert.ok(model.sections.some((section) => section.id === "meat-detail"));
+  const disputeSection = model.sections.find((section) => section.id === "dispute-analytics");
+  assert.equal(disputeSection?.metrics?.[0].value, "2");
+  assert.equal(disputeSection?.tables?.[0].rows[0][1], "inspection-1");
 });
 
 test("buildAdminDashboardReportPdfModel preserves graph payloads and nullable pork image urls", () => {

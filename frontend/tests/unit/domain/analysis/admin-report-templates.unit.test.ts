@@ -40,6 +40,11 @@ const baseAdminSections = [
     ],
   },
   {
+    id: "dispute-analytics",
+    title: "Dispute Analytics",
+    metrics: [{ label: "Total Disputes", value: "2" }],
+  },
+  {
     id: "org-overview",
     title: "Organization Overview",
     metrics: [{ label: "Total Inspections", value: "3" }],
@@ -71,11 +76,12 @@ test("dti admin template reorders sections and renames the organization-specific
 
   assert.deepEqual(
     sections.map((section) => section.id),
-    ["org-overview", "report-graphs", "pork-gallery", "meat-summary", "meat-detail"],
+    ["org-overview", "report-graphs", "dispute-analytics", "pork-gallery", "meat-summary", "meat-detail"],
   );
   assert.equal(sections[0].title, "Market Service and Operations Overview");
   assert.equal(sections[1].title, "Operational Inspection Graphs");
-  assert.equal(sections[2].title, "Pork Meat Field Evidence");
+  assert.equal(sections[2].title, "Dispute Analytics");
+  assert.equal(sections[3].title, "Pork Meat Field Evidence");
 });
 
 test("city vet admin template reorders sections and keeps the pork gallery ahead of meat summaries", () => {
@@ -92,9 +98,28 @@ test("city vet admin template reorders sections and keeps the pork gallery ahead
 
   assert.deepEqual(
     sections.map((section) => section.id),
-    ["org-overview", "report-graphs", "pork-gallery", "meat-summary", "meat-detail"],
+    ["org-overview", "report-graphs", "dispute-analytics", "pork-gallery", "meat-summary", "meat-detail"],
   );
   assert.equal(sections[0].title, "Veterinary and Meat Safety Overview");
   assert.equal(sections[1].title, "Veterinary Inspection Graphs");
-  assert.equal(sections[2].title, "Pork Meat Veterinary Evidence");
+  assert.equal(sections[2].title, "Dispute Analytics");
+  assert.equal(sections[3].title, "Pork Meat Veterinary Evidence");
+});
+
+test("gcccs admin template keeps dispute analytics before the shared meat sections", () => {
+  const template = getOrganizationReportTemplate("gcccs");
+  const sections = template.buildSections({
+    organization: "gordon_college_ccs",
+    templateKey: "gcccs",
+    kind: "admin_range",
+    title: "Administrative Report",
+    subtitle: "Range: 2026-08-01 to 2026-08-03",
+    generatedAt: "Aug 3, 2026 10:40 AM",
+    sections: baseAdminSections,
+  });
+
+  assert.deepEqual(
+    sections.map((section) => section.id),
+    ["org-overview", "report-graphs", "dispute-analytics", "meat-summary", "meat-detail"],
+  );
 });

@@ -19,6 +19,7 @@ import type { DeveloperOverviewMetricPoint } from "@/entities/developer-metrics"
 import type { ReportDocumentModel } from "@/features/reports/model/types";
 import type { FreshnessClassification, Inspection } from "@/entities/inspection";
 import type { AdminDashboardTabKey, ReportRow } from "../model/types";
+import type { DisputeAnalytics } from "../model/dispute-analytics";
 import { normalizeMarketName as normalizeEntityMarketName } from "@/entities/market-location";
 
 export const CLASS_COLORS: Record<FreshnessClassification, string> = {
@@ -293,6 +294,7 @@ export function buildAdminDashboardReportPdfModel(input: {
   isDeveloper?: boolean;
   developerLatestRuns?: DeveloperOverviewMetricPoint[];
   modelAccuracyHistory?: ModelAccuracySnapshot[];
+  disputeAnalytics?: DisputeAnalytics;
 }): ReportDocumentModel {
   return buildAdminRangeReportModel({
     reportOrganization: resolveReportOrganization(input.reportOrganization),
@@ -325,6 +327,30 @@ export function buildAdminDashboardReportPdfModel(input: {
       imageUrl: row.imageUrl,
     })),
     modelAccuracyHistory: input.modelAccuracyHistory,
+    disputeAnalytics: input.disputeAnalytics
+      ? {
+          summary: input.disputeAnalytics.summary,
+          statusDistribution: input.disputeAnalytics.statusDistribution,
+          dailyTrend: input.disputeAnalytics.dailyTrend,
+          filteredDisputes: input.disputeAnalytics.filteredDisputes.map((dispute) => ({
+            id: dispute.id,
+            createdAt: formatReportDateTime(dispute.created_at),
+            inspectionId: dispute.inspection_id,
+            submittedBy: dispute.submitted_by,
+            meatType: dispute.inspection?.meat_type ?? null,
+            classification: dispute.inspection?.classification ?? null,
+            expectedClassification: dispute.expected_classification,
+            status: dispute.status,
+            reason: dispute.reason,
+            reviewedAt: dispute.reviewed_at ? formatReportDateTime(dispute.reviewed_at) : null,
+            reviewedBy: dispute.reviewed_by,
+            reviewerNote: dispute.reviewer_note,
+            developerLabel: dispute.developer_label_applied_at
+              ? `Applied · ${formatReportDateTime(dispute.developer_label_applied_at)}`
+              : "Not applied",
+          })),
+        }
+      : undefined,
   });
 }
 

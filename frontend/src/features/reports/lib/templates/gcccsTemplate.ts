@@ -12,7 +12,7 @@ export const gcccsTemplate = {
     if (model.kind === "admin_range") {
       return reorderAdminSections(
         model.sections.filter((section) => section.id !== "pork-gallery"),
-        ["org-overview", "report-graphs", "meat-summary", "meat-detail"],
+        ["org-overview", "report-graphs", "dispute-analytics", "meat-summary", "meat-detail"],
       ).map((section) => {
         if (section.id === "org-overview") {
           return {

@@ -13,6 +13,7 @@ export const dtiTemplate = {
       return reorderAdminSections(model.sections, [
         "org-overview",
         "report-graphs",
+        "dispute-analytics",
         "pork-gallery",
         "meat-summary",
         "meat-detail",
