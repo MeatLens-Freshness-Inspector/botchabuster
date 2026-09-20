@@ -38,6 +38,6 @@ test("one eager-load failure is isolated from the other model loads", async () =
   });
 
   assert.equal(results.length, MOBILE_NET_MODEL_VARIANTS.length + 1);
-  assert.equal(results.filter((result) => result.status === "fulfilled").length, 3);
+  assert.equal(results.filter((result) => result.status === "fulfilled").length, MOBILE_NET_MODEL_VARIANTS.length);
   assert.equal(results.filter((result) => result.status === "rejected").length, 1);
 });
