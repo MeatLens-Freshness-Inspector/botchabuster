@@ -8,6 +8,7 @@ import type {
   UserChatMessage,
 } from "@/entities/message";
 import { formatContactName, formatTimestamp } from "@/features/messaging/lib/formatters";
+import { shouldRenderMessageTimeSeparator } from "@/features/messaging/lib/message-time-separators";
 
 type ThreadPanelProps = {
   currentUserId: string | null;
@@ -130,24 +131,41 @@ export function ThreadPanel({
               </div>
             ) : (
               <div className="space-y-3">
-                {messages.map((message) => {
+                {messages.map((message, index) => {
                   const mine = message.sender_id === currentUserId;
+                  const previousMessage = messages[index - 1];
+                  const showTimeSeparator = shouldRenderMessageTimeSeparator(
+                    previousMessage?.created_at ?? null,
+                    message.created_at,
+                  );
 
                   return (
-                    <div key={message.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                      <div
-                        className={`max-w-[82%] rounded-2xl border px-3 py-2 ${
-                          mine
-                            ? "border-primary/40 bg-[hsl(var(--primary)/0.18)] text-foreground"
-                            : "border-border/70 bg-background/75 text-foreground"
-                        }`}
-                      >
-                        <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                          {message.content}
-                        </p>
-                        <p className="mt-1 text-right text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-                          {formatTimestamp(message.created_at)}
-                        </p>
+                    <div key={message.id}>
+                      {showTimeSeparator ? (
+                        <div
+                          role="separator"
+                          aria-label={formatTimestamp(message.created_at)}
+                          className="mb-3 flex items-center gap-3 px-1 text-[10px] uppercase tracking-[0.14em] text-muted-foreground"
+                        >
+                          <span className="shrink-0">{formatTimestamp(message.created_at)}</span>
+                          <span className="h-px flex-1 bg-border/70" aria-hidden="true" />
+                        </div>
+                      ) : null}
+                      <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                        <div
+                          className={`max-w-[82%] rounded-2xl border px-3 py-2 ${
+                            mine
+                              ? "border-primary/40 bg-[hsl(var(--primary)/0.18)] text-foreground"
+                              : "border-border/70 bg-background/75 text-foreground"
+                          }`}
+                        >
+                          <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                            {message.content}
+                          </p>
+                          <p className="mt-1 text-right text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                            {formatTimestamp(message.created_at)}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   );
