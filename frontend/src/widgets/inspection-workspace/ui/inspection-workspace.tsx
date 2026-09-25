@@ -1,4 +1,5 @@
 import { useInspectionWorkspace as useInspectPage } from "../model/use-inspection-workspace";
+import { InspectionDisputeSection } from "@/features/inspection-disputes/ui/inspection-dispute-section";
 import { InspectActionsSection } from "./InspectActionsSection";
 import { InspectAnalysisSection } from "./InspectAnalysisSection";
 import { InspectCaptureSection } from "./InspectCaptureSection";
@@ -69,6 +70,14 @@ const InspectPageView = () => {
             onSave={inspectPage.onSave}
           />
         )}
+
+        <InspectionDisputeSection
+          inspectionId={inspectPage.savedInspectionId}
+          classification={inspectPage.result?.classification ?? "fresh"}
+          isSubmitting={inspectPage.isSubmitDisputePending}
+          isSubmitted={inspectPage.isDisputeSubmitted}
+          onSubmit={inspectPage.onSubmitDispute}
+        />
       </div>
     </div>
   );

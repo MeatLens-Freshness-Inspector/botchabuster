@@ -6,6 +6,7 @@ import {
   uploadClient,
   useSubmitInspection,
 } from "@/features/inspection-submission";
+import { useSubmitInspectionDispute } from "@/features/inspection-disputes/model/use-inspection-disputes";
 import { queueScan, removeScan } from "@/features/offline-sync";
 import {
   clearDeveloperOptionsSession,
@@ -45,7 +46,11 @@ import {
   type CoordinateCaptureStatus,
   type InspectionCoordinates,
 } from "@/entities/inspection";
-import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
+import type {
+  AnalysisResult,
+  FreshnessClassification,
+  InspectionDecisionSource,
+} from "@/entities/inspection";
 import type { CapturedImagePayload } from "@/features/inspection-capture";
 import type { InspectPageViewModel, InspectionSaveStatus } from "./types";
 import { useInspectionAnalysis } from "./use-inspection-analysis";
@@ -75,6 +80,8 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isModelReady, setIsModelReady] = useState<boolean>(() => !navigator.onLine || getAnalysisReady());
   const [saveStatus, setSaveStatus] = useState<InspectionSaveStatus>("idle");
+  const [savedInspectionId, setSavedInspectionId] = useState<string | null>(null);
+  const [isDisputeSubmitted, setIsDisputeSubmitted] = useState(false);
   const [clientSubmissionId, setClientSubmissionId] = useState<string | null>(null);
   const [coordinates, setCoordinates] = useState<InspectionCoordinates | null>(null);
   const [coordinateStatus, setCoordinateStatus] = useState<CoordinateCaptureStatus>("idle");
@@ -87,6 +94,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
   const coordinateRequestIdRef = useRef(0);
   const queuedAtRef = useRef<string | null>(null);
   const createInspection = useSubmitInspection();
+  const submitDispute = useSubmitInspectionDispute();
 
   useEffect(() => {
     if (!user || !isDeveloper) {
@@ -320,6 +328,8 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     setCapturedInput(capture);
     setResult(protocolTriggered ? buildProtocolSpoiledAnalysisResult() : null);
     setSaveStatus("idle");
+    setSavedInspectionId(null);
+    setIsDisputeSubmitted(false);
     saveLockRef.current = false;
     autoSaveAttemptedRef.current = false;
     setClientSubmissionId(submissionId);
@@ -491,7 +501,7 @@ export function useInspectionWorkspace(): InspectPageViewModel {
         toast.warning("Image upload failed, saving without image");
       }
 
-      await createInspection.mutateAsync(
+      const createdInspection = await createInspection.mutateAsync(
         buildInspectionInsert({
           userId: user.id,
           submissionId,
@@ -504,6 +514,8 @@ export function useInspectionWorkspace(): InspectPageViewModel {
           imageUrl,
         }),
       );
+      setSavedInspectionId(createdInspection.id);
+      setIsDisputeSubmitted(false);
       setSaveStatus("saved");
       toast.success("Inspection saved");
     } catch (error) {
@@ -526,6 +538,27 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     selectedLocation,
     user,
   ]);
+
+  const handleSubmitDispute = useCallback(async (
+    input: {
+      expectedClassification: FreshnessClassification;
+      reason: string;
+    },
+  ) => {
+    if (!savedInspectionId) return;
+
+    try {
+      await submitDispute.mutateAsync({
+        inspectionId: savedInspectionId,
+        expectedClassification: input.expectedClassification,
+        reason: input.reason,
+      });
+      setIsDisputeSubmitted(true);
+      toast.success("Dispute submitted for review");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to submit dispute");
+    }
+  }, [savedInspectionId, submitDispute]);
 
   useEffect(() => {
     if (!result || !capturedInput?.file || !user) return;
@@ -559,6 +592,8 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     setCoordinateStatus("idle");
     setInspectionDecisionSource(null);
     setSaveStatus("idle");
+    setSavedInspectionId(null);
+    setIsDisputeSubmitted(false);
     saveLockRef.current = false;
     autoSaveAttemptedRef.current = false;
     setClientSubmissionId(null);
@@ -620,6 +655,9 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     isLocationSelectionDisabled:
       saveStatus === "saving" || createInspection.isPending || marketLocations.length === 0,
     saveStatus,
+    savedInspectionId,
+    isSubmitDisputePending: submitDispute.isPending,
+    isDisputeSubmitted,
     showDetailedResults: Boolean(profile?.show_detailed_results),
     showModelInputPreview: developerFlags.showModelInputPreview,
     disableRoiSegmentation,
@@ -636,5 +674,6 @@ export function useInspectionWorkspace(): InspectPageViewModel {
     onAnalyze: handleAnalyze,
     onReset: handleReset,
     onSave: handleSave,
+    onSubmitDispute: handleSubmitDispute,
   };
 }

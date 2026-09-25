@@ -1,6 +1,10 @@
 import type { CapturedImagePayload } from "@/features/inspection-capture";
 import type { InspectionPreScanForm } from "@/entities/inspection";
-import type { AnalysisResult, InspectionDecisionSource } from "@/entities/inspection";
+import type {
+  AnalysisResult,
+  FreshnessClassification,
+  InspectionDecisionSource,
+} from "@/entities/inspection";
 
 export type InspectionSaveStatus = "idle" | "saving" | "saved" | "queued";
 
@@ -24,6 +28,9 @@ export interface InspectPageViewModel {
   isPreScanChecklistComplete: boolean;
   isLocationSelectionDisabled: boolean;
   saveStatus: InspectionSaveStatus;
+  savedInspectionId: string | null;
+  isSubmitDisputePending: boolean;
+  isDisputeSubmitted: boolean;
   showDetailedResults: boolean;
   showModelInputPreview: boolean;
   disableRoiSegmentation: boolean;
@@ -40,4 +47,8 @@ export interface InspectPageViewModel {
   onAnalyze: () => void;
   onReset: () => void;
   onSave: () => void;
+  onSubmitDispute: (input: {
+    expectedClassification: FreshnessClassification;
+    reason: string;
+  }) => void | Promise<void>;
 }
