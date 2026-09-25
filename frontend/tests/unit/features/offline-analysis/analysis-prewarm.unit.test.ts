@@ -5,7 +5,34 @@ import {
   MOBILE_NET_MODEL_VARIANTS,
   type MobileNetModelVariant,
 } from "../../../../src/features/offline-analysis/lib/model-catalog";
-import { loadAllAnalysisModels } from "../../../../src/features/offline-analysis/lib/analysis-runtime";
+import {
+  loadAllAnalysisModels,
+  prewarmAnalysisModel,
+} from "../../../../src/features/offline-analysis/lib/analysis-runtime";
+
+test("startup warmup waits for the first interactive frame and loads only the active model", async () => {
+  let scheduledWarmup: (() => void) | null = null;
+  let activeModelLoads = 0;
+
+  prewarmAnalysisModel({
+    isOnline: () => true,
+    schedule: (callback) => {
+      scheduledWarmup = callback;
+    },
+    loadActive: async () => {
+      activeModelLoads += 1;
+      return true;
+    },
+  });
+
+  assert.ok(scheduledWarmup);
+  assert.equal(activeModelLoads, 0);
+
+  scheduledWarmup();
+  await Promise.resolve();
+
+  assert.equal(activeModelLoads, 1);
+});
 
 test("eager warmup schedules every MobileNet variant and ResNet50", async () => {
   const mobileCalls: MobileNetModelVariant[] = [];

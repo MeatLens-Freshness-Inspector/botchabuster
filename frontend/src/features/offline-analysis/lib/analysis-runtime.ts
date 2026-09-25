@@ -62,6 +62,12 @@ export interface AnalysisWarmupLoaders {
   loadResNet50Model: (options?: AnalysisModelLoadOptions) => Promise<boolean>;
 }
 
+export interface AnalysisPrewarmOptions {
+  isOnline?: () => boolean;
+  schedule?: (callback: () => void) => void;
+  loadActive?: () => Promise<boolean>;
+}
+
 let activeAnalysisMode: AnalysisMode = "mobilenetv3";
 let activeAnalysisModel: AnalysisModelSelection = PRIMARY_ANALYSIS_MODEL;
 
@@ -209,10 +215,36 @@ export async function loadActiveAnalysisModel(options: { forceRetry?: boolean } 
   return isAnalysisReady();
 }
 
-export function prewarmAnalysisModel(): void {
-  if (navigator.onLine) {
-    void loadAllAnalysisModels();
+function scheduleAfterFirstInteractiveFrame(callback: () => void): void {
+  if (typeof window === "undefined") {
+    queueMicrotask(callback);
+    return;
   }
+
+  const idleWindow = window as Window & {
+    requestIdleCallback?: (idleCallback: () => void, options?: { timeout: number }) => number;
+  };
+
+  if (idleWindow.requestIdleCallback) {
+    idleWindow.requestIdleCallback(callback, { timeout: 2_000 });
+    return;
+  }
+
+  window.setTimeout(callback, 1_000);
+}
+
+export function prewarmAnalysisModel(options: AnalysisPrewarmOptions = {}): void {
+  const isOnline = options.isOnline ?? (() => navigator.onLine);
+  if (!isOnline()) {
+    return;
+  }
+
+  const schedule = options.schedule ?? scheduleAfterFirstInteractiveFrame;
+  const loadActive = options.loadActive ?? (() => loadActiveAnalysisModel());
+
+  schedule(() => {
+    void loadActive();
+  });
 }
 
 export async function runActiveAnalysis(
