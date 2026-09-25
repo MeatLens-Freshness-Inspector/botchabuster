@@ -5,6 +5,7 @@ import type { InspectionSaveStatus } from "../types";
 type InspectActionsSectionProps = {
   saveStatus: InspectionSaveStatus;
   isCreateInspectionPending: boolean;
+  isDisputePending: boolean;
   saveButtonLabel: string;
   onReset: () => void;
   onSave: () => void;
@@ -13,6 +14,7 @@ type InspectActionsSectionProps = {
 export function InspectActionsSection({
   saveStatus,
   isCreateInspectionPending,
+  isDisputePending,
   saveButtonLabel,
   onReset,
   onSave,
@@ -23,7 +25,7 @@ export function InspectActionsSection({
         <Button
           variant="outline"
           onClick={onReset}
-          disabled={saveStatus === "saving" || isCreateInspectionPending}
+          disabled={saveStatus === "saving" || isCreateInspectionPending || isDisputePending}
           className="flex-1 gap-2 rounded-xl"
         >
           <RotateCcw className="h-4 w-4" />

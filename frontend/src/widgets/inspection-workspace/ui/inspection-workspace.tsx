@@ -65,6 +65,7 @@ const InspectPageView = () => {
           <InspectActionsSection
             saveStatus={inspectPage.saveStatus}
             isCreateInspectionPending={inspectPage.isCreateInspectionPending}
+            isDisputePending={inspectPage.isSubmitDisputePending}
             saveButtonLabel={inspectPage.saveButtonLabel}
             onReset={inspectPage.onReset}
             onSave={inspectPage.onSave}

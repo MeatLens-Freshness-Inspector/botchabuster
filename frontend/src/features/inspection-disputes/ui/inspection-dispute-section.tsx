@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FreshnessClassification } from "@/entities/inspection";
 import { FRESHNESS_CLASSIFICATIONS } from "@/entities/inspection";
 import { Button, Label } from "@/shared/ui";
@@ -26,6 +26,12 @@ export function InspectionDisputeSection({
   const [expectedClassification, setExpectedClassification] =
     useState<FreshnessClassification>(classification);
   const [reason, setReason] = useState("");
+
+  useEffect(() => {
+    setIsFormOpen(false);
+    setExpectedClassification(classification);
+    setReason("");
+  }, [classification, inspectionId]);
 
   if (!inspectionId) return null;
 
