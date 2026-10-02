@@ -199,16 +199,21 @@ export class DeveloperDashboardService {
         return;
       }
 
-      await this.datasetExportStore.saveCompletedExport({
-        exportId,
-        ownerId,
-        filename: result.filename,
-        archivePath: result.path,
-        size: result.size,
-        recordCount: result.recordCount,
-        filters: { ...filters },
-        createdAt: session.startedAt,
-      });
+      try {
+        await this.datasetExportStore.saveCompletedExport({
+          exportId,
+          ownerId,
+          filename: result.filename,
+          archivePath: result.path,
+          size: result.size,
+          recordCount: result.recordCount,
+          filters: { ...filters },
+          createdAt: session.startedAt,
+        });
+      } catch (error) {
+        this.removeExportDirectory(result.directory);
+        throw error;
+      }
       session.createdAt = Date.now();
       session.result = result;
       session.progress = {
