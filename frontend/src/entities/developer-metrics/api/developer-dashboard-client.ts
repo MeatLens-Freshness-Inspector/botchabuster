@@ -4,7 +4,6 @@ import { fetchWithTimeout, readApiErrorMessage } from "@/shared/api";
 import { API_BASE_URL } from "@/shared/api/base-url";
 const LONG_RUNNING_REQUEST_TIMEOUT_MS = 120_000;
 const EXPORT_PROGRESS_POLL_INTERVAL_MS = 250;
-const MAX_BUFFERED_EXPORT_BYTES = 50 * 1024 * 1024;
 
 export interface DeveloperDatasetExportProgress {
   status: "running" | "completed" | "failed";
@@ -18,14 +17,25 @@ export type DeveloperDatasetExportProgressHandler = (
   progress: DeveloperDatasetExportProgress,
 ) => void;
 
-interface ExportFileHandle {
-  createWritable(): Promise<WritableStream<Uint8Array>>;
+export interface DeveloperDatasetExportHistoryItem {
+  exportId: string;
+  status: "ready" | "expired" | "failed";
+  filename: string | null;
+  size: number | null;
+  recordCount: number | null;
+  filters: Record<string, unknown>;
+  createdAt: string;
+  readyAt: string | null;
+  expiresAt: string;
+  downloadCount: number;
+  lastDownloadedAt: string | null;
+  error: string | null;
 }
 
-type SaveFilePicker = (options: {
-  suggestedName: string;
-  types: Array<{ description: string; accept: Record<string, string[]> }>;
-}) => Promise<ExportFileHandle>;
+export interface DeveloperDatasetExportDownload {
+  url: string;
+  filename: string;
+}
 
 export interface DeveloperOverviewMetricPoint {
   runId: string;
@@ -212,7 +222,7 @@ export class DeveloperDashboardClient {
   async exportDatasets(
     filters: DeveloperDatasetFilterState,
     onProgress?: DeveloperDatasetExportProgressHandler,
-  ): Promise<Blob | null> {
+  ): Promise<string> {
     const startResponse = await fetchWithTimeout(
       `${API_BASE_URL}/developer-dashboard/datasets/export/start`,
       {
@@ -251,48 +261,38 @@ export class DeveloperDashboardClient {
       await new Promise<void>((resolve) => globalThis.setTimeout(resolve, EXPORT_PROGRESS_POLL_INTERVAL_MS));
     }
 
+    return exportId;
+  }
+
+  async listDatasetExports(): Promise<DeveloperDatasetExportHistoryItem[]> {
     const response = await fetchWithTimeout(
-      `${API_BASE_URL}/developer-dashboard/datasets/export/${encodeURIComponent(exportId)}/download`,
+      `${API_BASE_URL}/developer-dashboard/datasets/exports`,
       { headers: this.createHeaders() },
+    );
+
+    if (!response.ok) {
+      throw new Error(await readApiErrorMessage(response, "Failed to fetch dataset export history"));
+    }
+
+    return response.json();
+  }
+
+  async getDatasetExportDownloadUrl(exportId: string): Promise<DeveloperDatasetExportDownload> {
+    const response = await fetchWithTimeout(
+      `${API_BASE_URL}/developer-dashboard/datasets/exports/${encodeURIComponent(exportId)}/download-url`,
+      {
+        method: "POST",
+        headers: this.createHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({}),
+      },
       LONG_RUNNING_REQUEST_TIMEOUT_MS,
     );
 
     if (!response.ok) {
-      throw new Error(await readApiErrorMessage(response, "Failed to download developer datasets"));
+      throw new Error(await readApiErrorMessage(response, "Failed to create dataset download URL"));
     }
 
-    const filename = `developer-dataset-${Date.now()}.zip`;
-    const browserWindow = typeof window === "undefined" ? undefined : window;
-    const saveFilePicker = browserWindow
-      ? (browserWindow as Window & { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker
-      : undefined;
-    let fileHandle: ExportFileHandle | null = null;
-    if (browserWindow && saveFilePicker) {
-      try {
-        fileHandle = await saveFilePicker.call(browserWindow, {
-          suggestedName: filename,
-          types: [{ description: "ZIP archive", accept: { "application/zip": [".zip"] } }],
-        });
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") throw error;
-      }
-    }
-
-    if (fileHandle) {
-      if (!response.body) throw new Error("Developer dataset export response has no body");
-      const writable = await fileHandle.createWritable();
-      await response.body.pipeTo(writable);
-      return null;
-    }
-
-    const contentLengthHeader = response.headers.get("x-export-content-length");
-    const contentLength = contentLengthHeader === null ? Number.NaN : Number(contentLengthHeader);
-    if (!Number.isSafeInteger(contentLength) || contentLength < 0 || contentLength > MAX_BUFFERED_EXPORT_BYTES) {
-      await response.body?.cancel().catch(() => undefined);
-      throw new Error("This browser cannot safely save a large dataset export. Use Chrome or Edge to download it without buffering the ZIP.");
-    }
-
-    return response.blob();
+    return response.json();
   }
 
   async updateDatasetManualClassification(

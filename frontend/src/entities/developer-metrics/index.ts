@@ -4,6 +4,8 @@ export {
   developerDashboardClient,
 } from "./api/developer-dashboard-client";
 export type {
+  DeveloperDatasetExportDownload,
+  DeveloperDatasetExportHistoryItem,
   DeveloperDatasetFilterState,
   DeveloperDatasetListResponse,
   DeveloperDisputeMutationResponse,
