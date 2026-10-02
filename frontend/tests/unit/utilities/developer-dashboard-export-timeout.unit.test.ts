@@ -117,8 +117,48 @@ test("developer dataset export streams the ZIP to the chosen file instead of cre
     const exported = await developerDashboardClient.exportDatasets(DEFAULT_DEVELOPER_DATASET_FILTERS);
 
     assert.equal(exported, null);
-    assert.equal(events[0], "pick-file");
+    assert.deepEqual(events, ["request", "request", "request", "pick-file"]);
     assert.deepEqual(downloadedBytes, [4, 5, 6]);
+  } finally {
+    restoreTransportFetch();
+    if (previousWindow) {
+      Object.defineProperty(globalThis, "window", previousWindow);
+    } else {
+      Reflect.deleteProperty(globalThis, "window");
+    }
+  }
+});
+
+test("developer dataset export falls back to a bounded Blob when direct-to-disk saving is rejected", async () => {
+  const previousWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: {
+      showSaveFilePicker: async () => {
+        throw new DOMException("Save picker is unavailable", "SecurityError");
+      },
+    },
+  });
+
+  const restoreTransportFetch = installEncryptedFetch(({ input }) => {
+    const url = String(input);
+    if (url.includes("/export/start")) {
+      return new Response(JSON.stringify({ exportId: "export-picker-fallback" }), { status: 202 });
+    }
+    if (url.includes("/export/export-picker-fallback/progress")) {
+      return new Response(JSON.stringify({ status: "completed", stage: "complete", current: 1, total: 1 }), { status: 200 });
+    }
+    return new Response(new Uint8Array([7, 8, 9]), {
+      status: 200,
+      headers: { "Content-Type": "text/event-stream; charset=utf-8", "X-Export-Content-Length": "3" },
+    });
+  });
+
+  try {
+    const exported = await developerDashboardClient.exportDatasets(DEFAULT_DEVELOPER_DATASET_FILTERS);
+
+    assert.ok(exported instanceof Blob);
+    assert.deepEqual(Array.from(new Uint8Array(await exported.arrayBuffer())), [7, 8, 9]);
   } finally {
     restoreTransportFetch();
     if (previousWindow) {

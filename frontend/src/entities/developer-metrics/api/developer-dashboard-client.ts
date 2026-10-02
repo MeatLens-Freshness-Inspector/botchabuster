@@ -213,18 +213,6 @@ export class DeveloperDashboardClient {
     filters: DeveloperDatasetFilterState,
     onProgress?: DeveloperDatasetExportProgressHandler,
   ): Promise<Blob | null> {
-    const filename = `developer-dataset-${Date.now()}.zip`;
-    const browserWindow = typeof window === "undefined" ? undefined : window;
-    const saveFilePicker = browserWindow
-      ? (browserWindow as Window & { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker
-      : undefined;
-    const fileHandle = browserWindow && saveFilePicker
-      ? await saveFilePicker.call(browserWindow, {
-          suggestedName: filename,
-          types: [{ description: "ZIP archive", accept: { "application/zip": [".zip"] } }],
-        })
-      : null;
-
     const startResponse = await fetchWithTimeout(
       `${API_BASE_URL}/developer-dashboard/datasets/export/start`,
       {
@@ -272,6 +260,24 @@ export class DeveloperDashboardClient {
     if (!response.ok) {
       throw new Error(await readApiErrorMessage(response, "Failed to download developer datasets"));
     }
+
+    const filename = `developer-dataset-${Date.now()}.zip`;
+    const browserWindow = typeof window === "undefined" ? undefined : window;
+    const saveFilePicker = browserWindow
+      ? (browserWindow as Window & { showSaveFilePicker?: SaveFilePicker }).showSaveFilePicker
+      : undefined;
+    let fileHandle: ExportFileHandle | null = null;
+    if (browserWindow && saveFilePicker) {
+      try {
+        fileHandle = await saveFilePicker.call(browserWindow, {
+          suggestedName: filename,
+          types: [{ description: "ZIP archive", accept: { "application/zip": [".zip"] } }],
+        });
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") throw error;
+      }
+    }
+
     if (fileHandle) {
       if (!response.body) throw new Error("Developer dataset export response has no body");
       const writable = await fileHandle.createWritable();
