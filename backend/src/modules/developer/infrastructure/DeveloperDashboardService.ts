@@ -9,6 +9,12 @@ import { pipeline } from "node:stream/promises";
 import { strToU8, unzipSync, Zip, ZipPassThrough } from "fflate";
 import { inspectionService } from "../../inspections/infrastructure/InspectionService";
 import { developerDashboardStorageService } from "./DeveloperDashboardStorageService";
+import {
+  developerDatasetExportStore,
+  type DatasetExportDownload,
+  type DatasetExportHistoryStore,
+  type DatasetExportHistoryItem,
+} from "./DeveloperDatasetExportStore";
 import type { Inspection } from "../../../types/inspection";
 import type {
   DatasetExportManifest,
@@ -45,6 +51,8 @@ export interface DatasetExportProgressUpdate {
 
 type DatasetExportSession = {
   ownerId: string;
+  filters: DeveloperDatasetFilters;
+  startedAt: string;
   createdAt: number;
   progress: DatasetExportProgress;
   result: DatasetExportArchive | null;
@@ -61,6 +69,7 @@ export interface DatasetExportArchive {
   path: string;
   directory: string;
   size: number;
+  recordCount: number;
 }
 
 function normalizeFamily(value: string): string {
@@ -115,11 +124,11 @@ export class DeveloperDashboardService {
   private static instance: DeveloperDashboardService;
   private readonly datasetExportSessions = new Map<string, DatasetExportSession>();
 
-  private constructor() {}
+  constructor(private readonly datasetExportStore: DatasetExportHistoryStore = developerDatasetExportStore) {}
 
   static getInstance(): DeveloperDashboardService {
     if (!DeveloperDashboardService.instance) {
-      DeveloperDashboardService.instance = new DeveloperDashboardService();
+      DeveloperDashboardService.instance = new DeveloperDashboardService(developerDatasetExportStore);
     }
     return DeveloperDashboardService.instance;
   }
@@ -165,6 +174,8 @@ export class DeveloperDashboardService {
     const exportId = randomUUID();
     const session: DatasetExportSession = {
       ownerId,
+      filters,
+      startedAt: new Date().toISOString(),
       createdAt: Date.now(),
       progress: {
         status: "running",
@@ -182,11 +193,22 @@ export class DeveloperDashboardService {
         ...update,
         status: "running",
       };
-    }).then((result) => {
+    }).then(async (result) => {
       if (this.datasetExportSessions.get(exportId) !== session) {
         this.removeExportDirectory(result.directory);
         return;
       }
+
+      await this.datasetExportStore.saveCompletedExport({
+        exportId,
+        ownerId,
+        filename: result.filename,
+        archivePath: result.path,
+        size: result.size,
+        recordCount: result.recordCount,
+        filters: { ...filters },
+        createdAt: session.startedAt,
+      });
       session.createdAt = Date.now();
       session.result = result;
       session.progress = {
@@ -195,16 +217,26 @@ export class DeveloperDashboardService {
         current: 1,
         total: 1,
       };
-    }).catch((error: unknown) => {
+    }).catch(async (error: unknown) => {
       if (this.datasetExportSessions.get(exportId) !== session) return;
       session.createdAt = Date.now();
+      const errorMessage = error instanceof Error ? error.message : "Failed to export developer datasets";
       session.progress = {
         status: "failed",
         stage: "failed",
         current: 0,
         total: 1,
-        error: error instanceof Error ? error.message : "Failed to export developer datasets",
+        error: errorMessage,
       };
+      await this.datasetExportStore.saveFailedExport({
+        exportId,
+        ownerId,
+        filters: { ...filters },
+        error: errorMessage,
+        createdAt: session.startedAt,
+      }).catch((historyError: unknown) => {
+        console.error("Failed to save dataset export history:", historyError);
+      });
     });
 
     return { exportId };
@@ -225,6 +257,14 @@ export class DeveloperDashboardService {
 
     this.datasetExportSessions.delete(exportId);
     return session.result;
+  }
+
+  listDatasetExports(ownerId: string): Promise<DatasetExportHistoryItem[]> {
+    return this.datasetExportStore.listExports(ownerId);
+  }
+
+  getDatasetExportDownloadUrl(exportId: string, ownerId: string): Promise<DatasetExportDownload> {
+    return this.datasetExportStore.createSignedDownloadUrl(exportId, ownerId);
   }
 
   private pruneDatasetExportSessions(): void {
@@ -355,7 +395,7 @@ export class DeveloperDashboardService {
       const { size } = await outputFile.stat();
       succeeded = true;
       onProgress?.({ stage: "complete", current: 1, total: 1 });
-      return { filename, path: archivePath, directory, size };
+      return { filename, path: archivePath, directory, size, recordCount: datasetItems.length };
     } finally {
       await outputFile?.close();
       if (!succeeded) await rm(directory, { recursive: true, force: true });

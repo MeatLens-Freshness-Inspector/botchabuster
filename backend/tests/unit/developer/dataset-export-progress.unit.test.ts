@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
 import type { Inspection } from "../../../src/types/inspection";
+import type { DatasetExportHistoryStore } from "../../../src/modules/developer/infrastructure/DeveloperDatasetExportStore";
 
 process.env.SUPABASE_URL = process.env.SUPABASE_URL || "https://example.supabase.co";
 process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || "service-role-key";
@@ -48,9 +49,19 @@ function createInspection(): Inspection {
   };
 }
 
+function createNoopHistoryStore(): DatasetExportHistoryStore {
+  return {
+    async saveCompletedExport() {},
+    async saveFailedExport() {},
+    async listExports() { return []; },
+    async createSignedDownloadUrl() { throw new Error("not used in this test"); },
+  };
+}
+
 test("dataset export sessions expose progress and reject another owner", async () => {
-  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
+  const { DeveloperDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
   const { inspectionService } = await import("../../../src/modules/inspections/infrastructure/InspectionService");
+  const developerDashboardService = new DeveloperDashboardService(createNoopHistoryStore());
   const originalGetDeveloperDatasetExportRows = inspectionService.getDeveloperDatasetExportRows;
   const rows = deferred<Inspection[]>();
   let exportDirectory: string | undefined;
@@ -101,7 +112,8 @@ test("dataset export sessions expose progress and reject another owner", async (
 });
 
 test("long-running dataset exports stay alive and get a fresh download TTL after completion", async () => {
-  const { developerDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
+  const { DeveloperDashboardService } = await import("../../../src/modules/developer/infrastructure/DeveloperDashboardService");
+  const developerDashboardService = new DeveloperDashboardService(createNoopHistoryStore());
   const originalExportDatasetZip = developerDashboardService.exportDatasetZip;
   const originalDateNow = Date.now;
   const archive = deferred<Awaited<ReturnType<typeof developerDashboardService.exportDatasetZip>>>();
@@ -122,7 +134,7 @@ test("long-running dataset exports stay alive and get a fresh download TTL after
     exportDirectory = await mkdtemp(path.join(tmpdir(), "meatlens-dataset-export-session-test-"));
     const archivePath = path.join(exportDirectory, "export.zip");
     await writeFile(archivePath, "zip");
-    archive.resolve({ filename: "export.zip", path: archivePath, directory: exportDirectory, size: 3 });
+    archive.resolve({ filename: "export.zip", path: archivePath, directory: exportDirectory, size: 3, recordCount: 1 });
 
     let completed = false;
     for (let attempt = 0; attempt < 20; attempt += 1) {

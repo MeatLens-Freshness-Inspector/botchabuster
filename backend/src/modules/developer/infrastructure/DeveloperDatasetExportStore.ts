@@ -71,6 +71,13 @@ export interface DatasetExportDownload {
   filename: string;
 }
 
+export interface DatasetExportHistoryStore {
+  saveCompletedExport(input: SaveCompletedDatasetExportInput): Promise<void>;
+  saveFailedExport(input: SaveFailedDatasetExportInput): Promise<void>;
+  listExports(ownerId: string): Promise<DatasetExportHistoryItem[]>;
+  createSignedDownloadUrl(exportId: string, ownerId: string): Promise<DatasetExportDownload>;
+}
+
 function toIso(value: number): string {
   return new Date(value).toISOString();
 }
@@ -198,7 +205,7 @@ function createDefaultDependencies(): DeveloperDatasetExportStoreDependencies {
   };
 }
 
-export class DeveloperDatasetExportStore {
+export class DeveloperDatasetExportStore implements DatasetExportHistoryStore {
   private readonly now: () => number;
 
   constructor(private readonly dependencies: DeveloperDatasetExportStoreDependencies = createDefaultDependencies()) {
