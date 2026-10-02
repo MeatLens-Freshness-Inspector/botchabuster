@@ -15,3 +15,14 @@ test("dataset export history migration provisions private two-day storage", () =
   assert.match(migration, /alter table public\.developer_dataset_exports enable row level security/);
   assert.match(migration, /values \('developer-dataset-exports', 'developer-dataset-exports', false\)/);
 });
+
+test("dataset export download token migration supports chunked browser streaming", () => {
+  const migration = readFileSync(
+    join(process.cwd(), "supabase", "migrations", "20261002100000_add_dataset_export_download_tokens.sql"),
+    "utf8",
+  );
+
+  assert.match(migration, /add column if not exists download_token_hash text/);
+  assert.match(migration, /add column if not exists download_token_expires_at timestamptz/);
+  assert.match(migration, /download_token_hash\)/);
+});

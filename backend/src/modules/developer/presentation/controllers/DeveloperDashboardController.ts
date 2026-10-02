@@ -1,5 +1,6 @@
 import { createReadStream } from "node:fs";
 import { rm } from "node:fs/promises";
+import { once } from "node:events";
 import { pipeline } from "node:stream/promises";
 import type { Request, Response } from "express";
 import { materializeTransportFile, type MaterializedTransportFile } from "../../../../middleware/upload";
@@ -185,7 +186,14 @@ export class DeveloperDashboardController {
         return;
       }
 
-      res.json(await dashboard.getDatasetExportDownloadUrl(req.params.exportId ?? "", ownerId));
+      const exportId = req.params.exportId ?? "";
+      const access = await dashboard.createDatasetExportDownloadAccess(exportId, ownerId);
+      const downloadPath = `/api/developer-dashboard/datasets/exports/${encodeURIComponent(exportId)}/download`;
+      const origin = `${req.protocol}://${req.get("host")}`;
+      res.json({
+        url: `${origin}${downloadPath}?token=${encodeURIComponent(access.token)}`,
+        filename: access.filename,
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to create dataset export download URL";
       if (/not found/i.test(message)) {
@@ -212,6 +220,39 @@ export class DeveloperDashboardController {
       this.sendDatasetExportFile("Download developer dataset export", res, exported);
     } catch (error) {
       this.handleError("Download developer dataset export", res, error, "Failed to download developer dataset export");
+    }
+  }
+
+  async downloadStoredDatasetExport(req: Request, res: Response): Promise<void> {
+    try {
+      const token = typeof req.query.token === "string" ? req.query.token : "";
+      if (!token) {
+        res.status(401).json({ error: "Dataset export download token is required" });
+        return;
+      }
+
+      const archive = await dashboard.getDatasetExportArchiveForDownload(req.params.exportId ?? "", token);
+      res.status(200);
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader("Content-Disposition", `attachment; filename="${archive.filename}"`);
+      res.setHeader("Content-Length", String(archive.size));
+      res.setHeader("Cache-Control", "private, no-store");
+
+      await dashboard.streamDatasetExportArchive(archive, async (chunk) => {
+        if (!res.write(chunk)) await once(res, "drain");
+      });
+      res.end();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to download developer dataset export";
+      if (/expired/i.test(message)) {
+        res.status(410).json({ error: message });
+        return;
+      }
+      if (/invalid|not found/i.test(message)) {
+        res.status(404).json({ error: message });
+        return;
+      }
+      this.handleError("Download stored developer dataset export", res, error, message);
     }
   }
 

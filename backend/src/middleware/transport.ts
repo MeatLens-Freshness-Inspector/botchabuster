@@ -175,7 +175,15 @@ function installResponseEncryption(res: Response, context: NonNullable<Request["
 
 export function isTransportPlaintextEndpoint(req: Request): boolean {
   return req.method.toUpperCase() === "GET"
-    && (req.path === "/api/analysis/health" || req.path === "/api/transport/public-key");
+    && (
+      req.path === "/api/analysis/health"
+      || req.path === "/api/transport/public-key"
+      || (
+        /^\/api\/developer-dashboard\/datasets\/exports\/[^/]+\/download$/.test(req.path)
+        && typeof req.query.token === "string"
+        && req.query.token.length >= 32
+      )
+    );
 }
 
 function readTransportKeyHeader(value: string, keyStore: TransportKeyStore): Buffer {

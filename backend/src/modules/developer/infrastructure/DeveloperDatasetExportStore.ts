@@ -1,10 +1,11 @@
 import { createReadStream } from "node:fs";
-import { Readable } from "node:stream";
+import { createHash, randomBytes } from "node:crypto";
 import { supabase } from "../../../integrations/supabase";
 
 export const DATASET_EXPORT_RETENTION_MS = 2 * 24 * 60 * 60 * 1000;
 const DATASET_EXPORT_BUCKET = "developer-dataset-exports";
 const SIGNED_URL_MAX_AGE_SECONDS = 15 * 60;
+const DATASET_EXPORT_CHUNK_BYTES = 4 * 1024 * 1024;
 
 export type DatasetExportHistoryStatus = "ready" | "expired" | "failed";
 
@@ -23,6 +24,8 @@ export interface DatasetExportMetadataRecord {
   downloadCount: number;
   lastDownloadedAt: string | null;
   error: string | null;
+  downloadTokenHash?: string | null;
+  downloadTokenExpiresAt?: string | null;
 }
 
 export type DatasetExportHistoryItem = Omit<DatasetExportMetadataRecord, "ownerId" | "storagePath">;
@@ -33,12 +36,15 @@ export interface DatasetExportMetadataRepository {
   find(ownerId: string, exportId: string): Promise<DatasetExportMetadataRecord | null>;
   update(exportId: string, patch: Partial<DatasetExportMetadataRecord>): Promise<void>;
   incrementDownloadCount(exportId: string, downloadedAt: string): Promise<void>;
+  setDownloadToken?(exportId: string, tokenHash: string, expiresAt: string): Promise<void>;
+  findByDownloadToken?(exportId: string, tokenHash: string): Promise<DatasetExportMetadataRecord | null>;
 }
 
 export interface DatasetExportStorageAdapter {
   uploadFile(localPath: string, storagePath: string): Promise<void>;
   removeFile(storagePath: string): Promise<void>;
   createSignedUrl(storagePath: string, expiresInSeconds: number, filename: string): Promise<string>;
+  streamFile?(storagePath: string, onChunk: DatasetExportChunkReader): Promise<void>;
 }
 
 export interface DeveloperDatasetExportStoreDependencies {
@@ -71,11 +77,29 @@ export interface DatasetExportDownload {
   filename: string;
 }
 
+export interface DatasetExportDownloadAccess {
+  token: string;
+  filename: string;
+}
+
+export interface DatasetExportArchiveMetadata {
+  filename: string;
+  size: number;
+  storagePath: string;
+}
+
 export interface DatasetExportHistoryStore {
   saveCompletedExport(input: SaveCompletedDatasetExportInput): Promise<void>;
   saveFailedExport(input: SaveFailedDatasetExportInput): Promise<void>;
   listExports(ownerId: string): Promise<DatasetExportHistoryItem[]>;
   createSignedDownloadUrl(exportId: string, ownerId: string): Promise<DatasetExportDownload>;
+  createDownloadAccess(exportId: string, ownerId: string): Promise<DatasetExportDownloadAccess>;
+  getArchiveForDownload(exportId: string, token: string): Promise<DatasetExportArchiveMetadata>;
+  streamArchive(archive: DatasetExportArchiveMetadata, onChunk: DatasetExportChunkReader): Promise<void>;
+}
+
+export interface DatasetExportChunkReader {
+  (chunk: Uint8Array): Promise<void>;
 }
 
 function toIso(value: number): string {
@@ -83,7 +107,13 @@ function toIso(value: number): string {
 }
 
 function mapRecord(record: DatasetExportMetadataRecord): DatasetExportHistoryItem {
-  const { ownerId: _ownerId, storagePath: _storagePath, ...historyItem } = record;
+  const {
+    ownerId: _ownerId,
+    storagePath: _storagePath,
+    downloadTokenHash: _downloadTokenHash,
+    downloadTokenExpiresAt: _downloadTokenExpiresAt,
+    ...historyItem
+  } = record;
   return historyItem;
 }
 
@@ -105,6 +135,8 @@ function createSupabaseMetadataRepository(): DatasetExportMetadataRepository {
     downloadCount: Number(row.download_count ?? 0),
     lastDownloadedAt: typeof row.last_downloaded_at === "string" ? row.last_downloaded_at : null,
     error: typeof row.failure_message === "string" ? row.failure_message : null,
+    downloadTokenHash: typeof row.download_token_hash === "string" ? row.download_token_hash : null,
+    downloadTokenExpiresAt: typeof row.download_token_expires_at === "string" ? row.download_token_expires_at : null,
   });
 
   return {
@@ -124,6 +156,8 @@ function createSupabaseMetadataRepository(): DatasetExportMetadataRepository {
         download_count: record.downloadCount,
         last_downloaded_at: record.lastDownloadedAt,
         failure_message: record.error,
+        download_token_hash: record.downloadTokenHash ?? null,
+        download_token_expires_at: record.downloadTokenExpiresAt ?? null,
       });
       if (error) throw new Error(`Dataset export metadata insert failed: ${error.message}`);
     },
@@ -168,32 +202,81 @@ function createSupabaseMetadataRepository(): DatasetExportMetadataRepository {
         .eq("export_id", exportId);
       if (error) throw new Error(`Dataset export download count update failed: ${error.message}`);
     },
+    async setDownloadToken(exportId, tokenHash, expiresAt) {
+      const { error } = await table()
+        .update({ download_token_hash: tokenHash, download_token_expires_at: expiresAt })
+        .eq("export_id", exportId);
+      if (error) throw new Error(`Dataset export download token update failed: ${error.message}`);
+    },
+    async findByDownloadToken(exportId, tokenHash) {
+      const { data, error } = await table()
+        .select("*")
+        .eq("export_id", exportId)
+        .eq("download_token_hash", tokenHash)
+        .maybeSingle();
+      if (error) throw new Error(`Dataset export download token lookup failed: ${error.message}`);
+      return data ? fromRow(data) : null;
+    },
   };
 }
 
 function createSupabaseStorageAdapter(): DatasetExportStorageAdapter {
+  const storage = () => supabase.storage.from(DATASET_EXPORT_BUCKET);
+
+  async function listChunkPaths(storagePath: string): Promise<string[]> {
+    const { data, error } = await storage().list(storagePath, {
+      limit: 1000,
+      offset: 0,
+      sortBy: { column: "name", order: "asc" },
+    });
+    if (error) throw new Error(`Dataset export storage list failed: ${error.message}`);
+    return (data ?? [])
+      .map((entry) => entry.name)
+      .filter((name): name is string => typeof name === "string" && /^part-\d{8}$/.test(name))
+      .sort()
+      .map((name) => `${storagePath}/${name}`);
+  }
+
   return {
     async uploadFile(localPath, storagePath) {
-      const stream = Readable.toWeb(createReadStream(localPath)) as unknown as Blob;
-      const { error } = await supabase.storage.from(DATASET_EXPORT_BUCKET).upload(storagePath, stream, {
-        contentType: "application/zip",
-        cacheControl: String(DATASET_EXPORT_RETENTION_MS / 1000),
-        upsert: false,
-      });
-      if (error) throw new Error(`Dataset export storage upload failed: ${error.message}`);
+      let index = 0;
+      try {
+        for await (const chunk of createReadStream(localPath, { highWaterMark: DATASET_EXPORT_CHUNK_BYTES })) {
+          const partPath = `${storagePath}/part-${String(index).padStart(8, "0")}`;
+          const { error } = await storage().upload(partPath, chunk as Buffer, {
+            contentType: "application/octet-stream",
+            cacheControl: String(DATASET_EXPORT_RETENTION_MS / 1000),
+            upsert: false,
+          });
+          if (error) throw new Error(`Dataset export storage upload failed: ${error.message}`);
+          index += 1;
+        }
+      } catch (error) {
+        await this.removeFile(storagePath).catch(() => undefined);
+        throw error;
+      }
     },
     async removeFile(storagePath) {
-      const { error } = await supabase.storage.from(DATASET_EXPORT_BUCKET).remove([storagePath]);
+      const paths = await listChunkPaths(storagePath).catch(() => []);
+      const { error } = await storage().remove(paths.length > 0 ? paths : [storagePath]);
       if (error) throw new Error(`Dataset export storage cleanup failed: ${error.message}`);
     },
     async createSignedUrl(storagePath, expiresInSeconds, filename) {
-      const { data, error } = await supabase.storage
-        .from(DATASET_EXPORT_BUCKET)
+      const { data, error } = await storage()
         .createSignedUrl(storagePath, expiresInSeconds, { download: filename });
       if (error || !data?.signedUrl) {
         throw new Error(`Dataset export signed URL failed: ${error?.message ?? "URL missing"}`);
       }
       return data.signedUrl;
+    },
+    async streamFile(storagePath, onChunk) {
+      const paths = await listChunkPaths(storagePath);
+      const downloadPaths = paths.length > 0 ? paths : [storagePath];
+      for (const partPath of downloadPaths) {
+        const { data, error } = await storage().download(partPath);
+        if (error) throw new Error(`Dataset export storage download failed: ${error.message}`);
+        await onChunk(new Uint8Array(await data.arrayBuffer()));
+      }
     },
   };
 }
@@ -230,6 +313,8 @@ export class DeveloperDatasetExportStore implements DatasetExportHistoryStore {
       downloadCount: 0,
       lastDownloadedAt: null,
       error: null,
+      downloadTokenHash: null,
+      downloadTokenExpiresAt: null,
     };
 
     await this.dependencies.storage.uploadFile(input.archivePath, storagePath);
@@ -258,7 +343,69 @@ export class DeveloperDatasetExportStore implements DatasetExportHistoryStore {
       downloadCount: 0,
       lastDownloadedAt: null,
       error: input.error,
+      downloadTokenHash: null,
+      downloadTokenExpiresAt: null,
     });
+  }
+
+  async createDownloadAccess(exportId: string, ownerId: string): Promise<DatasetExportDownloadAccess> {
+    const record = await this.dependencies.metadata.find(ownerId, exportId);
+    if (!record) throw new Error("Dataset export not found");
+    if (record.status !== "ready" || !record.storagePath || !record.filename) {
+      throw new Error("Dataset export has expired or is unavailable");
+    }
+
+    const remainingSeconds = Math.floor((Date.parse(record.expiresAt) - this.now()) / 1000);
+    if (remainingSeconds <= 0) {
+      await this.expireRecord(record);
+      throw new Error("Dataset export has expired or is unavailable");
+    }
+    if (!this.dependencies.metadata.setDownloadToken) {
+      throw new Error("Dataset export download token persistence is not configured");
+    }
+
+    const token = randomBytes(32).toString("base64url");
+    const tokenExpiresAt = toIso(this.now() + Math.min(SIGNED_URL_MAX_AGE_SECONDS, remainingSeconds) * 1000);
+    await this.dependencies.metadata.setDownloadToken(
+      exportId,
+      createHash("sha256").update(token).digest("hex"),
+      tokenExpiresAt,
+    );
+    await this.dependencies.metadata.incrementDownloadCount(exportId, toIso(this.now()));
+    return { token, filename: record.filename };
+  }
+
+  async getArchiveForDownload(exportId: string, token: string): Promise<DatasetExportArchiveMetadata> {
+    if (!this.dependencies.metadata.findByDownloadToken) {
+      throw new Error("Dataset export download token validation is not configured");
+    }
+
+    const record = await this.dependencies.metadata.findByDownloadToken(
+      exportId,
+      createHash("sha256").update(token).digest("hex"),
+    );
+    if (!record || record.status !== "ready" || !record.storagePath || !record.filename) {
+      throw new Error("Dataset export download token is invalid");
+    }
+    if (!record.downloadTokenExpiresAt || Date.parse(record.downloadTokenExpiresAt) <= this.now()) {
+      throw new Error("Dataset export download token has expired");
+    }
+    if (Date.parse(record.expiresAt) <= this.now()) {
+      await this.expireRecord(record);
+      throw new Error("Dataset export has expired or is unavailable");
+    }
+
+    return { filename: record.filename, size: record.size ?? 0, storagePath: record.storagePath };
+  }
+
+  async streamArchive(
+    archive: DatasetExportArchiveMetadata,
+    onChunk: DatasetExportChunkReader,
+  ): Promise<void> {
+    if (!this.dependencies.storage.streamFile) {
+      throw new Error("Dataset export chunk streaming is not configured");
+    }
+    await this.dependencies.storage.streamFile(archive.storagePath, onChunk);
   }
 
   async listExports(ownerId: string): Promise<DatasetExportHistoryItem[]> {

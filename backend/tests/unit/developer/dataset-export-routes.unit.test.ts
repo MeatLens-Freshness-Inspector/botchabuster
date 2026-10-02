@@ -22,11 +22,13 @@ test("developer dataset export exposes lifecycle, history, and download routes",
   assert.match(routes, /get\("\/datasets\/export\/:exportId\/download"/);
   assert.match(routes, /get\("\/datasets\/exports"/);
   assert.match(routes, /post\("\/datasets\/exports\/:exportId\/download-url"/);
+  assert.match(routes, /get\("\/datasets\/exports\/:exportId\/download"/);
   assert.match(controller, /startDatasetExport/);
   assert.match(controller, /getDatasetExportProgress/);
   assert.match(controller, /getDatasetExportArchive/);
   assert.match(controller, /listDatasetExports/);
   assert.match(controller, /createDatasetExportDownloadUrl/);
+  assert.match(controller, /downloadStoredDatasetExport/);
   assert.match(controller, /text\/event-stream/);
   assert.match(controller, /pipeline\(createReadStream\(exported\.path\), res\)/);
   assert.match(controller, /X-Export-Content-Length/);

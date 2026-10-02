@@ -46,6 +46,15 @@ async function createFakes() {
         lastDownloadedAt: downloadedAt,
       });
     },
+    async setDownloadToken(exportId, tokenHash, expiresAt) {
+      const record = records.get(exportId);
+      if (!record) throw new Error("record not found");
+      records.set(exportId, { ...record, downloadTokenHash: tokenHash, downloadTokenExpiresAt: expiresAt });
+    },
+    async findByDownloadToken(exportId, tokenHash) {
+      const record = records.get(exportId);
+      return record?.downloadTokenHash === tokenHash ? { ...record } : null;
+    },
   };
 
   const storage: DatasetExportStorageAdapter = {
@@ -58,6 +67,10 @@ async function createFakes() {
     async createSignedUrl(storagePath, expiresInSeconds, filename) {
       signedUrls.push({ storagePath, expiresInSeconds, filename });
       return `https://storage.example.test/${storagePath}?download=${encodeURIComponent(filename)}`;
+    },
+    async streamFile(_storagePath, onChunk) {
+      await onChunk(new Uint8Array([1, 2]));
+      await onChunk(new Uint8Array([3, 4]));
     },
   };
 
@@ -199,4 +212,30 @@ test("failed exports remain visible in history without creating a storage object
     lastDownloadedAt: null,
     error: "image download failed",
   }]);
+});
+
+test("large exports use a short-lived app token and stream stored chunks without a signed single object", async () => {
+  const { store } = await createFakes();
+  await store.saveCompletedExport({
+    exportId: "export-stream",
+    ownerId: "owner-1",
+    filename: "streamed.zip",
+    archivePath: "C:/tmp/streamed.zip",
+    size: 4,
+    recordCount: 2,
+    filters: {},
+  });
+
+  const access = await store.createDownloadAccess("export-stream", "owner-1");
+  assert.ok(access.token.length >= 32);
+  assert.equal(access.filename, "streamed.zip");
+
+  const archive = await store.getArchiveForDownload("export-stream", access.token);
+  const chunks: number[] = [];
+  await store.streamArchive(archive, async (chunk) => chunks.push(...chunk));
+  assert.deepEqual(chunks, [1, 2, 3, 4]);
+  await assert.rejects(
+    () => store.getArchiveForDownload("export-stream", "not-the-token"),
+    /invalid/,
+  );
 });

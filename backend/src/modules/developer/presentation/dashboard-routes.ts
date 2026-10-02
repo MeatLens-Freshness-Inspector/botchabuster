@@ -24,6 +24,7 @@ router.get("/datasets/export/:exportId/progress", requireDeveloper, (req, res) =
 router.get("/datasets/export/:exportId/download", requireDeveloper, (req, res) => controller.downloadDatasetExport(req, res));
 router.get("/datasets/exports", requireDeveloper, (req, res) => controller.listDatasetExports(req, res));
 router.post("/datasets/exports/:exportId/download-url", requireDeveloper, (req, res) => controller.createDatasetExportDownloadUrl(req, res));
+router.get("/datasets/exports/:exportId/download", (req, res) => void controller.downloadStoredDatasetExport(req, res));
 router.patch("/datasets/:inspectionId/manual-classification", requireDeveloper, (req, res) =>
   controller.updateDatasetManualClassification(req, res),
 );

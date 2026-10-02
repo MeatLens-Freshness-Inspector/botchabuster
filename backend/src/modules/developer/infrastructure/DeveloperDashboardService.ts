@@ -12,6 +12,9 @@ import { developerDashboardStorageService } from "./DeveloperDashboardStorageSer
 import {
   developerDatasetExportStore,
   type DatasetExportDownload,
+  type DatasetExportDownloadAccess,
+  type DatasetExportArchiveMetadata,
+  type DatasetExportChunkReader,
   type DatasetExportHistoryStore,
   type DatasetExportHistoryItem,
 } from "./DeveloperDatasetExportStore";
@@ -270,6 +273,21 @@ export class DeveloperDashboardService {
 
   getDatasetExportDownloadUrl(exportId: string, ownerId: string): Promise<DatasetExportDownload> {
     return this.datasetExportStore.createSignedDownloadUrl(exportId, ownerId);
+  }
+
+  createDatasetExportDownloadAccess(exportId: string, ownerId: string): Promise<DatasetExportDownloadAccess> {
+    return this.datasetExportStore.createDownloadAccess(exportId, ownerId);
+  }
+
+  getDatasetExportArchiveForDownload(exportId: string, token: string): Promise<DatasetExportArchiveMetadata> {
+    return this.datasetExportStore.getArchiveForDownload(exportId, token);
+  }
+
+  streamDatasetExportArchive(
+    archive: DatasetExportArchiveMetadata,
+    onChunk: DatasetExportChunkReader,
+  ): Promise<void> {
+    return this.datasetExportStore.streamArchive(archive, onChunk);
   }
 
   private pruneDatasetExportSessions(): void {
