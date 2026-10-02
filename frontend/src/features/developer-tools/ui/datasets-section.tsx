@@ -178,7 +178,11 @@ export function DeveloperDatasetsSection({
                       <span>{datasetExport.recordCount ?? "-"} records</span>
                       <span>{formatBytes(datasetExport.size)}</span>
                       <span className="font-mono tabular-nums">
-                        {isReady ? `Expires ${formatDateTime(datasetExport.expiresAt)}` : `Expired ${formatDateTime(datasetExport.expiresAt)}`}
+                        {isReady
+                          ? `Expires ${formatDateTime(datasetExport.expiresAt)}`
+                          : datasetExport.status === "expired"
+                            ? `Expired ${formatDateTime(datasetExport.expiresAt)}`
+                            : `Created ${formatDateTime(datasetExport.createdAt)}`}
                       </span>
                     </div>
                     {datasetExport.status === "failed" && datasetExport.error ? (

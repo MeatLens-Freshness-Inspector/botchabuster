@@ -107,6 +107,7 @@ export function useDeveloperDashboard() {
       toast.error(error instanceof Error ? error.message : "Failed to load dataset export history");
     } finally {
       setIsLoadingDatasetExports(false);
+      setDatasetExportsLoaded(true);
     }
   }, []);
 
