@@ -53,6 +53,10 @@ const DeveloperTabContent = () => {
             exportProgress={developer.exportProgress}
             exportStage={developer.exportStage}
             isLoading={developer.isLoadingDatasets}
+            datasetExports={developer.datasetExports}
+            isLoadingDatasetExports={developer.isLoadingDatasetExports}
+            downloadingDatasetExportId={developer.downloadingDatasetExportId}
+            onDownloadDatasetExport={developer.downloadDatasetExport}
           />
           </DeveloperExport>
         </TabsContent>

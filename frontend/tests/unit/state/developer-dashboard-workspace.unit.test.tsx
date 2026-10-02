@@ -4,7 +4,12 @@ import { JSDOM } from "jsdom";
 import React from "react";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { developerDashboardClient, DEFAULT_DEVELOPER_DATASET_FILTERS, type DeveloperDatasetListResponse } from "../../../src/entities/developer-metrics";
+import {
+  developerDashboardClient,
+  DEFAULT_DEVELOPER_DATASET_FILTERS,
+  type DeveloperDatasetExportHistoryItem,
+  type DeveloperDatasetListResponse,
+} from "../../../src/entities/developer-metrics";
 import { DeveloperDatasetsSection } from "../../../src/features/developer-tools";
 import { installEncryptedFetch, type EncryptedMockRequest } from "../../support/encrypted-fetch";
 
@@ -322,6 +327,23 @@ function createDeveloperDashboardFetch(options?: {
       });
     }
 
+    if (url.includes("/developer-dashboard/datasets/exports/") && url.includes("/download-url")) {
+      return new Response(JSON.stringify({
+        url: "https://storage.example.test/workspace-export/dataset.zip?download=dataset.zip",
+        filename: "dataset.zip",
+      }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (url.endsWith("/developer-dashboard/datasets/exports")) {
+      return new Response(JSON.stringify([]), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     if (url.includes("/developer-dashboard/datasets/export/workspace-export/download")) {
       return new Response(new Blob(["zip-bytes"], { type: "application/octet-stream" }), {
         status: 200,
@@ -486,6 +508,77 @@ test("dataset export button calls the developer dashboard export endpoint", asyn
     await flushEffects();
 
     assert.equal(exportCalls, 1);
+  } finally {
+    await act(async () => {
+      root.unmount();
+    });
+    cleanup();
+  }
+});
+
+test("dataset history shows ready and expired archives with an explicit download action", async () => {
+  const { container, cleanup } = installDom();
+  const root: Root = createRoot(container);
+  let downloadedExportId: string | null = null;
+  const history: DeveloperDatasetExportHistoryItem[] = [
+    {
+      exportId: "ready-export",
+      status: "ready",
+      filename: "developer-dataset-ready.zip",
+      size: 2048,
+      recordCount: 12,
+      filters: {},
+      createdAt: "2026-10-02T00:00:00.000Z",
+      readyAt: "2026-10-02T00:02:00.000Z",
+      expiresAt: "2026-10-04T00:02:00.000Z",
+      downloadCount: 0,
+      lastDownloadedAt: null,
+      error: null,
+    },
+    {
+      exportId: "expired-export",
+      status: "expired",
+      filename: "developer-dataset-expired.zip",
+      size: 1024,
+      recordCount: 4,
+      filters: {},
+      createdAt: "2026-09-29T00:00:00.000Z",
+      readyAt: "2026-09-29T00:02:00.000Z",
+      expiresAt: "2026-10-01T00:02:00.000Z",
+      downloadCount: 1,
+      lastDownloadedAt: "2026-09-30T00:00:00.000Z",
+      error: null,
+    },
+  ];
+
+  try {
+    await act(async () => {
+      root.render(
+        <DeveloperDatasetsSection
+          datasets={null}
+          filters={DEFAULT_DEVELOPER_DATASET_FILTERS}
+          onFiltersChange={() => undefined}
+          onManualClassificationChange={async () => undefined}
+          onPageChange={async () => undefined}
+          onExport={async () => undefined}
+          isExporting={false}
+          isLoading={false}
+          datasetExports={history}
+          onDownloadDatasetExport={async (exportId) => {
+            downloadedExportId = exportId;
+          }}
+        />,
+      );
+    });
+
+    assert.match(document.body.textContent ?? "", /Download history/);
+    assert.match(document.body.textContent ?? "", /Ready/);
+    assert.match(document.body.textContent ?? "", /Expired/);
+    const downloadButtons = Array.from(document.querySelectorAll("button"))
+      .filter((button) => button.textContent?.trim() === "Download");
+    assert.equal(downloadButtons.length, 1);
+    downloadButtons[0]?.click();
+    assert.equal(downloadedExportId, "ready-export");
   } finally {
     await act(async () => {
       root.unmount();

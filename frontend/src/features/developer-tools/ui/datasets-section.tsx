@@ -1,5 +1,5 @@
 import React from "react";
-import { Download, ImageIcon, RotateCcw, Search, Sparkles } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock3, Download, History, ImageIcon, RotateCcw, Search, Sparkles } from "lucide-react";
 import { FreshnessBadge } from "@/entities/inspection";
 import { Button, ExportLoadingOverlay } from "@/shared/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -14,6 +14,7 @@ import {
 } from "@/shared/ui/table";
 import type {
   DeveloperDatasetFilterState,
+  DeveloperDatasetExportHistoryItem,
   DeveloperDatasetListResponse,
 } from "@/entities/developer-metrics";
 import type { FreshnessClassification } from "@/entities/inspection";
@@ -31,6 +32,13 @@ function formatConfidencePercent(value: number | null | undefined): string {
   }
 
   return `${value.toFixed(2)}%`;
+}
+
+function formatBytes(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) return "Size unavailable";
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 const CLASSIFICATION_OPTIONS: Array<{
@@ -55,6 +63,10 @@ export function DeveloperDatasetsSection({
   exportProgress = null,
   exportStage = null,
   isLoading,
+  datasetExports = [],
+  isLoadingDatasetExports = false,
+  downloadingDatasetExportId = null,
+  onDownloadDatasetExport = async () => undefined,
 }: {
   datasets: DeveloperDatasetListResponse | null;
   filters: DeveloperDatasetFilterState;
@@ -66,6 +78,10 @@ export function DeveloperDatasetsSection({
   exportProgress?: ExportProgress | null;
   exportStage?: string | null;
   isLoading: boolean;
+  datasetExports?: DeveloperDatasetExportHistoryItem[];
+  isLoadingDatasetExports?: boolean;
+  downloadingDatasetExportId?: string | null;
+  onDownloadDatasetExport?: (exportId: string) => Promise<void>;
 }) {
   const total = datasets?.total ?? 0;
   const currentOffset = datasets?.offset ?? filters.offset;
@@ -105,6 +121,88 @@ export function DeveloperDatasetsSection({
             <span>
               <strong className="text-foreground">In-App Model Accuracy Ground Truth Input:</strong> Setting manual classification on records below updates ground truth labels, driving live In-App Accuracy, Precision, Recall & F1-Score metrics in the Overview tab.
             </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/70 bg-card/90">
+        <CardHeader className="flex-row items-start justify-between gap-3 p-4 pb-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <History className="h-4 w-4" />
+              Download history
+            </CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Completed ZIPs stay available for 2 days, then expire server-side.
+            </p>
+          </div>
+          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+            {isLoadingDatasetExports ? "Loading" : `${datasetExports.length} exports`}
+          </span>
+        </CardHeader>
+        <CardContent className="p-0">
+          {datasetExports.length === 0 && !isLoadingDatasetExports ? (
+            <div className="border-t border-border/60 px-4 py-6 text-sm text-muted-foreground">
+              No dataset exports yet. Start an export to add the first archive here.
+            </div>
+          ) : null}
+          <div className="divide-y divide-border/60">
+            {datasetExports.map((datasetExport) => {
+              const isDownloading = downloadingDatasetExportId === datasetExport.exportId;
+              const isReady = datasetExport.status === "ready";
+              const statusLabel = datasetExport.status === "ready"
+                ? "Ready"
+                : datasetExport.status === "expired" ? "Expired" : "Failed";
+
+              return (
+                <div
+                  key={datasetExport.exportId}
+                  data-testid={`dataset-export-${datasetExport.exportId}`}
+                  className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 px-4 py-3 first:border-t-0"
+                >
+                  <div className="min-w-0 space-y-1">
+                    <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
+                      {datasetExport.status === "ready" ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      ) : datasetExport.status === "expired" ? (
+                        <Clock3 className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <AlertTriangle className="h-4 w-4 text-amber-600" />
+                      )}
+                      <span className="truncate">{datasetExport.filename ?? "Dataset export"}</span>
+                      <span className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                        {statusLabel}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      <span>{datasetExport.recordCount ?? "-"} records</span>
+                      <span>{formatBytes(datasetExport.size)}</span>
+                      <span className="font-mono tabular-nums">
+                        {isReady ? `Expires ${formatDateTime(datasetExport.expiresAt)}` : `Expired ${formatDateTime(datasetExport.expiresAt)}`}
+                      </span>
+                    </div>
+                    {datasetExport.status === "failed" && datasetExport.error ? (
+                      <p className="text-xs text-destructive">{datasetExport.error}</p>
+                    ) : null}
+                  </div>
+                  {isReady ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0 gap-2"
+                      onClick={() => void onDownloadDatasetExport(datasetExport.exportId)}
+                      disabled={isDownloading}
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      {isDownloading ? "Preparing..." : "Download"}
+                    </Button>
+                  ) : (
+                    <span className="shrink-0 text-xs font-medium text-muted-foreground">Unavailable</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
