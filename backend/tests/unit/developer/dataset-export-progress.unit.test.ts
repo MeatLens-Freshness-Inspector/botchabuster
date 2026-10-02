@@ -55,6 +55,9 @@ function createNoopHistoryStore(): DatasetExportHistoryStore {
     async saveFailedExport() {},
     async listExports() { return []; },
     async createSignedDownloadUrl() { throw new Error("not used in this test"); },
+    async createDownloadAccess() { throw new Error("not used in this test"); },
+    async getArchiveForDownload() { throw new Error("not used in this test"); },
+    async streamArchive() { throw new Error("not used in this test"); },
   };
 }
 

@@ -189,7 +189,9 @@ export class DeveloperDashboardController {
       const exportId = req.params.exportId ?? "";
       const access = await dashboard.createDatasetExportDownloadAccess(exportId, ownerId);
       const downloadPath = `/api/developer-dashboard/datasets/exports/${encodeURIComponent(exportId)}/download`;
-      const origin = `${req.protocol}://${req.get("host")}`;
+      const forwardedProto = req.header("x-forwarded-proto")?.split(",", 1)[0]?.trim();
+      const protocol = forwardedProto || req.protocol;
+      const origin = `${protocol}://${req.get("host")}`;
       res.json({
         url: `${origin}${downloadPath}?token=${encodeURIComponent(access.token)}`,
         filename: access.filename,
@@ -244,6 +246,10 @@ export class DeveloperDashboardController {
       res.end();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to download developer dataset export";
+      if (res.headersSent) {
+        res.destroy(error instanceof Error ? error : new Error(message));
+        return;
+      }
       if (/expired/i.test(message)) {
         res.status(410).json({ error: message });
         return;
