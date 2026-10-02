@@ -4,6 +4,7 @@ import {
   DEFAULT_DEVELOPER_DATASET_FILTERS,
   developerDashboardClient,
   type DeveloperDatasetFilterState,
+  type DeveloperDatasetExportHistoryItem,
   type DeveloperDatasetExportProgress,
   type DeveloperDatasetListResponse,
   type DeveloperOverviewResponse,
@@ -28,29 +29,34 @@ function formatDatasetExportStage(progress: DeveloperDatasetExportProgress): str
   }
 }
 
-export function downloadDeveloperDatasetBlob(
-  blob: Blob,
+export function downloadDeveloperDatasetUrl(
+  url: string,
   filename: string,
-  revokeDelayMs = 1_000,
 ): void {
-  const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = filename;
+  anchor.rel = "noreferrer";
+  anchor.style.display = "none";
+  document.body?.appendChild(anchor);
   anchor.click();
-  globalThis.setTimeout(() => URL.revokeObjectURL(url), revokeDelayMs);
+  anchor.remove();
 }
 
 export function useDeveloperDashboard() {
   const [activeDeveloperTab, setActiveDeveloperTab] = useState<DeveloperWorkspaceTabKey>("overview");
   const [overview, setOverview] = useState<DeveloperOverviewResponse | null>(null);
   const [datasets, setDatasets] = useState<DeveloperDatasetListResponse | null>(null);
+  const [datasetExports, setDatasetExports] = useState<DeveloperDatasetExportHistoryItem[]>([]);
   const [trainingRuns, setTrainingRuns] = useState<TrainingRunRecord[]>([]);
   const [datasetFilters, setDatasetFilters] = useState<DeveloperDatasetFilterState>(
     DEFAULT_DEVELOPER_DATASET_FILTERS,
   );
   const [isLoadingOverview, setIsLoadingOverview] = useState(false);
   const [isLoadingDatasets, setIsLoadingDatasets] = useState(false);
+  const [isLoadingDatasetExports, setIsLoadingDatasetExports] = useState(false);
+  const [datasetExportsLoaded, setDatasetExportsLoaded] = useState(false);
+  const [downloadingDatasetExportId, setDownloadingDatasetExportId] = useState<string | null>(null);
   const [isLoadingTrainingRuns, setIsLoadingTrainingRuns] = useState(false);
   const [isExportingDatasets, setIsExportingDatasets] = useState(false);
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
@@ -92,6 +98,18 @@ export function useDeveloperDashboard() {
     }
   }, []);
 
+  const loadDatasetExports = useCallback(async () => {
+    setIsLoadingDatasetExports(true);
+    try {
+      setDatasetExports(await developerDashboardClient.listDatasetExports());
+      setDatasetExportsLoaded(true);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to load dataset export history");
+    } finally {
+      setIsLoadingDatasetExports(false);
+    }
+  }, []);
+
   const updateDatasetManualClassification = useCallback(
     async (inspectionId: string, classification: FreshnessClassification) => {
       try {
@@ -124,12 +142,12 @@ export function useDeveloperDashboard() {
     setExportProgress({ current: 0, total: 1 });
     setExportStage("Starting dataset export...");
     try {
-      const blob = await developerDashboardClient.exportDatasets(datasetFilters, (progress) => {
+      await developerDashboardClient.exportDatasets(datasetFilters, (progress) => {
         setExportProgress({ current: progress.current, total: progress.total });
         setExportStage(formatDatasetExportStage(progress));
       });
-      if (blob) downloadDeveloperDatasetBlob(blob, `developer-dataset-${Date.now()}.zip`);
-      toast.success("Dataset export started");
+      await loadDatasetExports();
+      toast.success("Dataset export is ready in download history");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to export developer datasets");
     } finally {
@@ -137,7 +155,20 @@ export function useDeveloperDashboard() {
       setExportProgress(null);
       setExportStage(null);
     }
-  }, [datasetFilters]);
+  }, [datasetFilters, loadDatasetExports]);
+
+  const downloadDatasetExport = useCallback(async (exportId: string) => {
+    setDownloadingDatasetExportId(exportId);
+    try {
+      const download = await developerDashboardClient.getDatasetExportDownloadUrl(exportId);
+      downloadDeveloperDatasetUrl(download.url, download.filename);
+      await loadDatasetExports();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to download dataset export");
+    } finally {
+      setDownloadingDatasetExportId(null);
+    }
+  }, [loadDatasetExports]);
 
   const importTrainingRun = useCallback(async (file: File) => {
     setIsImportingTrainingRun(true);
@@ -165,6 +196,12 @@ export function useDeveloperDashboard() {
   }, [activeDeveloperTab, datasets, isLoadingDatasets, loadDatasets]);
 
   useEffect(() => {
+    if (activeDeveloperTab === "datasets" && !datasetExportsLoaded && !isLoadingDatasetExports) {
+      void loadDatasetExports();
+    }
+  }, [activeDeveloperTab, datasetExportsLoaded, isLoadingDatasetExports, loadDatasetExports]);
+
+  useEffect(() => {
     if (activeDeveloperTab === "training" && trainingRuns.length === 0 && !isLoadingTrainingRuns) {
       void loadTrainingRuns();
     }
@@ -175,21 +212,26 @@ export function useDeveloperDashboard() {
     setActiveDeveloperTab,
     overview,
     datasets,
+    datasetExports,
     trainingRuns,
     datasetFilters,
     setDatasetFilters,
     isLoadingOverview,
     isLoadingDatasets,
+    isLoadingDatasetExports,
     isLoadingTrainingRuns,
     isExportingDatasets,
     exportProgress,
     exportStage,
+    downloadingDatasetExportId,
     isImportingTrainingRun,
     loadOverview,
     loadDatasets,
+    loadDatasetExports,
     loadTrainingRuns,
     updateDatasetManualClassification,
     exportDatasets,
+    downloadDatasetExport,
     importTrainingRun,
   };
 }
