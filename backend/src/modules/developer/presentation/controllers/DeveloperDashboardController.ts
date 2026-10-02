@@ -163,6 +163,43 @@ export class DeveloperDashboardController {
     }
   }
 
+  async listDatasetExports(req: Request, res: Response): Promise<void> {
+    try {
+      const ownerId = req.auth?.userId;
+      if (!ownerId) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+
+      res.json(await dashboard.listDatasetExports(ownerId));
+    } catch (error) {
+      this.handleError("List developer dataset exports", res, error, "Failed to list developer dataset exports");
+    }
+  }
+
+  async createDatasetExportDownloadUrl(req: Request, res: Response): Promise<void> {
+    try {
+      const ownerId = req.auth?.userId;
+      if (!ownerId) {
+        res.status(401).json({ error: "Authentication required" });
+        return;
+      }
+
+      res.json(await dashboard.getDatasetExportDownloadUrl(req.params.exportId ?? "", ownerId));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to create dataset export download URL";
+      if (/not found/i.test(message)) {
+        res.status(404).json({ error: message });
+        return;
+      }
+      if (/expired|unavailable/i.test(message)) {
+        res.status(410).json({ error: message });
+        return;
+      }
+      this.handleError("Create developer dataset export download URL", res, error, message);
+    }
+  }
+
   async downloadDatasetExport(req: Request, res: Response): Promise<void> {
     try {
       const ownerId = req.auth?.userId;

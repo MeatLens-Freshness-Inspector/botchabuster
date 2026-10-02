@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import test from "node:test";
 
-test("developer dataset export exposes start, progress, and download routes", () => {
+test("developer dataset export exposes lifecycle, history, and download routes", () => {
   const routes = readFileSync(
     join(process.cwd(), "src", "modules", "developer", "presentation", "dashboard-routes.ts"),
     "utf8",
@@ -20,13 +20,20 @@ test("developer dataset export exposes start, progress, and download routes", ()
   assert.match(routes, /post\("\/datasets\/export\/start"/);
   assert.match(routes, /get\("\/datasets\/export\/:exportId\/progress"/);
   assert.match(routes, /get\("\/datasets\/export\/:exportId\/download"/);
+  assert.match(routes, /get\("\/datasets\/exports"/);
+  assert.match(routes, /post\("\/datasets\/exports\/:exportId\/download-url"/);
   assert.match(controller, /startDatasetExport/);
   assert.match(controller, /getDatasetExportProgress/);
   assert.match(controller, /getDatasetExportArchive/);
+  assert.match(controller, /listDatasetExports/);
+  assert.match(controller, /createDatasetExportDownloadUrl/);
   assert.match(controller, /text\/event-stream/);
   assert.match(controller, /pipeline\(createReadStream\(exported\.path\), res\)/);
   assert.match(controller, /X-Export-Content-Length/);
   assert.match(documentation, /POST \/api\/developer-dashboard\/datasets\/export\/start/);
   assert.match(documentation, /GET \/api\/developer-dashboard\/datasets\/export\/:exportId\/progress/);
   assert.match(documentation, /GET \/api\/developer-dashboard\/datasets\/export\/:exportId\/download/);
+  assert.match(documentation, /GET \/api\/developer-dashboard\/datasets\/exports/);
+  assert.match(documentation, /POST \/api\/developer-dashboard\/datasets\/exports\/:exportId\/download-url/);
+  assert.match(documentation, /two days/);
 });

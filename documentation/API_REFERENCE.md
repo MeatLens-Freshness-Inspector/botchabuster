@@ -48,8 +48,10 @@ The progress-aware export lifecycle is:
 - `POST /api/developer-dashboard/datasets/export/start` starts an owner-scoped in-process export session and returns an `exportId`.
 - `GET /api/developer-dashboard/datasets/export/:exportId/progress` returns the current stage and `{ current, total }` progress.
 - `GET /api/developer-dashboard/datasets/export/:exportId/download` returns the completed ZIP and releases the session.
+- `GET /api/developer-dashboard/datasets/exports` lists the signed-download history for the authenticated developer.
+- `POST /api/developer-dashboard/datasets/exports/:exportId/download-url` returns a short-lived signed storage URL for a ready export.
 
-The legacy `POST /api/developer-dashboard/datasets/export` service path remains available internally. Both paths keep the submitted filters, start from the first matching row, and cap one export at 10,000 records. The export query selects only the CSV/manifest fields and does not perform an exact-count query. Progress sessions are temporary in-process state and are lost if the backend process restarts.
+The legacy `POST /api/developer-dashboard/datasets/export` service path remains available internally. Both paths keep the submitted filters, start from the first matching row, and cap one export at 10,000 records. The export query selects only the CSV/manifest fields and does not perform an exact-count query. Completed ZIPs are stored in the private `developer-dataset-exports` bucket for two days, and the browser downloads them directly from the signed URL without buffering the archive in app memory. Progress sessions remain temporary in-process state; the completed archive history survives a backend restart.
 
 Every stored `image_url` is downloaded into the ZIP with bounded concurrency and retries. If an existing image cannot be downloaded after retries, the request fails with the affected inspection IDs instead of returning a partial dataset. Rows without an image URL remain valid rows and are listed in `manifest.json`; downloaded image bytes are stored without ZIP recompression.
 
